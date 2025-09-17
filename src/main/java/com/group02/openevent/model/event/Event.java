@@ -1,5 +1,7 @@
 package com.group02.openevent.model.event;
 
+import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.enums.EventType;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -7,13 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "event_type")
-public class Event {
+@DiscriminatorColumn(name = "event_type", discriminatorType = DiscriminatorType.STRING)
+public  class Event {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "event_id")
+    @SequenceGenerator(
+            name = "event_sequence",
+            sequenceName = "event_sequence",
+            allocationSize = 1
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "event_sequence"
+    )
     private Integer id;
 
     @ManyToOne
@@ -35,9 +45,9 @@ public class Event {
     @Column(name = "public_date")
     private LocalDateTime publicDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "event_type", nullable = false, insertable = false, updatable = false)
-    private EventType eventType = EventType.OTHERS;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "event_type", nullable = false,insertable = false, updatable = false)
+//    private EventType eventType = EventType.OTHERS;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
@@ -64,12 +74,19 @@ public class Event {
     private Integer points;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Place> places;
-
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventSchedule> schedules = new ArrayList<>();
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EventSpeaker> speakerLinks = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "event_speaker",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "place_id"))
+    private List<Speaker> speakers = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "event_place",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "place_id"))
+    private List<Place> places;
 
     public Event() {
     }
@@ -77,13 +94,6 @@ public class Event {
 
     // Getter & Setter
 
-    public List<EventSpeaker> getSpeakerLinks() {
-        return speakerLinks;
-    }
-
-    public void setSpeakerLinks(List<EventSpeaker> speakerLinks) {
-        this.speakerLinks = speakerLinks;
-    }
 
     public LocalDateTime getPublicDate() {
         return publicDate;
@@ -141,13 +151,13 @@ public class Event {
         this.description = description;
     }
 
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
+//    public EventType getEventType() {
+//        return eventType;
+//    }
+//
+//    public void setEventType(EventType eventType) {
+//        this.eventType = eventType;
+//    }
 
     public LocalDateTime getEnrollDeadline() {
         return enrollDeadline;
@@ -240,7 +250,7 @@ public class Event {
                 ", imageUrl='" + imageUrl + '\'' +
                 ", description='" + description + '\'' +
                 ", publicDate=" + publicDate +
-                ", eventType=" + eventType +
+//                ", eventType=" + eventType +
                 ", enrollDeadline=" + enrollDeadline +
                 ", startsAt=" + startsAt +
                 ", endsAt=" + endsAt +

@@ -66,9 +66,9 @@ CREATE TABLE [user] (
 CREATE TABLE event (
   event_id        INT IDENTITY(1,1) PRIMARY KEY,
   parent_event_id INT NULL,
-  event_title     VARCHAR(150) NOT NULL,
+  event_title     NVARCHAR(150) NOT NULL,
   image_url       VARCHAR(255),
-  description     VARCHAR(MAX),
+  description     NVARCHAR(MAX),
   public_date     DATETIME,
   event_type      VARCHAR(50) NOT NULL DEFAULT 'OTHERS'
       CHECK (event_type IN ('MUSIC','WORKSHOP','CONFERENCE','COMPETITION','FESTIVAL','OTHERS')),
@@ -91,7 +91,7 @@ CREATE TABLE event (
 CREATE TABLE event_schedule (
   schedule_id INT IDENTITY(1,1) PRIMARY KEY,
   event_id    INT NOT NULL,
-  activity    VARCHAR(255) NOT NULL,
+  activity    NVARCHAR(255) NOT NULL,
   start_time  DATETIME NOT NULL,
   end_time    DATETIME NOT NULL,
   CONSTRAINT fk_schedule_event FOREIGN KEY (event_id)
@@ -100,44 +100,36 @@ CREATE TABLE event_schedule (
 
 CREATE TABLE place (
   place_id   INT IDENTITY(1,1) PRIMARY KEY,
-  event_id   INT NOT NULL,
   building   VARCHAR(20) NOT NULL DEFAULT 'NONE'
       CHECK (building IN ('ALPHA','BETA','NONE')),
-  place_name VARCHAR(150) NOT NULL,
-  CONSTRAINT uq_place_event_name UNIQUE (event_id, place_name),
-  CONSTRAINT fk_place_event FOREIGN KEY (event_id)
-      REFERENCES event(event_id) ON DELETE CASCADE ON UPDATE CASCADE
+  place_name NVARCHAR(150) NOT NULL
 );
 
 -- Specialized Event Tables
 CREATE TABLE music_event (
   event_id   INT PRIMARY KEY,
-  artist     VARCHAR(255) NOT NULL,
-  genre      VARCHAR(100),
-  stage_name VARCHAR(150),
   FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
 );
 
 CREATE TABLE workshop_event (
   event_id       INT PRIMARY KEY,
-  speaker        VARCHAR(255) NOT NULL,
-  topic          VARCHAR(255),
-  materials_link VARCHAR(255),
+  topic          NVARCHAR(255),
+  materials_link NVARCHAR(255),
   FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
 );
 
 CREATE TABLE competition_event (
   event_id         INT PRIMARY KEY,
-  competition_type VARCHAR(100),
-  rules            VARCHAR(MAX),
-  prize_pool       VARCHAR(255),
+  competition_type NVARCHAR(100),
+  rules            NVARCHAR(MAX),
+  prize_pool       NVARCHAR(255),
   FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
 );
 
 CREATE TABLE festival_event (
   event_id   INT PRIMARY KEY,
-  culture    VARCHAR(100),
-  highlight  VARCHAR(MAX),
+  culture    NVARCHAR(100),
+  highlight  NVARCHAR(MAX),
   FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
 );
 
@@ -216,16 +208,16 @@ CREATE TABLE event_speaker (
     event_speaker_id INT IDENTITY(1,1) PRIMARY KEY,
     event_id   INT NOT NULL,
     speaker_id INT NOT NULL,
-    role       VARCHAR(50) NOT NULL,
-    note       VARCHAR(255),
+    role       NVARCHAR(50) NOT NULL,
+    note       NVARCHAR(255),
     FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE,
     FOREIGN KEY (speaker_id) REFERENCES speaker(speaker_id) ON DELETE CASCADE
 );
 CREATE TABLE speaker (
     speaker_id INT IDENTITY(1,1) PRIMARY KEY,
-    name       VARCHAR(100) NOT NULL,
-    image_url  VARCHAR(255),
-	profile  VARCHAR(255),
+    name       NVARCHAR(100) NOT NULL,
+    image_url  NVARCHAR(255),
+	profile  NVARCHAR(255),
     default_role VARCHAR(50) NOT NULL DEFAULT 'SPEAKER'
 );
 

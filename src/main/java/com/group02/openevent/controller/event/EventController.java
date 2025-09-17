@@ -1,6 +1,7 @@
 package com.group02.openevent.controller.event;
 
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.service.EventService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,11 @@ public class EventController {
     }
 
     // POST - create event
-    @PostMapping
+    @PostMapping("/saveEvent")
     public Event createEvent(@RequestBody Event event) {
         return eventService.saveEvent(event);
     }
+
 
     // GET - get event by id
     @GetMapping("/{id}")

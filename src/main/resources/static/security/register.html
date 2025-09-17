@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="UTF-8">
+	<title>Đăng ký - OpenEvent</title>
+</head>
+<body>
+	<h1>Đăng ký tài khoản</h1>
+	<form id="registerForm">
+		<label>Email: <input type="email" id="regEmail" required></label><br>
+		<label>Mật khẩu: <input type="password" id="regPassword" required></label>
+		<label><input type="checkbox" id="regShowPw"> Hiện mật khẩu</label><br>
+		<label>Role:
+			<select id="regRole">
+				<option value="USER">USER</option>
+				<option value="SPONSOR">SPONSOR</option>
+				<option value="TEACHER">TEACHER</option>
+			</select>
+		</label><br>
+		<label>SĐT: <input type="text" id="regPhone"></label><br>
+		<label>Tổ chức (nếu có): <input type="text" id="regOrg"></label><br>
+		<button type="submit" id="regBtn">Đăng ký</button>
+		<button type="button" id="clearReg">Xóa form</button>
+	</form>
+	<pre id="registerResult"></pre>
+	<p><a href="/security/login.html">Đã có tài khoản? Đăng nhập</a></p>
+	<p><a href="/static">Trang chủ</a></p>
+
+	<script>
+		document.getElementById('regShowPw').addEventListener('change', (e) => {
+			document.getElementById('regPassword').type = e.target.checked ? 'text' : 'password';
+		});
+		document.getElementById('clearReg').addEventListener('click', () => {
+			document.getElementById('registerForm').reset();
+			document.getElementById('registerResult').textContent = '';
+		});
+
+		async function handleRegister(e) {
+			e.preventDefault();
+			document.getElementById('regBtn').disabled = true;
+			const payload = {
+				email: document.getElementById('regEmail').value,
+				password: document.getElementById('regPassword').value,
+				role: document.getElementById('regRole').value,
+				phoneNumber: document.getElementById('regPhone').value || null,
+				organization: document.getElementById('regOrg').value || null
+			};
+			try {
+				const res = await fetch('/api/auth/register', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					credentials: 'include',
+					body: JSON.stringify(payload)
+				});
+				const text = await res.text();
+				if (!res.ok) {
+					document.getElementById('registerResult').textContent = 'Lỗi đăng ký (' + res.status + '):\n' + text;
+				} else {
+					// Expect redirectPath to /login.html?registered=1
+					try {
+						const json = JSON.parse(text);
+						if (json.redirectPath) {
+							window.location.href = json.redirectPath;
+							return;
+						}
+					} catch (_) {}
+					document.getElementById('registerResult').textContent = text;
+				}
+			} catch (err) {
+				document.getElementById('registerResult').textContent = 'Lỗi: ' + err;
+			} finally {
+				document.getElementById('regBtn').disabled = false;
+			}
+		}
+
+		document.getElementById('registerForm').addEventListener('submit', handleRegister);
+	</script>
+</body>
+</html> 

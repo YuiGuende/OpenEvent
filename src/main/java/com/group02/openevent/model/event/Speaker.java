@@ -1,6 +1,9 @@
 package com.group02.openevent.model.event;
 
+import com.group02.openevent.model.enums.SpeakerRole;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Speaker {
@@ -9,10 +12,6 @@ public class Speaker {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "speaker_id")
     private Integer id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -27,6 +26,9 @@ public class Speaker {
     @Column(name = "default_role", nullable = false)
     private SpeakerRole defaultRole = SpeakerRole.SPEAKER;
 
+    @ManyToMany(mappedBy = "speakers")
+    private List<Event> events;
+
     public Speaker() {
     }
 
@@ -39,13 +41,6 @@ public class Speaker {
         this.id = id;
     }
 
-    public Event getEvent() {
-        return event;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
-    }
 
     public String getName() {
         return name;

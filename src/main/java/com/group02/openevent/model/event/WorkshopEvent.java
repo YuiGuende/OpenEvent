@@ -6,10 +6,6 @@ import jakarta.persistence.*;
 @DiscriminatorValue("WORKSHOP")
 public class WorkshopEvent  extends Event{
 
-
-    @Column(nullable = false)
-    private String speaker;
-
     private String topic;
 
     @Column(name = "materials_link")
@@ -18,23 +14,13 @@ public class WorkshopEvent  extends Event{
     public WorkshopEvent() {
     }
 
-    public WorkshopEvent( String speaker, String topic, String materialsLink) {
-        this.speaker = speaker;
+    public WorkshopEvent(String topic, String materialsLink) {
         this.topic = topic;
         this.materialsLink = materialsLink;
     }
     // Getter & Setter
 
 
-
-
-    public String getSpeaker() {
-        return speaker;
-    }
-
-    public void setSpeaker(String speaker) {
-        this.speaker = speaker;
-    }
 
     public String getTopic() {
         return topic;
@@ -55,7 +41,6 @@ public class WorkshopEvent  extends Event{
     @Override
     public String toString() {
         return "WorkshopEvent{" +
-                ", speaker='" + speaker + '\'' +
                 ", topic='" + topic + '\'' +
                 ", materialsLink='" + materialsLink + '\'' +
                 '}';

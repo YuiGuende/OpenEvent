@@ -1,12 +1,12 @@
 package com.group02.openevent.model.event;
 
+import com.group02.openevent.model.enums.Building;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
-@Table(
-        name = "place",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"event_id", "place_name"})
-)
+@Table(name = "place")
 public class Place {
 
     @Id
@@ -14,9 +14,8 @@ public class Place {
     @Column(name = "place_id")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
+    @ManyToMany(mappedBy = "places")
+    private List<Event> events;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -28,17 +27,16 @@ public class Place {
     public Place() {
     }
 
-    public Place(Event event, Building building, String placeName) {
-        this.event = event;
+    public Place(Integer id, List<Event> events, Building building, String placeName) {
+        this.id = id;
+        this.events = events;
         this.building = building;
         this.placeName = placeName;
     }
 
-    public Place(Integer id, String placeName, Building building, Event event) {
-        this.id = id;
-        this.placeName = placeName;
+    public Place(Building building, String placeName) {
         this.building = building;
-        this.event = event;
+        this.placeName = placeName;
     }
 
     // Getter & Setter
@@ -48,14 +46,6 @@ public class Place {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Event getEvent() {
-        return event;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
     }
 
     public Building getBuilding() {
@@ -74,11 +64,18 @@ public class Place {
         this.placeName = placeName;
     }
 
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<Event> events) {
+        this.events = events;
+    }
+
     @Override
     public String toString() {
         return "Place{" +
                 "id=" + id +
-                ", event=" + event +
                 ", building=" + building +
                 ", placeName='" + placeName + '\'' +
                 '}';

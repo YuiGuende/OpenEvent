@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenEvent — Static Preview</title>
+  <link rel="stylesheet" href="./css/main.css" />
+
+</head>
+<body>
+  <!-- <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#">
+        <img src="./img/logo.png" alt="OpenEvent" />
+        <span>OpenEvent</span>
+      </a>
+
+      <nav class="nav">
+        <a href="#" class="nav-link is-active">Home</a>
+        <a href="#" class="nav-link">Top Event</a>
+        <a href="#" class="nav-link">Contact</a>
+      </nav>
+
+      
+
+      <div class="user-actions">
+        <div class="search">
+          <input type="text" placeholder="Tìm kiếm sự kiện..." />
+          <button aria-label="Tìm"><span class="i i-search"></span></button>
+        </div>
+        <a class="btn btn-primary" href="#">Đăng nhập</a>
+      </div>
+    </div>
+  </header> -->
+
+  <!-- templates/fragments/header.html -->
+<header class="site-header">
+  <div class="container header-inner">
+    <!-- Logo -->
+    <a class="logo" href="index.html" th:href="@{/}">
+      <img src="./img/logo.png" th:src="@{/img/logo.png}" alt="OpenEvent" />
+      <span>OpenEvent</span>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="nav">
+      <a href="index.html" th:href="@{/}" class="nav-link"
+         th:classappend="${page == 'home'} ? ' is-active'">Home</a>
+      <a href="events.html" th:href="@{/events}" class="nav-link"
+         th:classappend="${page == 'top'} ? ' is-active'">Top Event</a>
+      <a href="contact.html" th:href="@{/contact}" class="nav-link"
+         th:classappend="${page == 'contact'} ? ' is-active'">Contact</a>
+    </nav>
+
+    <!-- Search + Login -->
+    <div class="user-actions">
+  <form class="search" action="events.html" th:action="@{/events}" method="get" role="search">
+    <input type="search" name="q" placeholder="Tìm kiếm sự kiện..." />
+    <button type="submit" aria-label="Tìm">
+      <!-- dùng cùng 1 tên file cho tĩnh & thymeleaf -->
+      <img src="./img/ic-search.svg" th:src="@{/img/ic-search.svg}" alt="Search" />
+    </button>
+  </form>
+  <a class="btn btn-primary" href="login.html" th:href="@{/login}">Đăng nhập</a>
+</div>
+
+  </div>
+</header>
+
+
+
+
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <h1>FPT — Nơi sự kiện tạo nên trải nghiệm sinh viên</h1>
+          <p>Khám phá, đăng ký và quản lý sự kiện một cách dễ dàng.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#">Tham gia ngay</a>
+            <a class="btn btn-ghost" href="#">Xem Top Events</a>
+          </div>
+        </div>
+        <div class="hero-media">
+          <img src="./img/banner.png" alt="Banner sự kiện">
+        </div>
+      </div>
+    </section>
+
+
+<!-- Yours Event -->
+    <!-- <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Yours Events</h2>
+          <a class="link" href="#">Xem tất cả</a>
+        </div>
+
+        <div class="grid grid-3">
+          <article class="card">
+            <div class="card-media skeleton"></div>
+            <div class="card-body">
+              <h3 class="card-title">Tên sự kiện</h3>
+              <p class="card-meta">Ngày 17/09/2025 • HCM</p>
+              <div class="card-tags"><span class="tag">Music</span></div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-media skeleton"></div>
+            <div class="card-body">
+              <h3 class="card-title">Tên sự kiện</h3>
+              <p class="card-meta">Ngày 20/09/2025 • Hà Nội</p>
+              <div class="card-tags"><span class="tag">Workshop</span></div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-media skeleton"></div>
+            <div class="card-body">
+              <h3 class="card-title">Tên sự kiện</h3>
+              <p class="card-meta">Ngày 22/09/2025 • Đà Nẵng</p>
+              <div class="card-tags"><span class="tag">Conference</span></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="pager">
+          <button class="icon-btn" aria-label="Prev">‹</button>
+          <span>1 / 5</span>
+          <button class="icon-btn" aria-label="Next">›</button>
+        </div>
+      </div>
+    </section> -->
+
+    <section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Yours Events</h2>
+      <a class="link" href="#">Xem tất cả</a>
+    </div>
+
+    <div class="grid grid-3">
+      <!-- Event 1 -->
+      <article class="card">
+        <div class="card-media">
+          <img src="./img/event1.jpg" alt="Sự kiện HCM" />
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">Tên sự kiện</h3>
+          <p class="card-meta">Ngày 17/09/2025 • HCM</p>
+          <div class="card-tags"><span class="tag">Music</span></div>
+        </div>
+      </article>
+
+      <!-- Event 2 -->
+      <article class="card">
+        <div class="card-media">
+          <img src="./img/event2.jpg" alt="Sự kiện Hà Nội" />
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">Tên sự kiện</h3>
+          <p class="card-meta">Ngày 20/09/2025 • Hà Nội</p>
+          <div class="card-tags"><span class="tag">Workshop</span></div>
+        </div>
+      </article>
+
+      <!-- Event 3 -->
+      <article class="card">
+        <div class="card-media">
+          <img src="./img/event3.jpg" alt="Sự kiện Đà Nẵng" />
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">Tên sự kiện</h3>
+          <p class="card-meta">Ngày 22/09/2025 • Đà Nẵng</p>
+          <div class="card-tags"><span class="tag">Conference</span></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="pager">
+      <button class="icon-btn" aria-label="Prev">‹</button>
+      <span>1 / 5</span>
+      <button class="icon-btn" aria-label="Next">›</button>
+    </div>
+  </div>
+</section>
+
+
+
+
+    <!-- SECTION: Sự kiện đang diễn ra (cards to be bigger) -->
+    <section class="section section-muted live-section">
+      <div class="container">
+        <div class="filter-row">
+          <span class="filter-label">Sự kiện đang diễn ra</span>
+          <div class="chip-group">
+            <button class="chip is-active">Music</button>
+            <button class="chip">Workshop</button>
+            <button class="chip">Conference</button>
+            <button class="chip">Festival</button>
+            <button class="chip">Competition</button>
+            <button class="chip">Other</button>
+          </div>
+        </div>
+
+        <div class="grid grid-4 live-cards">
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Hôm nay • HCM</p><div class="card-tags"><span class="tag">Hot</span></div></div></article>
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Hôm nay • Hà Nội</p><div class="card-tags"><span class="tag">Festival</span></div></div></article>
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Ngày mai • Đà Nẵng</p><div class="card-tags"><span class="tag">Music</span></div></div></article>
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Cuối tuần • Cần Thơ</p><div class="card-tags"><span class="tag">Workshop</span></div></div></article>
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Hôm nay • HCM</p><div class="card-tags"><span class="tag">Conference</span></div></div></article>
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Hôm nay • Hà Nội</p><div class="card-tags"><span class="tag">Competition</span></div></div></article>
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Ngày mai • Đà Nẵng</p><div class="card-tags"><span class="tag">Festival</span></div></div></article>
+          <article class="card"><div class="card-media skeleton"></div><div class="card-body"><h3 class="card-title">Tên sự kiện</h3><p class="card-meta">Cuối tuần • Quy Nhơn</p><div class="card-tags"><span class="tag">Other</span></div></div></article>
+        </div>
+
+        <div class="pager">
+          <button class="icon-btn" aria-label="Prev">‹</button>
+          <span>1 / 5</span>
+          <button class="icon-btn" aria-label="Next">›</button>
+        </div>
+      </div>
+    </section>
+
+
+
+    <section class="section">
+      <div class="container">
+        <div class="filter-row">
+          <span class="filter-label">Có thể quan tâm</span>
+          <div class="chip-group">
+            <button class="chip is-active">Music</button>
+            <button class="chip">Workshop</button>
+            <button class="chip">Conference</button>
+            <button class="chip">Festival</button>
+            <button class="chip">Competition</button>
+            <button class="chip">Other</button>
+          </div>
+        </div>
+
+        <div class="grid grid-4">
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+          <div class="card tiny"><div class="card-media skeleton"></div></div>
+        </div>
+
+        <div class="pager">
+          <button class="icon-btn">‹</button>
+          <span>1 / 5</span>
+          <button class="icon-btn">›</button>
+        </div>
+      </div>
+    </section>
+
+    
+    <!-- SECTION: Top sinh viên nổi bật -->
+    <section class="section section-muted">
+      <div class="container">
+        <h2 class="mb-16">Top sinh viên nổi bật</h2>
+        <div class="grid grid-3 student-grid">
+          <!-- Student card 1 -->
+          <article class="card student-card">
+            <div class="student-avatar"><img src="./img/sinhvien1.webp" alt="Student avatar"></div>
+            <div class="card-body">
+              <h3 class="card-title">Nguyễn Văn A</h3>
+              <p class="card-meta">Software Engineering</p>
+              <div class="student-stats">
+                <span class="stat-pill" title="Sự kiện đã tham gia">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V9h14v10z"></path></svg>
+                  <strong>12</strong> events
+                </span>
+                <span class="stat-pill" title="Giải thưởng">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 3H7v6a5 5 0 1 0 10 0V3zm2 0v6a7 7 0 1 1-14 0V3H3v6a9 9 0 0 0 7 8.72V21H7v2h10v-2h-3v-3.28A9 9 0 0 0 21 9V3h-2z"></path></svg>
+                  <strong>3</strong> awards
+                </span>
+                <span class="stat-pill" title="Điểm uy tín">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                  <strong>95</strong> pts
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Student card 2 -->
+          <article class="card student-card">
+            <div class="student-avatar"><img src="./img/sinhvien1.webp" alt="Student avatar"></div>
+            <div class="card-body">
+              <h3 class="card-title">Trần Thị B</h3>
+              <p class="card-meta">AI & Data Science</p>
+              <div class="student-stats">
+                <span class="stat-pill" title="Sự kiện đã tham gia">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V9h14v10z"></path></svg>
+                  <strong>9</strong> events
+                </span>
+                <span class="stat-pill" title="Giải thưởng">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 3H7v6a5 5 0 1 0 10 0V3zm2 0v6a7 7 0 1 1-14 0V3H3v6a9 9 0 0 0 7 8.72V21H7v2h10v-2h-3v-3.28A9 9 0 0 0 21 9V3h-2z"></path></svg>
+                  <strong>1</strong> awards
+                </span>
+                <span class="stat-pill" title="Điểm uy tín">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                  <strong>88</strong> pts
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Student card 3 -->
+          <article class="card student-card">
+            <div class="student-avatar"><img src="./img/sinhvien1.webp" alt="Student avatar"></div>
+            <div class="card-body">
+              <h3 class="card-title">Lê Quốc C</h3>
+              <p class="card-meta">Business Administration</p>
+              <div class="student-stats">
+                <span class="stat-pill" title="Sự kiện đã tham gia">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V9h14v10z"></path></svg>
+                  <strong>10</strong> events
+                </span>
+                <span class="stat-pill" title="Giải thưởng">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 3H7v6a5 5 0 1 0 10 0V3zm2 0v6a7 7 0 1 1-14 0V3H3v6a9 9 0 0 0 7 8.72V21H7v2h10v-2h-3v-3.28A9 9 0 0 0 21 9V3h-2z"></path></svg>
+                  <strong>2</strong> awards
+                </span>
+                <span class="stat-pill" title="Điểm uy tín">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                  <strong>91</strong> pts
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- Static footer (mirrors templates/fragements/footer.html) -->
+  <footer class="site-footer site-footer--dark">
+    <div class="container footer-grid">
+      <div>
+        <img src="./img/logo.png" alt="OpenEvent" style="height:36px" />
+        <p>Nền tảng quản lý & tham gia sự kiện dành cho sinh viên FPT — nhanh chóng, tiện lợi, kết nối cộng đồng.</p>
+        <div class="socials">
+          <a href="#"><img src="./img/ic-fb.svg" alt="Facebook"></a>
+          <a href="#"><img src="./img/ic-ig.svg" alt="Instagram"></a>
+          <a href="#"><img src="./img/ic-yt.svg" alt="YouTube"></a>
+        </div>
+      </div>
+      <div>
+        <h5>NAVIGATION</h5>
+        <ul class="list">
+          <li><a href="#">Sự kiện sắp tới</a></li>
+          <li><a href="#">Đăng ký tham gia</a></li>
+          <li><a href="#">Top Event</a></li>
+          <li><a href="#">Liên hệ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>CONTACTS</h5>
+        <ul class="list">
+          <li>Email: contact@openevent.vn</li>
+          <li>Phone: 0900 000 000</li>
+          <li>ĐH FPT HCM</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Newsletter</h5>
+        <p class="muted">It has roots in a piece of classical Latin literature from 45.</p>
+        <div class="newsletter">
+          <input type="email" placeholder="Your email" />
+          <button class="btn btn-primary">Send</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom footer-accent">
+      <div class="container">It has roots in a piece of classical Latin literature from 45 BC, making it overs.</div>
+    </div>
+  </footer>
+
+  <script src="./js/main.js"></script>
+</body>
+</html>
+

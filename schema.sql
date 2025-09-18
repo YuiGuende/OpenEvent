@@ -33,7 +33,7 @@ IF OBJECT_ID('admin', 'U') IS NOT NULL DROP TABLE admin;
 IF OBJECT_ID('account', 'U') IS NOT NULL DROP TABLE account;
 
 -- =============== 1) Account & Profiles ===============
-CREATE TABLE account (
+CREATE TABLE user (
   account_id    INT IDENTITY(1,1) PRIMARY KEY,
   email         VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE admin (
       REFERENCES account(account_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE [user] (
+CREATE TABLE [guest] (
   user_id      INT IDENTITY(1,1) PRIMARY KEY,
   account_id   INT NOT NULL UNIQUE,
   phone_number VARCHAR(20),

@@ -12,7 +12,7 @@ import java.util.List;
 @Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "event_type", discriminatorType = DiscriminatorType.STRING)
-public  class Event {
+public class Event {
 
     @Id
     @SequenceGenerator(
@@ -88,12 +88,30 @@ public  class Event {
             inverseJoinColumns = @JoinColumn(name = "place_id"))
     private List<Place> places;
 
+    private boolean feature = false;
+
     public Event() {
     }
 
 
     // Getter & Setter
 
+
+    public List<Speaker> getSpeakers() {
+        return speakers;
+    }
+
+    public void setSpeakers(List<Speaker> speakers) {
+        this.speakers = speakers;
+    }
+
+    public boolean isFeature() {
+        return feature;
+    }
+
+    public void setFeature(boolean feature) {
+        this.feature = feature;
+    }
 
     public LocalDateTime getPublicDate() {
         return publicDate;

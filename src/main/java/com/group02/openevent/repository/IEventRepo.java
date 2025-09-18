@@ -11,7 +11,6 @@ import java.util.List;
 @Repository
 public interface IEventRepo extends JpaRepository<Event, Integer> {
 
-//    List<Event> findByEventType(EventType eventType);
-
+    List<Event> findByFeature(boolean feature);
     List<Event> findByStatus(String status);
 }

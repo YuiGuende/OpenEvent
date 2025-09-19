@@ -1,14 +1,12 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.model.account.Account;
-import com.group02.openevent.model.admin.Admin;
 import com.group02.openevent.model.dto.AuthResponse;
 import com.group02.openevent.model.dto.LoginRequest;
 import com.group02.openevent.model.dto.RegisterRequest;
 import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
-import com.group02.openevent.repository.IAdminRepo;
 import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.AuthService;
 import jakarta.transaction.Transactional;
@@ -22,15 +20,13 @@ import jakarta.servlet.http.HttpSession;
 @Service
 public class AuthServiceImpl implements AuthService {
 	private final IAccountRepo accountRepo;
-	private final IAdminRepo adminRepo;
 	private final IUserRepo userRepo;
 	private final PasswordEncoder passwordEncoder;
 	private final HttpSession httpSession;
 
-	public AuthServiceImpl(IAccountRepo accountRepo, IAdminRepo adminRepo, IUserRepo userRepo,
+	public AuthServiceImpl(IAccountRepo accountRepo, IUserRepo userRepo,
 			PasswordEncoder passwordEncoder, HttpSession httpSession) {
 		this.accountRepo = accountRepo;
-		this.adminRepo = adminRepo;
 		this.userRepo = userRepo;
 		this.passwordEncoder = passwordEncoder;
 		this.httpSession = httpSession;
@@ -39,8 +35,7 @@ public class AuthServiceImpl implements AuthService {
 	private String redirectFor(Role role) {
 		switch (role) {
 			case ADMIN: return "/admin";
-			case SPONSOR: return "/sponsor";
-			case TEACHER: return "/teacher";
+			case HOST: return "/host";
 			default: return "/user";
 		}
 	}
@@ -52,11 +47,8 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalArgumentException("Email already registered");
 		}
 
-		Role incoming = Objects.requireNonNullElse(request.getRole(), Role.USER);
-		if (incoming == Role.ADMIN) {
-			throw new IllegalArgumentException("ADMIN role cannot be registered");
-		}
-		Role role = incoming;
+		// Luôn set role là USER khi đăng ký, bỏ qua lựa chọn từ frontend
+		Role role = Role.USER;
 
 		Account account = new Account();
 		account.setEmail(request.getEmail());
@@ -64,6 +56,7 @@ public class AuthServiceImpl implements AuthService {
 		account.setRole(role);
 		account = accountRepo.save(account);
 
+		// Luôn tạo User record cho mọi account
 		User user = new User();
 		user.setAccount(account);
 		user.setPhoneNumber(request.getPhoneNumber());
@@ -73,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
 		userRepo.save(user);
 
 		// Do NOT auto-login after registration; redirect to login page with success flag
-		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/login.html?registered=1");
+		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/security/login.html?registered=1");
 	}
 
 	@Override

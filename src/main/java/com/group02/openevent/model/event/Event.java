@@ -45,9 +45,9 @@ public class Event {
     @Column(name = "public_date")
     private LocalDateTime publicDate;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "event_type", nullable = false,insertable = false, updatable = false)
-//    private EventType eventType = EventType.OTHERS;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false,insertable = false, updatable = false)
+    private EventType eventType = EventType.OTHERS;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
@@ -79,7 +79,7 @@ public class Event {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "place_id"))
+            inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)
@@ -88,30 +88,12 @@ public class Event {
             inverseJoinColumns = @JoinColumn(name = "place_id"))
     private List<Place> places;
 
-    private boolean feature = false;
-
     public Event() {
     }
 
 
     // Getter & Setter
 
-
-    public List<Speaker> getSpeakers() {
-        return speakers;
-    }
-
-    public void setSpeakers(List<Speaker> speakers) {
-        this.speakers = speakers;
-    }
-
-    public boolean isFeature() {
-        return feature;
-    }
-
-    public void setFeature(boolean feature) {
-        this.feature = feature;
-    }
 
     public LocalDateTime getPublicDate() {
         return publicDate;
@@ -169,13 +151,13 @@ public class Event {
         this.description = description;
     }
 
-//    public EventType getEventType() {
-//        return eventType;
-//    }
-//
-//    public void setEventType(EventType eventType) {
-//        this.eventType = eventType;
-//    }
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
 
     public LocalDateTime getEnrollDeadline() {
         return enrollDeadline;
@@ -268,7 +250,7 @@ public class Event {
                 ", imageUrl='" + imageUrl + '\'' +
                 ", description='" + description + '\'' +
                 ", publicDate=" + publicDate +
-//                ", eventType=" + eventType +
+                ", eventType=" + eventType +
                 ", enrollDeadline=" + enrollDeadline +
                 ", startsAt=" + startsAt +
                 ", endsAt=" + endsAt +

@@ -1,5 +1,6 @@
 package com.group02.openevent.model.user;
 
+import com.group02.openevent.model.ticket.GuestTicket;
 import jakarta.persistence.*;
 import java.util.List;
 

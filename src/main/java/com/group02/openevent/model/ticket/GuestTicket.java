@@ -1,5 +1,6 @@
 package com.group02.openevent.model.ticket;
 
+import com.group02.openevent.model.user.Guest;
 import jakarta.persistence.*;
 
 @Entity

@@ -81,7 +81,6 @@ public class EventSchedule {
     public String toString() {
         return "EventSchedule{" +
                 "scheduleId=" + scheduleId +
-                ", event=" + event +
                 ", activity='" + activity + '\'' +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +

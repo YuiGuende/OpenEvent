@@ -1,9 +1,7 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.model.enums.EventType;
-import com.group02.openevent.model.event.Event;
-import com.group02.openevent.model.event.EventSchedule;
-import com.group02.openevent.model.event.MusicEvent;
+import com.group02.openevent.model.event.*;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
@@ -21,40 +19,36 @@ public class EventServiceImpl implements EventService {
     @Autowired
     private IEventRepo eventRepo;
 
-
     @Override
-    public Event saveEvent(Event event) {
-        // đảm bảo schedule biết event cha
-        if (event.getSchedules() != null) {
-            event.getSchedules().forEach(s -> s.setEvent(event));
-            System.out.println("debug");
+    public MusicEvent saveMusicEvent(MusicEvent musicEvent) {
+        if (musicEvent.getSchedules() != null) {
+            musicEvent.getSchedules().forEach(s -> s.setEvent(musicEvent));
         }
-
-        return eventRepo.save(event);
+        return eventRepo.save(musicEvent);
     }
 
     @Override
-    public MusicEvent saveMusicEvent(MusicEvent musicEvent) {
-//        List<EventSchedule> eventSchedules = musicEvent.getSchedules();
-//        musicEvent.setSchedules(null);
-//        musicEvent.setSpeakerLinks(null);
-//        musicEvent.setPlaces(null);
-////        MusicEvent musicEvent1 =
-//        MusicEvent musicEvent1 = musicEventRepo.save(musicEvent);
-//
-////        if (eventSchedules != null) {
-////            musicEvent1.setSchedules(eventSchedules);
-////            return musicEventRepo.save(musicEvent1);
-////        }
-////        else {
-////            return musicEvent1;
-////        }
-//
-//
-//        musicEvent1.setSchedules(eventSchedules);
-        return eventRepo.save(musicEvent);
+    public CompetitionEvent saveCompetitionEvent(CompetitionEvent competitionEvent) {
+        if (competitionEvent.getSchedules() != null) {
+            competitionEvent.getSchedules().forEach(s -> s.setEvent(competitionEvent));
+        }
+        return eventRepo.save(competitionEvent);
+    }
 
+    @Override
+    public FestivalEvent saveFestivalEvent(FestivalEvent festivalEvent) {
+        if (festivalEvent.getSchedules() != null) {
+            festivalEvent.getSchedules().forEach(s -> s.setEvent(festivalEvent));
+        }
+        return eventRepo.save(festivalEvent);
+    }
 
+    @Override
+    public WorkshopEvent saveWorkshopEvent(WorkshopEvent workshopEvent) {
+        if (workshopEvent.getSchedules() != null) {
+            workshopEvent.getSchedules().forEach(s -> s.setEvent(workshopEvent));
+        }
+        return eventRepo.save(workshopEvent);
     }
 
     @Override

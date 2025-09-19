@@ -1,7 +1,7 @@
 package com.group02.openevent.controller.event;
 
-import com.group02.openevent.model.event.Event;
-import com.group02.openevent.model.event.MusicEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group02.openevent.model.event.*;
 import com.group02.openevent.service.EventService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +18,27 @@ public class EventController {
     public EventController(EventService eventService) {
         this.eventService = eventService;
     }
-
+    @Autowired
+    private ObjectMapper objectMapper;
     // POST - create event
-    @PostMapping("/saveEvent")
-    public Event createEvent(@RequestBody Event event) {
-        return eventService.saveEvent(event);
+    @PostMapping("save/music")
+    public MusicEvent saveMusic(@RequestBody MusicEvent event) {
+        return eventService.saveMusicEvent(event);
+    }
+
+    @PostMapping("save/festival")
+    public FestivalEvent saveFestival(@RequestBody FestivalEvent event) {
+        return eventService.saveFestivalEvent(event);
+    }
+
+    @PostMapping("save/competition")
+    public CompetitionEvent saveCompetition(@RequestBody CompetitionEvent event) {
+        return eventService.saveCompetitionEvent(event);
+    }
+
+    @PostMapping("save/workshop")
+    public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
+        return eventService.saveWorkshopEvent(event);
     }
 
 

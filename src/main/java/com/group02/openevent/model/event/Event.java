@@ -1,7 +1,5 @@
 package com.group02.openevent.model.event;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import jakarta.persistence.*;
@@ -81,7 +79,7 @@ public class Event {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "place_id"))
+            inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)
@@ -114,7 +112,7 @@ public class Event {
         this.places = places;
     }
 
-// Getter & Setter
+    // Getter & Setter
 
 
     public List<Speaker> getSpeakers() {
@@ -123,14 +121,6 @@ public class Event {
 
     public void setSpeakers(List<Speaker> speakers) {
         this.speakers = speakers;
-    }
-
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
     }
 
     public LocalDateTime getPublicDate() {
@@ -189,13 +179,13 @@ public class Event {
         this.description = description;
     }
 
-//    public EventType getEventType() {
-//        return eventType;
-//    }
-//
-//    public void setEventType(EventType eventType) {
-//        this.eventType = eventType;
-//    }
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
 
     public LocalDateTime getEnrollDeadline() {
         return enrollDeadline;
@@ -288,7 +278,7 @@ public class Event {
                 ", imageUrl='" + imageUrl + '\'' +
                 ", description='" + description + '\'' +
                 ", publicDate=" + publicDate +
-//                ", eventType=" + eventType +
+                ", eventType=" + eventType +
                 ", enrollDeadline=" + enrollDeadline +
                 ", startsAt=" + startsAt +
                 ", endsAt=" + endsAt +

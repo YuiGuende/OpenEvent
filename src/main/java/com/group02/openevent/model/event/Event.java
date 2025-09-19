@@ -1,5 +1,7 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import jakarta.persistence.*;
@@ -12,7 +14,7 @@ import java.util.List;
 @Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "event_type", discriminatorType = DiscriminatorType.STRING)
-public  class Event {
+public class Event {
 
     @Id
     @SequenceGenerator(
@@ -45,9 +47,9 @@ public  class Event {
     @Column(name = "public_date")
     private LocalDateTime publicDate;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "event_type", nullable = false,insertable = false, updatable = false)
-//    private EventType eventType = EventType.OTHERS;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false, insertable = false, updatable = false)
+    private EventType eventType = EventType.OTHERS;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
@@ -91,9 +93,45 @@ public  class Event {
     public Event() {
     }
 
+    public Event(Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places) {
+        this.parentEvent = parentEvent;
+        this.subEvents = subEvents;
+        this.title = title;
+        this.imageUrl = imageUrl;
+        this.description = description;
+        this.publicDate = publicDate;
+        this.eventType = eventType;
+        this.enrollDeadline = enrollDeadline;
+        this.startsAt = startsAt;
+        this.endsAt = endsAt;
+        this.createdAt = createdAt;
+        this.status = status;
+        this.benefits = benefits;
+        this.learningObjects = learningObjects;
+        this.points = points;
+        this.schedules = schedules;
+        this.speakers = speakers;
+        this.places = places;
+    }
 
-    // Getter & Setter
+// Getter & Setter
 
+
+    public List<Speaker> getSpeakers() {
+        return speakers;
+    }
+
+    public void setSpeakers(List<Speaker> speakers) {
+        this.speakers = speakers;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
 
     public LocalDateTime getPublicDate() {
         return publicDate;

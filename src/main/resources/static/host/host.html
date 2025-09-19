@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 	<meta charset="UTF-8">
-	<title>User - OpenEvent</title>
+	<title>Host - OpenEvent</title>
 	<style>
 		body {
 			font-family: Arial, sans-serif;
@@ -26,18 +26,30 @@
 			font-weight: bold;
 			color: #28a745;
 		}
+		.host-features {
+			background-color: #f8f9fa;
+			padding: 20px;
+			border-radius: 5px;
+			margin: 20px 0;
+		}
 	</style>
 </head>
 <body>
-	<h1>Trang User</h1>
-<<<<<<< HEAD:src/main/resources/templates/user/user.html
-	<p>Xin chào USER.</p>
-	<p><a href="/templates/security/auth.html">Đăng xuất (xóa cookie trình duyệt hoặc đóng tab)</a></p>
-=======
-	<p>Xin chào <span class="current-role" id="currentRole">USER</span>.</p>
+	<h1>Trang Host</h1>
+	<p>Xin chào <span class="current-role" id="currentRole">HOST</span>.</p>
+	
+	<div class="host-features">
+		<h3>Tính năng Host:</h3>
+		<ul>
+			<li>Tạo và quản lý sự kiện</li>
+			<li>Xem thống kê sự kiện</li>
+			<li>Quản lý người tham gia</li>
+			<li>Chuyển đổi giữa User và Host</li>
+		</ul>
+	</div>
 	
 	<button class="role-switch" onclick="switchRole()" id="switchButton">
-		Chuyển thành Host
+		Chuyển thành User
 	</button>
 	
 	<p><a href="/security/auth.html">Đăng xuất (xóa cookie trình duyệt hoặc đóng tab)</a></p>
@@ -100,6 +112,5 @@
 				});
 		};
 	</script>
->>>>>>> quan:src/main/resources/static/user/user.html
 </body>
-</html> 
+</html>

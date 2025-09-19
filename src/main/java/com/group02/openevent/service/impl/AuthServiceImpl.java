@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
 		userRepo.save(user);
 
 		// Do NOT auto-login after registration; redirect to login page with success flag
-		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/login.html?registered=1");
+		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/security/login.html?registered=1");
 	}
 
 	@Override

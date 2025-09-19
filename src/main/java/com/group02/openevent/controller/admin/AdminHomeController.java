@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AdminHomeController {
 	@GetMapping("/admin")
 	public String adminHome() {
-		return "redirect:/admin.html";
+		return "redirect:/admin/admin.html";
 	}
 } 

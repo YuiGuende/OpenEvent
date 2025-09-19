@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class UserHomeController {
+
 	@GetMapping("/user")
 	public String userHome() {
-		return "redirect:/user.html";
+		return "redirect:/user/user.html";
 	}
 } 

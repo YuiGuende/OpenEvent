@@ -1,0 +1,18 @@
+<!-- FRAGMENT: Event Card (start) -->
+<!-- Reusable event card; fragment name: eventCard(event) -->
+<!-- Fields: event.id, event.title, event.date, event.location, event.tag, event.imageUrl -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="eventCard(event)">
+  <article class="card event-card">
+    <!-- TODO: Bind image via th:style="|background-image:url('${event.imageUrl}')|" -->
+    <div class="card-media event-thumb" role="img" th:aria-label="${event.title}"></div>
+    <div class="card-body">
+      <h3 class="card-title" th:text="${event.title}">Tên sự kiện</h3>
+      <p class="card-meta"><span th:text="${event.date}">20/09/2025</span> • <span th:text="${event.location}">HCM</span></p>
+      <div class="card-tags">
+        <span class="chip" th:text="${event.tag}">Music</span>
+      </div>
+    </div>
+  </article>
+</th:block>
+<!-- FRAGMENT: Event Card (end) -->
+

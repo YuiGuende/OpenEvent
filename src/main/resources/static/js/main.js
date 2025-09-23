@@ -177,3 +177,109 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('OpenEvent UI initialized successfully!');
 });
+
+// Hero Slider functionality
+(function(){
+    const track = document.getElementById('heroTrack');
+    if(!track) return;
+    
+    const prev = document.getElementById('heroPrev');
+    const next = document.getElementById('heroNext');
+    const slideBy = () => window.innerWidth; // mỗi lần lướt 1 slide
+
+    prev?.addEventListener('click', () =>
+        track.scrollBy({ left: -slideBy(), behavior: 'smooth' })
+    );
+    
+    next?.addEventListener('click', () =>
+        track.scrollBy({ left: slideBy(), behavior: 'smooth' })
+    );
+    
+    // Touch/swipe support for mobile
+    let startX = 0;
+    let isScrolling = false;
+    
+    track.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        isScrolling = false;
+    });
+    
+    track.addEventListener('touchmove', (e) => {
+        if (!isScrolling) {
+            const currentX = e.touches[0].clientX;
+            const diffX = startX - currentX;
+            
+            if (Math.abs(diffX) > 10) {
+                isScrolling = true;
+            }
+        }
+    });
+    
+    track.addEventListener('touchend', (e) => {
+        if (isScrolling) {
+            const endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+            
+            if (Math.abs(diffX) > 50) { // Minimum swipe distance
+                if (diffX > 0) {
+                    // Swipe left - go to next slide
+                    track.scrollBy({ left: slideBy(), behavior: 'smooth' });
+                } else {
+                    // Swipe right - go to previous slide
+                    track.scrollBy({ left: -slideBy(), behavior: 'smooth' });
+                }
+            }
+        }
+    });
+})();
+
+// Scroll detection for header blur effect
+(function(){
+    const onScroll = () => document.body.classList.toggle('has-scrolled', window.scrollY > 8);
+    onScroll(); 
+    window.addEventListener('scroll', onScroll);
+})();
+
+// Live & Recommendations interactions
+(function(){
+  // LIVE prev/next & filter by tag
+  const liveTrack = document.getElementById('liveTrack');
+  const livePrev  = document.getElementById('livePrev');
+  const liveNext  = document.getElementById('liveNext');
+  if(liveTrack){
+    const step = () => (liveTrack.querySelector('.live-card')?.getBoundingClientRect().width || 320) + 16;
+    livePrev?.addEventListener('click', ()=> liveTrack.scrollBy({left: -step()*2, behavior:'smooth'}));
+    liveNext?.addEventListener('click', ()=> liveTrack.scrollBy({left:  step()*2, behavior:'smooth'}));
+    document.querySelectorAll('.chip[data-tag]').forEach(ch=>{
+      ch.addEventListener('click', ()=>{
+        document.querySelectorAll('.chip[data-tag]').forEach(x=>x.classList.remove('is-active'));
+        ch.classList.add('is-active');
+        const tag = ch.dataset.tag;
+        liveTrack.querySelectorAll('.live-card').forEach(card=>{
+          const ok = tag==='all' || (card.dataset.tag||'').includes(tag);
+          card.style.display = ok ? '' : 'none';
+        });
+      });
+    });
+  }
+
+  // RECO carousel + tabs
+  const recoTrack = document.getElementById('recoTrack');
+  const recoPrev  = document.getElementById('recoPrev');
+  const recoNext  = document.getElementById('recoNext');
+  if(recoTrack){
+    const step = () => (recoTrack.querySelector('.reco-card')?.getBoundingClientRect().width || 240) + 14;
+    recoPrev?.addEventListener('click', ()=> recoTrack.scrollBy({left:-step()*2, behavior:'smooth'}));
+    recoNext?.addEventListener('click', ()=> recoTrack.scrollBy({left: step()*2, behavior:'smooth'}));
+    document.querySelectorAll('.chip[data-reco]').forEach(ch=>{
+      ch.addEventListener('click', ()=>{
+        document.querySelectorAll('.chip[data-reco]').forEach(x=>x.classList.remove('is-active'));
+        ch.classList.add('is-active');
+        const tab = ch.dataset.reco;
+        recoTrack.querySelectorAll('.reco-card').forEach(card=>{
+          card.style.display = (tab==='all' || (card.dataset.reason===tab)) ? '' : 'none';
+        });
+      });
+    });
+  }
+})();

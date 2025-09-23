@@ -1,0 +1,47 @@
+<!-- templates/fragments/footer.html -->
+<footer class="site-footer site-footer--dark" th:fragment="siteFooter()">
+    <div class="container footer-grid">
+        <div>
+            <img th:src="@{/img/logo.png}" alt="OpenEvent" style="height:36px" />
+            <p>
+                Nền tảng quản lý & tham gia sự kiện dành cho sinh viên FPT —
+                nhanh chóng, tiện lợi, kết nối cộng đồng.
+            </p>
+            <div class="socials">
+                <a href="#"><img th:src="@{/img/ic-fb.svg}" alt="Facebook"></a>
+                <a href="#"><img th:src="@{/img/ic-ig.svg}" alt="Instagram"></a>
+                <a href="#"><img th:src="@{/img/ic-yt.svg}" alt="YouTube"></a>
+            </div>
+        </div>
+        <div>
+            <h5>NAVIGATION</h5>
+            <ul class="list">
+                <li><a th:href="@{/events}">Sự kiện sắp tới</a></li>
+                <li><a th:href="@{/events}">Đăng ký tham gia</a></li>
+                <li><a th:href="@{/events}">Top Event</a></li>
+                <li><a th:href="@{/contact}">Liên hệ</a></li>
+            </ul>
+        </div>
+        <div>
+            <h5>CONTACTS</h5>
+            <ul class="list">
+                <li>Email: contact@openevent.vn</li>
+                <li>Phone: 0900 000 000</li>
+                <li>ĐH FPT HCM</li>
+            </ul>
+        </div>
+        <div>
+            <h5>Newsletter</h5>
+            <p class="muted">It has roots in a piece of classical Latin literature from 45.</p>
+            <div class="newsletter">
+                <input type="email" placeholder="Your email" />
+                <button class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom footer-accent">
+        <div class="container">
+            You should try to create event via our application for better perfomance
+        </div>
+    </div>
+</footer>

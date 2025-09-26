@@ -68,6 +68,11 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Event saveEvent(Event event) {
+        return eventRepo.save(event);
+    }
+
+    @Override
     public Page<Event> listEvents(EventType eventType, EventStatus status, Pageable pageable) {
         if (eventType != null && status != null) {
             return eventRepo.findByEventTypeAndStatus(eventType, status, pageable);

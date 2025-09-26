@@ -1,302 +1,208 @@
--- =========================================
--- openEvent - Full SQL Schema (SQL Server)
--- =========================================
-
-IF DB_ID('open_event') IS NULL
-    CREATE DATABASE open_event;
-GO
-USE open_event;
-GO
-
--- =============== RESET (optional) ===============
-IF OBJECT_ID('speaker_image', 'U') IS NOT NULL DROP TABLE speaker_image;
-IF OBJECT_ID('event_image', 'U') IS NOT NULL DROP TABLE event_image;
-IF OBJECT_ID('image', 'U') IS NOT NULL DROP TABLE image;
-IF OBJECT_ID('subscriber', 'U') IS NOT NULL DROP TABLE subscriber;
-IF OBJECT_ID('subscription_plan', 'U') IS NOT NULL DROP TABLE subscription_plan;
-IF OBJECT_ID('checkout', 'U') IS NOT NULL DROP TABLE checkout;
-IF OBJECT_ID('announcement', 'U') IS NOT NULL DROP TABLE announcement;
-IF OBJECT_ID('speaker', 'U') IS NOT NULL DROP TABLE speaker;
-IF OBJECT_ID('organization_member', 'U') IS NOT NULL DROP TABLE organization_member;
-IF OBJECT_ID('organization', 'U') IS NOT NULL DROP TABLE organization;
-IF OBJECT_ID('ticket', 'U') IS NOT NULL DROP TABLE ticket;
-IF OBJECT_ID('guest', 'U') IS NOT NULL DROP TABLE guest;
-IF OBJECT_ID('host', 'U') IS NOT NULL DROP TABLE host;
-IF OBJECT_ID('place', 'U') IS NOT NULL DROP TABLE place;
-IF OBJECT_ID('festival_event', 'U') IS NOT NULL DROP TABLE festival_event;
-IF OBJECT_ID('competition_event', 'U') IS NOT NULL DROP TABLE competition_event;
-IF OBJECT_ID('workshop_event', 'U') IS NOT NULL DROP TABLE workshop_event;
-IF OBJECT_ID('music_event', 'U') IS NOT NULL DROP TABLE music_event;
-IF OBJECT_ID('event', 'U') IS NOT NULL DROP TABLE event;
-IF OBJECT_ID('[user]', 'U') IS NOT NULL DROP TABLE [user];
-IF OBJECT_ID('admin', 'U') IS NOT NULL DROP TABLE admin;
-IF OBJECT_ID('account', 'U') IS NOT NULL DROP TABLE account;
-
--- =============== 1) Account & Profiles ===============
-CREATE TABLE user (
-  account_id    INT IDENTITY(1,1) PRIMARY KEY,
-  email         VARCHAR(100) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
-  role          VARCHAR(20) NOT NULL
-      CHECK (role IN ('ADMIN','USER','SPONSOR','TEACHER'))
+CREATE TABLE account
+(
+    account_id    INT AUTO_INCREMENT PRIMARY KEY,
+    email         VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role          ENUM('ADMIN','HOST','USER') NOT NULL
 );
 
-CREATE TABLE admin (
-  admin_id     INT IDENTITY(1,1) PRIMARY KEY,
-  account_id   INT NOT NULL UNIQUE,
-  name         VARCHAR(50) NOT NULL,
-  phone_number VARCHAR(20),
-  email        VARCHAR(100),
-  CONSTRAINT fk_admin_account FOREIGN KEY (account_id)
-      REFERENCES account(account_id) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE admin
+(
+    admin_id     INT AUTO_INCREMENT PRIMARY KEY,
+    email        VARCHAR(100),
+    name         VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(20),
+    account_id   INT         NOT NULL UNIQUE,
+    CONSTRAINT fk_admin_account FOREIGN KEY (account_id) REFERENCES account (account_id)
 );
 
-CREATE TABLE [guest] (
-  user_id      INT IDENTITY(1,1) PRIMARY KEY,
-  account_id   INT NOT NULL UNIQUE,
-  phone_number VARCHAR(20),
-  organization VARCHAR(150),
-  email        VARCHAR(100),
-  points       INT NOT NULL DEFAULT 0,
-  CONSTRAINT fk_user_account FOREIGN KEY (account_id)
-      REFERENCES account(account_id) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE event
+(
+    id               INT PRIMARY KEY,
+    event_type       VARCHAR(31)  NOT NULL,
+    benefits         TEXT,
+    created_at       DATETIME(6) NOT NULL,
+    description      TEXT,
+    ends_at          DATETIME(6) NOT NULL,
+    enroll_deadline  DATETIME(6) NOT NULL,
+    image_url        VARCHAR(255),
+    learning_objects TEXT,
+    points           INT,
+    public_date      DATETIME(6),
+    starts_at        DATETIME(6) NOT NULL,
+    status           ENUM('CANCEL','DRAFT','FINISH','ONGOING','PUBLIC') NOT NULL,
+    event_title      VARCHAR(150) NOT NULL,
+    competition_type VARCHAR(255),
+    prize_pool       VARCHAR(255),
+    rules            TEXT,
+    culture          VARCHAR(255),
+    highlight        TEXT,
+    materials_link   VARCHAR(255),
+    topic            VARCHAR(255),
+    parent_event_id  INT,
+    CONSTRAINT fk_event_parent FOREIGN KEY (parent_event_id) REFERENCES event (id)
 );
 
--- =============== 2) Event & Place ===============
-CREATE TABLE event (
-  event_id        INT IDENTITY(1,1) PRIMARY KEY,
-  parent_event_id INT NULL,
-  event_title     NVARCHAR(150) NOT NULL,
-  image_url       VARCHAR(255),
-  description     NVARCHAR(MAX),
-  public_date     DATETIME,
-  event_type      VARCHAR(50) NOT NULL DEFAULT 'OTHERS'
-      CHECK (event_type IN ('MUSIC','WORKSHOP','CONFERENCE','COMPETITION','FESTIVAL','OTHERS')),
-  enroll_deadline DATETIME NOT NULL,
-  starts_at       DATETIME NOT NULL,
-  ends_at         DATETIME NOT NULL,
-  created_at      DATETIME NOT NULL DEFAULT GETDATE(),
-  status          VARCHAR(20) NOT NULL DEFAULT 'DRAFT'
-      CHECK (status IN ('PUBLIC','DRAFT','ONGOING','CANCEL','FINISH')),
-  benefits        VARCHAR(MAX),
-  learning_objects VARCHAR(MAX),
-  points          INT,
-  CONSTRAINT fk_event_parent FOREIGN KEY (parent_event_id)
-    REFERENCES event(event_id)
-    ON DELETE NO ACTION 
-    ON UPDATE NO ACTION,
-  CONSTRAINT chk_event_time_order_1 CHECK (enroll_deadline <= starts_at),
-  CONSTRAINT chk_event_time_order_2 CHECK (starts_at < ends_at)
-);
-CREATE TABLE event_schedule (
-  schedule_id INT IDENTITY(1,1) PRIMARY KEY,
-  event_id    INT NOT NULL,
-  activity    NVARCHAR(255) NOT NULL,
-  start_time  DATETIME NOT NULL,
-  end_time    DATETIME NOT NULL,
-  CONSTRAINT fk_schedule_event FOREIGN KEY (event_id)
-      REFERENCES event(event_id) ON DELETE CASCADE
+CREATE TABLE event_place
+(
+    event_id INT NOT NULL,
+    place_id INT NOT NULL,
+    CONSTRAINT fk_eventplace_event FOREIGN KEY (event_id) REFERENCES event (id),
+    CONSTRAINT fk_eventplace_place FOREIGN KEY (place_id) REFERENCES place (place_id)
 );
 
-CREATE TABLE place (
-  place_id   INT IDENTITY(1,1) PRIMARY KEY,
-  building   VARCHAR(20) NOT NULL DEFAULT 'NONE'
-      CHECK (building IN ('ALPHA','BETA','NONE')),
-  place_name NVARCHAR(150) NOT NULL
+CREATE TABLE event_schedule
+(
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+    activity    VARCHAR(255),
+    end_time    DATETIME(6),
+    start_time  DATETIME(6),
+    event_id    INT NOT NULL,
+    CONSTRAINT fk_schedule_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
--- Specialized Event Tables
-CREATE TABLE music_event (
-  event_id   INT PRIMARY KEY,
-  FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
+CREATE TABLE event_sequence
+(
+    next_val BIGINT
 );
 
-CREATE TABLE workshop_event (
-  event_id       INT PRIMARY KEY,
-  topic          NVARCHAR(255),
-  materials_link NVARCHAR(255),
-  FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
-);
-
-CREATE TABLE competition_event (
-  event_id         INT PRIMARY KEY,
-  competition_type NVARCHAR(100),
-  rules            NVARCHAR(MAX),
-  prize_pool       NVARCHAR(255),
-  FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
-);
-
-CREATE TABLE festival_event (
-  event_id   INT PRIMARY KEY,
-  culture    NVARCHAR(100),
-  highlight  NVARCHAR(MAX),
-  FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE
-);
-
--- =============== 3) Organization & Membership ===============
-CREATE TABLE organization (
-  org_id         INT IDENTITY(1,1) PRIMARY KEY,
-  org_name       VARCHAR(150) NOT NULL UNIQUE,
-  leader_user_id INT NOT NULL,
-  member_amount  INT NOT NULL DEFAULT 1,
-  CONSTRAINT fk_org_leader_user FOREIGN KEY (leader_user_id)
-      REFERENCES [user](user_id) ON DELETE NO ACTION ON UPDATE CASCADE
-);
-
-CREATE TABLE organization_member (
-  org_id    INT NOT NULL,
-  user_id   INT NOT NULL,
-  joined_at DATETIME NOT NULL DEFAULT GETDATE(),
-  PRIMARY KEY (org_id, user_id),
-  CONSTRAINT fk_org_member_org FOREIGN KEY (org_id)
-      REFERENCES organization(org_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_org_member_user FOREIGN KEY (user_id)
-      REFERENCES [user](user_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- =============== 4) Host & Guest ===============
-CREATE TABLE host (
-  host_id     INT IDENTITY(1,1) PRIMARY KEY,
-  user_id     INT NOT NULL,
-  event_id    INT NOT NULL,
-  organize_id INT NULL,
-  created_at  DATETIME NOT NULL DEFAULT GETDATE(),
-  CONSTRAINT uq_host_user_event UNIQUE (user_id, event_id),
-  CONSTRAINT fk_host_user FOREIGN KEY (user_id)
-      REFERENCES [user](user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_host_event FOREIGN KEY (event_id)
-      REFERENCES event(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_host_organization FOREIGN KEY (organize_id)
-      REFERENCES organization(org_id) ON DELETE SET NULL ON UPDATE CASCADE
-);
-
-CREATE TABLE guest (
-  guest_id   INT IDENTITY(1,1) PRIMARY KEY,
-  user_id    INT NOT NULL,
-  event_id   INT NOT NULL,
-  join_at    DATETIME NOT NULL DEFAULT GETDATE(),
-  CONSTRAINT uq_guest_user_event UNIQUE (user_id, event_id),
-  CONSTRAINT fk_guest_user FOREIGN KEY (user_id)
-      REFERENCES [user](user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_guest_event FOREIGN KEY (event_id)
-      REFERENCES event(event_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- =============== 5) Ticket ===============
-CREATE TABLE ticket (
-  ticket_id  INT IDENTITY(1,1) PRIMARY KEY,
-  guest_id   INT NOT NULL UNIQUE,
-  event_id   INT NOT NULL,
-  place_id   INT NOT NULL UNIQUE,
-  type       VARCHAR(20) NOT NULL DEFAULT 'NORMAL'
-      CHECK (type IN ('NORMAL','VJP')),
-  price      DECIMAL(10,2) NOT NULL DEFAULT 0,
-  status     VARCHAR(20) NOT NULL DEFAULT 'ISSUED'
-      CHECK (status IN ('ISSUED','CANCELLED','USED')),
-  created_at DATETIME NOT NULL DEFAULT GETDATE(),
-  CONSTRAINT fk_ticket_guest FOREIGN KEY (guest_id)
-      REFERENCES guest(guest_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_ticket_event FOREIGN KEY (event_id)
-      REFERENCES event(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_ticket_place FOREIGN KEY (place_id)
-      REFERENCES place(place_id) ON DELETE NO ACTION ON UPDATE CASCADE
-);
-
--- =============== 6) Speaker ===============
-
-CREATE TABLE event_speaker (
-    event_speaker_id INT IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE event_speaker
+(
     event_id   INT NOT NULL,
     speaker_id INT NOT NULL,
-    role       NVARCHAR(50) NOT NULL,
-    note       NVARCHAR(255),
-    FOREIGN KEY (event_id) REFERENCES event(event_id) ON DELETE CASCADE,
-    FOREIGN KEY (speaker_id) REFERENCES speaker(speaker_id) ON DELETE CASCADE
-);
-CREATE TABLE speaker (
-    speaker_id INT IDENTITY(1,1) PRIMARY KEY,
-    name       NVARCHAR(100) NOT NULL,
-    image_url  NVARCHAR(255),
-	profile  NVARCHAR(255),
-    default_role VARCHAR(50) NOT NULL DEFAULT 'SPEAKER'
+    CONSTRAINT fk_eventspeaker_event FOREIGN KEY (event_id) REFERENCES event (id),
+    CONSTRAINT fk_eventspeaker_speaker FOREIGN KEY (speaker_id) REFERENCES speaker (speaker_id)
 );
 
--- =============== 7) Announcement ===============
-CREATE TABLE announcement (
-  announcement_id INT IDENTITY(1,1) PRIMARY KEY,
-  event_id        INT NOT NULL,
-  host_id         INT NULL,
-  message         VARCHAR(MAX) NOT NULL,
-  created_at      DATETIME NOT NULL DEFAULT GETDATE(),
-  CONSTRAINT fk_announcement_event FOREIGN KEY (event_id)
-      REFERENCES event(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_announcement_host FOREIGN KEY (host_id)
-      REFERENCES host(host_id) ON DELETE SET NULL ON UPDATE CASCADE
+CREATE TABLE organization
+(
+    org_id      INT AUTO_INCREMENT PRIMARY KEY,
+    address     VARCHAR(300),
+    created_at  DATETIME(6) NOT NULL,
+    description VARCHAR(1000),
+    email       VARCHAR(100),
+    org_name    VARCHAR(150) NOT NULL,
+    phone       VARCHAR(20),
+    updated_at  DATETIME(6),
+    website     VARCHAR(200)
 );
 
--- =============== 8) Checkout / Points ===============
-CREATE TABLE checkout (
-  checkout_id INT IDENTITY(1,1) PRIMARY KEY,
-  user_id     INT NOT NULL,
-  points_used INT NOT NULL DEFAULT 0,
-  created_at  DATETIME NOT NULL DEFAULT GETDATE(),
-  CONSTRAINT fk_checkout_user FOREIGN KEY (user_id)
-      REFERENCES [user](user_id) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE place
+(
+    place_id   INT AUTO_INCREMENT PRIMARY KEY,
+    building   ENUM('ALPHA','BETA','NONE') NOT NULL,
+    place_name VARCHAR(150) NOT NULL
 );
 
--- =============== 9) Subscription Plans & Subscribers ===============
-CREATE TABLE subscription_plan (
-  plan_id       INT IDENTITY(1,1) PRIMARY KEY,
-  name          VARCHAR(20) NOT NULL
-      CHECK (name IN ('BASIC','PRO')),
-  price         DECIMAL(10,2) NOT NULL DEFAULT 0,
-  duration_month INT NOT NULL,
-  status        VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
-      CHECK (status IN ('ACTIVE','EXPIRED')),
-  is_active     BIT NOT NULL DEFAULT 1,
-  created_at    DATETIME NOT NULL DEFAULT GETDATE()
+CREATE TABLE speaker
+(
+    speaker_id   INT AUTO_INCREMENT PRIMARY KEY,
+    default_role ENUM('ARTIST','MC','OTHER','PERFORMER','SINGER','SPEAKER') NOT NULL,
+    image_url    VARCHAR(255),
+    name         VARCHAR(100) NOT NULL,
+    profile      VARCHAR(255)
 );
 
-CREATE TABLE subscriber (
-  subscriber_id INT IDENTITY(1,1) PRIMARY KEY,
-  user_id       INT NOT NULL,
-  plan_id       INT NOT NULL,
-  created_at    DATETIME NOT NULL DEFAULT GETDATE(),
-  CONSTRAINT fk_subscriber_user FOREIGN KEY (user_id)
-      REFERENCES [user](user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_subscriber_plan FOREIGN KEY (plan_id)
-      REFERENCES subscription_plan(plan_id) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE ticket_type
+(
+    ticket_type_id INT AUTO_INCREMENT PRIMARY KEY,
+    name           VARCHAR(255),
+    price          DECIMAL(38, 2),
+    total_quantity INT,
+    event_id       INT NOT NULL,
+    CONSTRAINT fk_tickettype_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
--- =============== 10) Image system ===============
-CREATE TABLE image (
-  image_id   INT IDENTITY(1,1) PRIMARY KEY,
-  url        VARCHAR(255) NOT NULL,
-  caption    VARCHAR(200),
-  created_at DATETIME NOT NULL DEFAULT GETDATE()
+CREATE TABLE user
+(
+    user_id         INT AUTO_INCREMENT PRIMARY KEY,
+    email           VARCHAR(100),
+    organization_id BIGINT,
+    phone_number    VARCHAR(20),
+    points          INT NOT NULL,
+    account_id      INT NOT NULL UNIQUE,
+    CONSTRAINT fk_user_account FOREIGN KEY (account_id) REFERENCES account (account_id),
+    CONSTRAINT fk_user_org FOREIGN KEY (organization_id) REFERENCES organization (org_id)
 );
 
-CREATE TABLE event_image (
-  event_id   INT NOT NULL,
-  image_id   INT NOT NULL,
-  is_cover   BIT NOT NULL DEFAULT 0,
-  sort_order INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (event_id, image_id),
-  CONSTRAINT fk_event_image_event FOREIGN KEY (event_id)
-      REFERENCES event(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_event_image_image FOREIGN KEY (image_id)
-      REFERENCES image(image_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT uq_event_cover UNIQUE (event_id, is_cover)
+CREATE TABLE host
+(
+    host_id     INT AUTO_INCREMENT PRIMARY KEY,
+    created_at  DATETIME(6) NOT NULL,
+    organize_id INT,
+    event_id    INT NOT NULL,
+    user_id     INT NOT NULL,
+    CONSTRAINT fk_host_event FOREIGN KEY (event_id) REFERENCES event (id),
+    CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES user (user_id),
+    CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
 );
 
-CREATE TABLE speaker_image (
-  speaker_id INT NOT NULL,
-  image_id   INT NOT NULL,
-  is_primary BIT NOT NULL DEFAULT 0,
-  sort_order INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (speaker_id, image_id),
-  CONSTRAINT fk_speaker_image_speaker FOREIGN KEY (speaker_id)
-      REFERENCES speaker(speaker_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_speaker_image_image FOREIGN KEY (image_id)
-      REFERENCES image(image_id) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE ticket
+(
+    ticket_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ticket_type_id BIGINT NOT NULL,
+    user_id        BIGINT NOT NULL,
+    purchase_date  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_ticket_type FOREIGN KEY (ticket_type_id) REFERENCES ticket_type (ticket_type_id),
+    CONSTRAINT fk_ticket_user FOREIGN KEY (user_id) REFERENCES user (user_id),
+    UNIQUE KEY uq_user_ticket (user_id, ticket_type_id)
+);
+
+CREATE TABLE reports
+(
+    report_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id    BIGINT NOT NULL,
+    event_id   BIGINT NOT NULL,
+    content    TEXT   NOT NULL,
+    type       ENUM('SPAM','ABUSE','OTHER') NOT NULL,
+    status     ENUM('PENDING','SEEN','RESOLVED') DEFAULT 'PENDING',
+    seen       BOOLEAN  DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_report_user FOREIGN KEY (user_id) REFERENCES user (user_id),
+    CONSTRAINT fk_report_event FOREIGN KEY (event_id) REFERENCES event (id)
+);
+
+CREATE TABLE notifications
+(
+    notification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    receiver_id     BIGINT       NOT NULL,
+    sender_id       BIGINT,
+    message         VARCHAR(500) NOT NULL,
+    is_read         BOOLEAN  DEFAULT FALSE,
+    target_url      VARCHAR(255),
+    type            ENUM('REPORT','HOST_REQUEST','NOTIFICATION','USER_NOTIFICATION') NOT NULL,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES user (user_id),
+    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES user (user_id)
+);
+
+CREATE TABLE requests
+(
+    request_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    host_id    BIGINT NOT NULL,
+    event_id   BIGINT NOT NULL,
+    type       ENUM('EVENT_APPROVAL','OTHER') NOT NULL,
+    status     ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_request_host FOREIGN KEY (host_id) REFERENCES host (host_id),
+    CONSTRAINT fk_request_event FOREIGN KEY (event_id) REFERENCES event (id)
+);
+
+CREATE TABLE subscription_plans
+(
+    plan_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(100)   NOT NULL,
+    price           DECIMAL(10, 2) NOT NULL,
+    duration_months INT            NOT NULL
+);
+
+CREATE TABLE host_subscriptions
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    host_id    BIGINT NOT NULL,
+    plan_id    BIGINT NOT NULL,
+    start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    end_date   DATETIME,
+    CONSTRAINT fk_sub_host FOREIGN KEY (host_id) REFERENCES host (host_id),
+    CONSTRAINT fk_sub_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans (plan_id)
 );

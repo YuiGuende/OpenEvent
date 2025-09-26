@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details - OpenEvent</title>
+</head>
+<body>
+    <h1 id="eventTitle">Event Title</h1>
+    
+    <div id="eventInfo">
+        <p><strong>Date:</strong> <span id="eventDate">Event Date</span></p>
+        <p><strong>Location:</strong> <span id="eventLocation">Event Location</span></p>
+        <p><strong>Type:</strong> <span id="eventType">Event Type</span></p>
+        <p><strong>Description:</strong> <span id="eventDescription">Event Description</span></p>
+    </div>
+    
+    <button id="joinEventBtn" onclick="joinEvent()">Join Event</button>
+    
+    <p><a href="/">Back to Home</a></p>
+
+    <script>
+        let currentUser = null;
+        let eventId = null;
+
+        // Get event ID from URL
+        function getEventIdFromUrl() {
+            const path = window.location.pathname;
+            const parts = path.split('/');
+            return parts[parts.length - 1];
+        }
+
+        // Load event details based on ID
+        function loadEventDetails() {
+            eventId = getEventIdFromUrl();
+            
+            // Mock event data - in real app, this would come from API
+            const events = {
+                1: {
+                    title: "Music Festival 2025",
+                    date: "September 17, 2025",
+                    location: "Ho Chi Minh City",
+                    type: "Music",
+                    description: "Join us for an amazing music festival featuring top artists from around the world."
+                },
+                2: {
+                    title: "Tech Workshop 2025",
+                    date: "September 20, 2025",
+                    location: "Hanoi",
+                    type: "Workshop",
+                    description: "Learn the latest technologies and network with industry professionals."
+                },
+                3: {
+                    title: "Business Conference 2025",
+                    date: "September 22, 2025",
+                    location: "Da Nang",
+                    type: "Conference",
+                    description: "Connect with business leaders and discover new opportunities in the market."
+                }
+            };
+
+            const event = events[eventId];
+            if (event) {
+                document.getElementById('eventTitle').textContent = event.title;
+                document.getElementById('eventDate').textContent = event.date;
+                document.getElementById('eventLocation').textContent = event.location;
+                document.getElementById('eventType').textContent = event.type;
+                document.getElementById('eventDescription').textContent = event.description;
+            }
+        }
+
+        // Check if user is authenticated
+        function checkAuthentication() {
+            fetch('/api/current-user')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.authenticated) {
+                        currentUser = data;
+                        document.getElementById('joinEventBtn').textContent = 'Join Event';
+                    } else {
+                        document.getElementById('joinEventBtn').textContent = 'Login to Join';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking authentication:', error);
+                    document.getElementById('joinEventBtn').textContent = 'Login to Join';
+                });
+        }
+
+        // Handle join event button click
+        function joinEvent() {
+            if (currentUser) {
+                // User is logged in, redirect to registration form
+                window.location.href = '/event/' + eventId + '/register';
+            } else {
+                // User not logged in, redirect to login
+                window.location.href = '/login';
+            }
+        }
+
+        // Load page data
+        window.onload = function() {
+            loadEventDetails();
+            checkAuthentication();
+        };
+    </script>
+</body>
+</html>

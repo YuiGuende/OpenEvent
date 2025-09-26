@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for Event - OpenEvent</title>
+</head>
+<body>
+    <h1>Register for Event</h1>
+    
+    <div id="eventInfo">
+        <h2 id="eventTitle">Event Title</h2>
+        <p><strong>Date:</strong> <span id="eventDate">Event Date</span></p>
+        <p><strong>Location:</strong> <span id="eventLocation">Event Location</span></p>
+    </div>
+    
+    <form id="registrationForm">
+        <div>
+            <label for="fullName">Full Name:</label>
+            <input type="text" id="fullName" name="fullName" required>
+        </div>
+        
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" required>
+        </div>
+        
+        <div>
+            <label for="organization">Organization (Optional):</label>
+            <input type="text" id="organization" name="organization">
+        </div>
+        
+        <div>
+            <label for="notes">Additional Notes (Optional):</label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+        </div>
+        
+        <button type="submit" id="submitBtn">Register for Event</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <p><a href="/">Back to Home</a></p>
+
+    <script>
+        let currentUser = null;
+        let eventId = null;
+
+        // Get event ID from URL
+        function getEventIdFromUrl() {
+            const path = window.location.pathname;
+            const parts = path.split('/');
+            return parts[parts.length - 2]; // /event/{id}/register
+        }
+
+        // Load event details
+        function loadEventDetails() {
+            eventId = getEventIdFromUrl();
+            
+            const events = {
+                1: {
+                    title: "Music Festival 2025",
+                    date: "September 17, 2025",
+                    location: "Ho Chi Minh City"
+                },
+                2: {
+                    title: "Tech Workshop 2025",
+                    date: "September 20, 2025",
+                    location: "Hanoi"
+                },
+                3: {
+                    title: "Business Conference 2025",
+                    date: "September 22, 2025",
+                    location: "Da Nang"
+                }
+            };
+
+            const event = events[eventId];
+            if (event) {
+                document.getElementById('eventTitle').textContent = event.title;
+                document.getElementById('eventDate').textContent = event.date;
+                document.getElementById('eventLocation').textContent = event.location;
+            }
+        }
+
+        // Load current user info
+        function loadUserInfo() {
+            fetch('/api/current-user')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.authenticated) {
+                        currentUser = data;
+                        // Pre-fill form with user data
+                        document.getElementById('email').value = data.email;
+                    } else {
+                        // User not authenticated, redirect to login
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user info:', error);
+                    window.location.href = '/login';
+                });
+        }
+
+        // Handle form submission
+        function handleSubmit(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registering...';
+            
+            const formData = {
+                eventId: eventId,
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                organization: document.getElementById('organization').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            // Mock registration - in real app, this would call API
+            setTimeout(() => {
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: green; margin: 20px 0; padding: 10px; border: 1px solid green; background-color: #f0f8f0;">' +
+                    'Registration successful! You will receive a confirmation email shortly.' +
+                    '</div>';
+                
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register for Event';
+                
+                // Clear form
+                document.getElementById('registrationForm').reset();
+                if (currentUser) {
+                    document.getElementById('email').value = currentUser.email;
+                }
+            }, 2000);
+        }
+
+        // Load page data
+        window.onload = function() {
+            loadEventDetails();
+            loadUserInfo();
+        };
+
+        // Add form event listener
+        document.getElementById('registrationForm').addEventListener('submit', handleSubmit);
+    </script>
+</body>
+</html>

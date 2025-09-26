@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo sự kiện mới</title>
+    <link rel="stylesheet" th:href="@{/css/create-event.css}">
+    <link rel="stylesheet" th:href="@{/css/host.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <div class="header-left">
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+            <img class="logo-icon" th:src="@{/images/logo.png}" alt="Logo">
+            <span class="logo-text">Open.events</span>
+        </div>
+    </div>
+    <div class="header-center">
+        <div class="live-status">
+            <i class="fas fa-eye"></i>
+            <span>• Trực tiếp - Nhấp để gỡ bỏ</span>
+        </div>
+    </div>
+    <div class="header-right">
+        <button class="btn-view-homepage">
+            <i class="fas fa-external-link-alt"></i>
+            Xem trang chủ nhà tổ chức
+        </button>
+        <div class="user-avatar">DL</div>
+    </div>
+</header>
+
+<main class="create-event-main">
+    <!-- Sidebar Steps -->
+    <aside class="event-sidebar">
+        <div class="event-card">
+            <div class="event-card-header">
+                <div class="event-card-title">Event Title</div>
+                <div class="event-card-date">
+                    <i class="fas fa-calendar"></i> Tue, Nov 4, 2025, 10:00 AM
+                </div>
+            </div>
+            <div class="event-card-status">
+                <button class="event-status-btn">Draft <i class="fas fa-chevron-down"></i></button>
+            </div>
+        </div>
+        <div class="event-steps">
+            <div class="event-step active">
+                <span class="step-circle"><i class="fas fa-circle"></i></span>
+                <span class="step-title">Build event page</span>
+                <span class="step-desc">Add all of your event details and let attendees know what to expect</span>
+            </div>
+            <div class="event-step">
+                <span class="step-circle"></span>
+                <span class="step-title">Add tickets</span>
+            </div>
+            <div class="event-step">
+                <span class="step-circle"></span>
+                <span class="step-title">Publish</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="event-content">
+        <!-- Upload Photos -->
+        <div class="event-upload-card">
+            <button class="event-upload-btn" id="uploadBtn">
+                <i class="fas fa-upload"></i>
+                <span>Upload photos and video</span>
+            </button>
+            <input type="file" id="uploadInput" accept="image/*,video/*" style="display:none" multiple>
+            <div id="preview"></div>
+        </div>
+
+        <!-- Event Title -->
+        <div class="event-section">
+            <div class="event-section-header">
+                <h1 class="event-title">Event Title</h1>
+                <button class="event-section-add"><i class="fas fa-plus"></i></button>
+            </div>
+            <p class="event-desc">A short and sweet sentence about your event.</p>
+        </div>
+
+        <!-- Date and Location -->
+        <div class="event-section">
+            <div class="event-section-header">
+                <h2>Date and time</h2>
+                <h2>Location</h2>
+                <button class="event-section-add"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="event-date-location">
+                <div class="event-date">
+                    <i class="fas fa-calendar"></i>
+                    <span>Tuesday, November 4 · 10am - 12pm GMT+7</span>
+                </div>
+                <div class="event-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Enter a location</span>
+                    <a href="#" class="event-map-toggle">Hide map <i class="fas fa-chevron-up"></i></a>
+                    <div class="event-map-preview">
+                        <img src="/images/map.png" alt="Map" style="width:100%;border-radius:12px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add more sections -->
+        <div class="event-section event-additional">
+            <h2>Add more sections to your event page</h2>
+            <p class="event-desc">
+                Make your event stand out even more. These sections help attendees find information and answer their
+                questions - which means more ticket sales and less time answering messages.
+            </p>
+            <div class="event-add-list">
+                <div class="event-add-row">
+                    <span class="event-add-icon"><i class="fas fa-user"></i></span>
+                    <span class="event-add-label">Lineup <span class="event-add-new">New</span></span>
+                    <a href="#" class="event-add-examples">See examples</a>
+                    <button class="event-add-btn">Add</button>
+                </div>
+                <div class="event-add-row">
+                    <span class="event-add-icon"><i class="fas fa-calendar-alt"></i></span>
+                    <span class="event-add-label">Agenda</span>
+                    <a href="#" class="event-add-examples">See examples</a>
+                    <button class="event-add-btn">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview -->
+        <div class="event-section">
+            <div class="event-section-header">
+                <h2>Overview</h2>
+                <button class="event-section-add"><i class="fas fa-plus"></i></button>
+            </div>
+            <p class="event-desc">
+                Use this section to provide more details about your event. You can include things to know, venue
+                information, accessibility options—anything that will help people know what to expect.
+            </p>
+        </div>
+
+        <!-- Good to know -->
+        <div class="event-section">
+            <div class="event-section-header">
+                <h2>Good to know</h2>
+                <button class="event-section-add"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="event-highlights">
+                <div class="event-highlights-title">Highlights</div>
+                <button class="event-highlight-btn">+ Add Age info</button>
+                <button class="event-highlight-btn">+ Add Door Time</button>
+                <button class="event-highlight-btn">+ Add Parking info</button>
+            </div>
+            <div class="event-faq">
+                <div class="event-faq-title">Frequently asked questions</div>
+                <div class="event-faq-tip">
+                    <span class="event-faq-icon">💡</span>
+                    Events with FAQs have 8% more organic traffic
+                </div>
+                <a href="#" class="event-faq-add">+ Add question</a>
+            </div>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/create-event.js}"></script>
+
+</body>
+</html>

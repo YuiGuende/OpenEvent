@@ -61,7 +61,23 @@
       <img src="./img/ic-search.svg" th:src="@{/img/ic-search.svg}" alt="Search" />
     </button>
   </form>
-  <a class="btn btn-primary" href="login.html" th:href="@{/login}">Đăng nhập</a>
+  <!-- Login button - shown when not authenticated -->
+  <a class="btn btn-primary" href="/login" id="loginBtn" style="display: none;">Login</a>
+  
+  <!-- User menu - shown when authenticated -->
+  <div class="user-menu" id="userMenu" style="display: none;">
+    <div class="user-dropdown">
+      <button class="user-button" id="userButton">
+        Hello <span id="userName">User</span>
+      </button>
+      <div class="dropdown-content" id="dropdownContent">
+        <a href="#" onclick="switchRole()">Switch to <span id="switchRoleText">Host</span></a>
+        <a href="#" onclick="editProfile()">Edit Profile</a>
+        <a href="#" onclick="viewHistory()">View History</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </div>
+  </div>
 </div>
 
   </div>
@@ -146,9 +162,10 @@
           <img src="./img/event1.jpg" alt="Sự kiện HCM" />
         </div>
         <div class="card-body">
-          <h3 class="card-title">Tên sự kiện</h3>
+          <h3 class="card-title">Music Festival 2025</h3>
           <p class="card-meta">Ngày 17/09/2025 • HCM</p>
           <div class="card-tags"><span class="tag">Music</span></div>
+          <button class="btn-view-details" onclick="viewEventDetails(1)">View Details</button>
         </div>
       </article>
 
@@ -158,9 +175,10 @@
           <img src="./img/event2.jpg" alt="Sự kiện Hà Nội" />
         </div>
         <div class="card-body">
-          <h3 class="card-title">Tên sự kiện</h3>
+          <h3 class="card-title">Tech Workshop 2025</h3>
           <p class="card-meta">Ngày 20/09/2025 • Hà Nội</p>
           <div class="card-tags"><span class="tag">Workshop</span></div>
+          <button class="btn-view-details" onclick="viewEventDetails(2)">View Details</button>
         </div>
       </article>
 
@@ -170,9 +188,10 @@
           <img src="./img/event3.jpg" alt="Sự kiện Đà Nẵng" />
         </div>
         <div class="card-body">
-          <h3 class="card-title">Tên sự kiện</h3>
+          <h3 class="card-title">Business Conference 2025</h3>
           <p class="card-meta">Ngày 22/09/2025 • Đà Nẵng</p>
           <div class="card-tags"><span class="tag">Conference</span></div>
+          <button class="btn-view-details" onclick="viewEventDetails(3)">View Details</button>
         </div>
       </article>
     </div>
@@ -377,6 +396,175 @@
       <div class="container">It has roots in a piece of classical Latin literature from 45 BC, making it overs.</div>
     </div>
   </footer>
+
+  <style>
+    .user-menu {
+      position: relative;
+    }
+    
+    .user-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .user-button {
+      background: none;
+      border: 1px solid #007bff;
+      color: #007bff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .user-button:hover {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: white;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .dropdown-content a:last-child {
+      border-bottom: none;
+    }
+    
+    .user-dropdown:hover .dropdown-content {
+      display: block;
+    }
+    
+    .btn-view-details {
+      background-color: #ff6b35;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    
+    .btn-view-details:hover {
+      background-color: #e55a2b;
+    }
+  </style>
+
+  <script>
+    let currentUser = null;
+
+    function loadUserInfo() {
+      fetch('/api/current-user')
+        .then(response => response.json())
+        .then(data => {
+          if (data.authenticated) {
+            currentUser = data;
+            showUserMenu(data);
+          } else {
+            showLoginButton();
+          }
+        })
+        .catch(error => {
+          console.error('Error loading user info:', error);
+          showLoginButton();
+        });
+    }
+
+    function showUserMenu(userInfo) {
+      document.getElementById('loginBtn').style.display = 'none';
+      document.getElementById('userMenu').style.display = 'block';
+      document.getElementById('userName').textContent = userInfo.email.split('@')[0];
+      
+      // Update switch role text based on current role
+      const switchRoleText = document.getElementById('switchRoleText');
+      if (userInfo.role === 'USER') {
+        switchRoleText.textContent = 'Host';
+      } else if (userInfo.role === 'HOST') {
+        switchRoleText.textContent = 'User';
+      }
+    }
+
+    function showLoginButton() {
+      document.getElementById('loginBtn').style.display = 'block';
+      document.getElementById('userMenu').style.display = 'none';
+    }
+
+    function switchRole() {
+      fetch('/api/switch-role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.text())
+      .then(data => {
+        if (data === 'Role switched successfully') {
+          location.reload();
+        } else {
+          alert('Error: ' + data);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while switching role');
+      });
+    }
+
+    function editProfile() {
+      alert('Edit Profile functionality coming soon');
+    }
+
+    function viewHistory() {
+      alert('View History functionality coming soon');
+    }
+
+    function logout() {
+      fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.text())
+      .then(data => {
+        location.reload();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        location.reload();
+      });
+    }
+
+    function viewEventDetails(eventId) {
+      window.location.href = '/event/' + eventId;
+    }
+
+    // Load user info when page loads
+    window.onload = function() {
+      loadUserInfo();
+    };
+  </script>
 
   <script src="./js/main.js"></script>
 </body>

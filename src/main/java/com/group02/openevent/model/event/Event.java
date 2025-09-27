@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "event")
@@ -87,6 +89,10 @@ public class Event {
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
     private List<Place> places;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "event_id")
+    private Set<EventImage> eventImages;
 
     public Event() {
     }
@@ -266,6 +272,14 @@ public class Event {
 
     public void setSchedules(List<EventSchedule> schedules) {
         this.schedules = schedules;
+    }
+
+    public Set<EventImage> getEventImages() {
+        return eventImages;
+    }
+
+    public void setEventImages(Set<EventImage> eventImages) {
+        this.eventImages = eventImages;
     }
 
     @Override

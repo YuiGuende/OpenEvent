@@ -20,6 +20,6 @@ public interface EventService {
     WorkshopEvent saveWorkshopEvent(WorkshopEvent workshopEvent);
     Optional<Event> getEventById(Integer id);
     List<Event> getEventsByType(Class<? extends Event> eventType);
-
+    Event saveEvent(Event event);
     Page<Event> listEvents(EventType eventType, EventStatus status, Pageable pageable);
 }

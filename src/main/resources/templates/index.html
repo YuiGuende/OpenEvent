@@ -9,13 +9,11 @@
 </head>
 <body class="page-bg">
 <div th:replace="fragments/header :: siteHeader('home')"></div>
-
   <main>
     <section class="hero hero--slider">
       <div class="hero-track" id="heroTrack">
         <div class="hero-slide" th:style="|background-image: url('@{/img/banner1.jpg}')|">
           <div class="container hero-content">
-            <h1>Design Thinking Conference</h1>
             <div class="hero-actions">
               <a class="btn btn-primary" href="#">Get Ticket</a>
               <a class="btn btn-ghost" href="#">Explore More</a>
@@ -24,16 +22,16 @@
         </div>
         <div class="hero-slide" th:style="|background-image: url('@{/img/banner2.jpg}')|">
           <div class="container hero-content">
-            <h1>Sự kiện nổi bật tháng này</h1>
+
             <div class="hero-actions">
               <a class="btn btn-primary" href="#">Đăng ký</a>
               <a class="btn btn-ghost" href="#">Chi tiết</a>
             </div>
           </div>
         </div>
-        <div class="hero-slide" th:style="|background-image: url('@{/img/banner3.jpg}')|">
+        <div class="hero-slide" th:style="|background-image: url('@{/img/banner3.png}')|">
           <div class="container hero-content">
-            <h1>Kết nối cộng đồng FPT</h1>
+<!--            <h1>Kết nối cộng đồng FPT</h1>-->
             <div class="hero-actions">
               <a class="btn btn-primary" href="#">Tham gia ngay</a>
             </div>
@@ -44,6 +42,13 @@
       <!-- Nav buttons -->
       <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
       <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
+      
+      <!-- Progress indicator -->
+      <div class="hero-progress">
+        <div class="hero-progress-bar"></div>
+        <div class="hero-progress-bar"></div>
+        <div class="hero-progress-bar"></div>
+      </div>
     </section>
 
 
@@ -117,10 +122,13 @@
 
       <!-- (A) Your Events -->
       <section class="section">
-          <div class="container section--raised">
-              <div class="section-head">
-                  <h2>Your Events</h2>
-                  <a class="link" th:href="@{/events}">Xem tất cả</a>
+          <div class="container">
+              <div class="filter-row">
+                  <span class="filter-label">
+                      <span class="section-icon">📅</span>
+                      Your Events
+                  </span>
+                  <a class="link" th:href="@{/events}">View All</a>
               </div>
 
               <!-- Server data -->
@@ -130,13 +138,13 @@
                       <div class="card-body">
                           <h3 class="card-title" th:text="${ev.title}">Event title</h3>
                           <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">City • Date • Duration</p>
-                          <p class="event-org" th:text="${'Tổ chức: ' + ev.organizer}">Tổ chức: ...</p>
+                          <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
                           <!-- Capacity bar -->
                           <div class="capacity">
                               <div class="capacity-row">
-                                  <span th:text="${'Đã đăng ký: ' + ev.registered + ' / ' + ev.capacity}">Đã đăng ký: 0 / 0</span>
-                                  <span class="capacity-mini" th:text="${'Giá: ' + ev.priceLabel}">Giá: Free</span>
+                                  <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                  <span class="capacity-mini" th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                               </div>
                               <div class="bar">
                                   <div class="fill" th:style="|width: ${T(java.lang.Math).min(100,(ev.registered * 100) / (ev.capacity == 0 ? 1 : ev.capacity))}%|"></div>
@@ -161,11 +169,11 @@
                       <div class="card-body">
                           <h3 class="card-title">UI/UX Bootcamp</h3>
                           <p class="card-meta">Hà Nội • 20/09/2025 • 3h</p>
-                          <p class="event-org">Tổ chức: Design Lab</p>
+                          <p class="event-org">Organizer: Design Lab</p>
                           <div class="capacity">
                               <div class="capacity-row">
-                                  <span>Đã đăng ký: 90 / 150</span>
-                                  <span class="capacity-mini">Giá: Free</span>
+                                  <span>Registered: 90 / 150</span>
+                                  <span class="capacity-mini">Price: Free</span>
                               </div>
                               <div class="bar"><div class="fill" style="width:60%"></div></div>
                           </div>
@@ -228,8 +236,11 @@
       <!-- (B) Sự kiện đang diễn ra -->
       <section class="section live">
           <div class="container">
-              <div class="filter-row sticky">
-                  <span class="filter-label">Sự kiện đang diễn ra</span>
+              <div class="filter-row">
+                  <span class="filter-label">
+                      <span class="section-icon">🔴</span>
+                      Live Events
+                  </span>
                   <div class="chip-group">
                       <button class="chip is-active" data-filter="all">All</button>
                       <button class="chip" data-filter="Music">Music</button>
@@ -248,11 +259,11 @@
                       <div class="card-body">
                           <h3 class="card-title">Acoustic Night</h3>
                           <p class="card-meta">HCM • Hôm nay • 2h</p>
-                          <p class="event-org">Tổ chức: Music Club</p>
+                          <p class="event-org">Organizer: Music Club</p>
                           <div class="capacity">
                               <div class="capacity-row">
-                                  <span>Đã đăng ký: 216 / 300</span>
-                                  <span class="capacity-mini">Giá: Free</span>
+                                  <span>Registered: 216 / 300</span>
+                                  <span class="capacity-mini">Price: Free</span>
                               </div>
                               <div class="bar"><div class="fill" style="width:72%"></div></div>
                           </div>
@@ -270,11 +281,11 @@
                       <div class="card-body">
                           <h3 class="card-title">AI Workshop</h3>
                           <p class="card-meta">Hà Nội • Hôm nay • 1h</p>
-                          <p class="event-org">Tổ chức: GDSC</p>
+                          <p class="event-org">Organizer: GDSC</p>
                           <div class="capacity">
                               <div class="capacity-row">
-                                  <span>Đã đăng ký: 110 / 200</span>
-                                  <span class="capacity-mini">Giá: 50k</span>
+                                  <span>Registered: 110 / 200</span>
+                                  <span class="capacity-mini">Price: 50k</span>
                               </div>
                               <div class="bar"><div class="fill" style="width:55%"></div></div>
                           </div>
@@ -317,7 +328,10 @@
       <section class="section">
           <div class="container">
               <div class="filter-row">
-                  <span class="filter-label">Có thể quan tâm</span>
+                  <span class="filter-label">
+                      <span class="section-icon">💡</span>
+                      Recommended for You
+                  </span>
                   <div class="chip-group">
                       <button class="chip is-active" data-reco="for-you">For you</button>
                       <button class="chip" data-reco="near-you">Near you</button>
@@ -396,60 +410,111 @@
       </section>
 
 
-      <!-- (D) Vinh danh Top sinh viên xuất sắc -->
+      <!-- (D) Top sinh viên nổi bật -->
       <section class="section section-muted">
           <div class="container">
-              <div class="section-head">
-                  <h2>Vinh danh Top sinh viên xuất sắc</h2>
+              <div class="honor-frame">
+              <div class="filter-row honor-head">
+                  <span class="filter-label">
+                      <span class="section-icon">🏆</span>
+                      Top Outstanding Students
+                  </span>
               </div>
 
-              <div class="student-list">
-                  <!-- Item 1 -->
-                  <div class="student-item">
-                      <div class="student-avatar">
-                          <img th:src="@{/img/sinhvien1.webp}" alt="Nguyễn Văn A" />
-                      </div>
-                      <div class="student-info">
-                          <h3 class="student-name">Nguyễn Văn A</h3>
-                          <p class="student-meta">MSSV: SE150001</p>
-                      </div>
-                      <div class="student-events">
-                          <span class="badge">12 events</span>
+              <div class="podium-layout">
+                  <!-- Slot 2 - Rank 2 (Left, Medium height) -->
+                  <div class="podium-slot slot-second">
+                      <div class="slot-number">2</div>
+                      <div class="featured-card rank-2">
+                          <div class="rank-badge">🥈 No.2</div>
+
+                          <div class="card-header">
+                              <span class="card-title-small">OUTSTANDING</span>
+                          </div>
+
+                          <div class="student-image-container">
+                              <img th:src="@{/img/sinhvien3.jpg}" alt="Trần Lê Gia Khang" class="student-image" />
+                              <div class="background-graphic"></div>
+                          </div>
+
+                          <div class="card-footer">
+                              <div class="student-title">Brother</div>
+                              <div class="student-name">TRẦN LÊ GIA KHANG</div>
+                              <div class="event-stats">15 Events</div>
+                          </div>
+
+                          <div class="decorative-elements">
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                          </div>
                       </div>
                   </div>
 
-                  <!-- Item 2 -->
-                  <div class="student-item">
-                      <div class="student-avatar">
-                          <img th:src="@{/img/sinhvien1.webp}" alt="Trần Thị B" />
-                      </div>
-                      <div class="student-info">
-                          <h3 class="student-name">Trần Thị B</h3>
-                          <p class="student-meta">MSSV: AI160123</p>
-                      </div>
-                      <div class="student-events">
-                          <span class="badge">9 events</span>
+                  <!-- Slot 1 - Rank 1 (Center, Highest) -->
+                  <div class="podium-slot slot-first">
+                      <div class="slot-number">1</div>
+                      <div class="featured-card rank-1">
+                          <div class="rank-badge">🥇 No.1</div>
+                          
+                          <div class="card-header">
+                              <span class="card-title-small">OUTSTANDING</span>
+                          </div>
+                          
+                          <div class="student-image-container">
+                              <img th:src="@{/img/sinhvien2.jpg}" alt="Trần Lê Gia Khang" class="student-image" />
+                              <div class="background-graphic"></div>
+                          </div>
+                          
+                          <div class="card-footer">
+                              <div class="student-title">Brother</div>
+                              <div class="student-name">TRẦN LÊ GIA KHANG</div>
+                              <div class="event-stats">15 Events</div>
+                          </div>
+                          
+                          <div class="decorative-elements">
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                          </div>
                       </div>
                   </div>
 
-                  <!-- Item 3 -->
-                  <div class="student-item">
-                      <div class="student-avatar">
-                          <img th:src="@{/img/sinhvien1.webp}" alt="Lê Quốc C" />
-                      </div>
-                      <div class="student-info">
-                          <h3 class="student-name">Lê Quốc C</h3>
-                          <p class="student-meta">MSSV: BA170045</p>
-                      </div>
-                      <div class="student-events">
-                          <span class="badge">10 events</span>
+                  <!-- Slot 3 - Rank 3 (Right, Lowest) -->
+                  <div class="podium-slot slot-third">
+                      <div class="slot-number">3</div>
+                      <div class="featured-card rank-3">
+                          <div class="rank-badge">🥉 No.3</div>
+
+                          <div class="card-header">
+                              <span class="card-title-small">OUTSTANDING</span>
+                          </div>
+
+                          <div class="student-image-container">
+                              <img th:src="@{/img/sinhvien2.jpg}" alt="Trần Lê Gia Khang" class="student-image" />
+                              <div class="background-graphic"></div>
+                          </div>
+
+                          <div class="card-footer">
+                              <div class="student-title">Brother</div>
+                              <div class="student-name">TRẦN LÊ GIA KHANG</div>
+                              <div class="event-stats">15 Events</div>
+                          </div>
+
+                          <div class="decorative-elements">
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                              <span class="deco-icon">✕</span>
+                          </div>
                       </div>
                   </div>
+              </div>
               </div>
           </div>
       </section>
-
-
 
 
   </main>

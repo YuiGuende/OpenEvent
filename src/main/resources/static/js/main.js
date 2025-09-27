@@ -185,7 +185,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const prev = document.getElementById('heroPrev');
     const next = document.getElementById('heroNext');
+    const progressBars = document.querySelectorAll('.hero-progress-bar');
     const slideBy = () => window.innerWidth; // mỗi lần lướt 1 slide
+    
+    // Update progress indicator
+    function updateProgress() {
+        const scrollLeft = track.scrollLeft;
+        const slideWidth = slideBy();
+        const currentSlide = Math.round(scrollLeft / slideWidth);
+        
+        progressBars.forEach((bar, index) => {
+            bar.classList.toggle('active', index === currentSlide);
+        });
+    }
 
     prev?.addEventListener('click', () =>
         track.scrollBy({ left: -slideBy(), behavior: 'smooth' })
@@ -194,6 +206,12 @@ document.addEventListener('DOMContentLoaded', function() {
     next?.addEventListener('click', () =>
         track.scrollBy({ left: slideBy(), behavior: 'smooth' })
     );
+    
+    // Update progress on scroll
+    track.addEventListener('scroll', updateProgress);
+    
+    // Initialize progress
+    updateProgress();
     
     // Touch/swipe support for mobile
     let startX = 0;

@@ -7,6 +7,10 @@
 </head>
 <body>
 
+<!-- Header -->
+<header th:replace="~{fragments/header :: siteHeader('user')}"></header>
+
+<main class="page-main">
 <section class="section">
   <div class="container section--raised">
 
@@ -68,6 +72,10 @@
 
   </div>
 </section>
+</main>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/footer :: siteFooter()}"></footer>
 
 <script th:src="@{/js/main.js}"></script>
 </body>

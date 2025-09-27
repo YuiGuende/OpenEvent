@@ -9,7 +9,7 @@ public class Organization {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "org_id")
-	private Integer orgId;
+	private Long orgId;
 
 	@Column(name = "org_name", length = 150, nullable = false)
 	private String orgName;
@@ -35,11 +35,11 @@ public class Organization {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
-	public Integer getOrgId() {
+	public Long getOrgId() {
 		return orgId;
 	}
 
-	public void setOrgId(Integer orgId) {
+	public void setOrgId(Long orgId) {
 		this.orgId = orgId;
 	}
 

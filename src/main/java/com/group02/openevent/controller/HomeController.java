@@ -26,7 +26,7 @@ public class HomeController {
 
 	@GetMapping("/api/current-user")
 	public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession session) {
-		Integer accountId = (Integer) session.getAttribute("ACCOUNT_ID");
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
 		if (accountId == null) {
 			return ResponseEntity.ok(Map.of("authenticated", false));
 		}

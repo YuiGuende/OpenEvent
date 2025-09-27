@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - OpenEvent</title>
+</head>
+<body>
+    <h1>Payment Successful!</h1>
+    
+    <!-- Success Message -->
+    <div th:if="${successMessage}" style="color: green; margin: 20px 0; padding: 10px; border: 1px solid green; background-color: #e6ffe6;">
+        <p th:text="${successMessage}"></p>
+    </div>
+    
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" style="color: red; margin: 20px 0; padding: 10px; border: 1px solid red; background-color: #ffe6e6;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+    
+           <!-- Ticket Information -->
+           <div th:if="${ticket}" style="margin: 20px 0; padding: 15px; border: 2px solid #4CAF50; background-color: #f9f9f9;">
+               <h2>🎫 Your Ticket</h2>
+               <div style="margin: 10px 0;">
+                   <p><strong>Ticket ID:</strong> <span th:text="${ticket.ticketId}" style="font-family: monospace; font-weight: bold; color: #2196F3;"></span></p>
+                   <p><strong>Event:</strong> <span th:text="${ticket.ticketType.event.title}"></span></p>
+                   <p><strong>Ticket Type:</strong> <span th:text="${ticket.ticketType.name}"></span></p>
+                   <p><strong>Price:</strong> <span th:text="${ticket.ticketType.price}"> VND</span></p>
+                   <p><strong>Purchase Date:</strong> <span th:text="${#temporals.format(ticket.purchaseDate, 'dd/MM/yyyy HH:mm')}"></span></p>
+               </div>
+               
+               <div style="margin-top: 15px; padding: 10px; background-color: #e8f5e8; border-radius: 5px;">
+                   <p style="margin: 0; color: #2e7d32;"><strong>📱 Save this ticket!</strong> Show your ticket ID at the event entrance.</p>
+               </div>
+           </div>
+    
+    <div id="paymentInfo" th:unless="${ticket}">
+        <p>Thank you for your payment. Your registration has been confirmed.</p>
+        <div id="orderDetails">
+            <!-- Order details will be loaded here -->
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="/">Back to Home</a>
+        <a href="/api/payment/history" style="margin-left: 20px;">View Payment History</a>
+    </div>
+
+    <script>
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        async function loadOrderDetails() {
+            const orderCode = getQueryParam('orderCode');
+            if (!orderCode) {
+                document.getElementById('orderDetails').innerHTML = '<p>Order code not found</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/payment/status/${orderCode}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const orderDetails = document.getElementById('orderDetails');
+                    orderDetails.innerHTML = `
+                        <h3>Order Details</h3>
+                        <p><strong>Order Code:</strong> ${data.orderCode}</p>
+                        <p><strong>Status:</strong> ${data.orderStatus}</p>
+                        ${data.paymentStatus ? `<p><strong>Payment Status:</strong> ${data.paymentStatus}</p>` : ''}
+                    `;
+                } else {
+                    document.getElementById('orderDetails').innerHTML = `<p>Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                document.getElementById('orderDetails').innerHTML = '<p>Error loading order details</p>';
+            }
+        }
+
+        window.onload = loadOrderDetails;
+    </script>
+</body>
+</html>

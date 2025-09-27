@@ -22,9 +22,6 @@
                 <i class='bx bx-show' id="toggleLoginPw" style="cursor: pointer;"></i>
             </div>
 
-            <div class="forgot-link">
-                <a href="/security/register.html">Don't have an account? Register</a>
-            </div>
             <button type="submit" class="btn" id="loginBtn">Đăng nhập</button>
             <p>or login with social platforms</p>
             <div class="social-icons">
@@ -48,12 +45,9 @@
                 <i class='bx bx-show' id="toggleRegPw" style="cursor: pointer;"></i>
             </div>
 
-            <div class="input-box">
-                <select id="regRole" name="role">
-                    <option value="USER">USER</option>
-                    <option value="HOST">HOST</option>
-                </select>
-            </div>
+            <!-- Hidden input để gửi role mặc định là USER -->
+            <input type="hidden" name="role" value="USER">
+            
             <div class="input-box">
                 <input type="text" id="regPhone" name="phone" placeholder="Số điện thoại" required>
                 <i class='bx bx-phone'></i>
@@ -103,4 +97,4 @@
     })();
 </script>
 </body>
-</html> 
+</html>

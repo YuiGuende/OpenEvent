@@ -30,42 +30,118 @@
             return parts[parts.length - 1];
         }
 
-        // Load event details based on ID
+        // Load event details from API
         function loadEventDetails() {
             eventId = getEventIdFromUrl();
             
-            // Mock event data - in real app, this would come from API
-            const events = {
-                1: {
-                    title: "Music Festival 2025",
-                    date: "September 17, 2025",
-                    location: "Ho Chi Minh City",
-                    type: "Music",
-                    description: "Join us for an amazing music festival featuring top artists from around the world."
-                },
-                2: {
-                    title: "Tech Workshop 2025",
-                    date: "September 20, 2025",
-                    location: "Hanoi",
-                    type: "Workshop",
-                    description: "Learn the latest technologies and network with industry professionals."
-                },
-                3: {
-                    title: "Business Conference 2025",
-                    date: "September 22, 2025",
-                    location: "Da Nang",
-                    type: "Conference",
-                    description: "Connect with business leaders and discover new opportunities in the market."
-                }
-            };
+            fetch('/api/event/' + eventId)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Event not found');
+                    }
+                    return response.json();
+                })
+                .then(event => {
+                    // Display event information
+                    document.getElementById('eventTitle').textContent = event.title;
+                    
+                    // Format date
+                    const startDate = new Date(event.startsAt);
+                    const endDate = new Date(event.endsAt);
+                    const dateStr = startDate.toLocaleDateString('vi-VN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    const timeStr = startDate.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) + ' - ' + endDate.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    document.getElementById('eventDate').textContent = dateStr + ' (' + timeStr + ')';
+                    
+                    // Get location from event places (mock for now)
+                    document.getElementById('eventLocation').textContent = getEventLocation(event.type);
+                    
+                    document.getElementById('eventType').textContent = getEventTypeDisplay(event.type);
+                    document.getElementById('eventDescription').textContent = event.description;
+                    
+                    // Add additional info based on event type
+                    addEventSpecificInfo(event);
+                })
+                .catch(error => {
+                    console.error('Error loading event details:', error);
+                    document.getElementById('eventTitle').textContent = 'Event Not Found';
+                    document.getElementById('eventDescription').textContent = 'The requested event could not be found.';
+                });
+        }
 
-            const event = events[eventId];
-            if (event) {
-                document.getElementById('eventTitle').textContent = event.title;
-                document.getElementById('eventDate').textContent = event.date;
-                document.getElementById('eventLocation').textContent = event.location;
-                document.getElementById('eventType').textContent = event.type;
-                document.getElementById('eventDescription').textContent = event.description;
+        // Helper function to get event location (mock implementation)
+        function getEventLocation(eventType) {
+            const locations = {
+                'MusicEvent': 'Outdoor Stage, HCMC',
+                'WorkshopEvent': 'Workshop Room 1, Hanoi',
+                'CompetitionEvent': 'Main Auditorium, Da Nang',
+                'ConferenceEvent': 'Conference Hall, HCMC'
+            };
+            return locations[eventType] || 'TBA';
+        }
+
+        // Helper function to get display name for event type
+        function getEventTypeDisplay(eventType) {
+            const types = {
+                'MusicEvent': 'Music Festival',
+                'WorkshopEvent': 'Workshop',
+                'CompetitionEvent': 'Competition',
+                'FestivalEvent': 'Festival',
+                'ConferenceEvent': 'Conference'
+            };
+            return types[eventType] || eventType;
+        }
+
+        // Add event-specific information
+        function addEventSpecificInfo(event) {
+            const eventInfo = document.getElementById('eventInfo');
+            
+            // Add points if available
+            if (event.points) {
+                const pointsElement = document.createElement('p');
+                pointsElement.innerHTML = '<strong>Points:</strong> <span>' + event.points + '</span>';
+                eventInfo.appendChild(pointsElement);
+            }
+            
+            // Add event-specific details
+            if (event.type === 'MusicEvent' && event.genre) {
+                const genreElement = document.createElement('p');
+                genreElement.innerHTML = '<strong>Genre:</strong> <span>' + event.genre + '</span>';
+                eventInfo.appendChild(genreElement);
+            }
+            
+            if (event.type === 'WorkshopEvent' && event.skillLevel) {
+                const skillElement = document.createElement('p');
+                skillElement.innerHTML = '<strong>Skill Level:</strong> <span>' + event.skillLevel + '</span>';
+                eventInfo.appendChild(skillElement);
+            }
+            
+            if (event.type === 'CompetitionEvent' && event.prizePool) {
+                const prizeElement = document.createElement('p');
+                prizeElement.innerHTML = '<strong>Prize Pool:</strong> <span>' + event.prizePool + '</span>';
+                eventInfo.appendChild(prizeElement);
+            }
+            
+            if (event.type === 'ConferenceEvent' && event.conferenceType) {
+                const conferenceElement = document.createElement('p');
+                conferenceElement.innerHTML = '<strong>Conference Type:</strong> <span>' + event.conferenceType + '</span>';
+                eventInfo.appendChild(conferenceElement);
+            }
+            
+            if (event.type === 'ConferenceEvent' && event.maxAttendees) {
+                const attendeesElement = document.createElement('p');
+                attendeesElement.innerHTML = '<strong>Max Attendees:</strong> <span>' + event.maxAttendees + '</span>';
+                eventInfo.appendChild(attendeesElement);
             }
         }
 

@@ -11,7 +11,7 @@ public class Host {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "host_id")
-	private Integer hostId;
+    private Long hostId;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "user_id", nullable = false,
@@ -24,16 +24,16 @@ public class Host {
 	private Event event;
 
 	@Column(name = "organize_id")
-	private Integer organizeId;
+    private Long organizeId;
 
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
-	public Integer getHostId() {
+	public Long getHostId() {
 		return hostId;
 	}
 
-	public void setHostId(Integer hostId) {
+	public void setHostId(Long hostId) {
 		this.hostId = hostId;
 	}
 
@@ -53,11 +53,11 @@ public class Host {
 		this.event = event;
 	}
 
-	public Integer getOrganizeId() {
+	public Long getOrganizeId() {
 		return organizeId;
 	}
 
-	public void setOrganizeId(Integer organizeId) {
+	public void setOrganizeId(Long organizeId) {
 		this.organizeId = organizeId;
 	}
 

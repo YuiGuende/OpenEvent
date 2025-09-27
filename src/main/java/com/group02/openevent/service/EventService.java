@@ -19,6 +19,9 @@ public interface EventService {
     FestivalEvent saveFestivalEvent(FestivalEvent festivalEvent);
     WorkshopEvent saveWorkshopEvent(WorkshopEvent workshopEvent);
     Optional<Event> getEventById(Integer id);
+
+    Optional<Event> getEventById(Long id);
+
     List<Event> getEventsByType(Class<? extends Event> eventType);
     Event saveEvent(Event event);
     Page<Event> listEvents(EventType eventType, EventStatus status, Pageable pageable);

@@ -18,7 +18,7 @@ public class CommonController {
 
 	@PostMapping("/api/switch-role")
 	public ResponseEntity<String> switchRole(HttpSession session) {
-		Integer accountId = (Integer) session.getAttribute("ACCOUNT_ID");
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
 		if (accountId == null) {
 			return ResponseEntity.badRequest().body("Not logged in");
 		}

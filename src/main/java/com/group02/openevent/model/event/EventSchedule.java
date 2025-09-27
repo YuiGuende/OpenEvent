@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public class EventSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer scheduleId;
+    private Long scheduleId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
@@ -21,7 +21,7 @@ public class EventSchedule {
     public EventSchedule() {
     }
 
-    public EventSchedule(Integer scheduleId, Event event, String activity, LocalDateTime startTime, LocalDateTime endTime) {
+    public EventSchedule(Long scheduleId, Event event, String activity, LocalDateTime startTime, LocalDateTime endTime) {
         this.scheduleId = scheduleId;
         this.event = event;
         this.activity = activity;
@@ -37,11 +37,11 @@ public class EventSchedule {
     }
     // Getter & Setter
 
-    public Integer getScheduleId() {
+    public Long getScheduleId() {
         return scheduleId;
     }
 
-    public void setScheduleId(Integer scheduleId) {
+    public void setScheduleId(Long scheduleId) {
         this.scheduleId = scheduleId;
     }
 

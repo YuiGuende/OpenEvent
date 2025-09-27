@@ -9,7 +9,7 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "account_id")
-	private Integer accountId;
+	private Long accountId;
 
 	@Column(name = "email", nullable = false, unique = true, length = 100)
 	private String email;
@@ -21,11 +21,11 @@ public class Account {
 	@Column(name = "role", nullable = false, length = 20)
 	private Role role;
 
-	public Integer getAccountId() {
+	public Long getAccountId() {
 		return accountId;
 	}
 
-	public void setAccountId(Integer accountId) {
+	public void setAccountId(Long accountId) {
 		this.accountId = accountId;
 	}
 

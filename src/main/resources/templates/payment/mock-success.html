@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Payment Success - OpenEvent</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            text-align: center;
+        }
+        .success-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #4CAF50;
+        }
+        .success-icon {
+            font-size: 64px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .success-title {
+            color: #4CAF50;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .success-message {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .mock-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeaa7;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            background-color: #2196F3;
+            color: white;
+        }
+        .button:hover {
+            background-color: #1976D2;
+            color: white;
+            text-decoration: none;
+        }
+        .auto-redirect {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="mock-notice">
+            <strong>⚠️ Development Mode</strong><br>
+            This is a mock payment success page for development testing.
+        </div>
+        
+        <div class="success-icon">✅</div>
+        <h1 class="success-title">Payment Successful!</h1>
+        
+        <div class="success-message">
+            <p>Your payment has been processed successfully.</p>
+            <p><strong>Order Code:</strong> <span id="orderCode">Loading...</span></p>
+        </div>
+        
+        <a href="/" class="button">Back to Home</a>
+        
+        <div class="auto-redirect">
+            Redirecting to success page in <span id="countdown">5</span> seconds...
+        </div>
+    </div>
+
+    <script>
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+        
+        function loadOrderDetails() {
+            const orderCode = getQueryParam('orderCode');
+            if (orderCode) {
+                document.getElementById('orderCode').textContent = orderCode;
+            }
+        }
+        
+        function startCountdown() {
+            let countdown = 5;
+            const countdownElement = document.getElementById('countdown');
+            
+            const timer = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    // Redirect to success page
+                    const orderCode = getQueryParam('orderCode');
+                    window.location.href = '/payment/success?orderCode=' + orderCode;
+                }
+            }, 1000);
+        }
+        
+        window.onload = function() {
+            loadOrderDetails();
+            startCountdown();
+        };
+    </script>
+</body>
+</html>

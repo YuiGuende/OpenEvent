@@ -2,10 +2,9 @@
     <div class="container header-inner">
         <!-- Logo -->
         <a class="logo" href="index.html" th:href="@{/}">
-            <img src="static/img/logo.png" th:src="@{/img/logo.png}" alt="OpenEvent" />
+            <img src="static/img/logo.png" th:src="@{/img/logo1.png}" alt="OpenEvent" />
             <span>OpenEvent</span>
         </a>
-
         <!-- Navigation -->
         <nav class="nav">
             <a href="index.html" th:href="@{/}" class="nav-link"
@@ -23,7 +22,6 @@
             <a href="contact.html" th:href="@{/contact}" class="nav-link"
                th:classappend="${page == 'contact'} ? ' is-active'">Contact</a>
         </nav>
-
         <!-- Actions -->
         <div class="user-actions">
             <a class="btn btn-ghost" href="create-event.html" th:href="@{/events?create=true}">Tạo sự kiện</a>

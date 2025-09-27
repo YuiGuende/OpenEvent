@@ -1,10 +1,13 @@
 package com.group02.openevent.controller.event;
 
+import com.group02.openevent.model.dto.MusicEventDetailDTO;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import com.group02.openevent.service.impl.CloudinaryServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@RestController
+@Controller
 @RequestMapping("/api/events")
 public class EventController {
 
@@ -60,6 +63,7 @@ public class EventController {
     public Optional<Event> getEvent(@PathVariable Integer id) {
         return eventService.getEventById(id);
     }
+
 
     // GET - get event by type
     @GetMapping("/type/{type}")

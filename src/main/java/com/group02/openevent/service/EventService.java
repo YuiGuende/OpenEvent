@@ -1,6 +1,7 @@
 package com.group02.openevent.service;
 
 
+import com.group02.openevent.model.dto.MusicEventDetailDTO;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.MusicEvent;

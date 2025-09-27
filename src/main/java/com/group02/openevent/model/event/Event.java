@@ -26,7 +26,7 @@ public class Event {
             strategy = GenerationType.SEQUENCE,
             generator = "event_sequence"
     )
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "parent_event_id")
@@ -49,7 +49,7 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false, insertable = false, updatable = false)
-    private EventType eventType = EventType.OTHERS;
+    private EventType eventType = EventType.Others;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
@@ -137,11 +137,11 @@ public class Event {
         this.publicDate = publicDate;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

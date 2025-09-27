@@ -4,7 +4,6 @@ import com.group02.openevent.model.enums.EventType;
 
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
-import com.group02.openevent.model.event.EventSchedule;
 import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
@@ -59,6 +58,11 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Optional<Event> getEventById(Integer id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Event> getEventById(Long id) {
         return eventRepo.findById(id);
     }
 

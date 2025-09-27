@@ -3,7 +3,7 @@ package com.group02.openevent.model.event;
 import jakarta.persistence.*;
 
 @Entity
-@DiscriminatorValue("FESTIVAL")
+@DiscriminatorValue("FestivalEvent")
 public class FestivalEvent extends Event {
 
     private String culture;

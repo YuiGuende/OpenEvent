@@ -89,7 +89,7 @@ CREATE TABLE event
     -- Thời gian thay đổi trạng thái
     created_at       DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     draft_at         DATETIME(6),
-    public_at        DATETIME(6),
+    public_date      DATETIME(6),
     ongoing_at       DATETIME(6),
     finish_at        DATETIME(6),
     cancel_at        DATETIME(6),
@@ -176,17 +176,10 @@ CREATE TABLE event_image
     CONSTRAINT fk_eventimage_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
 );
 
-CREATE TABLE ticket_type
-(
-    ticket_type_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name           VARCHAR(255),
-    price          DECIMAL(38, 2),
-    total_quantity INT,
-    event_id       BIGINT NOT NULL,
-    CONSTRAINT fk_tickettype_event FOREIGN KEY (event_id) REFERENCES event (id)
-);
+-- ticket_type table đã được thay thế bằng trường ticket_type_name trong bảng tickets
+-- Điều này đơn giản hóa cấu trúc và loại bỏ sự phức tạp không cần thiết
 
--- 4. Host và liên quan
+-- 4. Host và Guest (mối quan hệ User-Event)
 CREATE TABLE host
 (
     host_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -197,6 +190,19 @@ CREATE TABLE host
     CONSTRAINT fk_host_event FOREIGN KEY (event_id) REFERENCES event (id),
     CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES user (user_id),
     CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
+);
+
+-- Bảng event_guests: mối quan hệ User tham gia Event (Guest)
+CREATE TABLE event_guests
+(
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    event_id BIGINT NOT NULL,
+    joined_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    status ENUM('ACTIVE', 'LEFT', 'REMOVED') NOT NULL DEFAULT 'ACTIVE',
+    CONSTRAINT fk_eventguest_user FOREIGN KEY (user_id) REFERENCES user (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_eventguest_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
+    UNIQUE KEY UK_user_event_guest (user_id, event_id)
 );
 
 CREATE TABLE host_subscriptions
@@ -210,27 +216,21 @@ CREATE TABLE host_subscriptions
     CONSTRAINT fk_sub_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans (plan_id)
 );
 
--- 5. Ticket và các bảng liên quan
-CREATE TABLE ticket
-(
-    ticket_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    ticket_type_id BIGINT NOT NULL,
-    user_id        BIGINT NOT NULL,
-    purchase_date  DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_ticket_type FOREIGN KEY (ticket_type_id) REFERENCES ticket_type (ticket_type_id),
-    CONSTRAINT fk_ticket_user_old FOREIGN KEY (user_id) REFERENCES user (user_id),
-    UNIQUE KEY uq_user_ticket (user_id, ticket_type_id)
-);
+-- 5. Ticket và các bảng liên quan (Đã được thay thế bằng bảng tickets mới)
+-- Các bảng cũ: ticket, ticket_type đã được thay thế bằng bảng tickets với trường ticket_type_name
 
--- 6. Payment and Orders (PayOS Integration)
-CREATE TABLE orders
+-- 6. Payment and Tickets (PayOS Integration)
+-- Bảng tickets thay thế cho bảng orders cũ, tích hợp thông tin vé trực tiếp
+-- price: Giá vé (chỉ có 1 giá duy nhất)
+-- ticket_type_name: Tên loại vé (thay thế cho bảng ticket_type riêng biệt)
+-- Constraint: 1 user chỉ được đặt 1 vé cho mỗi event (UNIQUE KEY UK_user_event)
+CREATE TABLE tickets
 (
-    order_id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ticket_id               BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id                 BIGINT NOT NULL,
     event_id                BIGINT NOT NULL,
-    order_code              VARCHAR(50) NOT NULL,
-    amount                  DECIMAL(10,2) NOT NULL,
-    currency                VARCHAR(3) NOT NULL DEFAULT 'VND',
+    ticket_code             VARCHAR(50) NOT NULL,
+    price                   DECIMAL(10,2) NOT NULL,
     status                  ENUM('PENDING','PAID','CANCELLED','REFUNDED','EXPIRED') NOT NULL DEFAULT 'PENDING',
     description             VARCHAR(500) DEFAULT NULL,
     participant_name        VARCHAR(100) DEFAULT NULL,
@@ -238,17 +238,22 @@ CREATE TABLE orders
     participant_phone       VARCHAR(20) DEFAULT NULL,
     participant_organization VARCHAR(150) DEFAULT NULL,
     notes                   VARCHAR(1000) DEFAULT NULL,
-    created_at              DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    ticket_type_name        VARCHAR(255) DEFAULT NULL,
+    purchase_date           DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at              DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
-    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES user (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_order_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE KEY UK_order_code (order_code)
+    CONSTRAINT fk_ticket_user FOREIGN KEY (user_id) REFERENCES user (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_ticket_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY UK_ticket_code (ticket_code),
+    UNIQUE KEY UK_user_event (user_id, event_id)
 );
 
+-- Bảng payments liên kết với tickets thay vì orders
+-- Mỗi ticket chỉ có một payment tương ứng (1:1 relationship)
+-- amount trong payments = price trong tickets (đồng bộ giá trị)
 CREATE TABLE payments
 (
     payment_id              BIGINT AUTO_INCREMENT PRIMARY KEY,
-    order_id                BIGINT NOT NULL,
+    ticket_id               BIGINT NOT NULL,
     payos_payment_id        BIGINT DEFAULT NULL,
     payment_link_id         VARCHAR(100) DEFAULT NULL,
     checkout_url            VARCHAR(500) DEFAULT NULL,
@@ -265,11 +270,11 @@ CREATE TABLE payments
     payos_signature         VARCHAR(500) DEFAULT NULL,
     created_at              DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at              DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
-    CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES orders (order_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE KEY UK_payment_order (order_id)
+    CONSTRAINT fk_payment_ticket FOREIGN KEY (ticket_id) REFERENCES tickets (ticket_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY UK_payment_ticket (ticket_id)
 );
 
--- Note: Using existing ticket and ticket_type tables instead of tickets table
+-- Migration completed: Order -> Ticket refactor
 
 -- 7. Reports / Notifications / Requests
 CREATE TABLE reports
@@ -312,23 +317,27 @@ CREATE TABLE requests
     CONSTRAINT fk_request_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
--- 8. Indexes for Payment Tables (Performance Optimization)
-CREATE INDEX idx_orders_user_status ON orders (user_id, status);
-CREATE INDEX idx_orders_event_status ON orders (event_id, status);
-CREATE INDEX idx_orders_status ON orders (status);
-CREATE INDEX idx_orders_created_at ON orders (created_at);
+-- 8. Indexes for Ticket and Payment Tables (Performance Optimization)
+CREATE INDEX idx_tickets_user_status ON tickets (user_id, status);
+CREATE INDEX idx_tickets_event_status ON tickets (event_id, status);
+CREATE INDEX idx_tickets_status ON tickets (status);
+CREATE INDEX idx_tickets_purchase_date ON tickets (purchase_date);
+CREATE INDEX idx_tickets_ticket_code ON tickets (ticket_code);
+-- Index cho constraint UK_user_event đã được tự động tạo
 
+-- Indexes for Event Guests (Performance Optimization)
+CREATE INDEX idx_eventguests_user_id ON event_guests (user_id);
+CREATE INDEX idx_eventguests_event_id ON event_guests (event_id);
+CREATE INDEX idx_eventguests_status ON event_guests (status);
+CREATE INDEX idx_eventguests_joined_at ON event_guests (joined_at);
+-- Index cho constraint UK_user_event_guest đã được tự động tạo
+
+CREATE INDEX idx_payments_ticket_id ON payments (ticket_id);
 CREATE INDEX idx_payments_status ON payments (status);
 CREATE INDEX idx_payments_payos_id ON payments (payos_payment_id);
 CREATE INDEX idx_payments_link_id ON payments (payment_link_id);
 CREATE INDEX idx_payments_expired_at ON payments (expired_at);
 CREATE INDEX idx_payments_status_created ON payments (status, created_at);
-
--- 9. Indexes for Ticket Tables (Performance Optimization)
-CREATE INDEX idx_ticket_user_id ON ticket (user_id);
-CREATE INDEX idx_ticket_type_id ON ticket (ticket_type_id);
-CREATE INDEX idx_ticket_purchase_date ON ticket (purchase_date);
-CREATE INDEX idx_tickettype_event_id ON ticket_type (event_id);
 
 -- 10. Indexes for Event Images Table (Performance Optimization)
 CREATE INDEX idx_eventimage_event_id ON event_image (event_id);

@@ -1,30 +1,32 @@
-package com.group02.openevent.dto.order;
+package com.group02.openevent.dto.ticket;
 
 import java.math.BigDecimal;
 
-public class CreateOrderRequest {
+public class CreateTicketRequest {
     private Long eventId;
-    private BigDecimal amount;
+    private BigDecimal price;
     private String description;
     private String participantName;
     private String participantEmail;
     private String participantPhone;
     private String participantOrganization;
     private String notes;
+    private String ticketTypeName;
 
-    public CreateOrderRequest() {}
+    public CreateTicketRequest() {}
 
-    public CreateOrderRequest(Long eventId, BigDecimal amount, String description, String participantName, 
-                             String participantEmail, String participantPhone, 
-                             String participantOrganization, String notes) {
+    public CreateTicketRequest(Long eventId, BigDecimal price, String description, 
+                             String participantName, String participantEmail, String participantPhone, 
+                             String participantOrganization, String notes, String ticketTypeName) {
         this.eventId = eventId;
-        this.amount = amount;
+        this.price = price;
         this.description = description;
         this.participantName = participantName;
         this.participantEmail = participantEmail;
         this.participantPhone = participantPhone;
         this.participantOrganization = participantOrganization;
         this.notes = notes;
+        this.ticketTypeName = ticketTypeName;
     }
 
     // Getters and Setters
@@ -36,12 +38,13 @@ public class CreateOrderRequest {
         this.eventId = eventId;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public String getDescription() {
@@ -90,5 +93,13 @@ public class CreateOrderRequest {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getTicketTypeName() {
+        return ticketTypeName;
+    }
+
+    public void setTicketTypeName(String ticketTypeName) {
+        this.ticketTypeName = ticketTypeName;
     }
 }

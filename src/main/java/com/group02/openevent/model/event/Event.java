@@ -79,7 +79,7 @@ public  class Event {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "place_id"))
+            inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)

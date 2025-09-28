@@ -3,31 +3,31 @@ package com.group02.openevent.model.dto;
 import com.group02.openevent.model.enums.Role;
 
 public class AuthResponse {
-	private Integer accountId;
+	private Long accountId;
 	private String email;
 	private Role role;
 	private String redirectPath;
 
 	public AuthResponse() {}
 
-	public AuthResponse(Integer accountId, String email, Role role) {
+	public AuthResponse(Long accountId, String email, Role role) {
 		this.accountId = accountId;
 		this.email = email;
 		this.role = role;
 	}
 
-	public AuthResponse(Integer accountId, String email, Role role, String redirectPath) {
+	public AuthResponse(Long accountId, String email, Role role, String redirectPath) {
 		this.accountId = accountId;
 		this.email = email;
 		this.role = role;
 		this.redirectPath = redirectPath;
 	}
 
-	public Integer getAccountId() {
+	public Long getAccountId() {
 		return accountId;
 	}
 
-	public void setAccountId(Integer accountId) {
+	public void setAccountId(Long accountId) {
 		this.accountId = accountId;
 	}
 

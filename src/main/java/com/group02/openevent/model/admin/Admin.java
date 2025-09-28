@@ -9,7 +9,7 @@ public class Admin {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "admin_id")
-	private Integer adminId;
+	private Long adminId;
 
 	@OneToOne(optional = false)
 	@JoinColumn(name = "account_id", nullable = false, unique = true,
@@ -25,11 +25,11 @@ public class Admin {
 	@Column(name = "email", length = 100)
 	private String email;
 
-	public Integer getAdminId() {
+	public Long getAdminId() {
 		return adminId;
 	}
 
-	public void setAdminId(Integer adminId) {
+	public void setAdminId(Long adminId) {
 		this.adminId = adminId;
 	}
 

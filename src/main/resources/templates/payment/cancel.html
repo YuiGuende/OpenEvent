@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Cancelled - OpenEvent</title>
+</head>
+<body>
+    <h1>Payment Cancelled</h1>
+    <div id="paymentInfo">
+        <p>Your payment has been cancelled. You can try again later.</p>
+        <div id="orderDetails">
+            <!-- Order details will be loaded here -->
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="/">Back to Home</a>
+        <button onclick="retryPayment()" style="margin-left: 20px;">Retry Payment</button>
+    </div>
+
+    <script>
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        async function loadOrderDetails() {
+            const orderCode = getQueryParam('orderCode');
+            if (!orderCode) {
+                document.getElementById('orderDetails').innerHTML = '<p>Order code not found</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/payment/status/${orderCode}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const orderDetails = document.getElementById('orderDetails');
+                    orderDetails.innerHTML = `
+                        <h3>Order Details</h3>
+                        <p><strong>Order Code:</strong> ${data.orderCode}</p>
+                        <p><strong>Status:</strong> ${data.orderStatus}</p>
+                    `;
+                } else {
+                    document.getElementById('orderDetails').innerHTML = `<p>Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                document.getElementById('orderDetails').innerHTML = '<p>Error loading order details</p>';
+            }
+        }
+
+        function retryPayment() {
+            const orderCode = getQueryParam('orderCode');
+            if (orderCode) {
+                // Redirect to event registration page or create new payment
+                window.location.href = '/';
+            }
+        }
+
+        window.onload = loadOrderDetails;
+    </script>
+</body>
+</html>

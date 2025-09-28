@@ -1,65 +1,65 @@
-package com.group02.openevent.dto.order;
+package com.group02.openevent.dto.ticket;
 
-import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.ticket.TicketStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public class OrderResponse {
-    private Long orderId;
-    private String orderCode;
+public class TicketResponse {
+    private Long ticketId;
+    private String ticketCode;
     private Long eventId;
     private String eventName;
-    private BigDecimal amount;
-    private String currency;
-    private OrderStatus status;
+    private BigDecimal price;
+    private TicketStatus status;
     private String participantName;
     private String participantEmail;
     private String participantPhone;
     private String participantOrganization;
     private String notes;
-    private LocalDateTime createdAt;
+    private String ticketTypeName;
+    private LocalDateTime purchaseDate;
     private LocalDateTime updatedAt;
-    private Map<String, Long> statistics; // Thống kê orders
+    private Map<String, Long> statistics; // Thống kê tickets
 
-    public OrderResponse() {}
+    public TicketResponse() {}
 
-    public OrderResponse(Long orderId, String orderCode, Long eventId, String eventName,
-                        BigDecimal amount, String currency, OrderStatus status,
-                        String participantName, String participantEmail, String participantPhone,
-                        String participantOrganization, String notes, LocalDateTime createdAt,
-                        LocalDateTime updatedAt) {
-        this.orderId = orderId;
-        this.orderCode = orderCode;
+    public TicketResponse(Long ticketId, String ticketCode, Long eventId, String eventName,
+                         BigDecimal price, TicketStatus status,
+                         String participantName, String participantEmail, String participantPhone,
+                         String participantOrganization, String notes, String ticketTypeName,
+                         LocalDateTime purchaseDate, LocalDateTime updatedAt) {
+        this.ticketId = ticketId;
+        this.ticketCode = ticketCode;
         this.eventId = eventId;
         this.eventName = eventName;
-        this.amount = amount;
-        this.currency = currency;
+        this.price = price;
         this.status = status;
         this.participantName = participantName;
         this.participantEmail = participantEmail;
         this.participantPhone = participantPhone;
         this.participantOrganization = participantOrganization;
         this.notes = notes;
-        this.createdAt = createdAt;
+        this.ticketTypeName = ticketTypeName;
+        this.purchaseDate = purchaseDate;
         this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
-    public Long getOrderId() {
-        return orderId;
+    public Long getTicketId() {
+        return ticketId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setTicketId(Long ticketId) {
+        this.ticketId = ticketId;
     }
 
-    public String getOrderCode() {
-        return orderCode;
+    public String getTicketCode() {
+        return ticketCode;
     }
 
-    public void setOrderCode(String orderCode) {
-        this.orderCode = orderCode;
+    public void setTicketCode(String ticketCode) {
+        this.ticketCode = ticketCode;
     }
 
     public Long getEventId() {
@@ -78,27 +78,20 @@ public class OrderResponse {
         this.eventName = eventName;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public OrderStatus getStatus() {
+    public TicketStatus getStatus() {
         return status;
     }
 
-    public void setStatus(OrderStatus status) {
+    public void setStatus(TicketStatus status) {
         this.status = status;
     }
 
@@ -142,12 +135,20 @@ public class OrderResponse {
         this.notes = notes;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public String getTicketTypeName() {
+        return ticketTypeName;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setTicketTypeName(String ticketTypeName) {
+        this.ticketTypeName = ticketTypeName;
+    }
+
+    public LocalDateTime getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public void setPurchaseDate(LocalDateTime purchaseDate) {
+        this.purchaseDate = purchaseDate;
     }
 
     public LocalDateTime getUpdatedAt() {

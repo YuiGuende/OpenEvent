@@ -1,6 +1,6 @@
 package com.group02.openevent.model.payment;
 
-import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.ticket.Ticket;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -14,9 +14,9 @@ public class Payment {
     private Long paymentId;
 
     @OneToOne(optional = false)
-    @JoinColumn(name = "order_id", nullable = false, unique = true,
-        foreignKey = @ForeignKey(name = "fk_payment_order"))
-    private Order order;
+    @JoinColumn(name = "ticket_id", nullable = false, unique = true,
+        foreignKey = @ForeignKey(name = "fk_payment_ticket"))
+    private Ticket ticket;
 
     @Column(name = "payos_payment_id")
     private Long payosPaymentId;
@@ -81,12 +81,12 @@ public class Payment {
         this.paymentId = paymentId;
     }
 
-    public Order getOrder() {
-        return order;
+    public Ticket getTicket() {
+        return ticket;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
     }
 
     public Long getPayosPaymentId() {

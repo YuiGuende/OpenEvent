@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface IEventRepo extends JpaRepository<Event, Integer> {
+public interface IEventRepo extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE TYPE(e) = :eventType")
     List<Event> findByEventType(@Param("eventType") Class<? extends Event> eventType);

@@ -3,7 +3,7 @@ package com.group02.openevent.model.event;
 import jakarta.persistence.*;
 
 @Entity
-@DiscriminatorValue("COMPETITION")
+@DiscriminatorValue("CompetitionEvent")
 public class CompetitionEvent  extends Event{
 
     @Column(name = "competition_type")

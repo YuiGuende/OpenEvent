@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Objects;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -33,11 +32,8 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private String redirectFor(Role role) {
-		switch (role) {
-			case ADMIN: return "/admin";
-			case HOST: return "/host";
-			default: return "/user";
-		}
+		// All users redirect to home page
+		return "/";
 	}
 
 	@Override
@@ -66,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
 		userRepo.save(user);
 
 		// Do NOT auto-login after registration; redirect to login page with success flag
-		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/security/login.html?registered=1");
+		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/login?registered=1");
 	}
 
 	@Override

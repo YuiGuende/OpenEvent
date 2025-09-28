@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for Event - OpenEvent</title>
+</head>
+<body>
+    <h1>Register for Event</h1>
+    
+    <div id="eventInfo">
+        <h2 id="eventTitle">Event Title</h2>
+        <p><strong>Date:</strong> <span id="eventDate">Event Date</span></p>
+        <p><strong>Location:</strong> <span id="eventLocation">Event Location</span></p>
+        <p><strong>Price:</strong> <span id="eventPrice" style="color: #e67e22; font-weight: bold; font-size: 18px;">0 VND</span></p>
+    </div>
+    
+    <form id="registrationForm">
+        <div>
+            <label for="fullName">Full Name:</label>
+            <input type="text" id="fullName" name="fullName" required>
+        </div>
+        
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" required>
+        </div>
+        
+        <div>
+            <label for="organization">Organization (Optional):</label>
+            <input type="text" id="organization" name="organization">
+        </div>
+        
+        <div>
+            <label for="notes">Additional Notes (Optional):</label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+        </div>
+        
+        <button type="submit" id="submitBtn">Pay & Register for Event</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <p><a href="/">Back to Home</a></p>
+
+    <script>
+        let currentUser = null;
+        let eventId = null;
+
+        // Get event ID from URL
+        function getEventIdFromUrl() {
+            const path = window.location.pathname;
+            const parts = path.split('/');
+            return parts[parts.length - 2]; // /event/{id}/register
+        }
+
+        // Load event details from API
+        function loadEventDetails() {
+            eventId = getEventIdFromUrl();
+            
+            fetch('/api/event/' + eventId)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Event not found');
+                    }
+                    return response.json();
+                })
+                .then(event => {
+                    // Display event information
+                    document.getElementById('eventTitle').textContent = event.title;
+                    
+                    // Format date
+                    const startDate = new Date(event.startsAt);
+                    const endDate = new Date(event.endsAt);
+                    const dateStr = startDate.toLocaleDateString('vi-VN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    const timeStr = startDate.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) + ' - ' + endDate.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    document.getElementById('eventDate').textContent = dateStr + ' (' + timeStr + ')';
+                    
+                    // Get location from event places (mock for now)
+                    document.getElementById('eventLocation').textContent = getEventLocation(event.type);
+                    
+                    // Calculate price based on event type and points
+                    const price = calculateEventPrice(event);
+                    document.getElementById('eventPrice').textContent = price.toLocaleString() + ' VND';
+                })
+                .catch(error => {
+                    console.error('Error loading event details:', error);
+                    document.getElementById('eventTitle').textContent = 'Event Not Found';
+                    document.getElementById('eventDate').textContent = 'N/A';
+                    document.getElementById('eventLocation').textContent = 'N/A';
+                    document.getElementById('eventPrice').textContent = '0 VND';
+                });
+        }
+
+        // Helper function to get event location (mock implementation)
+        function getEventLocation(eventType) {
+            const locations = {
+                'MusicEvent': 'Outdoor Stage, HCMC',
+                'WorkshopEvent': 'Workshop Room 1, Hanoi',
+                'CompetitionEvent': 'Main Auditorium, Da Nang',
+                'ConferenceEvent': 'Conference Hall, HCMC'
+            };
+            return locations[eventType] || 'TBA';
+        }
+
+        // Calculate event price based on event type and points
+        function calculateEventPrice(event) {
+            const basePrices = {
+                'MusicEvent': 250000,
+                'WorkshopEvent': 150000,
+                'CompetitionEvent': 500000,
+                'FestivalEvent': 200000,
+                'ConferenceEvent': 300000
+            };
+            
+            // Base price by event type
+            let price = basePrices[event.type] || 100000;
+            
+            // Adjust price based on points (higher points = higher value)
+            if (event.points) {
+                price += event.points * 1000; // 1000 VND per point
+            }
+            
+            return price;
+        }
+
+        // Load current user info
+        function loadUserInfo() {
+            fetch('/api/current-user')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.authenticated) {
+                        currentUser = data;
+                        // Pre-fill form with user data
+                        document.getElementById('email').value = data.email;
+                    } else {
+                        // User not authenticated, redirect to login
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user info:', error);
+                    window.location.href = '/login';
+                });
+        }
+
+        // Handle form submission
+        function handleSubmit(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing Payment...';
+            
+            // Get event price from the displayed price
+            const priceText = document.getElementById('eventPrice').textContent;
+            const price = parseInt(priceText.replace(/[^\d]/g, ''));
+            
+            const orderData = {
+                eventId: parseInt(eventId),
+                amount: price,
+                description: `Registration for ${document.getElementById('eventTitle').textContent}`,
+                participantName: document.getElementById('fullName').value,
+                participantEmail: document.getElementById('email').value,
+                participantPhone: document.getElementById('phone').value,
+                participantOrganization: document.getElementById('organization').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            // Create order and payment
+            fetch('/api/payments/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to PayOS payment page
+                    window.location.href = data.paymentUrl;
+                } else {
+                    throw new Error(data.message || 'Payment creation failed');
+                }
+            })
+            .catch(error => {
+                console.error('Payment error:', error);
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: red; margin: 20px 0; padding: 10px; border: 1px solid red; background-color: #ffe6e6;">' +
+                    'Payment failed: ' + error.message + '. Please try again.' +
+                    '</div>';
+                
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pay & Register for Event';
+            });
+        }
+
+        // Load page data
+        window.onload = function() {
+            loadEventDetails();
+            loadUserInfo();
+        };
+
+        // Add form event listener
+        document.getElementById('registrationForm').addEventListener('submit', handleSubmit);
+    </script>
+</body>
+</html>

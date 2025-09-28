@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Ticket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 0;
+            background: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1100px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .left, .right { padding: 24px; }
+        .left { flex: 2; min-width: 300px; }
+        .right { flex: 1; min-width: 280px; background: #fafafa; border-left: 1px solid #eee; }
+
+        h2 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
+        .event-info p { margin: 0; color: #666; font-size: 14px; }
+
+        .promo { margin: 20px 0; display: flex; gap: 8px; }
+        .promo input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .promo button {
+            padding: 10px 16px;
+            border: none;
+            background: #ef7813;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .promo button:hover { background: #f39445; }
+
+        .ticket {
+            border: 1px solid #f87204;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .ticket:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .ticket.selected {
+            border-color: #4CAF50;
+            background: #f6fffa;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        }
+        .ticket h3 { margin: 0; font-size: 16px; font-weight: 600; }
+        .price { font-weight: 500; margin: 6px 0; color: #4CAF50; }
+        .quantity {
+            display: flex; align-items: center; gap: 10px; margin-top: 10px;
+        }
+        .quantity button {
+            width: 32px; height: 32px;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s;
+        }
+        .quantity button:hover { background: #f0f0f0; }
+        .quantity span { font-size: 15px; min-width: 20px; text-align: center; }
+
+        .summary h3 { margin-top: 0; font-weight: 600; }
+        .summary ul { list-style: none; padding: 0; margin: 0 0 15px; }
+        .summary li { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+        #total { font-size: 18px; font-weight: 700; color: #e65c00; margin-top: 12px; }
+
+        .payment-methods {
+            display: flex; flex-wrap: wrap;
+            gap: 16px; margin: 20px 0; justify-content: center;
+        }
+        .payment-option {
+            flex: 1 1 120px; max-width: 150px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-option:hover {
+            border-color: #4CAF50;
+            transform: translateY(-3px);
+        }
+        .payment-option input[type="radio"] { display: none; }
+        .payment-option img {
+            width: 48px; height: 48px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        .payment-option span {
+            display: block;
+            font-size: 14px; font-weight: 500;
+        }
+        .payment-option input[type="radio"]:checked + img,
+        .payment-option input[type="radio"]:checked + span {
+            filter: hue-rotate(90deg);
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 14px;
+            background: #e65c00;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .checkout-btn:hover { background: #d35400; }
+
+        .ticket .desc {
+            font-size: 13px;
+            color: #555;
+            margin: 4px 0 8px;
+            line-height: 1.5;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+        }
+        .ticket.expanded .desc {
+            -webkit-line-clamp: unset;
+            display: block;
+        }
+        .see-more-btn {
+            border: none;
+            background: none;
+            color: #4CAF50;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+            margin-bottom: 8px;
+        }
+        .see-more-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .right { border-left: none; border-top: 1px solid #eee; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="left">
+        <div class="event-info">
+            <h2>Event FPT University 2025</h2>
+            <p>Sat, 15 Nov 2025 09:00 - Sun, 16 Nov 2025 18:00 GMT</p>
+        </div>
+        <!-- Dropdown chọn loại vé -->
+        <div class="filter-box" style="margin: 15px 0;">
+            <label for="ticketFilter" style="font-weight: 500; margin-right: 8px;">Ticket Type:</label>
+            <select id="ticketFilter" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                <option value="all">All</option>
+                <option value="gold">Gold</option>
+                <option value="silver">Silver</option>
+                <option value="normal">Normal</option>
+            </select>
+        </div>
+
+        <div class="promo">
+            <input type="text" placeholder="Enter code">
+            <button>Apply</button>
+        </div>
+
+        <div class="ticket" data-type="adult" data-price="29" data-category="gold">
+            <h3>Gold Entry - Saturday 15th November</h3>
+            <p class="price">$29.00</p>
+            <p class="desc">
+                Full-day access for adults (18+), including all main halls, workshops,
+                meet & greet with special guests, and exclusive merchandise discounts
+                available throughout the convention floor. Seating priority in main stage
+                panels is also included.
+            </p>
+            <button class="see-more-btn">See more</button>
+            <p>Sales end on 15 Nov 2025</p>
+            <div class="quantity">
+                <button class="minus">-</button>
+                <span class="count">0</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+
+        <div class="ticket" data-type="child" data-price="23" data-category="silver">
+            <h3>Silver Entry - Saturday 15th November</h3>
+            <p class="price">$23.00</p>
+            <p class="desc">Entry for children under 12 years old. Must be accompanied by an adult.</p>
+            <p>Sales end on 15 Nov 2025</p>
+            <div class="quantity">
+                <button class="minus">-</button>
+                <span class="count">0</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+
+        <div class="ticket" data-type="normal" data-price="15" data-category="normal">
+            <h3>Normal Entry - Saturday 15th November</h3>
+            <p class="price">$15.00</p>
+            <p class="desc">Standard access to the exhibition hall and panels.</p>
+            <p>Sales end on 15 Nov 2025</p>
+            <div class="quantity">
+                <button class="minus">-</button>
+                <span class="count">0</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="right">
+        <div class="summary">
+            <h3>Order Summary</h3>
+            <ul id="order-list">
+                <li><span>No tickets selected</span><span>$0.00</span></li>
+            </ul>
+            <h3 id="total">Total $0.00</h3>
+
+            <div class="payment-methods">
+                <label class="payment-option">
+                    <input type="radio" name="payment" value="payos">
+                    <img class="logo-icon" th:src="@{/images/images.png}" alt="PayOS">
+                    <span>PayOS</span>
+                </label>
+            </div>
+
+            <button class="checkout-btn" id="checkoutBtn">Check out</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tickets = document.querySelectorAll(".ticket");
+    const orderList = document.getElementById("order-list");
+    const totalDisplay = document.getElementById("total");
+
+    tickets.forEach(ticket => {
+        const plusBtn = ticket.querySelector(".plus");
+        const minusBtn = ticket.querySelector(".minus");
+        const countSpan = ticket.querySelector(".count");
+
+        plusBtn.addEventListener("click", () => {
+            tickets.forEach(t => {
+                t.querySelector(".count").textContent = "0";
+                t.classList.remove("selected");
+            });
+            countSpan.textContent = "1";
+            ticket.classList.add("selected");
+            updateSummary();
+        });
+
+        minusBtn.addEventListener("click", () => {
+            countSpan.textContent = "0";
+            ticket.classList.remove("selected");
+            updateSummary();
+        });
+    });
+    const ticketFilter = document.getElementById("ticketFilter");
+
+    ticketFilter.addEventListener("change", () => {
+        const value = ticketFilter.value;
+        tickets.forEach(ticket => {
+            if (value === "all" || ticket.dataset.category === value) {
+                ticket.style.display = "block";
+            } else {
+                ticket.style.display = "none";
+            }
+        });
+    });
+
+
+    function updateSummary() {
+        let selectedTicket = null;
+
+        tickets.forEach(ticket => {
+            const count = parseInt(ticket.querySelector(".count").textContent);
+            if (count > 0) {
+                selectedTicket = {
+                    type: ticket.dataset.type,
+                    price: parseFloat(ticket.dataset.price),
+                    count: count
+                };
+            }
+        });
+
+        orderList.innerHTML = "";
+
+        if (selectedTicket) {
+            const subtotal = selectedTicket.price * selectedTicket.count;
+            const vat = subtotal * 0.10;
+            const total = subtotal + vat;
+
+            const li1 = document.createElement("li");
+            li1.innerHTML = `<span>${selectedTicket.count} x ${capitalize(selectedTicket.type)} Entry</span><span>$${subtotal.toFixed(2)}</span>`;
+
+            const li2 = document.createElement("li");
+            li2.innerHTML = `<span>Subtotal</span><span>$${subtotal.toFixed(2)}</span>`;
+
+            const li3 = document.createElement("li");
+            li3.innerHTML = `<span>VAT (10%)</span><span>$${vat.toFixed(2)}</span>`;
+
+            orderList.appendChild(li1);
+            orderList.appendChild(li2);
+            orderList.appendChild(li3);
+
+            totalDisplay.textContent = `Total $${total.toFixed(2)}`;
+        } else {
+            const li = document.createElement("li");
+            li.innerHTML = `<span>No tickets selected</span><span>$0.00</span>`;
+            orderList.appendChild(li);
+            totalDisplay.textContent = "Total $0.00";
+        }
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    document.getElementById("checkoutBtn").addEventListener("click", async () => {
+        const selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;
+        const totalText = document.getElementById("total").textContent;
+        const amount = parseFloat(totalText.replace("Total $", "")) * 1000;
+
+        if (amount <= 0) {
+            alert("Please select a ticket first!");
+            return;
+        }
+
+        if (!selectedMethod) {
+            alert("Please select a payment method!");
+            return;
+        }
+
+        if (selectedMethod === "payos") {
+            try {
+                const res = await fetch("/api/create-payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount })
+                });
+                const data = await res.json();
+                if (data.checkoutUrl) {
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    alert("Failed to create PayOS payment");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error creating PayOS payment");
+            }
+        } else {
+            alert("Payment method: " + selectedMethod + " (not implemented yet)");
+        }
+    });
+
+    document.querySelectorAll(".see-more-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const ticket = btn.closest(".ticket");
+            ticket.classList.toggle("expanded");
+            btn.textContent = ticket.classList.contains("expanded") ? "See less" : "See more";
+        });
+    });
+</script>
+</body>
+</html>

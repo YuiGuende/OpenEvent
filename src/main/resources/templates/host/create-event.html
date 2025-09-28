@@ -37,17 +37,6 @@
 <main class="create-event-main">
     <!-- Sidebar Steps -->
     <aside class="event-sidebar">
-        <div class="event-card">
-            <div class="event-card-header">
-                <div class="event-card-title">Event Title</div>
-                <div class="event-card-date">
-                    <i class="fas fa-calendar"></i> Tue, Nov 4, 2025, 10:00 AM
-                </div>
-            </div>
-            <div class="event-card-status">
-                <button class="event-status-btn">Draft <i class="fas fa-chevron-down"></i></button>
-            </div>
-        </div>
         <div class="event-steps">
             <div class="event-step active">
                 <span class="step-circle"><i class="fas fa-circle"></i></span>
@@ -76,36 +65,133 @@
             <input type="file" id="uploadInput" accept="image/*,video/*" style="display:none" multiple>
             <div id="preview"></div>
         </div>
+        <!-- Type of Event -->
+        <div class="event-type-title" style="font-size:1.25em;font-weight:600;margin-bottom:10px;margin-top:18px;">
+            Chọn loại sự kiện
+        </div>
+        <div class="event-type-tabs">
+            <button class="event-type-tab active">Music</button>
+            <button class="event-type-tab">Workshop</button>
+            <button class="event-type-tab">Festival</button>
+            <button class="event-type-tab">Competition</button>
+            <button class="event-type-tab">Other</button>
+        </div>
+
 
         <!-- Event Title -->
         <div class="event-section">
             <div class="event-section-header">
                 <h1 class="event-title">Event Title</h1>
-                <button class="event-section-add"><i class="fas fa-plus"></i></button>
             </div>
             <p class="event-desc">A short and sweet sentence about your event.</p>
+        </div>
+        <div class="event-overview-form" id="eventOverviewForm" style="display:none;">
+            <h2 class="event-form-title">Event Overview</h2>
+            <div class="event-form-group">
+                <label for="eventTitleInput"><b>Event title</b></label>
+                <div class="event-form-desc">Be clear and descriptive with a title that tells people what your event is
+                    about.
+                </div>
+                <input type="text" id="eventTitleInput" class="event-form-input" placeholder="Event title *"
+                       maxlength="140" required>
+            </div>
+            <div class="event-form-group">
+                <label for="eventSummaryInput"><b>Summary</b></label>
+                <div class="event-form-desc">
+                    Grab people's attention with a short description about your event. Attendees will see this at the
+                    top of your event page. (140 characters max)
+                    <a href="#" class="event-form-examples">See examples</a>
+                </div>
+                <textarea id="eventSummaryInput" class="event-form-input" placeholder="Summary *" maxlength="140"
+                          required></textarea>
+                <div class="event-form-count"><span id="summaryCount">0</span> / 140</div>
+            </div>
+            <div class="event-form-suggest">
+                <i class="fas fa-bolt"></i> Suggest summary
+            </div>
         </div>
 
         <!-- Date and Location -->
         <div class="event-section">
-            <div class="event-section-header">
-                <h2>Date and time</h2>
-                <h2>Location</h2>
-                <button class="event-section-add"><i class="fas fa-plus"></i></button>
-            </div>
-            <div class="event-date-location">
-                <div class="event-date">
-                    <i class="fas fa-calendar"></i>
-                    <span>Tuesday, November 4 · 10am - 12pm GMT+7</span>
+            <div class="event-date-location" style="display: flex; gap: 32px; flex-wrap: wrap;">
+                <div style="flex:1; min-width:260px;">
+                    <div class="event-date">
+                        <label for="startDate"><b>Start date & time</b></label>
+                        <div class="event-date-picker">
+                            <i class="fas fa-calendar"></i>
+                            <input type="datetime-local" id="startDate" class="event-form-input" required>
+                        </div>
+                    </div>
+                    <div class="event-date" style="margin-top:18px;">
+                        <label for="endDate"><b>End date & time</b></label>
+                        <div class="event-date-picker">
+                            <i class="fas fa-calendar"></i>
+                            <input type="datetime-local" id="endDate" class="event-form-input" required>
+                        </div>
+                    </div>
+                    <div class="event-date" style="margin-top:18px;">
+                        <label for="enrollDeadline"><b>Enroll deadline</b></label>
+                        <div class="event-date-picker">
+                            <i class="fas fa-calendar-times"></i>
+                            <input type="datetime-local" id="enrollDeadline" class="event-form-input" required>
+                        </div>
+                        <div class="event-form-desc" style="margin-top:4px;">
+                            Thời gian hết hạn mua vé hoặc đăng ký tham gia sự kiện
+                        </div>
+                    </div>
                 </div>
-                <div class="event-location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Enter a location</span>
-                    <a href="#" class="event-map-toggle">Hide map <i class="fas fa-chevron-up"></i></a>
-                    <div class="event-map-preview">
+                <div class="event-location"
+                     style="flex:2; min-width:320px; background:#fafbfc; border-radius:16px; padding:24px; margin-top:0; display:flex; flex-direction:column; align-items:flex-start;">
+                    <label for="locationInput" style="font-weight:600; font-size:1.1em; margin-bottom:8px;"><i
+                            class="fas fa-map-marker-alt"></i> Location</label>
+                    <input type="text" id="locationInput" class="event-form-input" placeholder="Enter a location"
+                           style="width:100%; margin-bottom:16px;">
+                    <a href="#" class="event-map-toggle" style="margin-bottom:12px;">Hide map <i
+                            class="fas fa-chevron-up"></i></a>
+                    <div class="event-map-preview" style="width:100%;">
                         <img src="/images/map.png" alt="Map" style="width:100%;border-radius:12px;">
                     </div>
                 </div>
+            </div>
+        </div>
+        <!-- Thêm ngay sau nút chọn loại sự kiện -->
+        <div id="festivalFields" style="display:none; margin-bottom:24px;">
+            <div class="event-form-group">
+                <label for="festivalCulture"><b>Culture</b></label>
+                <input type="text" id="festivalCulture" class="event-form-input"
+                       placeholder="Culture (e.g. Vietnamese, Japanese)">
+            </div>
+            <div class="event-form-group">
+                <label for="festivalHighlight"><b>Highlight</b></label>
+                <input type="text" id="festivalHighlight" class="event-form-input"
+                       placeholder="Highlight of the festival">
+            </div>
+        </div>
+        <!-- Trường Competition (ẩn mặc định) -->
+        <div id="competitionFields" style="display:none; margin-bottom:24px;">
+            <div class="event-form-group">
+                <label for="competitionType"><b>Competition Type</b></label>
+                <input type="text" id="competitionType" class="event-form-input"
+                       placeholder="Competition type (e.g. Hackathon, Esport)">
+            </div>
+            <div class="event-form-group">
+                <label for="competitionRules"><b>Rules</b></label>
+                <textarea id="competitionRules" class="event-form-input" placeholder="Competition rules"></textarea>
+            </div>
+            <div class="event-form-group">
+                <label for="prizePool"><b>Prize Pool</b></label>
+                <input type="text" id="prizePool" class="event-form-input" placeholder="Prize pool (e.g. $1000)">
+            </div>
+        </div>
+        <!-- Trường Workshop (ẩn mặc định) -->
+        <div id="workshopFields" style="display:none; margin-bottom:24px;">
+            <div class="event-form-group">
+                <label for="workshopTopic"><b>Topic</b></label>
+                <input type="text" id="workshopTopic" class="event-form-input" placeholder="Workshop topic">
+            </div>
+            <div class="event-form-group">
+                <label for="materialsLink"><b>Materials Link</b></label>
+                <input type="url" id="materialsLink" class="event-form-input" placeholder="Link to workshop materials">
             </div>
         </div>
 
@@ -118,53 +204,23 @@
             </p>
             <div class="event-add-list">
                 <div class="event-add-row">
-                    <span class="event-add-icon"><i class="fas fa-user"></i></span>
-                    <span class="event-add-label">Lineup <span class="event-add-new">New</span></span>
-                    <a href="#" class="event-add-examples">See examples</a>
-                    <button class="event-add-btn">Add</button>
-                </div>
+    <span class="event-add-icon"><i class="fas fa-user"></i></span>
+    <span class="event-add-label">Lineup <span class="event-add-new">New</span></span>
+    <a href="#" class="event-add-examples">See examples</a>
+    <button class="event-add-btn" id="addLineupBtn">Add</button>
+</div>
+<!-- Nơi sinh ra các lineup section -->
+<div id="lineupSections"></div>
                 <div class="event-add-row">
                     <span class="event-add-icon"><i class="fas fa-calendar-alt"></i></span>
                     <span class="event-add-label">Agenda</span>
                     <a href="#" class="event-add-examples">See examples</a>
                     <button class="event-add-btn">Add</button>
+                    <div id="agendaSections"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Overview -->
-        <div class="event-section">
-            <div class="event-section-header">
-                <h2>Overview</h2>
-                <button class="event-section-add"><i class="fas fa-plus"></i></button>
-            </div>
-            <p class="event-desc">
-                Use this section to provide more details about your event. You can include things to know, venue
-                information, accessibility options—anything that will help people know what to expect.
-            </p>
-        </div>
-
-        <!-- Good to know -->
-        <div class="event-section">
-            <div class="event-section-header">
-                <h2>Good to know</h2>
-                <button class="event-section-add"><i class="fas fa-plus"></i></button>
-            </div>
-            <div class="event-highlights">
-                <div class="event-highlights-title">Highlights</div>
-                <button class="event-highlight-btn">+ Add Age info</button>
-                <button class="event-highlight-btn">+ Add Door Time</button>
-                <button class="event-highlight-btn">+ Add Parking info</button>
-            </div>
-            <div class="event-faq">
-                <div class="event-faq-title">Frequently asked questions</div>
-                <div class="event-faq-tip">
-                    <span class="event-faq-icon">💡</span>
-                    Events with FAQs have 8% more organic traffic
-                </div>
-                <a href="#" class="event-faq-add">+ Add question</a>
-            </div>
-        </div>
     </section>
 </main>
 <script th:src="@{/js/create-event.js}"></script>

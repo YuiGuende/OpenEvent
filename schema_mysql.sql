@@ -487,3 +487,81 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-09-23 17:48:45
+
+
+-- ------------------------------------------------------
+-- Additional tables for new ordering/payment model
+-- ------------------------------------------------------
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!50503 SET NAMES utf8 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+
+-- Align existing ticket_type table to new model
+SET @exists_ticket_type := (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'ticket_type');
+SET @sql_alter_ticket_type = IF(@exists_ticket_type = 1,
+  'ALTER TABLE `ticket_type`
+     MODIFY COLUMN `name` varchar(100) NOT NULL,
+     MODIFY COLUMN `price` decimal(38,2) NOT NULL,
+     MODIFY COLUMN `total_quantity` int NOT NULL,
+     ADD COLUMN IF NOT EXISTS `description` varchar(1000) NULL AFTER `name`,
+     ADD COLUMN IF NOT EXISTS `sold_quantity` int NOT NULL DEFAULT 0 AFTER `total_quantity`,
+     ADD COLUMN IF NOT EXISTS `start_sale_date` datetime(6) NULL AFTER `sold_quantity`,
+     ADD COLUMN IF NOT EXISTS `end_sale_date` datetime(6) NULL AFTER `start_sale_date`';
+  , NULL);
+PREPARE stmt1 FROM @sql_alter_ticket_type; EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+
+-- Create table orders
+DROP TABLE IF EXISTS `orders`;
+CREATE TABLE `orders` (
+  `order_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `event_id` int NOT NULL,
+  `status` enum('PENDING','PAID','CANCELLED','REFUNDED') NOT NULL,
+  `total_amount` decimal(10,2) NOT NULL,
+  `participant_name` varchar(100) DEFAULT NULL,
+  `participant_email` varchar(100) DEFAULT NULL,
+  `participant_phone` varchar(20) DEFAULT NULL,
+  `participant_organization` varchar(150) DEFAULT NULL,
+  `notes` varchar(1000) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`order_id`),
+  KEY `fk_order_user` (`user_id`),
+  KEY `fk_order_event` (`event_id`),
+  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+  CONSTRAINT `fk_order_event` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Create table order_items
+DROP TABLE IF EXISTS `order_items`;
+CREATE TABLE `order_items` (
+  `order_item_id` int NOT NULL AUTO_INCREMENT,
+  `order_id` int NOT NULL,
+  `ticket_type_id` int NOT NULL,
+  `quantity` int NOT NULL,
+  `unit_price` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`order_item_id`),
+  KEY `fk_orderitem_order` (`order_id`),
+  KEY `fk_orderitem_tickettype` (`ticket_type_id`),
+  CONSTRAINT `fk_orderitem_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_orderitem_tickettype` FOREIGN KEY (`ticket_type_id`) REFERENCES `ticket_types` (`ticket_type_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Optionally alter payments table if it exists to support order payments
+-- Note: guards added to avoid errors if columns already exist
+SET @exists_payments := (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'payments');
+SET @sql_alter_payments = IF(@exists_payments = 1,
+  'ALTER TABLE `payments`
+     ADD COLUMN IF NOT EXISTS `order_id` int NULL AFTER `ticket_id`,
+     ADD COLUMN IF NOT EXISTS `payment_method` varchar(50) NULL AFTER `qr_code`,
+     ADD COLUMN IF NOT EXISTS `transaction_id` varchar(255) NULL AFTER `payment_method`,
+     MODIFY `ticket_id` int NULL,
+     ADD KEY `fk_payment_order` (`order_id`),
+     ADD CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)';
+  , NULL);
+PREPARE stmt FROM @sql_alter_payments; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

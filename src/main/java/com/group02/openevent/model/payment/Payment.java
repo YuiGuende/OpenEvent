@@ -1,5 +1,6 @@
 package com.group02.openevent.model.payment;
 
+import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.ticket.Ticket;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -13,10 +14,17 @@ public class Payment {
     @Column(name = "payment_id")
     private Long paymentId;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "ticket_id", nullable = false, unique = true,
+    // Giữ liên kết cũ tới Ticket để không phá vỡ luồng hiện tại (tùy chọn)
+    @OneToOne(optional = true)
+    @JoinColumn(name = "ticket_id", unique = true,
         foreignKey = @ForeignKey(name = "fk_payment_ticket"))
     private Ticket ticket;
+
+    // Thêm liên kết mới tới Order để thanh toán theo đơn hàng
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "order_id",
+        foreignKey = @ForeignKey(name = "fk_payment_order"))
+    private Order order;
 
     @Column(name = "payos_payment_id")
     private Long payosPaymentId;
@@ -29,6 +37,13 @@ public class Payment {
 
     @Column(name = "qr_code", length = 500)
     private String qrCode;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 50)
+    private PaymentMethod paymentMethod;
+
+    @Column(name = "transaction_id", length = 255)
+    private String transactionId;
 
     @Column(name = "amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
@@ -89,6 +104,14 @@ public class Payment {
         this.ticket = ticket;
     }
 
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
     public Long getPayosPaymentId() {
         return payosPaymentId;
     }
@@ -119,6 +142,22 @@ public class Payment {
 
     public void setQrCode(String qrCode) {
         this.qrCode = qrCode;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
     public BigDecimal getAmount() {

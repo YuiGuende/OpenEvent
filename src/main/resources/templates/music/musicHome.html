@@ -1,124 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-      <!--Thymeleaf-->
-      <!-- Required meta tags -->
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title>FPT Music Festival 2025 - The Biggest Music Event at FPT University</title>
-      <!-- Bootstrap CSS -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
-      <!-- Icon -->
-      <link rel="stylesheet" th:href="@{/music/assets/fonts/line-icons.css}">
-      <!-- Slicknav -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/slicknav.css}">
-      <!-- Nivo Lightbox -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/nivo-lightbox.css}">
-      <!-- Animate -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/animate.css}">
-      <!-- Main Style -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
-      <!-- Responsive Style -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
-      <!-- Theme Colors -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/themeColors.css}">
+<head>
+    <!--Thymeleaf-->
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>FPT Music Festival 2025 - The Biggest Music Event at FPT University</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
+    <!-- Icon -->
+    <link rel="stylesheet" th:href="@{/music/assets/fonts/line-icons.css}">
+    <!-- Slicknav -->
+    <link rel="stylesheet" th:href="@{/music/assets/css/slicknav.css}">
+    <!-- Nivo Lightbox -->
+    <link rel="stylesheet" th:href="@{/music/assets/css/nivo-lightbox.css}">
+    <!-- Animate -->
+    <link rel="stylesheet" th:href="@{/music/assets/css/animate.css}">
+    <!-- Main Style -->
+    <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
+    <!-- Responsive Style -->
+    <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
+    <!-- Theme Colors -->
+    <link rel="stylesheet" th:href="@{/music/assets/css/themeColors.css}">
+
+    <!-- Clean CSS - Simple and maintainable -->
 
 
-  </head>
-  <body>
-  <!-- Banner, in ra ảnh -->
-  <section class="hero hero--slider hero--compact">
-      <div class="hero-track" id="heroTrack">
-          <!-- Lặp qua tất cả ảnh từ DB -->
-          <div th:each="img : ${eventImages}"
-               class="hero-slide"
-               th:style="|background-image: url('${img.url}')|">
-              <div class="container hero-content">
-                  <div class="hero-actions text-right">
-                      <a class="btn btn-common" href="#">Get Ticket</a>
-                  </div>
-              </div>
-          </div>
-      </div>
+</head>
+<body>
+<!-- Banner, in ra ảnh -->
+<section class="hero hero--slider hero--compact">
+    <div class="hero-track" id="heroTrack">
+        <!-- Lặp qua tất cả ảnh từ DB -->
+        <div th:each="img : ${eventImages}"
+             class="hero-slide"
+             th:style="|background-image: url('${img.url}')|">
+            <div class="container hero-content">
+                <div class="hero-actions text-right">
+                    <a class="btn btn-common" href="#">Get Ticket</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      <!-- Nav buttons -->
-      <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
-      <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
+    <!-- Nav buttons -->
+    <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
+    <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
 
-      <!-- Progress indicator -->
-      <div class="hero-progress">
-          <div class="hero-progress-bar" th:each="img : ${eventImages}"></div>
-      </div>
-  </section>
+    <!-- Progress indicator -->
+    <div class="hero-progress">
+        <div class="hero-progress-bar" th:each="img : ${eventImages}"></div>
+    </div>
+</section>
 
 
-  <!-- Countdown Section Start -->
-  <section class="countdown-timer section-padding-compact">
-      <div class="container">
-          <div class="row text-center">
-              <div class="col-md-12 col-sm-12 col-xs-12">
-                  <div class="heading-count">
-                      <h2 class="wow fadeInDown" data-wow-delay="0.2s">Event Will Start In</h2>
-                  </div>
-              </div>
-              <div class="col-md-12 col-sm-12 col-xs-12">
-                  <div class="row time-countdown justify-content-center wow fadeInUp" data-wow-delay="0.2s">
-                      <div id="clock" class="time-count"></div>
-                  </div>
+<!-- Countdown Section Start -->
+<section class="countdown-timer section-padding-compact">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="heading-count">
+                    <h2 class="wow fadeInDown" data-wow-delay="0.2s">Event Will Start In</h2>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="row time-countdown justify-content-center wow fadeInUp" data-wow-delay="0.2s">
+                    <div id="clock" class="time-count"></div>
+                </div>
 
-                  <!-- Nút Add ngay dưới đồng hồ -->
-                  <div class="text-center mt-2">
-                      <a href="pricing.html" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
-                          Add to My Calendar
-                      </a>
-                  </div>
+                <!-- Nút Add ngay dưới đồng hồ -->
+                <div class="text-center mt-2">
+                    <a href="pricing.html" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
+                        Add to My Calendar
+                    </a>
+                </div>
 
-                  <!-- Decorative separator -->
-                  <div class="countdown-separator wow fadeInUp" data-wow-delay="0.4s">
-                      <div class="separator-line"></div>
-                      <div class="separator-icon">
-                          <i class="lni-music"></i>
-                      </div>
-                      <div class="separator-line"></div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-  <!-- Countdown Section End -->
+                <!-- Decorative separator -->
+                <div class="countdown-separator wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="separator-line"></div>
+                    <div class="separator-icon">
+                        <i class="lni-music"></i>
+                    </div>
+                    <div class="separator-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Countdown Section End -->
 
-  <!-- Countdown Script -->
-  <script th:inline="javascript">
-      /*<![CDATA[*/
-      document.addEventListener('DOMContentLoaded', function() {
-          // Lấy startDate từ backend (format chuẩn ISO yyyy-MM-dd'T'HH:mm:ss)
-          const eventStartDateStr = /*[[${event.startsAt != null ? #temporals.format(event.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
-          const eventStartDate = eventStartDateStr ? new Date(eventStartDateStr).getTime() : null;
-          const clockElement = document.getElementById("clock");
+<!-- Countdown Script -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lấy startDate từ backend (format chuẩn ISO yyyy-MM-dd'T'HH:mm:ss)
+        const eventStartDateStr = /*[[${event.startsAt != null ? #temporals.format(event.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
+        const eventStartDate = eventStartDateStr ? new Date(eventStartDateStr).getTime() : null;
+        const clockElement = document.getElementById("clock");
 
-          if (!eventStartDate || !clockElement) {
-              if (clockElement) {
-                  clockElement.innerHTML = "<h3>No start date available</h3>";
-              }
-              return;
-          }
+        if (!eventStartDate || !clockElement) {
+            if (clockElement) {
+                clockElement.innerHTML = "<h3>No start date available</h3>";
+            }
+            return;
+        }
 
-          const countdown = setInterval(function () {
-              const now = new Date().getTime();
-              const distance = eventStartDate - now;
+        const countdown = setInterval(function () {
+            const now = new Date().getTime();
+            const distance = eventStartDate - now;
 
-              if (distance < 0) {
-                  clearInterval(countdown);
-                  clockElement.innerHTML = "<h3>Event is happening now!</h3>";
-                  return;
-              }
+            if (distance < 0) {
+                clearInterval(countdown);
+                clockElement.innerHTML = "<h3>Event is happening now!</h3>";
+                return;
+            }
 
-              const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-              const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-              const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-              const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-              clockElement.innerHTML = `
+            clockElement.innerHTML = `
             <div class="time-entry">
               <span>${days}</span>
               <div class="label">DAYS</div>
@@ -135,1019 +137,1019 @@
               <span>${seconds.toString().padStart(2, '0')}</span>
               <div class="label">SECONDS</div>
             </div>`;
-          }, 1000);
-      });
-      /*]]>*/
-  </script>
+        }, 1000);
+    });
+    /*]]>*/
+</script>
 
 
 
 
 
-  <!-- Music Event Description Section Start -->
-  <section id="descriptionm" class="section-padding-compact">
-      <div class="container">
-          <div class="row">
-              <div class="col-12">
-                  <div class="section-title-header text-center">
-                      <!-- Title -->
-                      <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s"
-                          th:text="${event.title}">
-                          Event Title
-                      </h1>
-                      <!-- Subtitle / EventType -->
-                      <p class="wow fadeInDown" data-wow-delay="0.2s"
-                         th:text="'Type: ' + ${event.eventType}">
-                          The biggest music event
-                      </p>
-                  </div>
-              </div>
-          </div>
-          <div class="row">
-              <div class="col-lg-8 mx-auto">
-                   <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
-                        <!-- Event Title -->
-                        <h2 th:text="${event.title}">Event Title</h2>
-                        
-                        <!-- Description -->
-                        <p class="lead">
-                            <i class="lni-music"></i>
-                            <span th:text="${event.description}">Event description</span>
-                        </p>
+<!-- Music Event Description Section Start -->
+<section id="descriptionm" class="section-padding-compact">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <!-- Title -->
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s"
+                        th:text="${event.title}">
+                        Event Title
+                    </h1>
+                    <!-- Subtitle / EventType -->
+                    <p class="wow fadeInDown" data-wow-delay="0.2s"
+                       th:text="'Type: ' + ${event.eventType}">
+                        The biggest music event
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
+                    <!-- Event Title -->
+                    <h2 th:text="${event.title}">Event Title</h2>
 
-                        <!-- Time -->
-                        <p>
-                            <i class="lni-timer"></i>
-                            Start:
-                            <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}"></span>
-                            -
-                            End:
-                            <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}"></span>
-                        </p>
+                    <!-- Description -->
+                    <p class="lead">
+                        <i class="lni-music"></i>
+                        <span th:text="${event.description}">Event description</span>
+                    </p>
 
-                        <!-- Benefits -->
-                        <p>
-                            <i class="lni-microphone"></i>
-                            <span th:text="'Benefits: ' + ${event.benefits}">Benefits...</span>
-                        </p>
-                    </div>
-              </div>
-          </div>
-      </div>
-  </section>
+                    <!-- Time -->
+                    <p>
+                        <i class="lni-timer"></i>
+                        Start:
+                        <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        -
+                        End:
+                        <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}"></span>
+                    </p>
 
-  <!-- Music Event Description Section End -->
+                    <!-- Benefits -->
+                    <p>
+                        <i class="lni-microphone"></i>
+                        <span th:text="'Benefits: ' + ${event.benefits}">Benefits...</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Music Event Description Section End -->
 
 <!--có thể thêm vào DTO nếu cần mission, experience, joiningBenefits-->
-    <!-- About Section Start -->
-    <section id="about" class="section-padding">
-      <div class="container">
+<!-- About Section Start -->
+<section id="about" class="section-padding">
+    <div class="container">
         <div class="row">
-          <div class="col-12">
-            <div class="section-title-header text-center">
-              <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Music Event</h1>
-              <p class="wow fadeInDown" data-wow-delay="0.2s">FPT Music Festival 2025 - The Biggest Music Event at FPT University</p>
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Music Event</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">FPT Music Festival 2025 - The Biggest Music Event at FPT University</p>
+                </div>
             </div>
-          </div>
         </div>
         <div class="row">
             <div class="col-xs-12 col-md-6 col-lg-4">
-              <div class="about-item">
-                <img class="img-fluid" th:src="@{/music/assets/img/about/img1.jpg}" alt="">
-                <div class="about-text">
-                  <h3><a href="#">Our Mission</a></h3>
-                  <p>Connecting the FPT student community through music, creating a creative space and inspiring the young generation.</p>
-                  <a class="btn btn-common btn-rm" href="#">Learn More</a>
+                <div class="about-item">
+                    <img class="img-fluid" th:src="@{/music/assets/img/about/img1.jpg}" alt="">
+                    <div class="about-text">
+                        <h3><a href="#">Our Mission</a></h3>
+                        <p>Connecting the FPT student community through music, creating a creative space and inspiring the young generation.</p>
+                        <a class="btn btn-common btn-rm" href="#">Learn More</a>
+                    </div>
                 </div>
-              </div>
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
-              <div class="about-item">
-                <img class="img-fluid" th:src="@{/music/assets/img/about/img2.jpg}" alt="">
-                <div class="about-text">
-                  <h3><a href="#">What You Will Experience?</a></h3>
-                  <p>Over 20 famous artists and bands, music workshops, food areas and many other exciting activities.</p>
-                  <a class="btn btn-common btn-rm" href="#">Explore Now</a>
+                <div class="about-item">
+                    <img class="img-fluid" th:src="@{/music/assets/img/about/img2.jpg}" alt="">
+                    <div class="about-text">
+                        <h3><a href="#">What You Will Experience?</a></h3>
+                        <p>Over 20 famous artists and bands, music workshops, food areas and many other exciting activities.</p>
+                        <a class="btn btn-common btn-rm" href="#">Explore Now</a>
+                    </div>
                 </div>
-              </div>
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
-              <div class="about-item">
-                <img class="img-fluid" th:src="@{/music/assets/img/about/img3.jpg}" alt="">
-                <div class="about-text">
-                  <h3><a href="#">Benefits of Joining</a></h3>
-                  <p>Free admission, opportunity to meet artists, networking with the music community and experience unique creative spaces.</p>
-                  <a class="btn btn-common btn-rm" href="#">Register Now</a>
+                <div class="about-item">
+                    <img class="img-fluid" th:src="@{/music/assets/img/about/img3.jpg}" alt="">
+                    <div class="about-text">
+                        <h3><a href="#">Benefits of Joining</a></h3>
+                        <p>Free admission, opportunity to meet artists, networking with the music community and experience unique creative spaces.</p>
+                        <a class="btn btn-common btn-rm" href="#">Register Now</a>
+                    </div>
                 </div>
-              </div>
             </div>
         </div>
-      </div>
-    </section>
-    <!-- About Section End -->
+    </div>
+</section>
+<!-- About Section End -->
 
 
-  <!-- Counter Area Start-->
-  <section class="counter-section section-padding">
-      <div class="container">
-          <div class="row">
+<!-- Counter Area Start-->
+<section class="counter-section section-padding">
+    <div class="container">
+        <div class="row">
 
-              <!-- Location -->
-              <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
-                  <div class="counter wow fadeInRight" data-wow-delay="0.3s">
-                      <div class="icon"><i class="lni-map"></i></div>
-                      <p th:text="${event.places != null and !event.places.isEmpty() 
-                        ? event.places[0].placeName 
+            <!-- Location -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.3s">
+                    <div class="icon"><i class="lni-map"></i></div>
+                    <p th:text="${event.places != null and !event.places.isEmpty()
+                        ? event.places[0].placeName
                         : 'FPT University Da Nang'}">
-                          FPT University Da Nang
-                      </p>
-                      <span th:text="${event.places != null and !event.places.isEmpty() 
-                        ? event.places[0].building 
+                        FPT University Da Nang
+                    </p>
+                    <span th:text="${event.places != null and !event.places.isEmpty()
+                        ? event.places[0].building
                         : 'Gamma Building, FPT City'}">
                           Gamma Building, FPT City
                       </span>
-                  </div>
-              </div>
+                </div>
+            </div>
 
-              <!-- Time -->
-              <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
-                  <div class="counter wow fadeInRight" data-wow-delay="0.6s">
-                      <div class="icon"><i class="lni-timer"></i></div>
-                      <p th:text="${event.startsAt != null and event.endsAt != null 
+            <!-- Time -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.6s">
+                    <div class="icon"><i class="lni-timer"></i></div>
+                    <p th:text="${event.startsAt != null and event.endsAt != null
                         ? #temporals.format(event.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(event.endsAt, 'dd/MM/yyyy')
                         : '15 - 17 Tháng 3, 2025'}">
-                          15 - 17 Tháng 3, 2025
-                      </p>
-                      <span th:text="${event.startsAt != null and event.endsAt != null 
+                        15 - 17 Tháng 3, 2025
+                    </p>
+                    <span th:text="${event.startsAt != null and event.endsAt != null
                         ? #temporals.format(event.startsAt, 'HH:mm') + ' – ' + #temporals.format(event.endsAt, 'HH:mm')
                         : '18:00 – 22:00'}">
                           18:00 – 22:00
                       </span>
-                  </div>
-              </div>
+                </div>
+            </div>
 
-              <!-- Capacity -->
-              <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
-                  <div class="counter wow fadeInRight" data-wow-delay="0.9s">
-                      <div class="icon"><i class="lni-users"></i></div>
-                      <p th:text="${event.capacity != null 
+            <!-- Capacity -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.9s">
+                    <div class="icon"><i class="lni-users"></i></div>
+                    <p th:text="${event.capacity != null
                         ? event.capacity + ' Chỗ ngồi'
                         : '500 Chỗ ngồi'}">
-                          500 Chỗ ngồi
-                      </p>
-                      <span>Nhấn đặt sớm để giữ chỗ</span>
-                  </div>
-              </div>
+                        500 Chỗ ngồi
+                    </p>
+                    <span>Nhấn đặt sớm để giữ chỗ</span>
+                </div>
+            </div>
 
-              <!-- Benefits -->
-              <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
-                  <div class="counter wow fadeInRight" data-wow-delay="1.2s">
-                      <div class="icon"><i class="lni-coffee-cup"></i></div>
-                      <p th:text="${event.benefits != null 
+            <!-- Benefits -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="1.2s">
+                    <div class="icon"><i class="lni-coffee-cup"></i></div>
+                    <p th:text="${event.benefits != null
                         ? event.benefits
                         : 'Đồ ăn & Nước uống miễn phí'}">
-                          Đồ ăn & Nước uống miễn phí
-                      </p>
-                      <span>Đừng bỏ lỡ</span>
-                  </div>
-              </div>
-
-          </div>
-      </div>
-  </section>
-  <!-- Counter Area End-->
-
-  <!-- Counter Area End-->
-
-
-    <!-- Schedule Section Start -->
-    <section id="schedules" class="schedule section-padding">
-      <div class="container">
-        <div class="row">
-          <div class="col-12">
-            <div class="section-title-header text-center">
-              <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>
-              <p class="wow fadeInDown" data-wow-delay="0.2s">Discover activities and performances <br> throughout the 3 days of FPT Music Festival</p>
+                        Đồ ăn & Nước uống miễn phí
+                    </p>
+                    <span>Đừng bỏ lỡ</span>
+                </div>
             </div>
-          </div>
+
+        </div>
+    </div>
+</section>
+<!-- Counter Area End-->
+
+<!-- Counter Area End-->
+
+
+<!-- Schedule Section Start -->
+<section id="schedules" class="schedule section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Discover activities and performances <br> throughout the 3 days of FPT Music Festival</p>
+                </div>
+            </div>
         </div>
         <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">
-          <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
-            <div class="table-responsive">
-              <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item">
-                  <a class="nav-link active" id="monday-tab" data-toggle="tab" href="#monday" role="tab" aria-controls="monday" aria-expanded="true">
-                    <div class="item-text">
-                      <h4>Ngày 1</h4>
-                      <h5>15 Tháng 3</h5>
-                    </div>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="tuesday-tab" data-toggle="tab" href="#tuesday" role="tab" aria-controls="tuesday">
-                    <div class="item-text">
-                      <h4>Ngày 2</h4>
-                      <h5>16 Tháng 3</h5>
-                    </div>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="wednesday-tab" data-toggle="tab" href="#wednesday" role="tab" aria-controls="wednesday">
-                    <div class="item-text">
-                      <h4>Ngày 3</h4>
-                      <h5>17 Tháng 3</h5>
-                    </div>
-                  </a>
-                </li>
-              </ul>
+            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
+                <div class="table-responsive">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="monday-tab" data-toggle="tab" href="#monday" role="tab" aria-controls="monday" aria-expanded="true">
+                                <div class="item-text">
+                                    <h4>Ngày 1</h4>
+                                    <h5>15 Tháng 3</h5>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="tuesday-tab" data-toggle="tab" href="#tuesday" role="tab" aria-controls="tuesday">
+                                <div class="item-text">
+                                    <h4>Ngày 2</h4>
+                                    <h5>16 Tháng 3</h5>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="wednesday-tab" data-toggle="tab" href="#wednesday" role="tab" aria-controls="wednesday">
+                                <div class="item-text">
+                                    <h4>Ngày 3</h4>
+                                    <h5>17 Tháng 3</h5>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-          </div>
-          <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
-            <div class="tab-content" id="myTabContent">
-              <div class="tab-pane fade show active" id="monday" role="tabpanel" aria-labelledby="monday-tab">
-                <div id="accordion">
-                  <div class="card">
-                    <div id="headingOne">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="monday" role="tabpanel" aria-labelledby="monday-tab">
+                        <div id="accordion">
+                            <div class="card">
+                                <div id="headingOne">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingTwo">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>15 Free Productive Design Tools</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingThree">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>Getting Started With SketchApp</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingTwo">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>15 Free Productive Design Tools</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                    <div class="tab-pane fade" id="tuesday" role="tabpanel" aria-labelledby="tuesday-tab">
+                        <div id="accordion2">
+                            <div class="card">
+                                <div id="headingOne1">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne1" aria-expanded="false" aria-controls="collapseOne1">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseOne1" class="collapse show" aria-labelledby="headingOne1" data-parent="#accordion2">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingTwo2">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo2" aria-expanded="false" aria-controls="collapseTwo2">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseTwo2" class="collapse" aria-labelledby="headingTwo2" data-parent="#accordion2">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingThree">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>Getting Started With SketchApp</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                    <div class="tab-pane fade" id="wednesday" role="tabpanel" aria-labelledby="wednesday-tab">
+                        <div id="accordion3">
+                            <div class="card">
+                                <div id="headingOne3">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne3" aria-expanded="false" aria-controls="collapseOne3">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseOne3" class="collapse show" aria-labelledby="headingOne3" data-parent="#accordion3">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingTwo3">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo3" aria-expanded="false" aria-controls="collapseTwo3">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseTwo3" class="collapse" aria-labelledby="headingTwo3" data-parent="#accordion3">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingThree3">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree3" aria-expanded="false" aria-controls="collapseThree3">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseThree3" class="collapse" aria-labelledby="headingThree3" data-parent="#accordion3">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                  </div>
+                    <div class="tab-pane fade" id="thursday" role="tabpanel" aria-labelledby="thursday-tab">
+                        <div id="accordion4">
+                            <div class="card">
+                                <div id="headingOne">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne4" aria-expanded="false" aria-controls="collapseOne4">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseOne4" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion4">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingTwo">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo4" aria-expanded="false" aria-controls="collapseTwo4">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseTwo4" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion4">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingThree4">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree4" aria-expanded="false" aria-controls="collapseThree4">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseThree4" class="collapse" aria-labelledby="headingThree" data-parent="#accordion4">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="friday" role="tabpanel" aria-labelledby="friday-tab">
+                        <div id="accordion">
+                            <div class="card">
+                                <div id="headingOne">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingTwo">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div id="headingThree">
+                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        <div class="images-box">
+                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
+                                        </div>
+                                        <span class="time">10am - 12:30pm</span>
+                                        <h4>FPT Music Festival</h4>
+                                        <h5 class="name">Nghệ sĩ FPT</h5>
+                                    </div>
+                                </div>
+                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
+                                        <div class="location">
+                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div class="tab-pane fade" id="tuesday" role="tabpanel" aria-labelledby="tuesday-tab">
-                <div id="accordion2">
-                  <div class="card">
-                    <div id="headingOne1">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne1" aria-expanded="false" aria-controls="collapseOne1">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseOne1" class="collapse show" aria-labelledby="headingOne1" data-parent="#accordion2">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingTwo2">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo2" aria-expanded="false" aria-controls="collapseTwo2">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseTwo2" class="collapse" aria-labelledby="headingTwo2" data-parent="#accordion2">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="wednesday" role="tabpanel" aria-labelledby="wednesday-tab">
-                <div id="accordion3">
-                  <div class="card">
-                    <div id="headingOne3">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne3" aria-expanded="false" aria-controls="collapseOne3">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseOne3" class="collapse show" aria-labelledby="headingOne3" data-parent="#accordion3">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingTwo3">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo3" aria-expanded="false" aria-controls="collapseTwo3">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseTwo3" class="collapse" aria-labelledby="headingTwo3" data-parent="#accordion3">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingThree3">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree3" aria-expanded="false" aria-controls="collapseThree3">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseThree3" class="collapse" aria-labelledby="headingThree3" data-parent="#accordion3">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="thursday" role="tabpanel" aria-labelledby="thursday-tab">
-                <div id="accordion4">
-                  <div class="card">
-                    <div id="headingOne">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne4" aria-expanded="false" aria-controls="collapseOne4">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseOne4" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion4">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingTwo">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo4" aria-expanded="false" aria-controls="collapseTwo4">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseTwo4" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion4">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingThree4">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree4" aria-expanded="false" aria-controls="collapseThree4">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseThree4" class="collapse" aria-labelledby="headingThree" data-parent="#accordion4">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="friday" role="tabpanel" aria-labelledby="friday-tab">
-                <div id="accordion">
-                  <div class="card">
-                    <div id="headingOne">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingTwo">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div id="headingThree">
-                      <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                        <div class="images-box">
-                          <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
-                        </div>                     
-                        <span class="time">10am - 12:30pm</span>
-                        <h4>FPT Music Festival</h4>
-                        <h5 class="name">Nghệ sĩ FPT</h5>
-                      </div>
-                    </div>
-                    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-                      <div class="card-body">
-                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                        <div class="location">
-                          <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </section>
-    <!-- Schedule Section End -->
+    </div>
+</section>
+<!-- Schedule Section End -->
 
-  <!-- Team Section Start -->
-  <section id="team" class="section-padding text-center">
-      <div class="container">
-          <div class="row">
-              <div class="col-12">
-                  <div class="section-title-header text-center">
-                      <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Singers</h1>
-                      <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the famous singers and artists at FPT Music Festival 2025</p>
-                  </div>
-              </div>
-          </div>
-          
-          <!-- Render singger/speaker -->
-          <div class="row justify-content-center">
-              <div class="col-lg-4 col-md-6 col-sm-6"
-                   th:each="sp : ${event.speakers}">
-                  <div class="simple-artist-card wow fadeInUp" data-wow-delay="0.2s">
-                      <div class="artist-image">
-                          <img class="img-fluid" th:src="${sp.imageUrl}" th:alt="${sp.name}">
-                      </div>
-                      <div class="artist-info">
-                          <h3 th:text="${sp.name}">Speaker Name</h3>
-                          <p th:text="${sp.role}">Role</p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-      </div>
-  </section>
-  <!-- Team Section End -->
-
-
-  <!-- Gallery Section Start -->
-  <section id="gallery" class="section-padding">
-      <div class="container">
-          <div class="row">
-              <div class="col-12">
-                  <div class="section-title-header text-center">
-                      <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Gallery</h1>
-                      <p class="wow fadeInDown" data-wow-delay="0.2s">
-                          The most beautiful moments from previous music events
-                      </p>
-                  </div>
-              </div>
-          </div>
-
-          <div class="row">
-              <!-- Loop qua tất cả ảnh của event -->
-              <div class="col-md-6 col-sm-6 col-lg-4" th:each="img : ${event.imageUrls}">
-                  <div class="gallery-box">
-                      <div class="img-thumb">
-                          <img class="img-fluid" th:src="${img}" alt="Event Gallery Image">
-                      </div>
-                      <div class="overlay-box text-center">
-                          <a class="lightbox" th:href="${img}">
-                              <i class="lni-plus"></i>
-                          </a>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-  <!-- Gallery Section End -->
-
-
-    <!-- Ask Question Section Start -->
-    <section id="faq" class="section-padding">
-      <div class="container">
+<!-- Team Section Start -->
+<section id="team" class="section-padding text-center">
+    <div class="container">
         <div class="row">
-          <div class="col-12">
-            <div class="section-title-header text-center">
-              <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Contact Us</h1>
-              <p class="wow fadeInDown" data-wow-delay="0.2s">Have questions about FPT Music Festival? We're here to help you!</p>
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Singers</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the famous singers and artists at FPT Music Festival 2025</p>
+                </div>
             </div>
-          </div>
         </div>
-        <div class="row">
-          <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
-            <div class="accordion">
-              <div class="card">
-                <div class="card-header" id="headingOne">
-                  <div class="header-title" data-toggle="collapse" data-target="#questionOne" aria-expanded="true" aria-controls="collapseOne">
-                    <i class="lni-pencil"></i> How to make a new event?
-                  </div>
-                </div>
-                <div id="questionOne" class="collapse" aria-labelledby="headingOne" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-header" id="headingTwo">
-                    <div class="header-title" data-toggle="collapse" data-target="#questionTwo" aria-expanded="false" aria-controls="questionTwo">
-                      <i class="lni-pencil"></i>  Which payment methods do you accept?
+
+        <!-- Render singger/speaker -->
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 col-sm-6"
+                 th:each="sp : ${event.speakers}">
+                <div class="simple-artist-card wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="artist-image">
+                        <img class="img-fluid" th:src="${sp.imageUrl}" th:alt="${sp.name}">
+                    </div>
+                    <div class="artist-info">
+                        <h3 th:text="${sp.name}">Speaker Name</h3>
+                        <p th:text="${sp.role}">Role</p>
                     </div>
                 </div>
-                <div id="questionTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-header" id="headingThree">
-                  <div class="header-title" data-toggle="collapse" data-target="#questionThree" aria-expanded="false" aria-controls="questionThree">
-                    <i class="lni-pencil"></i>  Which document can i bring to meeting?
-                  </div>
-                </div>
-                <div id="questionThree" class="collapse" aria-labelledby="headingThree" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-header" id="headingThree">
-                  <div class="header-title" data-toggle="collapse" data-target="#questionFour" aria-expanded="false" aria-controls="questionFour">
-                   <i class="lni-pencil"></i> Who can join at the live event venue?
-                  </div>
-                </div>
-                <div id="questionFour" class="collapse" aria-labelledby="headingThree" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-          <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
-            <div class="accordion">
-              <div class="card">
-                <div class="card-header" id="headingOne2">
-                  <div class="header-title" data-toggle="collapse" data-target="#questionOne2" aria-expanded="true" aria-controls="collapseOne">
-                    <i class="lni-pencil"></i> How to make a new event?
-                  </div>
+        </div>
+
+    </div>
+</section>
+<!-- Team Section End -->
+
+
+<!-- Gallery Section Start -->
+<section id="gallery" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Gallery</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        The most beautiful moments from previous music events
+                    </p>
                 </div>
-                <div id="questionOne2" class="collapse" aria-labelledby="headingOne" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-header" id="headingTwo2">
-                    <div class="header-title" data-toggle="collapse" data-target="#questionTwo2" aria-expanded="false" aria-controls="questionTwo">
-                      <i class="lni-pencil"></i>  Which payment methods do you accept?
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Loop qua tất cả ảnh của event -->
+            <div class="col-md-6 col-sm-6 col-lg-4" th:each="img : ${event.imageUrls}">
+                <div class="gallery-box">
+                    <div class="img-thumb">
+                        <img class="img-fluid" th:src="${img}" alt="Event Gallery Image">
+                    </div>
+                    <div class="overlay-box text-center">
+                        <a class="lightbox" th:href="${img}">
+                            <i class="lni-plus"></i>
+                        </a>
                     </div>
                 </div>
-                <div id="questionTwo2" class="collapse" aria-labelledby="headingTwo" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-header" id="headingThree">
-                  <div class="header-title" data-toggle="collapse" data-target="#questionFive" aria-expanded="false" aria-controls="questionFive">
-                    <i class="lni-pencil"></i>How to set price?
-                  </div>
-                </div>
-                <div id="questionFive" class="collapse" aria-labelledby="headingThree" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-header" id="headingThree">
-                  <div class="header-title" data-toggle="collapse" data-target="#questionSix" aria-expanded="false" aria-controls="questionSix">
-                    <i class="lni-pencil"></i>  What our price list?
-                  </div>
-                </div>
-                <div id="questionSix" class="collapse" aria-labelledby="headingThree" data-parent="#question">
-                  <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </section>
-    <!-- Ask Question Section End -->
+    </div>
+</section>
+<!-- Gallery Section End -->
 
-    <!-- Sponsors Section Start -->
-    <section id="sponsors" class="section-padding">
-      <div class="container">
+
+<!-- Ask Question Section Start -->
+<section id="faq" class="section-padding">
+    <div class="container">
         <div class="row">
-          <div class="col-12">
-            <div class="section-title-header text-center">
-              <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Our Sponsors</h1>
-              <p class="wow fadeInDown" data-wow-delay="0.2s">Thank you to our partners who have joined FPT Music Festival 2025</p>
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Contact Us</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Have questions about FPT Music Festival? We're here to help you!</p>
+                </div>
             </div>
-          </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
+                <div class="accordion">
+                    <div class="card">
+                        <div class="card-header" id="headingOne">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionOne" aria-expanded="true" aria-controls="collapseOne">
+                                <i class="lni-pencil"></i> How to make a new event?
+                            </div>
+                        </div>
+                        <div id="questionOne" class="collapse" aria-labelledby="headingOne" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingTwo">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionTwo" aria-expanded="false" aria-controls="questionTwo">
+                                <i class="lni-pencil"></i>  Which payment methods do you accept?
+                            </div>
+                        </div>
+                        <div id="questionTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionThree" aria-expanded="false" aria-controls="questionThree">
+                                <i class="lni-pencil"></i>  Which document can i bring to meeting?
+                            </div>
+                        </div>
+                        <div id="questionThree" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionFour" aria-expanded="false" aria-controls="questionFour">
+                                <i class="lni-pencil"></i> Who can join at the live event venue?
+                            </div>
+                        </div>
+                        <div id="questionFour" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
+                <div class="accordion">
+                    <div class="card">
+                        <div class="card-header" id="headingOne2">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionOne2" aria-expanded="true" aria-controls="collapseOne">
+                                <i class="lni-pencil"></i> How to make a new event?
+                            </div>
+                        </div>
+                        <div id="questionOne2" class="collapse" aria-labelledby="headingOne" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingTwo2">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionTwo2" aria-expanded="false" aria-controls="questionTwo">
+                                <i class="lni-pencil"></i>  Which payment methods do you accept?
+                            </div>
+                        </div>
+                        <div id="questionTwo2" class="collapse" aria-labelledby="headingTwo" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionFive" aria-expanded="false" aria-controls="questionFive">
+                                <i class="lni-pencil"></i>How to set price?
+                            </div>
+                        </div>
+                        <div id="questionFive" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionSix" aria-expanded="false" aria-controls="questionSix">
+                                <i class="lni-pencil"></i>  What our price list?
+                            </div>
+                        </div>
+                        <div id="questionSix" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                            <div class="card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Ask Question Section End -->
+
+<!-- Sponsors Section Start -->
+<section id="sponsors" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Our Sponsors</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Thank you to our partners who have joined FPT Music Festival 2025</p>
+                </div>
+            </div>
         </div>
         <div class="row mb-30 text-center wow fadeInDown" data-wow-delay="0.3s">
-          <div class="col-md-3 col-sm-3 col-xs-12">
-            <div class="spnsors-logo">
-                <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-01.png}" alt="Sponsor 1"></a>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-3 col-xs-12">
-            <div class="spnsors-logo">
-                <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-02.png}" alt="Sponsor 2"></a>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-3 col-xs-12">
-            <div class="spnsors-logo">
-                <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-03.jpg}" alt="Sponsor 3"></a>
-            </div>
-          </div>
-          <div class="col-md-3 col-sm-3 col-xs-12">
-            <div class="spnsors-logo">
-                <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-04.png}" alt="Sponsor 4"></a>
-            </div>
-          </div>
-          <div class="col-12 text-center">
-            <a href="#" class="btn btn-common">become a sponsor</a>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Sponsors Section End -->
-
-    <!-- Ticket Pricing Area Start -->
-    <section id="pricing" class="section-padding">
-      <div class="container">
-        <div class="row">
-          <div class="col-12">
-            <div class="section-title-header text-center">
-              <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>
-              <p class="wow fadeInDown" data-wow-delay="0.2s">Choose the right package to fully enjoy FPT Music Festival 2025</p>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-            <div class="price-block-wrapper wow fadeInLeft" data-wow-delay="0.2s">
-              <div class="icon">
-                <i class="lni-write"></i>
-              </div>
-              <div class="colmun-title">
-                <h5>Class C Seats</h5>
-              </div>
-              <div class="price">
-                <h2>150,000 VND</h2>
-                <p>500 Tickets Available</p>
-              </div>
-              <div class="pricing-list">
-                <ul>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">General Admission</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Free Water & Snacks</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Access to Food Court</span></li>
-                  <li><i class="lni-close"></i><span class="text">VIP Meet & Greet</span></li>
-                  <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Music Workshops</span></li>
-                </ul>
-              </div>
-              <a href="#" class="btn btn-common">Buy Ticket</a>
-            </div>
-          </div>
-          <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-            <div class="price-block-wrapper wow fadeInUp" data-wow-delay="0.3s">
-              <div class="icon">
-                <i class="lni-layers"></i>
-              </div>
-              <div class="colmun-title">
-                <h5>Class B Seats</h5>
-              </div>
-              <div class="price">
-                <h2>250,000 VND</h2>
-                <p>300 Tickets Available</p>
-              </div>
-              <div class="pricing-list">
-                <ul>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Premium Seating</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Free Beverages</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Complimentary Meal</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Artist Meet & Greet</span></li>
-                  <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Exclusive Workshops</span></li>
-                </ul>
-              </div>
-              <a href="#" class="btn btn-common">Buy Ticket</a>
-            </div>
-          </div>
-          <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-            <div class="price-block-wrapper wow fadeInRight" data-wow-delay="0.4s">
-              <div class="icon">
-                <i class="lni-leaf"></i>
-              </div>
-              <div class="colmun-title">
-                <h5>Class A Seats</h5>
-              </div>
-              <div class="price">
-                <h2>400,000 VND</h2>
-                <p>150 Tickets Available</p>
-              </div>
-              <div class="pricing-list">
-                <ul>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">VIP Front Row Seating</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Premium Bar Access</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Gourmet Catering</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Backstage Access</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Artist Photo Session</span></li>
-                  <li><i class="lni-check-mark-circle"></i><span class="text">Private Masterclass</span></li>
-                </ul>
-              </div>
-              <a href="#" class="btn btn-common">Buy Ticket</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Ticket Pricing Area End -->
-
-    <!-- Event Slides Section Start -->
-    <section id="event-slides" class="section-padding">
-      <div class="container">
-        <div class="row">
-          <div class="col-12">
-            <div class="section-title-header text-center">
-              <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>
-              <p class="wow fadeInDown" data-wow-delay="0.2s">All the information you need for the best experience at FPT Music Festival</p>
-            </div>
-          </div>
-          <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
-            <div class="video">
-                <img class="img-fluid" th:src="@{/music/assets/img/about/about.jpg}" alt="Event Guidelines">
-            </div>
-          </div>
-          <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
-            <p class="intro-desc">Join us at FPT University Da Nang for an unforgettable music experience! Here's everything you need to know to make the most of your visit:
-            </p>
-            <h2 class="intro-title">Event Day Instructions</h2>
-            <ul class="list-specification">
-              <li><i class="lni-check-mark-circle"></i> <strong>Arrival:</strong> Come to FPT University Da Nang at Ngu Hanh Son</li>
-              <li><i class="lni-check-mark-circle"></i> <strong>Check-in:</strong> Go to Alpha Building for registration and ticket verification</li>
-              <li><i class="lni-check-mark-circle"></i> <strong>Navigation:</strong> Follow the directional signs to reach the event venue</li>
-              <li><i class="lni-check-mark-circle"></i> <strong>Main Venue:</strong> Event takes place in Gamma Building lobby</li>
-              <li><i class="lni-check-mark-circle"></i> <strong>Dress Code:</strong> Casual comfortable clothing, FPT colors preferred</li>
-              <li><i class="lni-check-mark-circle"></i> <strong>Bring:</strong> Your ticket, student ID, and positive energy!</li> 
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Event Slides Section End -->
-
-    <!-- Blog Section Start -->
-    <section id="blog" class="section-padding">
-      <div class="container">
-        <div class="row">
-          <div class="col-12">
-            <div class="section-title-header text-center">
-              <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Latest News & Articles</h1>
-              <p class="wow fadeInDown" data-wow-delay="0.2s">Stay updated with the latest information about FPT Music Festival 2025</p>
-            </div>
-          </div>
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="blog-item">
-              <div class="blog-image">
-                <a href="#">
-                    <img class="img-fluid" th:src="@{/music/assets/img/blog/img-1.jpg}" alt="">
-                </a>
-              </div>
-              <div class="descr">
-                <div class="tag">Design</div>
-                <h3 class="title">
-                  <a href="single-blog.html">
-                    The 9 Design Trends You Need to Know
-                  </a>
-                </h3>
-                <div class="meta-tags">
-                  <span class="date">Jan 20, 2018</span>
-                  <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-01.png}" alt="Sponsor 1"></a>
                 </div>
-              </div>
             </div>
-          </div>
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="blog-item">
-              <div class="blog-image">
-                <a href="#">
-                    <img class="img-fluid" th:src="@{/music/assets/img/blog/img-2.jpg}" alt="">
-                </a>
-              </div>
-              <div class="descr">
-                <div class="tag">Design</div>
-                <h3 class="title">
-                  <a href="single-blog.html">
-                    The 9 Design Trends You Need to Know
-                  </a>
-                </h3>
-                <div class="meta-tags">
-                  <span class="date">Jan 20, 2018 </span>
-                  <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-02.png}" alt="Sponsor 2"></a>
                 </div>
-              </div>
             </div>
-          </div>
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="blog-item">
-              <div class="blog-image">
-                <a href="#">
-                    <img class="img-fluid" th:src="@{/music/assets/img/blog/img-3.jpg}" alt="">
-                </a>
-              </div>
-              <div class="descr">
-                <div class="tag">Design</div>
-                <h3 class="title">
-                  <a href="single-blog.html">
-                    The 9 Design Trends You Need to Know
-                  </a>
-                </h3>
-                <div class="meta-tags">
-                  <span class="date">Jan 20, 2018</span> 
-                  <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-03.jpg}" alt="Sponsor 3"></a>
                 </div>
-              </div>
             </div>
-          </div>
-          <div class="col-12 text-center">
-            <a href="#" class="btn btn-common">Read More News</a>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Blog Section End -->
-
-    <!-- Subscribe Area Start -->
-    <div id="subscribe" class="section-padding">
-      <div class="container">
-        <div class="row justify-content-md-center">
-          <div class="col-md-10 col-lg-7">
-            <div class="subscribe-inner wow fadeInDown" data-wow-delay="0.3s">
-              <h2 class="subscribe-title">Stay Updated with FPT Music Festival</h2>
-              <form class="text-center form-inline">
-                <input class="mb-20 form-control" name="email" placeholder="Enter Your Email to Get Latest Updates">
-                <button type="submit" class="btn btn-common sub-btn" data-style="zoom-in" data-spinner-size="30" name="submit" id="submit">
-                <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>
-                </button>
-              </form>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-04.png}" alt="Sponsor 4"></a>
+                </div>
             </div>
-          </div>
+            <div class="col-12 text-center">
+                <a href="#" class="btn btn-common">become a sponsor</a>
+            </div>
         </div>
-      </div>
     </div>
-    <!-- Subscribe Area End -->
+</section>
+<!-- Sponsors Section End -->
 
-    <!-- Map Section Start -->
-    <section id="google-map-area">
-      <div class="container-fluid">
+<!-- Ticket Pricing Area Start -->
+<section id="pricing" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Choose the right package to fully enjoy FPT Music Festival 2025</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
+                <div class="price-block-wrapper wow fadeInLeft" data-wow-delay="0.2s">
+                    <div class="icon">
+                        <i class="lni-write"></i>
+                    </div>
+                    <div class="colmun-title">
+                        <h5>Class C Seats</h5>
+                    </div>
+                    <div class="price">
+                        <h2>150,000 VND</h2>
+                        <p>500 Tickets Available</p>
+                    </div>
+                    <div class="pricing-list">
+                        <ul>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">General Admission</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Water & Snacks</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Access to Food Court</span></li>
+                            <li><i class="lni-close"></i><span class="text">VIP Meet & Greet</span></li>
+                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Music Workshops</span></li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn btn-common">Buy Ticket</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
+                <div class="price-block-wrapper wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="icon">
+                        <i class="lni-layers"></i>
+                    </div>
+                    <div class="colmun-title">
+                        <h5>Class B Seats</h5>
+                    </div>
+                    <div class="price">
+                        <h2>250,000 VND</h2>
+                        <p>300 Tickets Available</p>
+                    </div>
+                    <div class="pricing-list">
+                        <ul>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Seating</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Beverages</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Complimentary Meal</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Meet & Greet</span></li>
+                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Exclusive Workshops</span></li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn btn-common">Buy Ticket</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
+                <div class="price-block-wrapper wow fadeInRight" data-wow-delay="0.4s">
+                    <div class="icon">
+                        <i class="lni-leaf"></i>
+                    </div>
+                    <div class="colmun-title">
+                        <h5>Class A Seats</h5>
+                    </div>
+                    <div class="price">
+                        <h2>400,000 VND</h2>
+                        <p>150 Tickets Available</p>
+                    </div>
+                    <div class="pricing-list">
+                        <ul>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">VIP Front Row Seating</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Bar Access</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Gourmet Catering</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Backstage Access</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Photo Session</span></li>
+                            <li><i class="lni-check-mark-circle"></i><span class="text">Private Masterclass</span></li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn btn-common">Buy Ticket</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Ticket Pricing Area End -->
+
+<!-- Event Slides Section Start -->
+<section id="event-slides" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">All the information you need for the best experience at FPT Music Festival</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
+                <div class="video">
+                    <img class="img-fluid" th:src="@{/music/assets/img/about/about.jpg}" alt="Event Guidelines">
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
+                <p class="intro-desc">Join us at FPT University Da Nang for an unforgettable music experience! Here's everything you need to know to make the most of your visit:
+                </p>
+                <h2 class="intro-title">Event Day Instructions</h2>
+                <ul class="list-specification">
+                    <li><i class="lni-check-mark-circle"></i> <strong>Arrival:</strong> Come to FPT University Da Nang at Ngu Hanh Son</li>
+                    <li><i class="lni-check-mark-circle"></i> <strong>Check-in:</strong> Go to Alpha Building for registration and ticket verification</li>
+                    <li><i class="lni-check-mark-circle"></i> <strong>Navigation:</strong> Follow the directional signs to reach the event venue</li>
+                    <li><i class="lni-check-mark-circle"></i> <strong>Main Venue:</strong> Event takes place in Gamma Building lobby</li>
+                    <li><i class="lni-check-mark-circle"></i> <strong>Dress Code:</strong> Casual comfortable clothing, FPT colors preferred</li>
+                    <li><i class="lni-check-mark-circle"></i> <strong>Bring:</strong> Your ticket, student ID, and positive energy!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Event Slides Section End -->
+
+<!-- Blog Section Start -->
+<section id="blog" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Latest News & Articles</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Stay updated with the latest information about FPT Music Festival 2025</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12">
+                <div class="blog-item">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-1.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Design</div>
+                        <h3 class="title">
+                            <a href="single-blog.html">
+                                The 9 Design Trends You Need to Know
+                            </a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Jan 20, 2018</span>
+                            <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12">
+                <div class="blog-item">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-2.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Design</div>
+                        <h3 class="title">
+                            <a href="single-blog.html">
+                                The 9 Design Trends You Need to Know
+                            </a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Jan 20, 2018 </span>
+                            <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12">
+                <div class="blog-item">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-3.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Design</div>
+                        <h3 class="title">
+                            <a href="single-blog.html">
+                                The 9 Design Trends You Need to Know
+                            </a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Jan 20, 2018</span>
+                            <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 text-center">
+                <a href="#" class="btn btn-common">Read More News</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Blog Section End -->
+
+<!-- Subscribe Area Start -->
+<div id="subscribe" class="section-padding">
+    <div class="container">
+        <div class="row justify-content-md-center">
+            <div class="col-md-10 col-lg-7">
+                <div class="subscribe-inner wow fadeInDown" data-wow-delay="0.3s">
+                    <h2 class="subscribe-title">Stay Updated with FPT Music Festival</h2>
+                    <form class="text-center form-inline">
+                        <input class="mb-20 form-control" name="email" placeholder="Enter Your Email to Get Latest Updates">
+                        <button type="submit" class="btn btn-common sub-btn" data-style="zoom-in" data-spinner-size="30" name="submit" id="submit">
+                            <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Subscribe Area End -->
+
+<!-- Map Section Start -->
+<section id="google-map-area">
+    <div class="container-fluid">
         <div class="row">
         </div>
-      </div>
-    </section>
-    <!-- Map Section End -->
+    </div>
+</section>
+<!-- Map Section End -->
 
 
 
-    <!-- Music-themed Go to Top Link -->
-    <a href="#" class="back-to-top music-scroll-btn">
-      <div class="music-icon">
+<!-- Music-themed Go to Top Link -->
+<a href="#" class="back-to-top music-scroll-btn">
+    <div class="music-icon">
         <div class="note note-1">♪</div>
         <div class="note note-2">♫</div>
         <div class="note note-3">♪</div>
-      </div>
-      <div class="scroll-text">TOP</div>
-    </a>
+    </div>
+    <div class="scroll-text">TOP</div>
+</a>
 
-    <div id="preloader">
-      <div class="sk-circle">
+<div id="preloader">
+    <div class="sk-circle">
         <div class="sk-circle1 sk-child"></div>
         <div class="sk-circle2 sk-child"></div>
         <div class="sk-circle3 sk-child"></div>
@@ -1160,24 +1162,24 @@
         <div class="sk-circle10 sk-child"></div>
         <div class="sk-circle11 sk-child"></div>
         <div class="sk-circle12 sk-child"></div>
-      </div>
     </div>
+</div>
 
-    <script th:src="@{/music/assets/js/jquery-min.js}"></script>
-    <script th:src="@{/music/assets/js/popper.min.js}"></script>
-    <script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
-    <script th:src="@{/music/assets/js/jquery.countdown.min.js}"></script>
-    <script th:src="@{/music/assets/js/jquery.nav.js}"></script>
-    <script th:src="@{/music/assets/js/jquery.easing.min.js}"></script>
-    <script th:src="@{/music/assets/js/wow.js}"></script>
-    <script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
-    <script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
-    <script th:src="@{/music/assets/js/main.js}"></script>
+<script th:src="@{/music/assets/js/jquery-min.js}"></script>
+<script th:src="@{/music/assets/js/popper.min.js}"></script>
+<script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
+<script th:src="@{/music/assets/js/jquery.countdown.min.js}"></script>
+<script th:src="@{/music/assets/js/jquery.nav.js}"></script>
+<script th:src="@{/music/assets/js/jquery.easing.min.js}"></script>
+<script th:src="@{/music/assets/js/wow.js}"></script>
+<script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
+<script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
+<script th:src="@{/music/assets/js/main.js}"></script>
 
 
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         const heroTrack = document.getElementById('heroTrack');
         const heroSlides = document.querySelectorAll('.hero-slide');
         const prevBtn = document.getElementById('heroPrev');
@@ -1188,23 +1190,23 @@
         const totalSlides = heroSlides.length;
 
         function updateSlider() {
-          const translateX = -currentSlide * 100;
-          heroTrack.style.transform = `translateX(${translateX}%)`;
+            const translateX = -currentSlide * 100;
+            heroTrack.style.transform = `translateX(${translateX}%)`;
 
-          // Update progress bars
-          progressBars.forEach((bar, index) => {
-            bar.classList.toggle('active', index === currentSlide);
-          });
+            // Update progress bars
+            progressBars.forEach((bar, index) => {
+                bar.classList.toggle('active', index === currentSlide);
+            });
         }
 
         function nextSlide() {
-          currentSlide = (currentSlide + 1) % totalSlides;
-          updateSlider();
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
         }
 
         function prevSlide() {
-          currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-          updateSlider();
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
         }
 
         // Event listeners
@@ -1213,10 +1215,10 @@
 
         // Progress bar click handlers
         progressBars.forEach((bar, index) => {
-          bar.addEventListener('click', () => {
-            currentSlide = index;
-            updateSlider();
-          });
+            bar.addEventListener('click', () => {
+                currentSlide = index;
+                updateSlider();
+            });
         });
 
         // Auto-slide functionality
@@ -1224,7 +1226,7 @@
 
         // Initialize
         updateSlider();
-      });
-    </script>
-  </body>
+    });
+</script>
+</body>
 </html>

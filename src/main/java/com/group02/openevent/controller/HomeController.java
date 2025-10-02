@@ -28,13 +28,13 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        // Get poster events for hero slider
-        List<EventCardDTO> posterEvents = eventService.getPosterEvents();
-        model.addAttribute("posterEvents", posterEvents);
-
-        // Get recommended events
-        List<EventCardDTO> recommendedEvents = eventService.getRecommendedEvents(6);
-        model.addAttribute("recommendedEvents", recommendedEvents);
+//        // Get poster events for hero slider
+//        List<EventCardDTO> posterEvents = eventService.getPosterEvents();
+//        model.addAttribute("posterEvents", posterEvents);
+//
+//        // Get recommended events
+//        List<EventCardDTO> recommendedEvents = eventService.getRecommendedEvents(6);
+//        model.addAttribute("recommendedEvents", recommendedEvents);
 
         return "index";
     }

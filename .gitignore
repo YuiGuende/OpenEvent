@@ -1,3 +1,11 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -30,6 +38,5 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+.env
 
-/src/main/resources/application.properties

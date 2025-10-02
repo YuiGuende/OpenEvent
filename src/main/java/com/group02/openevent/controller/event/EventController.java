@@ -38,21 +38,25 @@ public class EventController {
 
     // POST - create event
     @PostMapping("save/music")
+    @ResponseBody
     public MusicEvent saveMusic(@RequestBody MusicEvent event) {
         return eventService.saveMusicEvent(event);
     }
 
     @PostMapping("save/festival")
+    @ResponseBody
     public FestivalEvent saveFestival(@RequestBody FestivalEvent event) {
         return eventService.saveFestivalEvent(event);
     }
 
     @PostMapping("save/competition")
+    @ResponseBody
     public CompetitionEvent saveCompetition(@RequestBody CompetitionEvent event) {
         return eventService.saveCompetitionEvent(event);
     }
 
     @PostMapping("save/workshop")
+    @ResponseBody
     public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
         return eventService.saveWorkshopEvent(event);
     }
@@ -60,6 +64,7 @@ public class EventController {
 
     // GET - get event by id
     @GetMapping("/{id}")
+    @ResponseBody
     public Optional<Event> getEvent(@PathVariable Integer id) {
         return eventService.getEventById(id);
     }
@@ -67,6 +72,7 @@ public class EventController {
 
     // GET - get event by type
     @GetMapping("/type/{type}")
+    @ResponseBody
     public List<Event> getEventsByType(@PathVariable String type) {
         Class<? extends Event> eventType = getEventTypeClass(type);
         return eventService.getEventsByType(eventType);
@@ -92,6 +98,7 @@ public class EventController {
     }
 
     @PostMapping("/upload/image")
+    @ResponseBody
     public ResponseEntity<Event> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam("index") int index,

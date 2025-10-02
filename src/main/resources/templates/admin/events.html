@@ -1,10 +1,443 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events Management - Admin Panel</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 2px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+
+        }
+
+        .card,.table-responsive{
+            min-height: 500px;
+        }
+
+        .btn-approve {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: linear-gradient(45deg, #218838, #1ea085);
+            color: white;
+        }
+
+        .event-status {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .status-draft { background-color: #ffc107; color: #000; }
+        .status-public { background-color: #28a745; color: #fff; }
+        .status-ongoing { background-color: #17a2b8; color: #fff; }
+        .status-cancel { background-color: #dc3545; color: #fff; }
+        .status-finish { background-color: #6c757d; color: #fff; }
+
+        .event-type-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .type-music { background-color: #e91e63; color: #fff; }
+        .type-competition { background-color: #ff9800; color: #fff; }
+        .type-festival { background-color: #9c27b0; color: #fff; }
+        .type-workshop { background-color: #2196f3; color: #fff; }
+        .type-others { background-color: #607d8b; color: #fff; }
+
+        .event-image {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+    </style>
 </head>
 <body>
-$END$
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="position-sticky pt-3">
+                <div class="text-center mb-4">
+                    <h4 class="text-white">
+                        <i class="bi bi-shield-check"></i>
+                        Admin Panel
+                    </h4>
+                </div>
+
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/dashboard}">
+                            <i class="bi bi-speedometer2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/admin/events}">
+                            <i class="bi bi-calendar-event"></i>
+                            Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/notifications}">
+                            <i class="bi bi-bell"></i>
+                            Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/orders}">
+                            <i class="bi bi-cart"></i>
+                            Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/reports}">
+                            <i class="bi bi-flag"></i>
+                            Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/articles}">
+                            <i class="bi bi-newspaper"></i>
+                            Articles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/requests}">
+                            <i class="bi bi-inbox"></i>
+                            Requests
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            <div class="pt-3 pb-2 mb-3">
+                <!-- Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        Events Management
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <span class="badge bg-primary fs-6" th:text="'Total: ' + ${events.totalElements}">Total: 0</span>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section">
+                    <form th:action="@{/admin/events}" method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="eventType" class="form-label">Event Type</label>
+                            <select class="form-select" id="eventType" name="eventType">
+                                <option value="">All Types</option>
+                                <option th:each="type : ${eventTypes}"
+                                        th:value="${type}"
+                                        th:text="${type}"
+                                        th:selected="${selectedEventType == type}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All Status</option>
+                                <option th:each="stat : ${eventStatuses}"
+                                        th:value="${stat}"
+                                        th:text="${stat}"
+                                        th:selected="${selectedStatus == stat}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="size" class="form-label">Per Page</label>
+                            <select class="form-select" id="size" name="size">
+                                <option value="10" th:selected="${events.size == 10}">10</option>
+                                <option value="25" th:selected="${events.size == 25}">25</option>
+                                <option value="50" th:selected="${events.size == 50}">50</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="sortBy" class="form-label">Sort By</label>
+                            <select class="form-select" id="sortBy" name="sortBy">
+                                <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Created Date</option>
+                                <option value="title" th:selected="${sortBy == 'title'}">Title</option>
+                                <option value="startsAt" th:selected="${sortBy == 'startsAt'}">Start Date</option>
+                                <option value="status" th:selected="${sortBy == 'status'}">Status</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search"></i> Filter
+                                </button>
+                                <a th:href="@{/admin/events}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Events List -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Event Details</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Dates</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="event : ${events.content}">
+                                    <td>
+                                        <img th:src="${event.imageUrl != null ? event.imageUrl : '/images/default-event.jpg'}"
+                                             alt="Event Image" class="event-image">
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-1" th:text="${event.title}">Event Title</h6>
+                                            <small class="text-muted" th:text="${#strings.abbreviate(event.description, 80)}">
+                                                Event description...
+                                            </small>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar-plus"></i>
+                                                Created: <span th:text="${#temporals.format(event.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                                <span class="event-type-badge"
+                                                      th:classappend="'type-' + ${#strings.toLowerCase(event.eventType)}"
+                                                      th:text="${event.eventType}">
+                                                </span>
+                                    </td>
+                                    <td>
+                                                <span class="event-status"
+                                                      th:classappend="'status-' + ${#strings.toLowerCase(event.status)}"
+                                                      th:text="${event.status}">
+                                                </span>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            <strong>Start:</strong><br>
+                                            <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                            <br>
+                                            <strong>End:</strong><br>
+                                            <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-vertical btn-group-sm" role="group">
+                                            <!-- Approve Button (only for DRAFT events) -->
+                                            <button th:if="${event.status.name() == 'DRAFT'}"
+                                                    type="button"
+                                                    class="btn btn-approve btn-sm mb-1"
+                                                    th:onclick="'approveEvent(' + ${event.id} + ')'">
+                                                <i class="bi bi-check-circle"></i> Approve
+                                            </button>
+
+                                            <!-- View Detail Button -->
+                                            <a th:href="@{'/events/' + ${event.id}}"
+                                               class="btn btn-outline-primary btn-sm mb-1"
+                                               target="_blank">
+                                                <i class="bi bi-eye"></i> View Detail
+                                            </a>
+
+                                            <!-- Status Change Dropdown -->
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                                        type="button"
+                                                        data-bs-toggle="dropdown">
+                                                    <i class="bi bi-gear"></i> Status
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li th:each="status : ${eventStatuses}">
+                                                        <a class="dropdown-item status-update-btn"
+                                                           href="#"
+                                                           th:data-event-id="${event.id}"
+                                                           th:data-status="${status}">
+                                                            <span th:text="${status}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${events.content.empty}">
+                                    <td colspan="6" class="text-center py-4">
+                                        <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                                        <p class="text-muted mt-2">No events found</p>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${events.totalPages > 1}" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${events.first} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/admin/events(page=${events.number - 1}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                                Previous
+                            </a>
+                        </li>
+
+                        <li th:each="i : ${#numbers.sequence(0, events.totalPages - 1)}"
+                            class="page-item"
+                            th:classappend="${i == events.number} ? 'active'">
+                            <a class="page-link"
+                               th:href="@{/admin/events(page=${i}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                               th:text="${i + 1}">1</a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${events.last} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/admin/events(page=${events.number + 1}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                                Next
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function showAlert(message, type = 'success') {
+        const alertDiv = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        $('.main-content').prepend(alertDiv);
+
+        setTimeout(() => {
+            $('.alert').fadeOut();
+        }, 5000);
+    }
+
+    function approveEvent(eventId) {
+        if (confirm('Are you sure you want to approve this event?')) {
+            $.ajax({
+                url: `/admin/events/${eventId}/approve`,
+                type: 'POST',
+                success: function(response) {
+                    showAlert('Event approved successfully!', 'success');
+                    location.reload();
+                },
+                error: function(xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    showAlert(response.message || 'Error approving event', 'danger');
+                }
+            });
+        }
+    }
+
+    function updateEventStatus(eventId, status) {
+        if (confirm(`Are you sure you want to change status to ${status}?`)) {
+            $.ajax({
+                url: `/admin/events/${eventId}/status`,
+                type: 'POST',
+                data: { status: status },
+                success: function(response) {
+                    showAlert(`Event status updated to ${status}!`, 'success');
+                    location.reload();
+                },
+                error: function(xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    showAlert(response.message || 'Error updating event status', 'danger');
+                }
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle status update clicks using event delegation
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.status-update-btn')) {
+                e.preventDefault();
+                const btn = e.target.closest('.status-update-btn');
+                const eventId = btn.getAttribute('data-event-id');
+                const status = btn.getAttribute('data-status');
+                updateEventStatus(eventId, status);
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -26,4 +26,11 @@ public interface EventService {
     List<Event> getEventsByType(Class<? extends Event> eventType);
     Event saveEvent(Event event);
     Page<Event> listEvents(EventType eventType, EventStatus status, Pageable pageable);
+
+    Event updateEventStatus(Long eventId, EventStatus status);
+    Event approveEvent(Long eventId);
+    long countEventsByStatus(EventStatus status);
+    long countEventsByType(EventType eventType);
+    long countTotalEvents();
+    List<Event> getRecentEvents(int limit);
 }

@@ -9,11 +9,13 @@ import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.group02.openevent.model.event.*;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -88,5 +90,41 @@ public class EventServiceImpl implements EventService {
         } else {
             return eventRepo.findAll(pageable);
         }
+    }
+
+    @Override
+    public Event updateEventStatus(Long eventId, EventStatus status) {
+        Optional<Event> eventOpt = eventRepo.findById(eventId);
+        if (eventOpt.isPresent()) {
+            Event event = eventOpt.get();
+            event.setStatus(status);
+            return eventRepo.save(event);
+        }
+        throw new RuntimeException("Event not found with id: " + eventId);
+    }
+
+    @Override
+    public Event approveEvent(Long eventId) {
+        return updateEventStatus(eventId, EventStatus.PUBLIC);
+    }
+
+    @Override
+    public long countEventsByStatus(EventStatus status) {
+        return eventRepo.findByStatus(status).size();
+    }
+
+    @Override
+    public long countEventsByType(EventType eventType) {
+        return eventRepo.findByEventType(eventType, PageRequest.of(0, Integer.MAX_VALUE)).getTotalElements();
+    }
+
+    @Override
+    public long countTotalEvents() {
+        return eventRepo.count();
+    }
+
+    @Override
+    public List<Event> getRecentEvents(int limit) {
+        return eventRepo.findAll(PageRequest.of(0, limit)).getContent();
     }
 }

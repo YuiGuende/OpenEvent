@@ -1,6 +1,5 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.dto.MusicEventDetailDTO;
 import com.group02.openevent.model.enums.EventType;
 
 import com.group02.openevent.model.enums.EventStatus;

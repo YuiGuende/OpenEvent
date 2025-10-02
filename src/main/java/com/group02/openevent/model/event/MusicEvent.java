@@ -15,6 +15,7 @@ public class MusicEvent extends Event {
     private Integer performerCount;
 
     public MusicEvent() {
+
     }
 
     public MusicEvent(String genre, Integer performerCount) {

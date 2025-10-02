@@ -1,48 +1,55 @@
 package com.group02.openevent.repository;
 
 import com.group02.openevent.model.ticket.Ticket;
-import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.model.ticket.TicketStatus;
 import com.group02.openevent.model.user.User;
-import com.group02.openevent.model.event.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ITicketRepo extends JpaRepository<Ticket, Long> {
     
-    // Find tickets by user
+    // Tìm ticket theo ticket code
+    Optional<Ticket> findByTicketCode(String ticketCode);
+    
+    // Tìm tickets theo user
     List<Ticket> findByUser(User user);
     
-    // Find tickets by user ID
-    List<Ticket> findByUser_UserId(Long userId);
+    // Tìm tickets theo user và status
+    List<Ticket> findByUserAndStatus(User user, TicketStatus status);
     
-    // Find tickets by ticket type
-    List<Ticket> findByTicketType(TicketType ticketType);
+    // Tìm tickets theo status
+    List<Ticket> findByStatus(TicketStatus status);
     
-    // Find tickets by ticket type ID
-    List<Ticket> findByTicketType_TicketTypeId(Long ticketTypeId);
+    // Tìm tickets theo user ID
+    @Query("SELECT t FROM Ticket t WHERE t.user.userId = :userId ORDER BY t.purchaseDate DESC")
+    List<Ticket> findByUserId(@Param("userId") Long userId);
     
-    // Find tickets by event (through ticket type)
-    @Query("SELECT t FROM Ticket t WHERE t.ticketType.event.id = :eventId")
+    // Tìm tickets theo user ID và status
+    @Query("SELECT t FROM Ticket t WHERE t.user.userId = :userId AND t.status = :status ORDER BY t.purchaseDate DESC")
+    List<Ticket> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") TicketStatus status);
+    
+    // Đếm số tickets theo user và status
+    long countByUserAndStatus(User user, TicketStatus status);
+    
+    // Tìm tickets đang pending (chưa thanh toán)
+    @Query("SELECT t FROM Ticket t WHERE t.status = 'PENDING' AND t.purchaseDate < :expiredTime")
+    List<Ticket> findExpiredPendingTickets(@Param("expiredTime") java.time.LocalDateTime expiredTime);
+    
+    // Tìm tickets theo event
+    @Query("SELECT t FROM Ticket t WHERE t.event.id = :eventId ORDER BY t.purchaseDate DESC")
     List<Ticket> findByEventId(@Param("eventId") Long eventId);
     
-    // Find tickets by user and event
-    @Query("SELECT t FROM Ticket t WHERE t.user.userId = :userId AND t.ticketType.event.id = :eventId")
-    List<Ticket> findByUserAndEvent(@Param("userId") Long userId, @Param("eventId") Long eventId);
+    // Tìm tickets theo event và status
+    @Query("SELECT t FROM Ticket t WHERE t.event.id = :eventId AND t.status = :status ORDER BY t.purchaseDate DESC")
+    List<Ticket> findByEventIdAndStatus(@Param("eventId") Long eventId, @Param("status") TicketStatus status);
     
-    // Check if user has ticket for event
-    @Query("SELECT COUNT(t) > 0 FROM Ticket t WHERE t.user.userId = :userId AND t.ticketType.event.id = :eventId")
-    boolean hasTicketForEvent(@Param("userId") Long userId, @Param("eventId") Long eventId);
-    
-    // Get ticket count for event
-    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.ticketType.event.id = :eventId")
-    Long getTicketCountForEvent(@Param("eventId") Long eventId);
-    
-    // Get ticket count for ticket type
-    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.ticketType.ticketTypeId = :ticketTypeId")
-    Long getTicketCountForTicketType(@Param("ticketTypeId") Long ticketTypeId);
+    // Kiểm tra user đã có ticket cho event chưa
+    @Query("SELECT COUNT(t) > 0 FROM Ticket t WHERE t.user.userId = :userId AND t.event.id = :eventId AND t.status = 'PAID'")
+    boolean hasUserRegisteredEvent(@Param("userId") Long userId, @Param("eventId") Long eventId);
 }

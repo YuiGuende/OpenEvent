@@ -1,12 +1,11 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.order.Order;
-import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.ticket.Ticket;
+import com.group02.openevent.model.ticket.TicketStatus;
 import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
-import com.group02.openevent.model.ticket.Ticket;
 import com.group02.openevent.repository.IPaymentRepo;
-import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.repository.ITicketRepo;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.TicketService;
 import com.group02.openevent.dto.payment.*;
@@ -15,7 +14,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import vn.payos.type.WebhookData;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -26,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.LinkedHashMap;
 
 @Service
@@ -34,7 +31,7 @@ import java.util.LinkedHashMap;
 public class PaymentServiceImpl implements PaymentService {
 
     private final IPaymentRepo paymentRepo;
-    private final IOrderRepo orderRepo;
+    private final ITicketRepo ticketRepo;
     private final TicketService ticketService;
     private final RestTemplate restTemplate;
 
@@ -50,21 +47,21 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${payos.base.url:https://api-merchant.payos.vn}")
     private String payosBaseUrl;
 
-    public PaymentServiceImpl(IPaymentRepo paymentRepo, IOrderRepo orderRepo, TicketService ticketService, RestTemplate restTemplate) {
+    public PaymentServiceImpl(IPaymentRepo paymentRepo, ITicketRepo ticketRepo, TicketService ticketService, RestTemplate restTemplate) {
         this.paymentRepo = paymentRepo;
-        this.orderRepo = orderRepo;
+        this.ticketRepo = ticketRepo;
         this.ticketService = ticketService;
         this.restTemplate = restTemplate;
     }
 
     @Override
-    public Payment createPaymentLink(Order order, String returnUrl, String cancelUrl) {
+    public Payment createPaymentLink(Ticket ticket, String returnUrl, String cancelUrl) {
         try {
             // Prepare PayOS API request
             // Generate positive order code from string
-            int orderCode = Math.abs(order.getOrderCode().hashCode());
-            int amount = order.getAmount().intValue();
-            String description = order.getDescription();
+            int orderCode = Math.abs(ticket.getTicketCode().hashCode());
+            int amount = ticket.getPrice().intValue();
+            String description = ticket.getDescription();
             
             // Set expired time (15 minutes from now)
             LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(15);
@@ -99,120 +96,64 @@ public class PaymentServiceImpl implements PaymentService {
             
             // Thử URL khác nếu cần
             // String url = "https://api-merchant.payos.vn/v2/payment-requests";
-            // String url = "https://api.payos.vn/v2/payment-requests";
-            
-            // Validate required fields
-            if (orderCode <= 0) {
-                throw new RuntimeException("Order code must be positive: " + orderCode);
-            }
-            if (amount <= 0) {
-                throw new RuntimeException("Amount must be positive: " + amount);
-            }
-            if (description == null || description.trim().isEmpty()) {
-                throw new RuntimeException("Description is required");
-            }
-            if (items == null || items.isEmpty()) {
-                throw new RuntimeException("Items are required");
-            }
-            
-            System.out.println("PayOS API Request URL: " + url);
-            System.out.println("PayOS API Request: " + request);
-            System.out.println("PayOS Client ID: " + payosClientId);
-            System.out.println("PayOS API Key: " + (payosApiKey != null ? "***" + payosApiKey.substring(Math.max(0, payosApiKey.length() - 4)) : "null"));
-            System.out.println("Order Code: " + orderCode);
-            System.out.println("Amount: " + amount);
-            System.out.println("Description: " + description);
-            System.out.println("Items count: " + items.size());
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("x-client-id", payosClientId);
             headers.set("x-api-key", payosApiKey);
             
-            // Make API call with signature
             HttpEntity<PayOSPaymentRequest> entity = new HttpEntity<>(request, headers);
             
-            ResponseEntity<PayOSPaymentResponse> response = restTemplate.postForEntity(
-                url, entity, PayOSPaymentResponse.class
-            );
+            System.out.println("Request body: " + request);
             
-            System.out.println("PayOS API Response Status: " + response.getStatusCode());
-            System.out.println("PayOS API Response Body: " + response.getBody());
+            ResponseEntity<PayOSPaymentResponse> response = restTemplate.postForEntity(url, entity, PayOSPaymentResponse.class);
             
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                PayOSPaymentResponse responseBody = response.getBody();
+                PayOSPaymentResponse payOSResponse = response.getBody();
                 
-                // Check if response indicates success
-                if (responseBody.getCode() != null && responseBody.getCode() != 0) {
-                    throw new RuntimeException("PayOS API error: " + responseBody.getDesc() + " (Code: " + responseBody.getCode() + ")");
-                }
-                
-                // Check if data is null
-                if (responseBody.getData() == null) {
-                    throw new RuntimeException("PayOS API returned null data. Response: " + responseBody);
-                }
-                
-                // Create Payment record
+                // Create payment record
                 Payment payment = new Payment();
-                payment.setOrder(order);
-                // Convert String paymentLinkId to Long for payosPaymentId
-                try {
-                    payment.setPayosPaymentId(Long.parseLong(responseBody.getData().getPaymentLinkId()));
-                } catch (NumberFormatException e) {
-                    // If paymentLinkId is not a valid number, use order ID as fallback
-                    payment.setPayosPaymentId(order.getOrderId());
-                }
-                payment.setPaymentLinkId(responseBody.getData().getPaymentLinkId());
-                payment.setCheckoutUrl(responseBody.getData().getCheckoutUrl());
-                payment.setQrCode(responseBody.getData().getQrCode());
-                payment.setAmount(order.getAmount());
-                payment.setCurrency("VND");
+                payment.setTicket(ticket);
+                payment.setPayosPaymentId(Long.valueOf(payOSResponse.getData().getPaymentLinkId()));
+                payment.setAmount(ticket.getPrice());
+                payment.setDescription(description);
+                payment.setCheckoutUrl(payOSResponse.getData().getCheckoutUrl());
+                payment.setQrCode(payOSResponse.getData().getQrCode());
                 payment.setStatus(PaymentStatus.PENDING);
-                payment.setDescription(order.getDescription());
-                payment.setReturnUrl(returnUrl);
-                payment.setCancelUrl(cancelUrl);
                 payment.setExpiredAt(expiredAt);
-                payment.setPayosSignature("NO_SIGNATURE_REQUIRED");
-
+                payment.setCreatedAt(LocalDateTime.now());
+                
                 return paymentRepo.save(payment);
             } else {
-                throw new RuntimeException("Failed to create PayOS payment link. Status: " + response.getStatusCode() + ", Body: " + response.getBody());
+                throw new RuntimeException("Failed to create payment link: " + response.getStatusCode());
             }
             
         } catch (Exception e) {
-            System.err.println("PayOS API Error: " + e.getMessage());
             e.printStackTrace();
-            
-            // Fallback: Create mock payment for development
-            if (payosClientId.isEmpty() || payosApiKey.isEmpty()) {
-                System.out.println("PayOS credentials not configured, creating mock payment...");
-                return createMockPayment(order, returnUrl, cancelUrl);
-            }
-            
-            throw new RuntimeException("Error creating payment link: " + e.getMessage(), e);
+            throw new RuntimeException("Error creating payment link: " + e.getMessage());
         }
     }
 
     @Override
-    public Optional<Payment> getPaymentByOrder(Order order) {
-        return paymentRepo.findByOrder(order);
+    public Optional<Payment> getPaymentByTicket(Ticket ticket) {
+        return paymentRepo.findByTicket(ticket);
     }
 
     @Override
-    public Optional<Payment> getPaymentByOrderId(Long orderId) {
-        return paymentRepo.findByOrderOrderId(orderId);
+    public Optional<Payment> getPaymentByTicketId(Long ticketId) {
+        return paymentRepo.findByTicket_TicketId(ticketId);
     }
 
     @Override
     public boolean verifyWebhook(PayOSWebhookData webhookData) {
         try {
-            String dataString = webhookData.getData().getOrderCode() + "|" + 
-                               webhookData.getData().getAmount() + "|" + 
-                               webhookData.getData().getDescription();
+            // Verify webhook signature
+            String receivedSignature = webhookData.getSignature();
+            String calculatedSignature = createWebhookSignature(webhookData);
             
-            String signature = calculateHMAC(dataString, payosChecksumKey);
-            return signature.equals(webhookData.getSignature());
+            return receivedSignature != null && receivedSignature.equals(calculatedSignature);
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -226,13 +167,13 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             // Find payment by order code
-            Optional<Order> orderOpt = orderRepo.findByOrderCode(webhookData.getData().getOrderCode().toString());
-            if (orderOpt.isEmpty()) {
-                return new PaymentResult(false, "Order not found");
+            Optional<Ticket> ticketOpt = ticketRepo.findByTicketCode(webhookData.getData().getOrderCode().toString());
+            if (ticketOpt.isEmpty()) {
+                return new PaymentResult(false, "Ticket not found");
             }
 
-            Order order = orderOpt.get();
-            Optional<Payment> paymentOpt = getPaymentByOrder(order);
+            Ticket ticket = ticketOpt.get();
+            Optional<Payment> paymentOpt = getPaymentByTicket(ticket);
             if (paymentOpt.isEmpty()) {
                 return new PaymentResult(false, "Payment not found");
             }
@@ -246,27 +187,23 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setPaidAt(LocalDateTime.now());
                 paymentRepo.save(payment);
                 
-                order.setStatus(OrderStatus.PAID);
-                orderRepo.save(order);
+                ticket.setStatus(TicketStatus.PAID);
+                ticketRepo.save(ticket);
                 
-                // Tạo ticket sau khi thanh toán thành công
-                try {
-                    Ticket ticket = ticketService.createTicketFromOrder(order);
-                    return new PaymentResult(true, "Payment successful and ticket created", payment, "/payment/success?orderCode=" + order.getOrderCode() + "&ticketId=" + ticket.getTicketId());
-                } catch (Exception e) {
-                    // Log error nhưng vẫn trả về success vì payment đã thành công
-                    return new PaymentResult(true, "Payment successful but ticket creation failed: " + e.getMessage(), payment, "/payment/success?orderCode=" + order.getOrderCode());
-                }
+                // User tham gia event sau khi thanh toán thành công
+                ticketService.joinEventAfterPayment(ticket.getUser().getUserId(), ticket.getEvent().getId());
+                
+                return new PaymentResult(true, "Payment successful and ticket created", payment, "/payment/success?ticketCode=" + ticket.getTicketCode() + "&ticketId=" + ticket.getTicketId());
             } else {
                 // Update payment status to CANCELLED
                 payment.setStatus(PaymentStatus.CANCELLED);
                 payment.setCancelledAt(LocalDateTime.now());
                 paymentRepo.save(payment);
                 
-                order.setStatus(OrderStatus.CANCELLED);
-                orderRepo.save(order);
+                ticket.setStatus(TicketStatus.CANCELLED);
+                ticketRepo.save(ticket);
                 
-                return new PaymentResult(true, "Payment cancelled", payment, "/payment/cancel?orderCode=" + order.getOrderCode());
+                return new PaymentResult(true, "Payment cancelled", payment, "/payment/cancel?ticketCode=" + ticket.getTicketCode());
             }
 
         } catch (Exception e) {
@@ -277,7 +214,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void updatePaymentStatus(Payment payment, PaymentStatus status, Long payosPaymentId) {
         payment.setStatus(status);
-        payment.setPayosPaymentId(payosPaymentId);
+        if (payosPaymentId != null) {
+            payment.setPayosPaymentId(payosPaymentId);
+        }
         
         if (status == PaymentStatus.PAID) {
             payment.setPaidAt(LocalDateTime.now());
@@ -290,12 +229,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<Payment> getPaymentsByUserId(Long userId) {
-        return paymentRepo.findByUserId(userId);
+        return paymentRepo.findByTicket_User_UserId(userId);
     }
 
     @Override
     public List<Payment> getPaymentsByUserIdAndStatus(Long userId, PaymentStatus status) {
-        return paymentRepo.findByUserIdAndStatus(userId, status);
+        return paymentRepo.findByTicket_User_UserIdAndStatus(userId, status);
     }
 
     @Override
@@ -305,10 +244,10 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setCancelledAt(LocalDateTime.now());
             paymentRepo.save(payment);
             
-            // Update order status
-            Order order = payment.getOrder();
-            order.setStatus(OrderStatus.CANCELLED);
-            orderRepo.save(order);
+            // Also cancel the ticket
+            Ticket ticket = payment.getTicket();
+            ticket.setStatus(TicketStatus.CANCELLED);
+            ticketRepo.save(ticket);
             
             return true;
         }
@@ -317,31 +256,33 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void updateExpiredPayments() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Payment> expiredPayments = paymentRepo.findExpiredPendingPayments(now);
+        // Payments expire after 15 minutes if not paid
+        LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(15);
+        List<Payment> expiredPayments = paymentRepo.findExpiredPendingPayments(expiredTime);
         
         for (Payment payment : expiredPayments) {
-            payment.setStatus(PaymentStatus.EXPIRED);
+            payment.setStatus(PaymentStatus.CANCELLED);
+            payment.setCancelledAt(LocalDateTime.now());
             paymentRepo.save(payment);
             
-            // Update order status
-            Order order = payment.getOrder();
-            order.setStatus(OrderStatus.EXPIRED);
-            orderRepo.save(order);
+            // Also expire the ticket
+            Ticket ticket = payment.getTicket();
+            ticket.setStatus(TicketStatus.EXPIRED);
+            ticketRepo.save(ticket);
         }
     }
 
     @Override
-    public PaymentResult handlePaymentWebhookFromPayOS(WebhookData webhookData) {
+    public PaymentResult handlePaymentWebhookFromPayOS(PayOSWebhookData webhookData) {
         try {
             // Find payment by order code
-            Optional<Order> orderOpt = orderRepo.findByOrderCode(webhookData.getOrderCode().toString());
-            if (orderOpt.isEmpty()) {
-                return new PaymentResult(false, "Order not found");
+            Optional<Ticket> ticketOpt = ticketRepo.findByTicketCode(webhookData.getData().getOrderCode().toString());
+            if (ticketOpt.isEmpty()) {
+                return new PaymentResult(false, "Ticket not found");
             }
 
-            Order order = orderOpt.get();
-            Optional<Payment> paymentOpt = getPaymentByOrder(order);
+            Ticket ticket = ticketOpt.get();
+            Optional<Payment> paymentOpt = getPaymentByTicket(ticket);
             if (paymentOpt.isEmpty()) {
                 return new PaymentResult(false, "Payment not found");
             }
@@ -355,27 +296,20 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setPaidAt(LocalDateTime.now());
                 paymentRepo.save(payment);
                 
-                order.setStatus(OrderStatus.PAID);
-                orderRepo.save(order);
+                ticket.setStatus(TicketStatus.PAID);
+                ticketRepo.save(ticket);
                 
-                // Create ticket after successful payment
-                try {
-                    Ticket ticket = ticketService.createTicketFromOrder(order);
-                    return new PaymentResult(true, "Payment successful and ticket created", payment, "/payment/success?orderCode=" + order.getOrderCode() + "&ticketId=" + ticket.getTicketId());
-                } catch (Exception e) {
-                    // Log error but still return success since payment was successful
-                    return new PaymentResult(true, "Payment successful but ticket creation failed: " + e.getMessage(), payment, "/payment/success?orderCode=" + order.getOrderCode());
-                }
+                return new PaymentResult(true, "Payment successful and ticket created", payment, "/payment/success?ticketCode=" + ticket.getTicketCode() + "&ticketId=" + ticket.getTicketId());
             } else {
                 // Payment failed or cancelled
                 payment.setStatus(PaymentStatus.CANCELLED);
                 payment.setCancelledAt(LocalDateTime.now());
                 paymentRepo.save(payment);
                 
-                order.setStatus(OrderStatus.CANCELLED);
-                orderRepo.save(order);
+                ticket.setStatus(TicketStatus.CANCELLED);
+                ticketRepo.save(ticket);
                 
-                return new PaymentResult(true, "Payment cancelled", payment, "/payment/cancel?orderCode=" + order.getOrderCode());
+                return new PaymentResult(true, "Payment cancelled", payment, "/payment/cancel?ticketCode=" + ticket.getTicketCode());
             }
 
         } catch (Exception e) {
@@ -383,93 +317,118 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-
-
-    private Payment createMockPayment(Order order, String returnUrl, String cancelUrl) {
-        try {
-            // Set expired time (15 minutes from now)
-            LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(15);
-            
-            // Create mock Payment record
-            Payment payment = new Payment();
-            payment.setOrder(order);
-            payment.setPayosPaymentId(order.getOrderId()); // Use order ID as fallback
-            payment.setPaymentLinkId("MOCK_PAYMENT_LINK_" + order.getOrderId());
-            
-            // Mock checkout URL - for development only
-            String mockCheckoutUrl = "http://localhost:8080/payment/mock-success?orderCode=" + order.getOrderCode();
-            payment.setCheckoutUrl(mockCheckoutUrl);
-            
-            payment.setQrCode("https://img.vietqr.io/image/970422-1234567890-qr_only.png");
-            payment.setAmount(order.getAmount());
-            payment.setCurrency("VND");
-            payment.setStatus(PaymentStatus.PENDING);
-            payment.setDescription(order.getDescription());
-            payment.setReturnUrl(returnUrl);
-            payment.setCancelUrl(cancelUrl);
-            payment.setExpiredAt(expiredAt);
-            payment.setPayosSignature("MOCK_SIGNATURE");
-
-            System.out.println("Created mock payment with checkout URL: " + mockCheckoutUrl);
-            return paymentRepo.save(payment);
-            
-        } catch (Exception e) {
-            throw new RuntimeException("Error creating mock payment: " + e.getMessage(), e);
-        }
-    }
-
-    private String calculateHMAC(String data, String key) throws NoSuchAlgorithmException, InvalidKeyException {
-        Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        mac.init(secretKeySpec);
-        byte[] hmacData = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(hmacData);
-    }
-
-    /**
-     * Tạo signature cho PayOS payment request theo đúng tài liệu PayOS
-     * Format: key1=value1&key2=value2&... (sắp xếp theo thứ tự bảng chữ cái của key)
-     * Chỉ sử dụng các trường cơ bản: amount, cancelUrl, description, orderCode, returnUrl
-     */
     private String createPaymentSignatureFromRequest(PayOSPaymentRequest request) {
         try {
-            // Chỉ sử dụng các trường cơ bản theo tài liệu PayOS
-            Map<String, Object> dataMap = new TreeMap<>();
-            dataMap.put("amount", request.getAmount());
-            dataMap.put("cancelUrl", request.getCancelUrl());
-            dataMap.put("description", request.getDescription());
-            dataMap.put("orderCode", request.getOrderCode());
-            dataMap.put("returnUrl", request.getReturnUrl());
-            
-            // Tạo string theo format key=value&key=value
-            StringBuilder dataStringBuilder = new StringBuilder();
-            for (Map.Entry<String, Object> entry : dataMap.entrySet()) {
-                if (dataStringBuilder.length() > 0) {
-                    dataStringBuilder.append("&");
-                }
-                
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                
-                // Xử lý giá trị null hoặc undefined
-                if (value == null || "undefined".equals(value) || "null".equals(value)) {
-                    value = "";
-                }
-                
-                dataStringBuilder.append(key).append("=").append(value);
-            }
-            
-            String dataString = dataStringBuilder.toString();
-            System.out.println("PayOS signature data string: " + dataString);
-            
-            // Sử dụng checksum_key để tạo signature
-            String signature = calculateHMAC(dataString, payosChecksumKey);
-            System.out.println("Using checksum key for signature: " + (payosChecksumKey != null ? "***" + payosChecksumKey.substring(Math.max(0, payosChecksumKey.length() - 4)) : "null"));
-            System.out.println("Generated signature: " + signature);
-            
-            return signature;
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("orderCode", request.getOrderCode());
+            data.put("amount", request.getAmount());
+            data.put("description", request.getDescription());
+            data.put("items", request.getItems());
+            data.put("returnUrl", request.getReturnUrl());
+            data.put("cancelUrl", request.getCancelUrl());
+            data.put("expiredAt", request.getExpiredAt());
+
+            return createSignature(data);
         } catch (Exception e) {
-            throw new RuntimeException("Error creating payment signature: " + e.getMessage(), e);
+            e.printStackTrace();
+            return "";
         }
+    }
+
+    private String createWebhookSignature(PayOSWebhookData webhookData) {
+        try {
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("orderCode", webhookData.getData().getOrderCode());
+            data.put("amount", webhookData.getData().getAmount());
+            data.put("description", webhookData.getData().getDescription());
+            data.put("accountNumber", webhookData.getData().getAccountNumber());
+            data.put("reference", webhookData.getData().getReference());
+            data.put("transactionDateTime", webhookData.getData().getTransactionDateTime());
+            data.put("currency", webhookData.getData().getCurrency());
+            data.put("paymentLinkId", webhookData.getData().getPaymentLinkId());
+            data.put("code", webhookData.getData().getCode());
+            data.put("desc", webhookData.getData().getDesc());
+            data.put("counterAccountBankId", webhookData.getData().getCounterAccountBankId());
+            data.put("virtualAccountName", webhookData.getData().getVirtualAccountName());
+            data.put("virtualAccountNumber", webhookData.getData().getVirtualAccountNumber());
+            data.put("counterAccountBankName", webhookData.getData().getCounterAccountBankName());
+            data.put("counterAccountName", webhookData.getData().getCounterAccountName());
+            data.put("counterAccountNumber", webhookData.getData().getCounterAccountNumber());
+            // data.put("subAccountId", webhookData.getData().getSubAccountId()); // Method not available
+            data.put("transactionDateTime", webhookData.getData().getTransactionDateTime());
+
+            return createSignature(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    private String createSignature(Map<String, Object> data) throws NoSuchAlgorithmException, InvalidKeyException {
+        // Convert data to JSON string
+        StringBuilder jsonBuilder = new StringBuilder();
+        jsonBuilder.append("{");
+        
+        boolean first = true;
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            if (!first) {
+                jsonBuilder.append(",");
+            }
+            jsonBuilder.append("\"").append(entry.getKey()).append("\":");
+            
+            Object value = entry.getValue();
+            if (value instanceof String) {
+                jsonBuilder.append("\"").append(value).append("\"");
+            } else if (value instanceof Number) {
+                jsonBuilder.append(value);
+            } else if (value instanceof List) {
+                jsonBuilder.append("[");
+                List<?> list = (List<?>) value;
+                for (int i = 0; i < list.size(); i++) {
+                    if (i > 0) jsonBuilder.append(",");
+                    Object item = list.get(i);
+                    if (item instanceof Map) {
+                        jsonBuilder.append("{");
+                        Map<?, ?> itemMap = (Map<?, ?>) item;
+                        boolean itemFirst = true;
+                        for (Map.Entry<?, ?> itemEntry : itemMap.entrySet()) {
+                            if (!itemFirst) jsonBuilder.append(",");
+                            jsonBuilder.append("\"").append(itemEntry.getKey()).append("\":");
+                            Object itemValue = itemEntry.getValue();
+                            if (itemValue instanceof String) {
+                                jsonBuilder.append("\"").append(itemValue).append("\"");
+                            } else if (itemValue instanceof Number) {
+                                jsonBuilder.append(itemValue);
+                            }
+                            itemFirst = false;
+                        }
+                        jsonBuilder.append("}");
+                    }
+                }
+                jsonBuilder.append("]");
+            }
+            first = false;
+        }
+        
+        jsonBuilder.append("}");
+        
+        String jsonString = jsonBuilder.toString();
+        System.out.println("JSON for signature: " + jsonString);
+        
+        // Create HMAC SHA256 signature
+        Mac mac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKeySpec = new SecretKeySpec(payosChecksumKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        mac.init(secretKeySpec);
+        
+        byte[] signatureBytes = mac.doFinal(jsonString.getBytes(StandardCharsets.UTF_8));
+        return bytesToHex(signatureBytes);
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte b : bytes) {
+            result.append(String.format("%02x", b));
+        }
+        return result.toString();
     }
 }

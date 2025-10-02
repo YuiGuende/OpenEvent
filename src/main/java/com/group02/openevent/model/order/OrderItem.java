@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_item_id")
@@ -31,23 +32,83 @@ public class OrderItem {
     @Column(name = "subtotal", precision = 10, scale = 2, nullable = false)
     private BigDecimal subtotal;
 
-    public Long getOrderItemId() { return orderItemId; }
-    public void setOrderItemId(Long orderItemId) { this.orderItemId = orderItemId; }
+    // Constructors
+    public OrderItem() {}
 
-    public Order getOrder() { return order; }
-    public void setOrder(Order order) { this.order = order; }
+    public OrderItem(Order order, TicketType ticketType, Integer quantity) {
+        this.order = order;
+        this.ticketType = ticketType;
+        this.quantity = quantity;
+        this.unitPrice = ticketType.getPrice();
+        this.subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
 
-    public TicketType getTicketType() { return ticketType; }
-    public void setTicketType(TicketType ticketType) { this.ticketType = ticketType; }
+    // Business Logic Methods
+    public void calculateSubtotal() {
+        this.subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
 
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    // Getters and Setters
+    public Long getOrderItemId() {
+        return orderItemId;
+    }
 
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
+    public void setOrderItemId(Long orderItemId) {
+        this.orderItemId = orderItemId;
+    }
 
-    public BigDecimal getSubtotal() { return subtotal; }
-    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public TicketType getTicketType() {
+        return ticketType;
+    }
+
+    public void setTicketType(TicketType ticketType) {
+        this.ticketType = ticketType;
+        this.unitPrice = ticketType.getPrice();
+        calculateSubtotal();
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+        calculateSubtotal();
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+        calculateSubtotal();
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderItem{" +
+                "orderItemId=" + orderItemId +
+                ", ticketType=" + (ticketType != null ? ticketType.getName() : "null") +
+                ", quantity=" + quantity +
+                ", unitPrice=" + unitPrice +
+                ", subtotal=" + subtotal +
+                '}';
+    }
 }
-
-

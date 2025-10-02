@@ -51,21 +51,52 @@ async function handleLogin(e) {
             credentials: 'include',
             body: JSON.stringify(payload)
         });
-        const text = await res.text();
+        
+        const resultEl = document.getElementById('loginResult');
+        
         if (!res.ok) {
-            document.getElementById('loginResult').textContent = 'Lỗi đăng nhập (' + res.status + '):\n' + text;
-        } else {
+            // Handle error response
             try {
-                const json = JSON.parse(text);
+                const errorData = await res.json();
+                if (resultEl) {
+                    resultEl.textContent = errorData.error || 'Đăng nhập thất bại';
+                    resultEl.style.color = 'red';
+                }
+            } catch (parseError) {
+                // If JSON parsing fails, try to get text
+                const errorText = await res.text();
+                if (resultEl) {
+                    resultEl.textContent = errorText || 'Đăng nhập thất bại';
+                    resultEl.style.color = 'red';
+                }
+            }
+        } else {
+            // Handle success response
+            try {
+                const json = await res.json();
                 if (json.redirectPath) {
-                    window.location.href = json.redirectPath;
+                    if (resultEl) {
+                        resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
+                        resultEl.style.color = 'green';
+                    }
+                    setTimeout(() => {
+                        window.location.href = json.redirectPath;
+                    }, 1000);
                     return;
                 }
-            } catch (_) {}
-            document.getElementById('loginResult').textContent = text;
+            } catch (parseError) {
+                if (resultEl) {
+                    resultEl.textContent = 'Đăng nhập thành công!';
+                    resultEl.style.color = 'green';
+                }
+            }
         }
     } catch (err) {
-        document.getElementById('loginResult').textContent = 'Lỗi: ' + err;
+        const resultEl = document.getElementById('loginResult');
+        if (resultEl) {
+            resultEl.textContent = 'Lỗi kết nối: ' + err.message;
+            resultEl.style.color = 'red';
+        }
     } finally {
         document.getElementById('loginBtn').disabled = false;
     }

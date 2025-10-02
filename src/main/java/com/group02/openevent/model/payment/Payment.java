@@ -1,7 +1,6 @@
 package com.group02.openevent.model.payment;
 
 import com.group02.openevent.model.order.Order;
-import com.group02.openevent.model.ticket.Ticket;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -14,15 +13,9 @@ public class Payment {
     @Column(name = "payment_id")
     private Long paymentId;
 
-    // Giữ liên kết cũ tới Ticket để không phá vỡ luồng hiện tại (tùy chọn)
-    @OneToOne(optional = true)
-    @JoinColumn(name = "ticket_id", unique = true,
-        foreignKey = @ForeignKey(name = "fk_payment_ticket"))
-    private Ticket ticket;
-
-    // Thêm liên kết mới tới Order để thanh toán theo đơn hàng
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "order_id",
+    // Liên kết tới Order để thanh toán theo đơn hàng
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "order_id", nullable = false,
         foreignKey = @ForeignKey(name = "fk_payment_order"))
     private Order order;
 
@@ -38,9 +31,6 @@ public class Payment {
     @Column(name = "qr_code", length = 500)
     private String qrCode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", length = 50)
-    private PaymentMethod paymentMethod;
 
     @Column(name = "transaction_id", length = 255)
     private String transactionId;
@@ -87,6 +77,11 @@ public class Payment {
         updatedAt = LocalDateTime.now();
     }
 
+    // Business Logic Methods
+    public boolean isOrderPayment() {
+        return order != null;
+    }
+
     // Getters and Setters
     public Long getPaymentId() {
         return paymentId;
@@ -94,14 +89,6 @@ public class Payment {
 
     public void setPaymentId(Long paymentId) {
         this.paymentId = paymentId;
-    }
-
-    public Ticket getTicket() {
-        return ticket;
-    }
-
-    public void setTicket(Ticket ticket) {
-        this.ticket = ticket;
     }
 
     public Order getOrder() {
@@ -144,13 +131,6 @@ public class Payment {
         this.qrCode = qrCode;
     }
 
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
 
     public String getTransactionId() {
         return transactionId;

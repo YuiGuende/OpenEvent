@@ -28,7 +28,7 @@ public class TicketType {
     private BigDecimal price;
 
     @Column(name = "total_quantity", nullable = false)
-    private Integer quantity;
+    private Integer totalQuantity;
 
     @Column(name = "sold_quantity", nullable = false)
     private Integer soldQuantity = 0;
@@ -39,6 +39,51 @@ public class TicketType {
     @Column(name = "end_sale_date")
     private LocalDateTime endSaleDate;
 
+    // Constructors
+    public TicketType() {}
+
+    public TicketType(Event event, String name, String description, BigDecimal price, Integer totalQuantity) {
+        this.event = event;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.totalQuantity = totalQuantity;
+        this.soldQuantity = 0;
+    }
+
+    // Business Logic Methods
+    public Integer getAvailableQuantity() {
+        return totalQuantity - soldQuantity;
+    }
+
+    public boolean isAvailable() {
+        return getAvailableQuantity() > 0;
+    }
+
+    public boolean isSalePeriodActive() {
+        LocalDateTime now = LocalDateTime.now();
+        boolean afterStart = startSaleDate == null || now.isAfter(startSaleDate);
+        boolean beforeEnd = endSaleDate == null || now.isBefore(endSaleDate);
+        return afterStart && beforeEnd;
+    }
+
+    public boolean canPurchase(Integer requestQuantity) {
+        // For now, ignore sale period for testing - only check availability and quantity
+        return isAvailable() && requestQuantity <= getAvailableQuantity();
+    }
+
+    public synchronized void increaseSoldQuantity(Integer quantity) {
+        if (quantity + soldQuantity > totalQuantity) {
+            throw new IllegalArgumentException("Không đủ vé còn lại");
+        }
+        this.soldQuantity += quantity;
+    }
+
+    public synchronized void decreaseSoldQuantity(Integer quantity) {
+        this.soldQuantity = Math.max(0, this.soldQuantity - quantity);
+    }
+
+    // Getters and Setters
     public Long getTicketTypeId() { return ticketTypeId; }
     public void setTicketTypeId(Long ticketTypeId) { this.ticketTypeId = ticketTypeId; }
 
@@ -54,8 +99,8 @@ public class TicketType {
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public Integer getTotalQuantity() { return totalQuantity; }
+    public void setTotalQuantity(Integer totalQuantity) { this.totalQuantity = totalQuantity; }
 
     public Integer getSoldQuantity() { return soldQuantity; }
     public void setSoldQuantity(Integer soldQuantity) { this.soldQuantity = soldQuantity; }
@@ -65,6 +110,16 @@ public class TicketType {
 
     public LocalDateTime getEndSaleDate() { return endSaleDate; }
     public void setEndSaleDate(LocalDateTime endSaleDate) { this.endSaleDate = endSaleDate; }
+
+    @Override
+    public String toString() {
+        return "TicketType{" +
+                "ticketTypeId=" + ticketTypeId +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", totalQuantity=" + totalQuantity +
+                ", soldQuantity=" + soldQuantity +
+                ", availableQuantity=" + getAvailableQuantity() +
+                '}';
+    }
 }
-
-

@@ -60,4 +60,13 @@ public class PaymentResult {
     public void setRedirectUrl(String redirectUrl) {
         this.redirectUrl = redirectUrl;
     }
+
+    // Static factory methods
+    public static PaymentResult success(String message) {
+        return new PaymentResult(true, message);
+    }
+
+    public static PaymentResult failure(String message) {
+        return new PaymentResult(false, message);
+    }
 }

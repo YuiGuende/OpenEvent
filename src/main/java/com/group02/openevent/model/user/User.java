@@ -1,5 +1,6 @@
 package com.group02.openevent.model.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.account.Account;
 import jakarta.persistence.*;
 
@@ -14,6 +15,7 @@ public class User {
 	@OneToOne(optional = false)
 	@JoinColumn(name = "account_id", nullable = false, unique = true,
 		foreignKey = @ForeignKey(name = "fk_user_account"))
+	@JsonIgnoreProperties({"passwordHash"})
 	private Account account;
 
 	@Column(name = "phone_number", length = 20)

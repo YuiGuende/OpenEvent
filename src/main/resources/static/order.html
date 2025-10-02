@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đơn hàng - OpenEvent</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .order-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-details {
+            margin-bottom: 15px;
+        }
+
+        .order-details p {
+            margin: 5px 0;
+        }
+
+        .order-items {
+            margin-bottom: 15px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .order-form {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .ticket-type-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .ticket-type-select {
+            flex: 1;
+        }
+
+        .quantity-input {
+            width: 80px;
+        }
+
+        .ticket-type-price {
+            min-width: 100px;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .order-total {
+            text-align: right;
+            font-size: 18px;
+            font-weight: 600;
+            color: #007bff;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #007bff;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+        }
+
+        .notification-success {
+            background: #28a745;
+        }
+
+        .notification-error {
+            background: #dc3545;
+        }
+
+        .notification-info {
+            background: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <header th:replace="~{fragments/header}"></header>
+
+    <main class="order-container">
+        <h1>Quản lý đơn hàng</h1>
+
+        <!-- Order Creation Form -->
+        <div class="order-form">
+            <h2>Tạo đơn hàng mới</h2>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="eventId">Sự kiện:</label>
+                    <select id="eventId" name="eventId" required>
+                        <option value="">Chọn sự kiện</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="participantName">Tên người tham gia:</label>
+                    <input type="text" id="participantName" name="participantName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="participantEmail">Email:</label>
+                    <input type="email" id="participantEmail" name="participantEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="participantPhone">Số điện thoại:</label>
+                    <input type="tel" id="participantPhone" name="participantPhone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="participantOrganization">Tổ chức:</label>
+                    <input type="text" id="participantOrganization" name="participantOrganization">
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Ghi chú:</label>
+                    <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Loại vé:</label>
+                    <div id="ticketTypesContainer">
+                        <!-- Ticket type rows will be added dynamically -->
+                    </div>
+                </div>
+
+                <div class="order-total">
+                    Tổng tiền: <span id="orderTotal">0 VND</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Tạo đơn hàng</button>
+            </form>
+        </div>
+
+        <!-- Orders List -->
+        <div id="ordersContainer">
+            <!-- Orders will be loaded dynamically -->
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer}"></footer>
+
+    <script src="/js/order.js"></script>
+    <script>
+        // Load events for order form
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/events');
+                if (response.ok) {
+                    const events = await response.json();
+                    const eventSelect = document.getElementById('eventId');
+                    
+                    events.forEach(event => {
+                        const option = document.createElement('option');
+                        option.value = event.id;
+                        option.textContent = event.title;
+                        eventSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+        });
+
+        // Load ticket types when event is selected
+        document.getElementById('eventId').addEventListener('change', async function() {
+            const eventId = this.value;
+            if (!eventId) return;
+
+            try {
+                const response = await fetch(`/api/ticket-types/event/${eventId}`);
+                if (response.ok) {
+                    const ticketTypes = await response.json();
+                    const container = document.getElementById('ticketTypesContainer');
+                    
+                    container.innerHTML = '';
+                    
+                    ticketTypes.forEach(ticketType => {
+                        const row = document.createElement('div');
+                        row.className = 'ticket-type-row';
+                        row.innerHTML = `
+                            <select class="ticket-type-select" data-ticket-type-id="${ticketType.ticketTypeId}">
+                                <option value="">Chọn loại vé</option>
+                                <option value="${ticketType.ticketTypeId}" 
+                                        data-price="${ticketType.price}" 
+                                        data-max-quantity="${ticketType.availableQuantity}">
+                                    ${ticketType.name} - ${new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(ticketType.price)}
+                                </option>
+                            </select>
+                            <input type="number" class="quantity-input" min="0" max="${ticketType.availableQuantity}" value="0" disabled>
+                            <span class="ticket-type-price">--</span>
+                        `;
+                        container.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading ticket types:', error);
+            }
+        });
+    </script>
+</body>
+</html>

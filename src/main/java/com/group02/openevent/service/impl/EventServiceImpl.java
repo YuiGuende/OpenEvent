@@ -1,8 +1,10 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.model.dto.home.EventCardDTO;
+import com.group02.openevent.mapper.EventMapper;
+import com.group02.openevent.model.dto.request.EventCreationRequest;
+import com.group02.openevent.model.dto.response.EventResponse;
 import com.group02.openevent.model.enums.EventType;
-
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.MusicEvent;
@@ -10,8 +12,10 @@ import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
 import org.springframework.data.domain.PageRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.group02.openevent.model.event.*;
@@ -21,19 +25,32 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class EventServiceImpl implements EventService {
-    @Autowired
-    private IMusicEventRepo musicEventRepo;
 
-    @Autowired
-    private IEventRepo eventRepo;
+
+    IMusicEventRepo musicEventRepo;
+    IEventRepo eventRepo;
+    EventMapper eventMapper;
+
+    @Override
+    public EventResponse saveEvent(EventCreationRequest request) {
+        // đảm bảo schedule biết event cha
+        Event event = eventMapper.toEvent(request);
+
+        if (event.getSchedules() != null) {
+            event.getSchedules().forEach(s -> s.setEvent(event));
+        }
+        event.setSpeakers(request.getSpeakers());
+        event.setPlaces(request.getPlaces());
+        return eventMapper.toEventResponse(eventRepo.save(event));
+    }
 
     @Override
     public MusicEvent saveMusicEvent(MusicEvent musicEvent) {
-        if (musicEvent.getSchedules() != null) {
-            musicEvent.getSchedules().forEach(s -> s.setEvent(musicEvent));
-        }
-        return eventRepo.save(musicEvent);
+        return null;
     }
 
     @Override
@@ -58,11 +75,6 @@ public class EventServiceImpl implements EventService {
             workshopEvent.getSchedules().forEach(s -> s.setEvent(workshopEvent));
         }
         return eventRepo.save(workshopEvent);
-    }
-
-    @Override
-    public Optional<Event> getEventById(Integer id) {
-        return Optional.empty();
     }
 
     @Override

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"
+xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>View Ticket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link  rel="stylesheet" th:href="@{/css/view-ticket.css}">
+</head>
+<body>
+<div class="container">
+    <div class="left">
+        <div class="event-info">
+            <h2>Event FPT University 2025</h2>
+            <p>Sat, 15 Nov 2025 09:00 - Sun, 16 Nov 2025 18:00 GMT</p>
+        </div>
+        <!-- Dropdown chọn loại vé -->
+        <div class="filter-box" style="margin: 15px 0;">
+            <label for="ticketFilter" style="font-weight: 500; margin-right: 8px;">Ticket Type:</label>
+            <select id="ticketFilter" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                <option value="all">All</option>
+                <option value="gold">Gold</option>
+                <option value="silver">Silver</option>
+                <option value="normal">Normal</option>
+            </select>
+        </div>
+
+        <div class="promo">
+            <input type="text" placeholder="OpenEvent Voucher">
+            <button>Apply</button>
+        </div>
+
+        <div class="ticket" data-type="adult" data-price="29" data-category="gold">
+            <h3>Gold Entry - Saturday 15th November</h3>
+            <p class="price">$29.00</p>
+            <p class="desc">
+                Full-day access for adults (18+), including all main halls, workshops,
+                meet & greet with special guests, and exclusive merchandise discounts
+                available throughout the convention floor. Seating priority in main stage
+                panels is also included.
+            </p>
+            <button class="see-more-btn">See more</button>
+            <p>Sales end on 15 Nov 2025</p>
+            <div class="quantity">
+                <button class="minus">-</button>
+                <span class="count">0</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+
+        <div class="ticket" data-type="child" data-price="23" data-category="silver">
+            <h3>Silver Entry - Saturday 15th November</h3>
+            <p class="price">$23.00</p>
+            <p class="desc">Entry for children under 12 years old. Must be accompanied by an adult.</p>
+            <p>Sales end on 15 Nov 2025</p>
+            <div class="quantity">
+                <button class="minus">-</button>
+                <span class="count">0</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+
+        <div class="ticket" data-type="normal" data-price="15" data-category="normal">
+            <h3>Normal Entry - Saturday 15th November</h3>
+            <p class="price">$15.00</p>
+            <p class="desc">Standard access to the exhibition hall and panels.</p>
+            <p>Sales end on 15 Nov 2025</p>
+            <div class="quantity">
+                <button class="minus">-</button>
+                <span class="count">0</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="right">
+        <div class="summary">
+
+            <div class="event-thumb">
+                <img th:src="@{/images/event-banner.jpg}" alt="Event Banner">
+            </div>
+
+            <h3>Order Summary</h3>
+            <ul id="order-list">
+                <li><span>No tickets selected</span><span>$0.00</span></li>
+            </ul>
+            <h3 id="total">Total $0.00</h3>
+
+            <div class="payment-methods">
+                <label class="payment-option">
+                    <input type="radio" name="payment" value="payos">
+                    <img class="logo-icon" th:src="@{/images/images.png}" alt="PayOS">
+                    <span>PayOS</span>
+                </label>
+            </div>
+
+            <button class="checkout-btn" id="checkoutBtn">Place Order</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/view-ticket.js}"></script>
+</body>
+</html>

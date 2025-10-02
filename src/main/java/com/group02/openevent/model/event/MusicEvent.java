@@ -7,6 +7,16 @@ import java.util.List;
 @Entity
 @DiscriminatorValue("MusicEvent")
 public class MusicEvent extends Event {
+    @Column(name = "music_type")
+    String musicType;
+
+    public String getMusicType() {
+        return musicType;
+    }
+
+    public void setMusicType(String musicType) {
+        this.musicType = musicType;
+    }
 
     @Column(name = "genre")
     private String genre;

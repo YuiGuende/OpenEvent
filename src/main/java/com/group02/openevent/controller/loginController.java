@@ -10,4 +10,9 @@ public class loginController {
     public String showLoginPage() {
         return "security/login";
     }
+/// demo
+    @GetMapping("/ticket")
+    public String showTicketDemo() {
+        return "host/view-ticket";
+    }
 }

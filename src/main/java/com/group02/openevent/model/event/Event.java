@@ -2,6 +2,7 @@ package com.group02.openevent.model.event;
 
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,8 @@ public class Event {
             generator = "event_sequence"
     )
     private Long id;
+
+    private boolean poster;
 
     @ManyToOne
     @JoinColumn(name = "parent_event_id")
@@ -97,10 +100,15 @@ public class Event {
     @JoinColumn(name = "event_id")
     private Set<EventImage> eventImages;
 
+    @ManyToOne
+    @JoinColumn(name = "org_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_event_org"))
+    private Organization organization;
+
     public Event() {
     }
 
-    public Event(Integer id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
         this.id = id;
         this.parentEvent = parentEvent;
         this.subEvents = subEvents;
@@ -318,5 +326,21 @@ public class Event {
                 ", points=" + points +
                 ", places=" + places +
                 '}';
+    }
+
+    public boolean isPoster() {
+        return poster;
+    }
+
+    public void setPoster(boolean poster) {
+        this.poster = poster;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 }

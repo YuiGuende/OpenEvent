@@ -1,5 +1,6 @@
 package com.group02.openevent.model.account;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group02.openevent.model.enums.Role;
 import jakarta.persistence.*;
 
@@ -14,6 +15,7 @@ public class Account {
 	@Column(name = "email", nullable = false, unique = true, length = 100)
 	private String email;
 
+	@JsonIgnore
 	@Column(name = "password_hash", nullable = false, length = 255)
 	private String passwordHash;
 

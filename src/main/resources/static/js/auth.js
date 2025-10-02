@@ -62,23 +62,51 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify(payload)
                 });
 
-                const text = await res.text();
                 const resultEl = document.getElementById('loginResult');
+                
                 if (!res.ok) {
-                    if (resultEl) resultEl.textContent = `Lỗi đăng nhập (${res.status}):\n${text}`;
-                } else {
+                    // Handle error response
                     try {
-                        const json = JSON.parse(text);
+                        const errorData = await res.json();
+                        if (resultEl) {
+                            resultEl.textContent = errorData.error || 'Đăng nhập thất bại';
+                            resultEl.style.color = 'red';
+                        }
+                    } catch (parseError) {
+                        // If JSON parsing fails, try to get text
+                        const errorText = await res.text();
+                        if (resultEl) {
+                            resultEl.textContent = errorText || 'Đăng nhập thất bại';
+                            resultEl.style.color = 'red';
+                        }
+                    }
+                } else {
+                    // Handle success response
+                    try {
+                        const json = await res.json();
                         if (json.redirectPath) {
-                            window.location.href = json.redirectPath;
+                            if (resultEl) {
+                                resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
+                                resultEl.style.color = 'green';
+                            }
+                            setTimeout(() => {
+                                window.location.href = json.redirectPath;
+                            }, 1000);
                             return;
                         }
-                    } catch (_) {}
-                    if (resultEl) resultEl.textContent = text;
+                    } catch (parseError) {
+                        if (resultEl) {
+                            resultEl.textContent = 'Đăng nhập thành công!';
+                            resultEl.style.color = 'green';
+                        }
+                    }
                 }
             } catch (err) {
                 const resultEl = document.getElementById('loginResult');
-                if (resultEl) resultEl.textContent = 'Lỗi: ' + err;
+                if (resultEl) {
+                    resultEl.textContent = 'Lỗi kết nối: ' + err.message;
+                    resultEl.style.color = 'red';
+                }
             } finally {
                 if (btn) btn.disabled = false;
             }
@@ -108,17 +136,40 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify(payload)
                 });
 
-                const text = await res.text();
                 const resultEl = document.getElementById('registerResult');
+                
                 if (!res.ok) {
-                    if (resultEl) resultEl.textContent = `Lỗi đăng ký (${res.status}):\n${text}`;
+                    // Handle error response
+                    try {
+                        const errorData = await res.json();
+                        if (resultEl) {
+                            resultEl.textContent = errorData.error || 'Đăng ký thất bại';
+                            resultEl.style.color = 'red';
+                        }
+                    } catch (parseError) {
+                        // If JSON parsing fails, try to get text
+                        const errorText = await res.text();
+                        if (resultEl) {
+                            resultEl.textContent = errorText || 'Đăng ký thất bại';
+                            resultEl.style.color = 'red';
+                        }
+                    }
                 } else {
-                    // Sau khi đăng ký thành công → quay lại trang login
-                    window.location.href = "/login?registered=1";
+                    // Handle success response
+                    if (resultEl) {
+                        resultEl.textContent = 'Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...';
+                        resultEl.style.color = 'green';
+                    }
+                    setTimeout(() => {
+                        window.location.href = "/login?registered=1";
+                    }, 1500);
                 }
             } catch (err) {
                 const resultEl = document.getElementById('registerResult');
-                if (resultEl) resultEl.textContent = 'Lỗi: ' + err;
+                if (resultEl) {
+                    resultEl.textContent = 'Lỗi kết nối: ' + err.message;
+                    resultEl.style.color = 'red';
+                }
             } finally {
                 if (btn) btn.disabled = false;
             }

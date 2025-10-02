@@ -23,7 +23,6 @@ public class EventDetailController {
 
 	@GetMapping("/event/{eventId}")
 	public String eventDetail(@PathVariable Long eventId) {
-		System.out.println("EventDetailController: eventDetail called with eventId: " + eventId);
 		return "event/event-detail";
 	}
 

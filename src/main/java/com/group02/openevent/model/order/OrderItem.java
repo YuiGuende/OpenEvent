@@ -22,9 +22,6 @@ public class OrderItem {
             foreignKey = @ForeignKey(name = "fk_orderitem_tickettype"))
     private TicketType ticketType;
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
-
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal unitPrice;
 
@@ -39,9 +36,6 @@ public class OrderItem {
 
     public TicketType getTicketType() { return ticketType; }
     public void setTicketType(TicketType ticketType) { this.ticketType = ticketType; }
-
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 
     public BigDecimal getUnitPrice() { return unitPrice; }
     public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }

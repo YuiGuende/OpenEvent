@@ -101,7 +101,7 @@ public class Event {
     private Set<EventImage> eventImages;
 
     @ManyToOne
-    @JoinColumn(name = "org_id", nullable = false,
+    @JoinColumn(name = "org_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_org"))
     private Organization organization;
 

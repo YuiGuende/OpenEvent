@@ -1,12 +1,12 @@
 package com.group02.openevent.model.order;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.User;
+import com.group02.openevent.model.ticket.TicketType;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -20,12 +20,20 @@ public class Order {
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_user"))
+    @JsonIgnoreProperties({"orders", "passwordHash", "account"})
     private User user;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "event_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_event"))
+    @JsonIgnoreProperties({"orders", "ticketTypes", "eventImages", "host"})
     private Event event;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ticket_type_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_order_tickettype"))
+    @JsonIgnoreProperties({"event", "orders"})
+    private TicketType ticketType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -33,9 +41,6 @@ public class Order {
 
     @Column(name = "total_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items = new ArrayList<>();
 
     @Column(name = "participant_name", length = 100)
     private String participantName;
@@ -63,6 +68,15 @@ public class Order {
         updatedAt = LocalDateTime.now();
     }
 
+    // Business Logic Methods
+    public void calculateTotalAmount() {
+        if (ticketType != null) {
+            this.totalAmount = ticketType.getPrice();
+        } else {
+            this.totalAmount = BigDecimal.ZERO;
+        }
+    }
+
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
 
@@ -72,14 +86,17 @@ public class Order {
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
 
+    public TicketType getTicketType() { return ticketType; }
+    public void setTicketType(TicketType ticketType) { 
+        this.ticketType = ticketType; 
+        calculateTotalAmount();
+    }
+
     public OrderStatus getStatus() { return status; }
     public void setStatus(OrderStatus status) { this.status = status; }
 
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
-
-    public List<OrderItem> getItems() { return items; }
-    public void setItems(List<OrderItem> items) { this.items = items; }
 
     public String getParticipantName() { return participantName; }
     public void setParticipantName(String participantName) { this.participantName = participantName; }

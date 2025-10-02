@@ -39,15 +39,26 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	@Transactional
 	public AuthResponse register(RegisterRequest request) {
-		if (accountRepo.existsByEmail(request.getEmail())) {
-			throw new IllegalArgumentException("Email already registered");
+		// Validate input
+		if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+			throw new IllegalArgumentException("Email không được để trống");
+		}
+		if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+			throw new IllegalArgumentException("Mật khẩu không được để trống");
+		}
+		if (request.getPassword().length() < 6) {
+			throw new IllegalArgumentException("Mật khẩu phải có ít nhất 6 ký tự");
+		}
+
+		if (accountRepo.existsByEmail(request.getEmail().trim())) {
+			throw new IllegalArgumentException("Email này đã được đăng ký");
 		}
 
 		// Luôn set role là USER khi đăng ký, bỏ qua lựa chọn từ frontend
 		Role role = Role.USER;
 
 		Account account = new Account();
-		account.setEmail(request.getEmail());
+		account.setEmail(request.getEmail().trim());
 		account.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 		account.setRole(role);
 		account = accountRepo.save(account);
@@ -56,7 +67,8 @@ public class AuthServiceImpl implements AuthService {
 		User user = new User();
 		user.setAccount(account);
 		user.setPhoneNumber(request.getPhoneNumber());
-		user.setEmail(request.getEmail());
+		user.setOrganization(request.getOrganization());
+		user.setEmail(request.getEmail().trim());
 		user.setPoints(0);
 		userRepo.save(user);
 
@@ -66,11 +78,19 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public AuthResponse login(LoginRequest request) {
-		Account account = accountRepo.findByEmail(request.getEmail())
-				.orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+		// Validate input
+		if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+			throw new IllegalArgumentException("Email không được để trống");
+		}
+		if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+			throw new IllegalArgumentException("Mật khẩu không được để trống");
+		}
+
+		Account account = accountRepo.findByEmail(request.getEmail().trim())
+				.orElseThrow(() -> new IllegalArgumentException("Email hoặc mật khẩu không đúng"));
 
 		if (!passwordEncoder.matches(request.getPassword(), account.getPasswordHash())) {
-			throw new IllegalArgumentException("Invalid email or password");
+			throw new IllegalArgumentException("Email hoặc mật khẩu không đúng");
 		}
 
 		httpSession.setAttribute("ACCOUNT_ID", account.getAccountId());

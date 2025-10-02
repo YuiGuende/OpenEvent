@@ -1,4 +1,4 @@
-package com.group02.openevent.model.dto;
+package com.group02.openevent.model.dto.request;
 
 public class LoginRequest {
 	private String email;

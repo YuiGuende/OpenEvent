@@ -65,4 +65,5 @@ public class HomeController {
         session.invalidate();
         return ResponseEntity.ok("Logged out successfully");
     }
+
 }

@@ -1,5 +1,9 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
@@ -7,7 +11,6 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +18,20 @@ import java.util.Set;
 @Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "event_type", discriminatorType = DiscriminatorType.STRING)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "eventType",
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = MusicEvent.class, name = "MUSIC"),
+        @JsonSubTypes.Type(value = WorkshopEvent.class, name = "WORKSHOP"),
+        @JsonSubTypes.Type(value = FestivalEvent.class, name = "FESTIVAL"),
+        @JsonSubTypes.Type(value = CompetitionEvent.class, name = "COMPETITION"),
+        @JsonSubTypes.Type(value = OtherEvent.class, name = "OTHERS")
+})
+
 public class Event {
 
     @Id
@@ -33,9 +50,11 @@ public class Event {
 
     @ManyToOne
     @JoinColumn(name = "parent_event_id")
+    @JsonBackReference
     private Event parentEvent;
 
     @OneToMany(mappedBy = "parentEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Event> subEvents;
 
     @Column(name = "event_title", nullable = false, length = 150)
@@ -55,7 +74,7 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false, insertable = false, updatable = false)
-    private EventType eventType = EventType.Others;
+    private EventType eventType = EventType.OTHERS;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
@@ -84,13 +103,13 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventSchedule> schedules = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     @JoinTable(name = "event_place",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
@@ -132,7 +151,7 @@ public class Event {
         this.eventImages = eventImages;
     }
 
-// Getter & Setter
+    // Getter & Setter
 
 
     public Integer getCapacity() {

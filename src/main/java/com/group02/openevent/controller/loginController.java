@@ -2,13 +2,12 @@ package com.group02.openevent.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class loginController {
-    @GetMapping("login")
+    @GetMapping("getting-started")
     public String showLoginPage() {
-        return "security/login";
+        return "host/getting-started";
 
     }
     @GetMapping("host")
@@ -23,5 +22,9 @@ public class loginController {
     @GetMapping("create")
     public String showCreatePage() {
         return "host/create-event";
+    }
+    @GetMapping("view-ticket")
+    public String showViewTicketPage() {
+        return "host/view-ticket";
     }
 }

@@ -1,170 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>View Ticket</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0; padding: 0;
-            background: #f4f6f9;
-            color: #333;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            max-width: 1100px;
-            margin: 20px auto;
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        .left, .right { padding: 24px; }
-        .left { flex: 2; min-width: 300px; }
-        .right { flex: 1; min-width: 280px; background: #fafafa; border-left: 1px solid #eee; }
-
-        h2 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
-        .event-info p { margin: 0; color: #666; font-size: 14px; }
-
-        .promo { margin: 20px 0; display: flex; gap: 8px; }
-        .promo input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        .promo button {
-            padding: 10px 16px;
-            border: none;
-            background: #ef7813;
-            color: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .promo button:hover { background: #f39445; }
-
-        .ticket {
-            border: 1px solid #f87204;
-            padding: 16px;
-            margin-bottom: 16px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .ticket:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .ticket.selected {
-            border-color: #4CAF50;
-            background: #f6fffa;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-        }
-        .ticket h3 { margin: 0; font-size: 16px; font-weight: 600; }
-        .price { font-weight: 500; margin: 6px 0; color: #4CAF50; }
-        .quantity {
-            display: flex; align-items: center; gap: 10px; margin-top: 10px;
-        }
-        .quantity button {
-            width: 32px; height: 32px;
-            border: 1px solid #ccc;
-            background: #fff;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background 0.2s;
-        }
-        .quantity button:hover { background: #f0f0f0; }
-        .quantity span { font-size: 15px; min-width: 20px; text-align: center; }
-
-        .summary h3 { margin-top: 0; font-weight: 600; }
-        .summary ul { list-style: none; padding: 0; margin: 0 0 15px; }
-        .summary li { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
-        #total { font-size: 18px; font-weight: 700; color: #e65c00; margin-top: 12px; }
-
-        .payment-methods {
-            display: flex; flex-wrap: wrap;
-            gap: 16px; margin: 20px 0; justify-content: center;
-        }
-        .payment-option {
-            flex: 1 1 120px; max-width: 150px;
-            background: #fff;
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            padding: 14px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .payment-option:hover {
-            border-color: #4CAF50;
-            transform: translateY(-3px);
-        }
-        .payment-option input[type="radio"] { display: none; }
-        .payment-option img {
-            width: 48px; height: 48px;
-            object-fit: contain;
-            margin-bottom: 8px;
-        }
-        .payment-option span {
-            display: block;
-            font-size: 14px; font-weight: 500;
-        }
-        .payment-option input[type="radio"]:checked + img,
-        .payment-option input[type="radio"]:checked + span {
-            filter: hue-rotate(90deg);
-            font-weight: 600;
-            color: #4CAF50;
-        }
-
-        .checkout-btn {
-            width: 100%;
-            padding: 14px;
-            background: #e65c00;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-        .checkout-btn:hover { background: #d35400; }
-
-        .ticket .desc {
-            font-size: 13px;
-            color: #555;
-            margin: 4px 0 8px;
-            line-height: 1.5;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-        }
-        .ticket.expanded .desc {
-            -webkit-line-clamp: unset;
-            display: block;
-        }
-        .see-more-btn {
-            border: none;
-            background: none;
-            color: #4CAF50;
-            font-size: 13px;
-            cursor: pointer;
-            padding: 0;
-            margin-bottom: 8px;
-        }
-        .see-more-btn:hover {
-            text-decoration: underline;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .right { border-left: none; border-top: 1px solid #eee; }
-        }
-    </style>
+    <link  rel="stylesheet" th:href="@{/css/view-ticket.css}">
 </head>
 <body>
 <div class="container">
@@ -185,7 +26,7 @@
         </div>
 
         <div class="promo">
-            <input type="text" placeholder="Enter code">
+            <input type="text" placeholder="OpenEvent Voucher">
             <button>Apply</button>
         </div>
 
@@ -234,6 +75,11 @@
 
     <div class="right">
         <div class="summary">
+
+            <div class="event-thumb">
+                <img th:src="@{/images/event-banner.jpg}" alt="Event Banner">
+            </div>
+
             <h3>Order Summary</h3>
             <ul id="order-list">
                 <li><span>No tickets selected</span><span>$0.00</span></li>
@@ -248,142 +94,11 @@
                 </label>
             </div>
 
-            <button class="checkout-btn" id="checkoutBtn">Check out</button>
+            <button class="checkout-btn" id="checkoutBtn">Place Order</button>
         </div>
     </div>
 </div>
 
-<script>
-    const tickets = document.querySelectorAll(".ticket");
-    const orderList = document.getElementById("order-list");
-    const totalDisplay = document.getElementById("total");
-
-    tickets.forEach(ticket => {
-        const plusBtn = ticket.querySelector(".plus");
-        const minusBtn = ticket.querySelector(".minus");
-        const countSpan = ticket.querySelector(".count");
-
-        plusBtn.addEventListener("click", () => {
-            tickets.forEach(t => {
-                t.querySelector(".count").textContent = "0";
-                t.classList.remove("selected");
-            });
-            countSpan.textContent = "1";
-            ticket.classList.add("selected");
-            updateSummary();
-        });
-
-        minusBtn.addEventListener("click", () => {
-            countSpan.textContent = "0";
-            ticket.classList.remove("selected");
-            updateSummary();
-        });
-    });
-    const ticketFilter = document.getElementById("ticketFilter");
-
-    ticketFilter.addEventListener("change", () => {
-        const value = ticketFilter.value;
-        tickets.forEach(ticket => {
-            if (value === "all" || ticket.dataset.category === value) {
-                ticket.style.display = "block";
-            } else {
-                ticket.style.display = "none";
-            }
-        });
-    });
-
-
-    function updateSummary() {
-        let selectedTicket = null;
-
-        tickets.forEach(ticket => {
-            const count = parseInt(ticket.querySelector(".count").textContent);
-            if (count > 0) {
-                selectedTicket = {
-                    type: ticket.dataset.type,
-                    price: parseFloat(ticket.dataset.price),
-                    count: count
-                };
-            }
-        });
-
-        orderList.innerHTML = "";
-
-        if (selectedTicket) {
-            const subtotal = selectedTicket.price * selectedTicket.count;
-            const vat = subtotal * 0.10;
-            const total = subtotal + vat;
-
-            const li1 = document.createElement("li");
-            li1.innerHTML = `<span>${selectedTicket.count} x ${capitalize(selectedTicket.type)} Entry</span><span>$${subtotal.toFixed(2)}</span>`;
-
-            const li2 = document.createElement("li");
-            li2.innerHTML = `<span>Subtotal</span><span>$${subtotal.toFixed(2)}</span>`;
-
-            const li3 = document.createElement("li");
-            li3.innerHTML = `<span>VAT (10%)</span><span>$${vat.toFixed(2)}</span>`;
-
-            orderList.appendChild(li1);
-            orderList.appendChild(li2);
-            orderList.appendChild(li3);
-
-            totalDisplay.textContent = `Total $${total.toFixed(2)}`;
-        } else {
-            const li = document.createElement("li");
-            li.innerHTML = `<span>No tickets selected</span><span>$0.00</span>`;
-            orderList.appendChild(li);
-            totalDisplay.textContent = "Total $0.00";
-        }
-    }
-
-    function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-
-    document.getElementById("checkoutBtn").addEventListener("click", async () => {
-        const selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;
-        const totalText = document.getElementById("total").textContent;
-        const amount = parseFloat(totalText.replace("Total $", "")) * 1000;
-
-        if (amount <= 0) {
-            alert("Please select a ticket first!");
-            return;
-        }
-
-        if (!selectedMethod) {
-            alert("Please select a payment method!");
-            return;
-        }
-
-        if (selectedMethod === "payos") {
-            try {
-                const res = await fetch("/api/create-payment", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount })
-                });
-                const data = await res.json();
-                if (data.checkoutUrl) {
-                    window.location.href = data.checkoutUrl;
-                } else {
-                    alert("Failed to create PayOS payment");
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Error creating PayOS payment");
-            }
-        } else {
-            alert("Payment method: " + selectedMethod + " (not implemented yet)");
-        }
-    });
-
-    document.querySelectorAll(".see-more-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const ticket = btn.closest(".ticket");
-            ticket.classList.toggle("expanded");
-            btn.textContent = ticket.classList.contains("expanded") ? "See less" : "See more";
-        });
-    });
-</script>
+<script th:src="@{/js/view-ticket.js}"></script>
 </body>
 </html>

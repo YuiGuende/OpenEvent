@@ -30,10 +30,10 @@ const HostDashboard = {
         });
 
         // Route bindings
-        const navEvents = document.getElementById('nav-events');
-        if (navEvents) navEvents.addEventListener('click', () => {
-            window.location.href = '/events';
-        });
+        // const navEvents = document.getElementById('nav-events');
+        // if (navEvents) navEvents.addEventListener('click', () => {
+        //     window.location.href = 'api/events/event';
+        // });
         const navHost = document.getElementById('nav-host');
         if (navHost) navHost.addEventListener('click', () => {
             window.location.href = '/host';
@@ -78,12 +78,12 @@ const HostDashboard = {
         });
 
         // Click on event card navigates to events page
-        const eventCards = document.querySelectorAll('.event-card');
-        eventCards.forEach(card => {
-            card.addEventListener('click', () => {
-                window.location.href = '/events';
-            });
-        });
+        // const eventCards = document.querySelectorAll('.event-card');
+        // eventCards.forEach(card => {
+        //     card.addEventListener('click', () => {
+        //         window.location.href = '/events';
+        //     });
+        // });
     },
 
     // Utility buttons (FAB, collapse sidebar)

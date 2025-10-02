@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface IEventRepo extends JpaRepository<Event, Integer> {
+public interface IEventRepo extends JpaRepository<Event, Long> {
 
 //    List<Event> findByEventType(EventType eventType);
 

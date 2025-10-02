@@ -20,9 +20,7 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE TYPE(e) = :eventType")
     List<Event> findByEventType(@Param("eventType") Class<? extends Event> eventType);
-
     List<Event> findByStatus(EventStatus status);
-
     // Pageable listing
     Page<Event> findAll(Pageable pageable);
     Page<Event> findByEventType(EventType eventType, Pageable pageable);

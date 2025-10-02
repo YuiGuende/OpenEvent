@@ -9,6 +9,7 @@ import java.util.List;
 public class MusicEvent extends Event {
 
     public MusicEvent() {
+
     }
 
 }

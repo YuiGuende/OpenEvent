@@ -13,9 +13,4 @@ public class HomeController {
         return "index"; // templates/index.html
     }
 
-    @GetMapping("/music")
-    public String music(Model model) {
-        model.addAttribute("page", "music");
-        return "music/index"; // templates/music/index.html
-    }
 }

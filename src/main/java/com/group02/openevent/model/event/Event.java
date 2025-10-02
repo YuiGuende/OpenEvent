@@ -1,6 +1,11 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.enums.EventStatus;
+
 import com.group02.openevent.model.enums.EventType;
 import jakarta.persistence.*;
 
@@ -12,7 +17,21 @@ import java.util.List;
 @Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "event_type", discriminatorType = DiscriminatorType.STRING)
-public  class Event {
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "eventType",
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = MusicEvent.class, name = "MUSIC"),
+        @JsonSubTypes.Type(value = WorkshopEvent.class, name = "WORKSHOP"),
+        @JsonSubTypes.Type(value = FestivalEvent.class, name = "FESTIVAL"),
+        @JsonSubTypes.Type(value = CompetitionEvent.class, name = "COMPETITION"),
+        @JsonSubTypes.Type(value = OtherEvent.class, name = "OTHERS")
+})
+
+public class Event {
 
     @Id
     @SequenceGenerator(
@@ -28,9 +47,11 @@ public  class Event {
 
     @ManyToOne
     @JoinColumn(name = "parent_event_id")
+    @JsonBackReference
     private Event parentEvent;
 
     @OneToMany(mappedBy = "parentEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Event> subEvents;
 
     @Column(name = "event_title", nullable = false, length = 150)
@@ -45,9 +66,9 @@ public  class Event {
     @Column(name = "public_date")
     private LocalDateTime publicDate;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "event_type", nullable = false,insertable = false, updatable = false)
-//    private EventType eventType = EventType.OTHERS;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false,insertable = false, updatable = false)
+    private EventType eventType = EventType.OTHERS;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
@@ -76,13 +97,13 @@ public  class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventSchedule> schedules = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     @JoinTable(name = "event_place",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
@@ -151,13 +172,13 @@ public  class Event {
         this.description = description;
     }
 
-//    public EventType getEventType() {
-//        return eventType;
-//    }
-//
-//    public void setEventType(EventType eventType) {
-//        this.eventType = eventType;
-//    }
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
 
     public LocalDateTime getEnrollDeadline() {
         return enrollDeadline;
@@ -226,6 +247,14 @@ public  class Event {
 
     public List<Place> getPlaces() {
         return places;
+    }
+
+    public List<Speaker> getSpeakers() {
+        return speakers;
+    }
+
+    public void setSpeakers(List<Speaker> speakers) {
+        this.speakers = speakers;
     }
 
     public void setPlaces(List<Place> places) {

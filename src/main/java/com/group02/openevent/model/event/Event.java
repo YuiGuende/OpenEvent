@@ -44,6 +44,9 @@ public class Event {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "capacity")
+    private Integer capacity;
+
     @Column(name = "public_date")
     private LocalDateTime publicDate;
 
@@ -97,12 +100,14 @@ public class Event {
     public Event() {
     }
 
-    public Event(Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places) {
+    public Event(Integer id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+        this.id = id;
         this.parentEvent = parentEvent;
         this.subEvents = subEvents;
         this.title = title;
         this.imageUrl = imageUrl;
         this.description = description;
+        this.capacity = capacity;
         this.publicDate = publicDate;
         this.eventType = eventType;
         this.enrollDeadline = enrollDeadline;
@@ -116,10 +121,19 @@ public class Event {
         this.schedules = schedules;
         this.speakers = speakers;
         this.places = places;
+        this.eventImages = eventImages;
     }
 
-    // Getter & Setter
+// Getter & Setter
 
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
 
     public List<Speaker> getSpeakers() {
         return speakers;

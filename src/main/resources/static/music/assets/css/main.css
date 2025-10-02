@@ -916,7 +916,7 @@ a.back-to-top:hover, a.back-to-top:focus {
   background: #E91E63;
   overflow: hidden;
   position: relative;
-  /* 
+  /*
     &:before{
     	content: '';
     	position: absolute;
@@ -2216,4 +2216,722 @@ a.back-to-top:hover, a.back-to-top:focus {
   background: rgba(255, 255, 255, 0.2);
   color: #fff;
   border-color: #fff;
+}
+
+
+
+/*main css*/
+
+.btn-common {
+    background: #ff6a00 !important;
+    background-color: #ff6a00 !important;
+    color: white !important;
+    border: 2px solid #ff6a00 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+    cursor: pointer !important;
+}
+.btn-common:hover {
+    background: #ff7f24 !important;
+    color: white !important;
+}
+
+/* Simple spacing for countdown */
+#clock {
+    margin-bottom: 15px !important;
+}
+
+/* Countdown timer styles */
+.time-count {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.time-entry {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px 15px;
+    border-radius: 10px;
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+    box-sizing: border-box;
+}
+
+.time-entry span {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #ff6a00;
+    line-height: 1;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-entry .label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Decorative separator */
+.countdown-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 40px 0;
+    gap: 20px;
+}
+
+.separator-line {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff6a00, transparent);
+    flex: 1;
+    max-width: 150px;
+}
+
+.separator-icon {
+    background: #ff6a00;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 15px rgba(255, 106, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.separator-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Event Description Card Styles */
+.event-description-card {
+    background: white;
+    border-top: 4px solid #ff6a00;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 20px 30px;
+    margin: 20px 0;
+}
+
+.event-description-card .event-title {
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.event-description-card .event-details {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+
+.event-description-card .event-details i {
+    color: #ff6a00;
+    margin-right: 8px;
+}
+
+/* Compact sections */
+.section-padding-compact {
+    padding: 20px 0 !important;
+}
+
+/* Counter Section Styles - Orange Design */
+.counter-section {
+    background: #ff6a00 !important;
+    padding: 60px 0;
+}
+
+.work-counter-widget {
+    margin-bottom: 30px;
+}
+
+.counter {
+    background: transparent !important;
+    padding: 30px 20px;
+    border: none !important;
+    box-shadow: none !important;
+    transition: transform 0.3s ease;
+}
+
+.counter:hover {
+    transform: translateY(-5px);
+}
+
+.counter .icon {
+    font-size: 2.5rem;
+    color: white !important;
+    margin-bottom: 15px;
+}
+
+.counter p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white !important;
+    margin-bottom: 10px;
+}
+
+.counter span {
+    color: white !important;
+    font-size: 0.9rem;
+}
+
+/* Event Description Box Styles */
+.event-description-box {
+    background: white;
+    border-top: 4px solid #ff6600;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 20px 30px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.event-description-box .lead {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.event-description-box p {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.event-description-box p i,
+.event-description-box .event-icon,
+.event-description-box i {
+    color: #ff6600;
+    margin-right: 8px;
+    float: left;
+    margin-top: 2px;
+}
+
+.event-description-box h2,
+.event-description-box h3 {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Clear float for icon alignment */
+.event-description-box p:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .event-description-box {
+        padding: 15px 20px;
+        margin: 15px 0;
+    }
+
+    .event-description-box .lead,
+    .event-description-box p {
+        font-size: 15px;
+    }
+
+    .event-description-box h2,
+    .event-description-box h3 {
+        font-size: 20px;
+    }
+}
+
+
+/* FAQ Section Icon Styles */
+.accordion .card-header .header-title i {
+    color: #ff6a00 !important;
+    transition: color 0.3s ease;
+    margin-right: 8px;
+}
+
+.accordion .card-header .header-title:hover i {
+    color: #ff8c00 !important;
+}
+
+.accordion .card-header .header-title {
+    color: #333 !important;
+    transition: color 0.3s ease;
+}
+
+.accordion .card-header .header-title:hover {
+    color: #555 !important;
+}
+
+/* Featured Singers Section Styles */
+.simple-artist-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.simple-artist-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+}
+
+.artist-image {
+    position: relative;
+    overflow: hidden;
+    height: 280px;
+}
+
+.artist-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.simple-artist-card:hover .artist-image img {
+    transform: scale(1.05);
+}
+
+.artist-info {
+    padding: 20px;
+    text-align: center;
+    background: white;
+}
+
+.artist-info h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.artist-info p {
+    color: #ff6a00;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* Section title styling */
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: #ff6a00 !important;
+    margin: 15px auto 0;
+    border-radius: 2px;
+}
+
+/* Override any other underline styles for Featured Singers */
+#team .section-title::after {
+    background: #ff6a00 !important;
+    width: 80px !important;
+    height: 4px !important;
+}
+
+/* Remove any other underlines */
+#team .section-title::before {
+    display: none !important;
+}
+
+/* Contact Us section styling */
+#faq .section-title::after {
+    background: #ff6a00 !important;
+    width: 80px !important;
+    height: 4px !important;
+}
+
+#faq .section-title::before {
+    display: none !important;
+}
+
+/* Our Sponsors section styling */
+#sponsors .section-title::after {
+    background: #ff6a00 !important;
+    width: 80px !important;
+    height: 4px !important;
+}
+
+#sponsors .section-title::before {
+    display: none !important;
+}
+
+/* Our Sponsors Section Styles */
+.spnsors-logo {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    height: 120px; /* Fixed height for all sponsor boxes */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.spnsors-logo:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.spnsors-logo a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.spnsors-logo img {
+    max-width: 100%;
+    max-height: 80px; /* Limit logo height */
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.spnsors-logo:hover img {
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments for sponsors */
+@media (max-width: 768px) {
+    .spnsors-logo {
+        height: 100px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .spnsors-logo img {
+        max-height: 60px;
+    }
+}
+
+/* Subscribe Section Styles */
+#subscribe {
+    background: #f8f9fa;
+    padding: 60px 0;
+}
+
+.subscribe-inner {
+    text-align: center;
+    background: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.subscribe-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+    line-height: 1.3;
+}
+
+.subscribe-inner .form-inline {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.subscribe-inner .form-control {
+    flex: 1;
+    min-width: 280px;
+    max-width: 400px;
+    height: 50px;
+    border: 2px solid #ff6a00;
+    border-radius: 8px;
+    padding: 0 20px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.subscribe-inner .form-control:focus {
+    outline: none;
+    border-color: #ff7f24;
+    box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.1);
+}
+
+.subscribe-inner .form-control::placeholder {
+    color: #999;
+    font-size: 16px;
+}
+
+.subscribe-inner .sub-btn {
+    height: 50px;
+    padding: 0 30px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    background: #ff6a00;
+    color: white;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.subscribe-inner .sub-btn:hover {
+    background: #ff7f24;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 106, 0, 0.3);
+}
+
+.subscribe-inner .sub-btn i {
+    margin-right: 8px;
+}
+
+/* Responsive adjustments for subscribe */
+@media (max-width: 768px) {
+    .subscribe-inner {
+        padding: 30px 20px;
+    }
+
+    .subscribe-title {
+        font-size: 1.5rem;
+        margin-bottom: 25px;
+    }
+
+    .subscribe-inner .form-inline {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .subscribe-inner .form-control {
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    .subscribe-inner .sub-btn {
+        width: 100%;
+    }
+}
+
+/* General section title styling - ensure all sections have consistent orange underline */
+.section-title-header .section-title::after {
+    background: #ff6a00 !important;
+    width: 80px !important;
+    height: 4px !important;
+    margin: 15px auto 0 !important;
+    border-radius: 2px !important;
+    position: static !important;
+    left: auto !important;
+    bottom: auto !important;
+    margin-left: auto !important;
+}
+
+.section-title-header .section-title::before {
+    display: none !important;
+}
+
+/* Override the original CSS from main.css */
+.section-title::before {
+    display: none !important;
+}
+
+.section-title::after {
+    background: #ff6a00 !important;
+    width: 80px !important;
+    height: 4px !important;
+    margin: 15px auto 0 !important;
+    border-radius: 2px !important;
+    position: static !important;
+    left: auto !important;
+    bottom: auto !important;
+    margin-left: auto !important;
+}
+
+/* Gallery Section Styles */
+.gallery-box {
+    position: relative;
+    margin-bottom: 30px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 250px; /* Fixed height for all gallery items */
+}
+
+.gallery-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.img-thumb {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.img-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-box:hover .img-thumb img {
+    transform: scale(1.05);
+}
+
+.overlay-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-box:hover .overlay-box {
+    opacity: 1;
+}
+
+.overlay-box .lightbox {
+    color: white;
+    font-size: 2rem;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.overlay-box .lightbox:hover {
+    transform: scale(1.2);
+    color: #ff6a00;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .simple-artist-card {
+        margin-bottom: 20px;
+    }
+
+    .artist-image {
+        height: 240px;
+    }
+
+    .artist-info h3 {
+        font-size: 1.2rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .gallery-box {
+        height: 200px; /* Smaller height on mobile */
+        margin-bottom: 20px;
+    }
+}
+
+/* Hero Slider CSS */
+.hero--slider{ position:relative; overflow:hidden; }
+.hero-track{
+    display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.hero-track::-webkit-scrollbar{ display:none; }
+.hero-slide{
+    position:relative; min-width:100vw; height:70vh;
+    background-position:center; background-size:cover; scroll-snap-align:start;
+}
+.hero-slide::before{
+    content:""; position:absolute; inset:0; z-index:0;
+    background: rgba(0,0,0,0.3);
+}
+.hero-content{
+    position:relative; z-index:1; height:100%;
+    display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; color:#fff;
+    padding-bottom: 60px; padding-right: 40px;
+}
+.hero-content h1{
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 700; margin-bottom: 16px; text-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+.hero-actions{
+    display: flex; gap: 12px; margin-top: 20px;
+}
+.hero-nav{
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,.9); border: none;
+    font-size: 20px; color: #333; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease; z-index: 10;
+}
+.hero-nav:hover{ background: #fff; transform: translateY(-50%) scale(1.1); }
+.hero-nav.prev{ left: 20px; }
+.hero-nav.next{ right: 20px; }
+.hero-progress{
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 10;
+}
+.hero-progress-bar{
+    width: 40px; height: 4px; background: rgba(255,255,255,.3);
+    border-radius: 2px; cursor: pointer; transition: all 0.3s ease;
+}
+.hero-progress-bar.active{ background: #ff6a00; }
+.hero-progress-bar:hover{ background: rgba(255,255,255,.6); }
+.hero--compact .hero-slide{ height: 50vh; }
+
+@media (max-width: 768px) {
+    .hero-slide{ height:60vh; }
+    .hero-nav{ width:36px; height:36px; font-size:16px; }
+    .hero-actions{
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        max-width: 200px;
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+    }
 }

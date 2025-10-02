@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <!--Thymeleaf-->
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <title th:text="${event.title} + ' - Competition Event'">Competition Event - FPT University</title>
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
+      <!-- Icon -->
+      <link rel="stylesheet" th:href="@{/music/assets/fonts/line-icons.css}">
+      <!-- Slicknav -->
+      <link rel="stylesheet" th:href="@{/music/assets/css/slicknav.css}">
+      <!-- Nivo Lightbox -->
+      <link rel="stylesheet" th:href="@{/music/assets/css/nivo-lightbox.css}">
+      <!-- Animate -->
+      <link rel="stylesheet" th:href="@{/music/assets/css/animate.css}">
+      <!-- Main Style -->
+      <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
+      <!-- Responsive Style -->
+      <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
+      <!-- Theme Colors -->
+      <link rel="stylesheet" th:href="@{/music/assets/css/themeColors.css}">
+      
+      <!-- Custom Competition Styles -->
+      <style>
+        /* Competition specific styles */
+        .competition-badge {
+            background: linear-gradient(45deg, #ff6a00, #ff8c00);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .prize-section {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+        }
+        
+        .prize-section h3 {
+            color: #b8860b;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+        
+        .rules-section {
+            background: #f8f9fa;
+            border-left: 4px solid #ff6a00;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .requirements-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .judge-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+        
+        .judge-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+        }
+        
+        .judge-image {
+            position: relative;
+            overflow: hidden;
+            height: 280px;
+        }
+        
+        .judge-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .judge-card:hover .judge-image img {
+            transform: scale(1.05);
+        }
+        
+        .judge-info {
+            padding: 20px;
+            text-align: center;
+            background: white;
+        }
+        
+        .judge-info h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .judge-info p {
+            color: #ff6a00;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            position: relative;
+            text-align: center;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: #ff6a00;
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+        
+        /* Hero Slider CSS */
+        .hero--slider{ position:relative; overflow:hidden; }
+        .hero-track{
+            display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .hero-track::-webkit-scrollbar{ display:none; }
+        .hero-slide{
+            position:relative; min-width:100vw; height:70vh;
+            background-position:center; background-size:cover; scroll-snap-align:start;
+        }
+        .hero-slide::before{
+            content:""; position:absolute; inset:0; z-index:0;
+            background: rgba(0,0,0,0.3);
+        }
+        .hero-content{
+            position:relative; z-index:1; height:100%;
+            display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; color:#fff;
+            padding-bottom: 60px; padding-right: 40px;
+        }
+        .hero-content h1{
+            font-size: clamp(32px, 6vw, 64px);
+            font-weight: 700; margin-bottom: 16px; text-shadow: 0 2px 8px rgba(0,0,0,.3);
+        }
+        .hero-actions{
+            display: flex; gap: 12px; margin-top: 20px;
+        }
+        .hero-nav{
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255,255,255,.9); border: none;
+            font-size: 20px; color: #333; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; z-index: 10;
+        }
+        .hero-nav:hover{ background: #fff; transform: translateY(-50%) scale(1.1); }
+        .hero-nav.prev{ left: 20px; }
+        .hero-nav.next{ right: 20px; }
+        .hero-progress{
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; z-index: 10;
+        }
+        .hero-progress-bar{
+            width: 40px; height: 4px; background: rgba(255,255,255,.3);
+            border-radius: 2px; cursor: pointer; transition: all 0.3s ease;
+        }
+        .hero-progress-bar.active{ background: #ff6a00; }
+        .hero-progress-bar:hover{ background: rgba(255,255,255,.6); }
+        .hero--compact .hero-slide{ height: 50vh; }
+        
+        @media (max-width: 768px) {
+            .hero-slide{ height:60vh; }
+            .hero-nav{ width:36px; height:36px; font-size:16px; }
+            .hero-actions{ 
+                flex-direction: column; 
+                gap: 8px; 
+                width: 100%; 
+                max-width: 200px; 
+                position: absolute;
+                bottom: 16px;
+                right: 16px;
+            }
+        }
+      </style>
+  </head>
+  <body>
+  <!-- Banner -->
+  <section class="hero hero--slider hero--compact">
+      <div class="hero-track" id="heroTrack">
+          <!-- Lặp qua tất cả ảnh từ DB -->
+          <div th:each="img : ${eventImages}"
+               class="hero-slide"
+               th:style="|background-image: url('${img.url}')|">
+              <div class="container hero-content">
+                  <div class="hero-actions text-right">
+                      <a class="btn btn-common" href="#">Register Now</a>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Nav buttons -->
+      <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
+      <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
+
+      <!-- Progress indicator -->
+      <div class="hero-progress">
+          <div class="hero-progress-bar" th:each="img : ${eventImages}"></div>
+      </div>
+  </section>
+
+  <!-- Event Info Section -->
+  <section class="section-padding">
+      <div class="container">
+          <div class="row">
+              <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
+                  <div class="event-description-box">
+                      <h2 th:text="${event.title}">Competition Title</h2>
+                      <p class="lead" th:text="${event.description}">Competition description...</p>
+                      
+                      <!-- Competition Badge -->
+                      <div class="text-center mb-4">
+                          <span class="competition-badge">Competition Event</span>
+                      </div>
+                      
+                      <!-- Event Details -->
+                      <div class="row">
+                          <div class="col-md-6">
+                              <p><i class="lni-calendar"></i> <strong>Start Date:</strong> <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 09:00</span></p>
+                              <p><i class="lni-calendar"></i> <strong>End Date:</strong> <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 17:00</span></p>
+                          </div>
+                          <div class="col-md-6">
+                              <p><i class="lni-users"></i> <strong>Capacity:</strong> <span th:text="${event.capacity}">100</span> participants</p>
+                              <p><i class="lni-map-marker"></i> <strong>Venue:</strong> <span th:if="${event.places != null and !event.places.empty}" th:text="${event.places[0].placeName}">FPT University</span></p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              
+              <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+                  <!-- Prize Section -->
+                  <div class="prize-section" th:if="${event.prize != null}">
+                      <h3><i class="lni-trophy"></i> Prize</h3>
+                      <p th:text="${event.prize}">Competition prizes...</p>
+                  </div>
+                  
+                  <!-- Registration Fee -->
+                  <div class="rules-section" th:if="${event.registrationFee != null}">
+                      <h4><i class="lni-credit-cards"></i> Registration Fee</h4>
+                      <p th:text="${event.registrationFee}">Free</p>
+                  </div>
+                  
+                  <!-- Max Participants -->
+                  <div class="requirements-section" th:if="${event.maxParticipants != null}">
+                      <h4><i class="lni-users"></i> Max Participants</h4>
+                      <p th:text="${event.maxParticipants}">100</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- Rules Section -->
+  <section class="section-padding" th:if="${event.rules != null}">
+      <div class="container">
+          <h2 class="section-title">Competition Rules</h2>
+          <div class="rules-section">
+              <p th:text="${event.rules}">Competition rules and regulations...</p>
+          </div>
+      </div>
+  </section>
+
+  <!-- Requirements Section -->
+  <section class="section-padding" th:if="${event.requirements != null}">
+      <div class="container">
+          <h2 class="section-title">Requirements</h2>
+          <div class="requirements-section">
+              <p th:text="${event.requirements}">Participation requirements...</p>
+          </div>
+      </div>
+  </section>
+
+  <!-- Judges Section -->
+  <section id="team" class="section-padding" th:if="${event.speakers != null and !event.speakers.empty}">
+      <div class="container">
+          <h2 class="section-title">Judges & Organizers</h2>
+          <div class="row">
+              <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12" th:each="speaker : ${event.speakers}">
+                  <div class="judge-card">
+                      <div class="judge-image">
+                          <img th:src="${speaker.imageUrl}" th:alt="${speaker.name}" src="/music/assets/img/speaker/speaker1.jpg">
+                      </div>
+                      <div class="judge-info">
+                          <h3 th:text="${speaker.name}">Judge Name</h3>
+                          <p th:text="${speaker.role}">Judge</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- Schedule Section -->
+  <section class="section-padding" th:if="${event.schedules != null and !event.schedules.empty}">
+      <div class="container">
+          <h2 class="section-title">Competition Schedule</h2>
+          <div class="row">
+              <div class="col-md-12">
+                  <div class="table-responsive">
+                      <table class="table table-striped">
+                          <thead>
+                              <tr>
+                                  <th>Time</th>
+                                  <th>Activity</th>
+                                  <th>Duration</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr th:each="schedule : ${event.schedules}">
+                                  <td th:text="${#temporals.format(schedule.startTime, 'HH:mm')}">09:00</td>
+                                  <td th:text="${schedule.activity}">Registration</td>
+                                  <td th:text="${#temporals.format(schedule.endTime, 'HH:mm')}">10:00</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- Gallery Section -->
+  <section class="section-padding" th:if="${eventImages != null and !eventImages.empty}">
+      <div class="container">
+          <h2 class="section-title">Event Gallery</h2>
+          <div class="row">
+              <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12" th:each="img : ${eventImages}">
+                  <div class="gallery-box">
+                      <div class="img-thumb">
+                          <img th:src="${img.url}" th:alt="Competition Image" src="/music/assets/img/gallery/gallery1.jpg">
+                          <div class="overlay-box">
+                              <a th:href="${img.url}" class="lightbox" data-lightbox="gallery">
+                                  <i class="lni-plus"></i>
+                              </a>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- Registration CTA -->
+  <section class="section-padding" style="background: #f8f9fa;">
+      <div class="container text-center">
+          <h2 class="section-title">Ready to Compete?</h2>
+          <p class="lead">Join this exciting competition and showcase your skills!</p>
+          <a href="#" class="btn btn-common btn-lg">Register Now</a>
+      </div>
+  </section>
+
+  <!-- Scripts -->
+  <script th:src="@{/music/assets/js/jquery-min.js}"></script>
+  <script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
+  <script th:src="@{/music/assets/js/popper.min.js}"></script>
+  <script th:src="@{/music/assets/js/waypoints.min.js}"></script>
+  <script th:src="@{/music/assets/js/jquery.counterup.min.js}"></script>
+  <script th:src="@{/music/assets/js/wow.js}"></script>
+  <script th:src="@{/music/assets/js/jquery.nav.js}"></script>
+  <script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
+  <script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
+  <script th:src="@{/music/assets/js/main.js}"></script>
+
+  <!-- Hero Slider Script -->
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const track = document.getElementById('heroTrack');
+          const slides = track.querySelectorAll('.hero-slide');
+          const prevBtn = document.getElementById('heroPrev');
+          const nextBtn = document.getElementById('heroNext');
+          const progressBars = document.querySelectorAll('.hero-progress-bar');
+          
+          let currentSlide = 0;
+          
+          function updateSlider() {
+              track.style.transform = `translateX(-${currentSlide * 100}%)`;
+              progressBars.forEach((bar, index) => {
+                  bar.classList.toggle('active', index === currentSlide);
+              });
+          }
+          
+          function nextSlide() {
+              currentSlide = (currentSlide + 1) % slides.length;
+              updateSlider();
+          }
+          
+          function prevSlide() {
+              currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+              updateSlider();
+          }
+          
+          nextBtn.addEventListener('click', nextSlide);
+          prevBtn.addEventListener('click', prevSlide);
+          
+          // Auto-play
+          setInterval(nextSlide, 5000);
+          
+          // Progress bar click
+          progressBars.forEach((bar, index) => {
+              bar.addEventListener('click', () => {
+                  currentSlide = index;
+                  updateSlider();
+              });
+          });
+      });
+  </script>
+  </body>
+</html>

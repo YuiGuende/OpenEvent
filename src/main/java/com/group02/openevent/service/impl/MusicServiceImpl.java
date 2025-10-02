@@ -23,7 +23,7 @@ public class MusicServiceImpl implements IMusicService {
     }
 
     @Override
-    public MusicEventDetailDTO getMusicEventById(Integer id) {
+    public MusicEventDetailDTO getMusicEventById(Long id) {
         return musicEventRepo.findById(id)
                 .map(e -> {
                     // Tạo DTO cơ bản
@@ -104,7 +104,7 @@ public class MusicServiceImpl implements IMusicService {
     }
 
     @Override
-    public List<EventImage> getEventImages(Integer eventId) {
+    public List<EventImage> getEventImages(Long eventId) {
         return musicEventRepo.findById(eventId)
                 .map(event -> event.getEventImages().stream()
                         .sorted(Comparator.comparing(EventImage::getOrderIndex))

@@ -1,5 +1,6 @@
 package com.group02.openevent.service.impl;
 
+import com.group02.openevent.model.dto.home.EventCardDTO;
 import com.group02.openevent.model.enums.EventType;
 
 import com.group02.openevent.model.enums.EventStatus;
@@ -17,6 +18,7 @@ import com.group02.openevent.model.event.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -125,5 +127,45 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> getRecentEvents(int limit) {
         return eventRepo.findAll(PageRequest.of(0, limit)).getContent();
+    }
+
+    @Override
+    public List<EventCardDTO> getPosterEvents() {
+        List<Event> posterEvents = eventRepo.findByPosterTrueAndStatus(EventStatus.PUBLIC);
+        return posterEvents.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventCardDTO> getRecommendedEvents(int limit) {
+        List<Event> events = eventRepo.findRecommendedEvents(
+                EventStatus.PUBLIC,
+                PageRequest.of(0, limit)
+        );
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public EventCardDTO convertToDTO(Event event) {
+        return EventCardDTO.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .imageUrl(event.getImageUrl())
+                .description(event.getDescription())
+                .eventType(event.getEventType())
+                .status(event.getStatus())
+                .startsAt(event.getStartsAt())
+                .endsAt(event.getEndsAt())
+                .enrollDeadline(event.getEnrollDeadline())
+                .capacity(event.getCapacity())
+                .registered(0) // TODO: Get actual registration count from Order/Registration table
+                .city(event.getPlaces().getFirst().getPlaceName()) // TODO: Extract from Places
+                .organizer(event.getOrganization().getOrgName()) // TODO: Get from Host/Organizer
+                .price(0.0) // TODO: Get from ticket pricing
+                .poster(event.isPoster())
+                .build();
     }
 }

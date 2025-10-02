@@ -8,7 +8,7 @@ import java.util.List;
 public interface IMusicService {
     List<MusicEventDetailDTO> getAllMusicEvents();
 
-    List<EventImage> getEventImages(Integer eventId);
-    MusicEventDetailDTO getMusicEventById(Integer id);
+    List<EventImage> getEventImages(Long eventId);
+    MusicEventDetailDTO getMusicEventById(Long id);
 
 }

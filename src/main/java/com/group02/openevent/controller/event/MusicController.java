@@ -21,7 +21,7 @@ public class MusicController {
     }
 
     @GetMapping("/music/{id}")
-    public String getMusicEventDetail(@PathVariable("id") Integer id, Model model) {
+    public String getMusicEventDetail(@PathVariable("id") Long id, Model model) {
         try {
             MusicEventDetailDTO event = musicService.getMusicEventById(id);
             List<EventImage> eventImages = musicService.getEventImages(id);

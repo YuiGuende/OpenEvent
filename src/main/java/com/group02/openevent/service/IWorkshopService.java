@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface IWorkshopService {
     List<WorkshopEventDetailDTO> getAllWorkshopEvents();
-    List<EventImage> getEventImages(Integer eventId);
-    WorkshopEventDetailDTO getWorkshopEventById(Integer id);
+    List<EventImage> getEventImages(Long eventId);
+    WorkshopEventDetailDTO getWorkshopEventById(Long id);
 }

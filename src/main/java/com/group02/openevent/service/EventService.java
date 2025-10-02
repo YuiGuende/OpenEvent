@@ -1,6 +1,7 @@
 package com.group02.openevent.service;
 
 
+import com.group02.openevent.model.dto.home.EventCardDTO;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.MusicEvent;
@@ -32,4 +33,8 @@ public interface EventService {
     long countEventsByType(EventType eventType);
     long countTotalEvents();
     List<Event> getRecentEvents(int limit);
+
+    List<EventCardDTO> getPosterEvents();
+    List<EventCardDTO> getRecommendedEvents(int limit);
+    EventCardDTO convertToDTO(Event event);
 }

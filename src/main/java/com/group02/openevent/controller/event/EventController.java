@@ -49,6 +49,8 @@ public class EventController {
         return eventService.saveCompetitionEvent(event);
     }
 
+
+
     @PostMapping("save/workshop")
     public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
         return eventService.saveWorkshopEvent(event);
@@ -66,6 +68,11 @@ public class EventController {
     public List<Event> getEventsByType(@PathVariable String type) {
         Class<? extends Event> eventType = getEventTypeClass(type);
         return eventService.getEventsByType(eventType);
+    }
+
+    @GetMapping("/getAll")
+    public List<Event> getAllEvents() {
+        return eventService.getAllEvents();
     }
 
     private Class<? extends Event> getEventTypeClass(String type) {

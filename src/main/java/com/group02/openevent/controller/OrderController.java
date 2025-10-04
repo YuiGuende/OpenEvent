@@ -90,13 +90,12 @@ public class OrderController {
             Optional<Order> pendingOrder = orderService.getPendingOrderForEvent(user.getUserId(), request.getEventId());
             if (pendingOrder.isPresent()) {
                 Order existingOrder = pendingOrder.get();
-                Map<String, Object> response = Map.of(
-                    "success", true,
-                    "orderId", existingOrder.getOrderId(),
-                    "message", "You have an unpaid order for this event. Please complete payment.",
-                    "isPendingOrder", true
-                );
-                return ResponseEntity.ok(response);
+                
+                // Cancel the old pending order
+                orderService.cancelOrder(existingOrder.getOrderId());
+                
+                // Log the cancellation
+                System.out.println("Cancelled old pending order: " + existingOrder.getOrderId() + " for user: " + user.getUserId());
             }
 
             Order order = orderService.createOrderWithTicketTypes(request, user);

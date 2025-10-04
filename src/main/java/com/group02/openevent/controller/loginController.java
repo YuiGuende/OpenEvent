@@ -13,6 +13,6 @@ public class loginController {
 /// demo
     @GetMapping("/ticket")
     public String showTicketDemo() {
-        return "host/view-ticket";
+        return "event/view-ticket";
     }
 }

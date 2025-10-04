@@ -1,9 +1,9 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.model.account.Account;
-import com.group02.openevent.model.dto.response.AuthResponse;
-import com.group02.openevent.model.dto.request.LoginRequest;
-import com.group02.openevent.model.dto.request.RegisterRequest;
+import com.group02.openevent.dto.response.AuthResponse;
+import com.group02.openevent.dto.request.LoginRequest;
+import com.group02.openevent.dto.request.RegisterRequest;
 import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.IAccountRepo;

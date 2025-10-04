@@ -1,9 +1,9 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.dto.PlaceDTO;
-import com.group02.openevent.model.dto.ScheduleDTO;
-import com.group02.openevent.model.dto.SpeakerDTO;
-import com.group02.openevent.model.dto.music.MusicEventDetailDTO;
+import com.group02.openevent.dto.PlaceDTO;
+import com.group02.openevent.dto.ScheduleDTO;
+import com.group02.openevent.dto.SpeakerDTO;
+import com.group02.openevent.dto.music.MusicEventDetailDTO;
 import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.IMusicService;

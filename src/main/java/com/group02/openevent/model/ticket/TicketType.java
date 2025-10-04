@@ -1,5 +1,4 @@
 package com.group02.openevent.model.ticket;
-
 import com.group02.openevent.model.event.Event;
 import jakarta.persistence.*;
 import java.math.BigDecimal;

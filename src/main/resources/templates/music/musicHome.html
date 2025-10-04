@@ -22,6 +22,9 @@
     <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
     <!-- Theme Colors -->
     <link rel="stylesheet" th:href="@{/music/assets/css/themeColors.css}">
+    
+    <!-- Music Theme CSS với màu cam đẹp -->
+    <link rel="stylesheet" th:href="@{/css/music-theme.css}">
 
     <!-- Clean CSS - Simple and maintainable -->
 
@@ -322,6 +325,356 @@
 <!-- Counter Area End-->
 
 
+<!--&lt;!&ndash; Schedule Section Start &ndash;&gt;-->
+<!--<section id="schedules" class="schedule section-padding">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Discover activities and performances <br> throughout the 3 days of FPT Music Festival</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">-->
+<!--            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">-->
+<!--                <div class="table-responsive">-->
+<!--                    <ul class="nav nav-tabs" id="myTab" role="tablist">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link active" id="monday-tab" data-toggle="tab" href="#monday" role="tab" aria-controls="monday" aria-expanded="true">-->
+<!--                                <div class="item-text">-->
+<!--                                    <h4>Ngày 1</h4>-->
+<!--                                    <h5>15 Tháng 3</h5>-->
+<!--                                </div>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link" id="tuesday-tab" data-toggle="tab" href="#tuesday" role="tab" aria-controls="tuesday">-->
+<!--                                <div class="item-text">-->
+<!--                                    <h4>Ngày 2</h4>-->
+<!--                                    <h5>16 Tháng 3</h5>-->
+<!--                                </div>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link" id="wednesday-tab" data-toggle="tab" href="#wednesday" role="tab" aria-controls="wednesday">-->
+<!--                                <div class="item-text">-->
+<!--                                    <h4>Ngày 3</h4>-->
+<!--                                    <h5>17 Tháng 3</h5>-->
+<!--                                </div>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">-->
+<!--                <div class="tab-content" id="myTabContent">-->
+<!--                    <div class="tab-pane fade show active" id="monday" role="tabpanel" aria-labelledby="monday-tab">-->
+<!--                        <div id="accordion">-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingOne">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingTwo">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>15 Free Productive Design Tools</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingThree">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>Getting Started With SketchApp</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="tab-pane fade" id="tuesday" role="tabpanel" aria-labelledby="tuesday-tab">-->
+<!--                        <div id="accordion2">-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingOne1">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne1" aria-expanded="false" aria-controls="collapseOne1">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseOne1" class="collapse show" aria-labelledby="headingOne1" data-parent="#accordion2">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingTwo2">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo2" aria-expanded="false" aria-controls="collapseTwo2">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseTwo2" class="collapse" aria-labelledby="headingTwo2" data-parent="#accordion2">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="tab-pane fade" id="wednesday" role="tabpanel" aria-labelledby="wednesday-tab">-->
+<!--                        <div id="accordion3">-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingOne3">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne3" aria-expanded="false" aria-controls="collapseOne3">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseOne3" class="collapse show" aria-labelledby="headingOne3" data-parent="#accordion3">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingTwo3">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo3" aria-expanded="false" aria-controls="collapseTwo3">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseTwo3" class="collapse" aria-labelledby="headingTwo3" data-parent="#accordion3">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingThree3">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree3" aria-expanded="false" aria-controls="collapseThree3">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseThree3" class="collapse" aria-labelledby="headingThree3" data-parent="#accordion3">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="tab-pane fade" id="thursday" role="tabpanel" aria-labelledby="thursday-tab">-->
+<!--                        <div id="accordion4">-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingOne">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne4" aria-expanded="false" aria-controls="collapseOne4">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseOne4" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion4">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingTwo">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo4" aria-expanded="false" aria-controls="collapseTwo4">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseTwo4" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion4">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingThree4">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree4" aria-expanded="false" aria-controls="collapseThree4">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseThree4" class="collapse" aria-labelledby="headingThree" data-parent="#accordion4">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="tab-pane fade" id="friday" role="tabpanel" aria-labelledby="friday-tab">-->
+<!--                        <div id="accordion">-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingOne">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingTwo">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="card">-->
+<!--                                <div id="headingThree">-->
+<!--                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">-->
+<!--                                        <div class="images-box">-->
+<!--                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">-->
+<!--                                        </div>-->
+<!--                                        <span class="time">10am - 12:30pm</span>-->
+<!--                                        <h4>FPT Music Festival</h4>-->
+<!--                                        <h5 class="name">Nghệ sĩ FPT</h5>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">-->
+<!--                                    <div class="card-body">-->
+<!--                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>-->
+<!--                                        <div class="location">-->
+<!--                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
+<!--&lt;!&ndash; Schedule Section End &ndash;&gt;-->
 <!-- Schedule Section Start -->
 <section id="schedules" class="schedule section-padding">
     <div class="container">
@@ -329,342 +682,58 @@
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Discover activities and performances <br> throughout the 3 days of FPT Music Festival</p>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Discover activities and performances <br>
+                        throughout the days of [[${event.title}]]
+                    </p>
                 </div>
             </div>
         </div>
+
         <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">
+            <!-- Tabs left: Ngày -->
             <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
                 <div class="table-responsive">
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="monday-tab" data-toggle="tab" href="#monday" role="tab" aria-controls="monday" aria-expanded="true">
+                        <li class="nav-item" th:each="entry, iterStat : ${scheduleEntries}">
+                            <a class="nav-link"
+                               th:classappend="${iterStat.index == 0} ? 'active' : ''"
+                               th:id="'day-' + ${iterStat.index} + '-tab'"
+                               th:data-toggle="'tab'"
+                               th:href="'#day-' + ${iterStat.index}"
+                               role="tab"
+                               th:aria-controls="'day-' + ${iterStat.index}"
+                               th:aria-expanded="${iterStat.index == 0}">
                                 <div class="item-text">
-                                    <h4>Ngày 1</h4>
-                                    <h5>15 Tháng 3</h5>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="tuesday-tab" data-toggle="tab" href="#tuesday" role="tab" aria-controls="tuesday">
-                                <div class="item-text">
-                                    <h4>Ngày 2</h4>
-                                    <h5>16 Tháng 3</h5>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="wednesday-tab" data-toggle="tab" href="#wednesday" role="tab" aria-controls="wednesday">
-                                <div class="item-text">
-                                    <h4>Ngày 3</h4>
-                                    <h5>17 Tháng 3</h5>
+                                    <h4 th:text="'Ngày ' + (${iterStat.index + 1})"></h4>
+                                    <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}"></h5>
                                 </div>
                             </a>
                         </li>
                     </ul>
                 </div>
             </div>
+
+            <!-- Nội dung phải: Các activity -->
             <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
                 <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade show active" id="monday" role="tabpanel" aria-labelledby="monday-tab">
-                        <div id="accordion">
-                            <div class="card">
-                                <div id="headingOne">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingTwo">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>15 Free Productive Design Tools</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingThree">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>Getting Started With SketchApp</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
+                    <div class="tab-pane fade"
+                         th:each="entry, iterStat : ${scheduleEntries}"
+                         th:id="'day-' + ${iterStat.index}"
+                         role="tabpanel"
+                         th:classappend="${iterStat.index == 0} ? 'show active' : ''"
+                         th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">
+
+                        <div id="accordion" th:id="'accordion-' + ${iterStat.index}">
+                            <div class="card" th:each="schedule, scheduleStat : ${entry.value}">
+                                <div class="card-header">
+                                    <span class="time"
+                                          th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}"></span>
+                                    <h4 th:text="${schedule.activity}">Activity Name</h4>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="tab-pane fade" id="tuesday" role="tabpanel" aria-labelledby="tuesday-tab">
-                        <div id="accordion2">
-                            <div class="card">
-                                <div id="headingOne1">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne1" aria-expanded="false" aria-controls="collapseOne1">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseOne1" class="collapse show" aria-labelledby="headingOne1" data-parent="#accordion2">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingTwo2">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo2" aria-expanded="false" aria-controls="collapseTwo2">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseTwo2" class="collapse" aria-labelledby="headingTwo2" data-parent="#accordion2">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="wednesday" role="tabpanel" aria-labelledby="wednesday-tab">
-                        <div id="accordion3">
-                            <div class="card">
-                                <div id="headingOne3">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne3" aria-expanded="false" aria-controls="collapseOne3">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseOne3" class="collapse show" aria-labelledby="headingOne3" data-parent="#accordion3">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingTwo3">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo3" aria-expanded="false" aria-controls="collapseTwo3">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseTwo3" class="collapse" aria-labelledby="headingTwo3" data-parent="#accordion3">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingThree3">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree3" aria-expanded="false" aria-controls="collapseThree3">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseThree3" class="collapse" aria-labelledby="headingThree3" data-parent="#accordion3">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="thursday" role="tabpanel" aria-labelledby="thursday-tab">
-                        <div id="accordion4">
-                            <div class="card">
-                                <div id="headingOne">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne4" aria-expanded="false" aria-controls="collapseOne4">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseOne4" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion4">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingTwo">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo4" aria-expanded="false" aria-controls="collapseTwo4">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseTwo4" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion4">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingThree4">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree4" aria-expanded="false" aria-controls="collapseThree4">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseThree4" class="collapse" aria-labelledby="headingThree" data-parent="#accordion4">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="friday" role="tabpanel" aria-labelledby="friday-tab">
-                        <div id="accordion">
-                            <div class="card">
-                                <div id="headingOne">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-1.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingTwo">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-2.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div id="headingThree">
-                                    <div class="collapsed card-header" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                        <div class="images-box">
-                                            <img class="img-fluid" src="../../static/music/assets/img/speaker/speakers-3.jpg" alt="">
-                                        </div>
-                                        <span class="time">10am - 12:30pm</span>
-                                        <h4>FPT Music Festival</h4>
-                                        <h5 class="name">Nghệ sĩ FPT</h5>
-                                    </div>
-                                </div>
-                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <p>Consectetur adipisicing elit. Quod distinctio impedit sint accusantium ducimus lites consequuntur innobisl dolores saepe.Proin sit amet turpis lobortis.</p>
-                                        <div class="location">
-                                            <span>Location:</span> Hall 1 , Building A, Golden Street, Southafrica
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -674,6 +743,7 @@
 <!-- Schedule Section End -->
 
 <!-- Team Section Start -->
+
 <section id="team" class="section-padding text-center">
     <div class="container">
         <div class="row">
@@ -902,95 +972,163 @@
 <!-- Sponsors Section End -->
 
 <!-- Ticket Pricing Area Start -->
+<!--<section id="pricing" class="section-padding">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Choose the right package to fully enjoy FPT Music Festival 2025</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="row">-->
+<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
+<!--                <div class="price-block-wrapper wow fadeInLeft" data-wow-delay="0.2s">-->
+<!--                    <div class="icon">-->
+<!--                        <i class="lni-write"></i>-->
+<!--                    </div>-->
+<!--                    <div class="colmun-title">-->
+<!--                        <h5>Class C Seats</h5>-->
+<!--                    </div>-->
+<!--                    <div class="price">-->
+<!--                        <h2>150,000 VND</h2>-->
+<!--                        <p>500 Tickets Available</p>-->
+<!--                    </div>-->
+<!--                    <div class="pricing-list">-->
+<!--                        <ul>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">General Admission</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Water & Snacks</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Access to Food Court</span></li>-->
+<!--                            <li><i class="lni-close"></i><span class="text">VIP Meet & Greet</span></li>-->
+<!--                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Music Workshops</span></li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
+<!--                <div class="price-block-wrapper wow fadeInUp" data-wow-delay="0.3s">-->
+<!--                    <div class="icon">-->
+<!--                        <i class="lni-layers"></i>-->
+<!--                    </div>-->
+<!--                    <div class="colmun-title">-->
+<!--                        <h5>Class B Seats</h5>-->
+<!--                    </div>-->
+<!--                    <div class="price">-->
+<!--                        <h2>250,000 VND</h2>-->
+<!--                        <p>300 Tickets Available</p>-->
+<!--                    </div>-->
+<!--                    <div class="pricing-list">-->
+<!--                        <ul>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Seating</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Beverages</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Complimentary Meal</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Meet & Greet</span></li>-->
+<!--                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Exclusive Workshops</span></li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
+<!--                <div class="price-block-wrapper wow fadeInRight" data-wow-delay="0.4s">-->
+<!--                    <div class="icon">-->
+<!--                        <i class="lni-leaf"></i>-->
+<!--                    </div>-->
+<!--                    <div class="colmun-title">-->
+<!--                        <h5>Class A Seats</h5>-->
+<!--                    </div>-->
+<!--                    <div class="price">-->
+<!--                        <h2>400,000 VND</h2>-->
+<!--                        <p>150 Tickets Available</p>-->
+<!--                    </div>-->
+<!--                    <div class="pricing-list">-->
+<!--                        <ul>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">VIP Front Row Seating</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Bar Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Gourmet Catering</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Backstage Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Photo Session</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Private Masterclass</span></li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
 <section id="pricing" class="section-padding">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Choose the right package to fully enjoy FPT Music Festival 2025</p>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Choose the right package to fully enjoy
+                        <span th:text="${event.title}">FPT Music Festival 2025</span>
+                    </p>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-                <div class="price-block-wrapper wow fadeInLeft" data-wow-delay="0.2s">
+
+         <!-- Nếu không có vé -->
+         <div class="row" th:if="${tickets == null or #lists.isEmpty(tickets)}">
+             <div class="col-12 text-center text-muted">
+                 <p>Tickets are not available yet.</p>
+                 <p>Debug: tickets = <span th:text="${tickets}">null</span></p>
+                 <p>Debug: tickets size = <span th:text="${tickets != null ? #lists.size(tickets) : 'null'}">0</span></p>
+             </div>
+         </div>
+
+        <!-- Nếu có vé -->
+        <div class="row" th:if="${!#lists.isEmpty(tickets)}">
+            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3"
+                 th:each="ticket, iter : ${tickets}"
+                 th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')"
+                 th:data-wow-delay="'0.' + ${iter.index + 2} + 's'">
+                <div class="price-block-wrapper" >
                     <div class="icon">
-                        <i class="lni-write"></i>
+                        <!-- đổi icon theo index cho vui -->
+                        <i th:class="${iter.index == 0} ? 'lni-write' : (${iter.index == 1} ? 'lni-layers' : 'lni-leaf')"></i>
                     </div>
                     <div class="colmun-title">
-                        <h5>Class C Seats</h5>
+                        <h5 th:text="${ticket.name}">Class A Seats</h5>
                     </div>
                     <div class="price">
-                        <h2>150,000 VND</h2>
-                        <p>500 Tickets Available</p>
+                        <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">400,000 VND</h2>
+                        <p>
+                            <span th:text="${ticket.getAvailableQuantity()}"></span> /
+                            <span th:text="${ticket.totalQuantity}"></span> Tickets Available
+                        </p>
                     </div>
+
+                    <!-- Nếu mô tả là plain text -->
                     <div class="pricing-list">
                         <ul>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">General Admission</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Water & Snacks</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Access to Food Court</span></li>
-                            <li><i class="lni-close"></i><span class="text">VIP Meet & Greet</span></li>
-                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Music Workshops</span></li>
+                            <li>
+                                <i class="lni-check-mark-circle"></i>
+                                <span class="text" th:text="${ticket.description}">Ticket description here</span>
+                            </li>
                         </ul>
                     </div>
-                    <a href="#" class="btn btn-common">Buy Ticket</a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-                <div class="price-block-wrapper wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="icon">
-                        <i class="lni-layers"></i>
-                    </div>
-                    <div class="colmun-title">
-                        <h5>Class B Seats</h5>
-                    </div>
-                    <div class="price">
-                        <h2>250,000 VND</h2>
-                        <p>300 Tickets Available</p>
-                    </div>
-                    <div class="pricing-list">
-                        <ul>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Seating</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Beverages</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Complimentary Meal</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Meet & Greet</span></li>
-                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Exclusive Workshops</span></li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn btn-common">Buy Ticket</a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-                <div class="price-block-wrapper wow fadeInRight" data-wow-delay="0.4s">
-                    <div class="icon">
-                        <i class="lni-leaf"></i>
-                    </div>
-                    <div class="colmun-title">
-                        <h5>Class A Seats</h5>
-                    </div>
-                    <div class="price">
-                        <h2>400,000 VND</h2>
-                        <p>150 Tickets Available</p>
-                    </div>
-                    <div class="pricing-list">
-                        <ul>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">VIP Front Row Seating</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Bar Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Gourmet Catering</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Backstage Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Photo Session</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Private Masterclass</span></li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn btn-common">Buy Ticket</a>
+
+                    <a th:if="${ticket.isAvailable()}"
+                       th:href="@{'/ticket/buy/' + ${ticket.ticketTypeId}}"
+                       class="btn btn-common">Buy Ticket</a>
+
+                    <a th:if="${!ticket.isAvailable()}" href="#" class="btn btn-common disabled" style="background-color: #ccc;">
+                        Sold Out
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
 <!-- Ticket Pricing Area End -->
 
 <!-- Event Slides Section Start -->

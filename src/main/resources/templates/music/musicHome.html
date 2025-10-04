@@ -972,95 +972,163 @@
 <!-- Sponsors Section End -->
 
 <!-- Ticket Pricing Area Start -->
+<!--<section id="pricing" class="section-padding">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Choose the right package to fully enjoy FPT Music Festival 2025</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="row">-->
+<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
+<!--                <div class="price-block-wrapper wow fadeInLeft" data-wow-delay="0.2s">-->
+<!--                    <div class="icon">-->
+<!--                        <i class="lni-write"></i>-->
+<!--                    </div>-->
+<!--                    <div class="colmun-title">-->
+<!--                        <h5>Class C Seats</h5>-->
+<!--                    </div>-->
+<!--                    <div class="price">-->
+<!--                        <h2>150,000 VND</h2>-->
+<!--                        <p>500 Tickets Available</p>-->
+<!--                    </div>-->
+<!--                    <div class="pricing-list">-->
+<!--                        <ul>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">General Admission</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Water & Snacks</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Access to Food Court</span></li>-->
+<!--                            <li><i class="lni-close"></i><span class="text">VIP Meet & Greet</span></li>-->
+<!--                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Music Workshops</span></li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
+<!--                <div class="price-block-wrapper wow fadeInUp" data-wow-delay="0.3s">-->
+<!--                    <div class="icon">-->
+<!--                        <i class="lni-layers"></i>-->
+<!--                    </div>-->
+<!--                    <div class="colmun-title">-->
+<!--                        <h5>Class B Seats</h5>-->
+<!--                    </div>-->
+<!--                    <div class="price">-->
+<!--                        <h2>250,000 VND</h2>-->
+<!--                        <p>300 Tickets Available</p>-->
+<!--                    </div>-->
+<!--                    <div class="pricing-list">-->
+<!--                        <ul>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Seating</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Beverages</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Complimentary Meal</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Meet & Greet</span></li>-->
+<!--                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Exclusive Workshops</span></li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
+<!--                <div class="price-block-wrapper wow fadeInRight" data-wow-delay="0.4s">-->
+<!--                    <div class="icon">-->
+<!--                        <i class="lni-leaf"></i>-->
+<!--                    </div>-->
+<!--                    <div class="colmun-title">-->
+<!--                        <h5>Class A Seats</h5>-->
+<!--                    </div>-->
+<!--                    <div class="price">-->
+<!--                        <h2>400,000 VND</h2>-->
+<!--                        <p>150 Tickets Available</p>-->
+<!--                    </div>-->
+<!--                    <div class="pricing-list">-->
+<!--                        <ul>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">VIP Front Row Seating</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Bar Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Gourmet Catering</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Backstage Access</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Photo Session</span></li>-->
+<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Private Masterclass</span></li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
 <section id="pricing" class="section-padding">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Choose the right package to fully enjoy FPT Music Festival 2025</p>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Choose the right package to fully enjoy
+                        <span th:text="${event.title}">FPT Music Festival 2025</span>
+                    </p>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-                <div class="price-block-wrapper wow fadeInLeft" data-wow-delay="0.2s">
+
+         <!-- Nếu không có vé -->
+         <div class="row" th:if="${tickets == null or #lists.isEmpty(tickets)}">
+             <div class="col-12 text-center text-muted">
+                 <p>Tickets are not available yet.</p>
+                 <p>Debug: tickets = <span th:text="${tickets}">null</span></p>
+                 <p>Debug: tickets size = <span th:text="${tickets != null ? #lists.size(tickets) : 'null'}">0</span></p>
+             </div>
+         </div>
+
+        <!-- Nếu có vé -->
+        <div class="row" th:if="${!#lists.isEmpty(tickets)}">
+            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3"
+                 th:each="ticket, iter : ${tickets}"
+                 th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')"
+                 th:data-wow-delay="'0.' + ${iter.index + 2} + 's'">
+                <div class="price-block-wrapper" >
                     <div class="icon">
-                        <i class="lni-write"></i>
+                        <!-- đổi icon theo index cho vui -->
+                        <i th:class="${iter.index == 0} ? 'lni-write' : (${iter.index == 1} ? 'lni-layers' : 'lni-leaf')"></i>
                     </div>
                     <div class="colmun-title">
-                        <h5>Class C Seats</h5>
+                        <h5 th:text="${ticket.name}">Class A Seats</h5>
                     </div>
                     <div class="price">
-                        <h2>150,000 VND</h2>
-                        <p>500 Tickets Available</p>
+                        <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">400,000 VND</h2>
+                        <p>
+                            <span th:text="${ticket.getAvailableQuantity()}"></span> /
+                            <span th:text="${ticket.totalQuantity}"></span> Tickets Available
+                        </p>
                     </div>
+
+                    <!-- Nếu mô tả là plain text -->
                     <div class="pricing-list">
                         <ul>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">General Admission</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Water & Snacks</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Access to Food Court</span></li>
-                            <li><i class="lni-close"></i><span class="text">VIP Meet & Greet</span></li>
-                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Music Workshops</span></li>
+                            <li>
+                                <i class="lni-check-mark-circle"></i>
+                                <span class="text" th:text="${ticket.description}">Ticket description here</span>
+                            </li>
                         </ul>
                     </div>
-                    <a href="#" class="btn btn-common">Buy Ticket</a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-                <div class="price-block-wrapper wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="icon">
-                        <i class="lni-layers"></i>
-                    </div>
-                    <div class="colmun-title">
-                        <h5>Class B Seats</h5>
-                    </div>
-                    <div class="price">
-                        <h2>250,000 VND</h2>
-                        <p>300 Tickets Available</p>
-                    </div>
-                    <div class="pricing-list">
-                        <ul>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Seating</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Beverages</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Complimentary Meal</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Meet & Greet</span></li>
-                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Exclusive Workshops</span></li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn btn-common">Buy Ticket</a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">
-                <div class="price-block-wrapper wow fadeInRight" data-wow-delay="0.4s">
-                    <div class="icon">
-                        <i class="lni-leaf"></i>
-                    </div>
-                    <div class="colmun-title">
-                        <h5>Class A Seats</h5>
-                    </div>
-                    <div class="price">
-                        <h2>400,000 VND</h2>
-                        <p>150 Tickets Available</p>
-                    </div>
-                    <div class="pricing-list">
-                        <ul>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">VIP Front Row Seating</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Bar Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Gourmet Catering</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Backstage Access</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Photo Session</span></li>
-                            <li><i class="lni-check-mark-circle"></i><span class="text">Private Masterclass</span></li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn btn-common">Buy Ticket</a>
+
+                    <a th:if="${ticket.isAvailable()}"
+                       th:href="@{'/ticket/buy/' + ${ticket.ticketTypeId}}"
+                       class="btn btn-common">Buy Ticket</a>
+
+                    <a th:if="${!ticket.isAvailable()}" href="#" class="btn btn-common disabled" style="background-color: #ccc;">
+                        Sold Out
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
 <!-- Ticket Pricing Area End -->
 
 <!-- Event Slides Section Start -->

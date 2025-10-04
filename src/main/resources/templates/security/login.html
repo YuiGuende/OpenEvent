@@ -15,13 +15,16 @@
             <h1>Đăng nhập</h1>
             <div class="input-box">
                 <input type="email" id="loginEmail" name="email" placeholder="Email" required>
-                <i class='bx bx-user'></i>
+                <i class='bx bx-customer'></i>
             </div>
             <div class="input-box">
                 <input type="password" id="loginPassword" name="password" placeholder="Mật khẩu" required>
                 <i class='bx bx-show' id="toggleLoginPw" style="cursor: pointer;"></i>
             </div>
 
+            <div class="forgot-link">
+                <a href="#">Quên mật khẩu?</a>
+            </div>
             <button type="submit" class="btn" id="loginBtn">Đăng nhập</button>
             <p>or login with social platforms</p>
             <div class="social-icons">
@@ -47,7 +50,7 @@
 
             <!-- Hidden input để gửi role mặc định là USER -->
             <input type="hidden" name="role" value="USER">
-            
+
             <div class="input-box">
                 <input type="text" id="regPhone" name="phone" placeholder="Số điện thoại" required>
                 <i class='bx bx-phone'></i>
@@ -85,7 +88,7 @@
         const url = new URL(window.location.href);
         return url.searchParams.get(name);
     }
-    
+
     // Show registration success notice
     (function showNotice() {
         if (getQueryParam('registered') === '1') {

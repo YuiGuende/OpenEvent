@@ -1,12 +1,18 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.organization.Organization;
+import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.model.user.Host;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +20,20 @@ import java.util.Set;
 @Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "event_type", discriminatorType = DiscriminatorType.STRING)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "eventType",
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = MusicEvent.class, name = "MUSIC"),
+        @JsonSubTypes.Type(value = WorkshopEvent.class, name = "WORKSHOP"),
+        @JsonSubTypes.Type(value = FestivalEvent.class, name = "FESTIVAL"),
+        @JsonSubTypes.Type(value = CompetitionEvent.class, name = "COMPETITION"),
+        @JsonSubTypes.Type(value = OtherEvent.class, name = "OTHERS")
+})
+
 public class Event {
 
     @Id
@@ -28,28 +48,35 @@ public class Event {
     )
     private Long id;
 
+    private boolean poster;
+
     @ManyToOne
     @JoinColumn(name = "parent_event_id")
+    @JsonBackReference
     private Event parentEvent;
 
     @OneToMany(mappedBy = "parentEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Event> subEvents;
 
     @Column(name = "event_title", nullable = false, length = 150)
     private String title;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url",columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "capacity")
+    private Integer capacity;
 
     @Column(name = "public_date")
     private LocalDateTime publicDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false, insertable = false, updatable = false)
-    private EventType eventType = EventType.Others;
+    private EventType eventType = EventType.OTHERS;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
@@ -78,13 +105,13 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventSchedule> schedules = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "event_place",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
@@ -94,15 +121,32 @@ public class Event {
     @JoinColumn(name = "event_id")
     private Set<EventImage> eventImages;
 
+    @ManyToOne
+    @JoinColumn(name = "org_id", nullable = true,
+            foreignKey = @ForeignKey(name = "fk_event_org"))
+    private Organization organization;
+
+    @ManyToOne
+    @JoinColumn(name = "host_id", nullable = true,
+            foreignKey = @ForeignKey(name = "fk_event_host"))
+    private Host host;
+
+    @OneToMany( cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "event_id")
+    private List<TicketType> ticketTypes = new ArrayList<>();
+
+
     public Event() {
     }
 
-    public Event(Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places) {
+    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+        this.id = id;
         this.parentEvent = parentEvent;
         this.subEvents = subEvents;
         this.title = title;
         this.imageUrl = imageUrl;
         this.description = description;
+        this.capacity = capacity;
         this.publicDate = publicDate;
         this.eventType = eventType;
         this.enrollDeadline = enrollDeadline;
@@ -116,10 +160,48 @@ public class Event {
         this.schedules = schedules;
         this.speakers = speakers;
         this.places = places;
+        this.eventImages = eventImages;
     }
 
     // Getter & Setter
 
+
+    public Host getHost() {
+        return host;
+    }
+
+    public void setHost(Host host) {
+        this.host = host;
+    }
+
+    public double getMaxTicketPice() {
+        double maxTicketPice = 0;
+        for (TicketType ticketType : ticketTypes) {
+            if (ticketType.getPrice().doubleValue() > maxTicketPice) {
+                maxTicketPice = ticketType.getPrice().doubleValue();
+            }
+        }
+        return maxTicketPice;
+
+    }
+    public double getMinTicketPice() {
+        double minTicketPice = 0;
+        for (TicketType ticketType : ticketTypes) {
+            if (ticketType.getPrice().doubleValue() < minTicketPice) {
+                minTicketPice = ticketType.getPrice().doubleValue();
+            }
+        }
+        return minTicketPice;
+
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
 
     public List<Speaker> getSpeakers() {
         return speakers;
@@ -304,5 +386,21 @@ public class Event {
                 ", points=" + points +
                 ", places=" + places +
                 '}';
+    }
+
+    public boolean isPoster() {
+        return poster;
+    }
+
+    public void setPoster(boolean poster) {
+        this.poster = poster;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 }

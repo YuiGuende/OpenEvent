@@ -7,51 +7,61 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "account")
 public class Account {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "account_id")
-	private Long accountId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "account_id")
+    private Long accountId;
 
-	@Column(name = "email", nullable = false, unique = true, length = 100)
-	private String email;
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
-	@JsonIgnore
-	@Column(name = "password_hash", nullable = false, length = 255)
-	private String passwordHash;
+    @JsonIgnore
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "role", nullable = false, length = 20)
-	private Role role;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private Role role;
 
-	public Long getAccountId() {
-		return accountId;
-	}
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
-	public void setAccountId(Long accountId) {
-		this.accountId = accountId;
-	}
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public Long getAccountId() {
+        return accountId;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
+    }
 
-	public String getPasswordHash() {
-		return passwordHash;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public void setPasswordHash(String passwordHash) {
-		this.passwordHash = passwordHash;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public Role getRole() {
-		return role;
-	}
+    public String getPasswordHash() {
+        return passwordHash;
+    }
 
-	public void setRole(Role role) {
-		this.role = role;
-	}
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
 } 

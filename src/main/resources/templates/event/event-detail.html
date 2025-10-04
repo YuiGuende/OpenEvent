@@ -145,9 +145,9 @@
             }
         }
 
-        // Check if user is authenticated
+        // Check if customer is authenticated
         function checkAuthentication() {
-            fetch('/api/current-user')
+            fetch('/api/current-customer')
                 .then(response => response.json())
                 .then(data => {
                     if (data.authenticated) {

@@ -3,7 +3,7 @@ package com.group02.openevent.controller;
 import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.order.Order;
-import com.group02.openevent.model.user.User;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
@@ -73,13 +73,13 @@ public class OrderController {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
             }
 
-            User user = userRepo.findByAccount_AccountId(accountId).orElse(null);
-            if (user == null) {
+            Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+            if (customer == null) {
                 return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
             }
 
             // Check if user already registered (paid) for this event
-            if (orderService.hasUserRegisteredForEvent(user.getUserId(), request.getEventId())) {
+            if (orderService.hasUserRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false, 
                     "message", "You have already registered for this event"
@@ -87,7 +87,7 @@ public class OrderController {
             }
 
             // Check if user has pending (unpaid) order for this event
-            Optional<Order> pendingOrder = orderService.getPendingOrderForEvent(user.getUserId(), request.getEventId());
+            Optional<Order> pendingOrder = orderService.getPendingOrderForEvent(customer.getCustomerId(), request.getEventId());
             if (pendingOrder.isPresent()) {
                 Order existingOrder = pendingOrder.get();
                 
@@ -98,7 +98,7 @@ public class OrderController {
                 System.out.println("Cancelled old pending order: " + existingOrder.getOrderId() + " for user: " + user.getUserId());
             }
 
-            Order order = orderService.createOrderWithTicketTypes(request, user);
+            Order order = orderService.createOrderWithTicketTypes(request, customer);
             
             // Return simplified response to avoid JSON serialization issues
             Map<String, Object> response = Map.of(
@@ -134,12 +134,12 @@ public class OrderController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
-        User user = userRepo.findByAccount_AccountId(accountId).orElse(null);
-        if (user == null) {
+        Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+        if (customer == null) {
             return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
         }
 
-        List<Order> orders = orderService.getOrdersByUser(user);
+        List<Order> orders = orderService.getOrdersByUser(customer);
         return ResponseEntity.ok(Map.of("success", true, "orders", orders));
     }
 
@@ -154,12 +154,12 @@ public class OrderController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
-        User user = userRepo.findByAccount_AccountId(accountId).orElse(null);
-        if (user == null) {
+        Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+        if (customer == null) {
             return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
         }
 
-        boolean isRegistered = orderService.hasUserRegisteredForEvent(user.getUserId(), eventId);
+        boolean isRegistered = orderService.hasUserRegisteredForEvent(customer.getCustomerId(), eventId);
         return ResponseEntity.ok(Map.of(
             "success", true,
             "isRegistered", isRegistered

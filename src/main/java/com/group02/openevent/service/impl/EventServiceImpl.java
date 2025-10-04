@@ -1,36 +1,77 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.dto.MusicEventDetailDTO;
+import com.group02.openevent.dto.home.EventCardDTO;
+import com.group02.openevent.mapper.EventMapper;
+import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.enums.EventType;
-
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
-import org.springframework.stereotype.Service;
+import com.group02.openevent.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.group02.openevent.model.event.*;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class EventServiceImpl implements EventService {
     @Autowired
-    private IMusicEventRepo musicEventRepo;
+    OrderService orderService;
+    IMusicEventRepo musicEventRepo;
+    IEventRepo eventRepo;
+    EventMapper eventMapper;
 
-    @Autowired
-    private IEventRepo eventRepo;
+    @Override
+    public EventResponse saveEvent(EventCreationRequest request) {
+        // đảm bảo schedule biết event cha
+        Event event = eventMapper.toEvent(request);
+
+        if (event.getSchedules() != null) {
+            event.getSchedules().forEach(s -> s.setEvent(event));
+        }
+        event.setSpeakers(request.getSpeakers());
+        event.setPlaces(request.getPlaces());
+        return eventMapper.toEventResponse(eventRepo.save(event));
+    }
 
     @Override
     public MusicEvent saveMusicEvent(MusicEvent musicEvent) {
-        if (musicEvent.getSchedules() != null) {
-            musicEvent.getSchedules().forEach(s -> s.setEvent(musicEvent));
-        }
-        return eventRepo.save(musicEvent);
+        return null;
+    }
+
+    @Override
+    public List<EventCardDTO> getCustomerEvents(Long customerId) {
+        List<Event> events = orderService.findConfirmedEventsByCustomerId(customerId);
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventCardDTO> getLiveEvents(int i) {
+        List<Event> events = eventRepo.findRecommendedEvents(
+                EventStatus.ONGOING,
+                PageRequest.of(0, i)
+        );
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -55,11 +96,6 @@ public class EventServiceImpl implements EventService {
             workshopEvent.getSchedules().forEach(s -> s.setEvent(workshopEvent));
         }
         return eventRepo.save(workshopEvent);
-    }
-
-    @Override
-    public Optional<Event> getEventById(Integer id) {
-        return Optional.empty();
     }
 
     @Override
@@ -88,5 +124,91 @@ public class EventServiceImpl implements EventService {
         } else {
             return eventRepo.findAll(pageable);
         }
+    }
+
+    @Override
+    public Event updateEventStatus(Long eventId, EventStatus status) {
+        Optional<Event> eventOpt = eventRepo.findById(eventId);
+        if (eventOpt.isPresent()) {
+            Event event = eventOpt.get();
+            event.setStatus(status);
+            return eventRepo.save(event);
+        }
+        throw new RuntimeException("Event not found with id: " + eventId);
+    }
+
+    @Override
+    public Event approveEvent(Long eventId) {
+        return updateEventStatus(eventId, EventStatus.PUBLIC);
+    }
+
+    @Override
+    public long countEventsByStatus(EventStatus status) {
+        return eventRepo.findByStatus(status).size();
+    }
+
+    @Override
+    public long countEventsByType(EventType eventType) {
+        return eventRepo.findByEventType(eventType, PageRequest.of(0, Integer.MAX_VALUE)).getTotalElements();
+    }
+
+    @Override
+    public long countTotalEvents() {
+        return eventRepo.count();
+    }
+
+    @Override
+    public List<Event> getRecentEvents(int limit) {
+        return eventRepo.findAll(PageRequest.of(0, limit)).getContent();
+    }
+
+    @Override
+    public List<EventCardDTO> getPosterEvents() {
+        List<Event> posterEvents = eventRepo.findByPosterTrue();
+        System.out.println("posterEvents size(in service): " + posterEvents.size());
+        return posterEvents.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventCardDTO> getRecommendedEvents(int limit) {
+        List<Event> events = eventRepo.findRecommendedEvents(
+                EventStatus.PUBLIC,
+                PageRequest.of(0, limit)
+        );
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public EventCardDTO convertToDTO(Event event) {
+        String organizer = event.getOrganization() != null && event.getOrganization().getOrgName() != null
+                ? event.getOrganization().getOrgName()
+                : (event.getHost() != null ? event.getHost().getHostName() : "Unknown");
+        String city = event.getPlaces() != null && !event.getPlaces().isEmpty()
+                ? event.getPlaces().get(0).getPlaceName()
+                : "TBA";
+        Integer registered = 0;
+        registered = orderService.countUniqueParticipantsByEventId(event.getId());
+        return EventCardDTO.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .imageUrl(event.getImageUrl())
+                .description(event.getDescription())
+                .eventType(event.getEventType())
+                .status(event.getStatus())
+                .startsAt(event.getStartsAt())
+                .endsAt(event.getEndsAt())
+                .enrollDeadline(event.getEnrollDeadline())
+                .capacity(event.getCapacity())
+                .registered(registered) // TODO: Get actual registration count from Order/Registration table
+                .city(city) // TODO: Extract from Places
+                .organizer(organizer) // TODO: Get from Host/Organizer
+                .maxPrice(event.getMaxTicketPice())
+                .minPrice(event.getMinTicketPice())// TODO: Get from ticket pricing
+                .poster(event.isPoster())
+                .build();
     }
 }

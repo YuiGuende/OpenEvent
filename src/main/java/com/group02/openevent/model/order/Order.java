@@ -2,7 +2,7 @@ package com.group02.openevent.model.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.event.Event;
-import com.group02.openevent.model.user.User;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.ticket.TicketType;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -18,10 +18,10 @@ public class Order {
     private Long orderId;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_order_user"))
+    @JoinColumn(name = "customer_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_order_customer"))
     @JsonIgnoreProperties({"orders", "passwordHash", "account"})
-    private User user;
+    private Customer customer;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "event_id", nullable = false,
@@ -80,8 +80,8 @@ public class Order {
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public Customer getUser() { return customer; }
+    public void setUser(Customer customer) { this.customer = customer; }
 
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }

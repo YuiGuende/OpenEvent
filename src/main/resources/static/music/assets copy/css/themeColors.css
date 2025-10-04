@@ -1,0 +1,923 @@
+<!-- Custom FPT Theme Colors -->
+     /* FPT Theme Colors */
+ :root {
+     --fpt-primary: #ff6a00;    /* Cam FPT */
+     --fpt-primary-hover: #ff7f24;
+     --fpt-accent: #0e1a4f;     /* Navy FPT */
+     --fpt-accent-hover: #1e2a5f;
+ }
+
+/* Override button colors for FPT theme */
+.btn-common {
+    background: var(--fpt-primary) !important;
+    border-color: var(--fpt-primary) !important;
+    color: #fff !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-common:hover {
+    background: var(--fpt-primary-hover) !important;
+    border-color: var(--fpt-primary-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.3) !important;
+}
+
+.btn-border {
+    background: transparent !important;
+    border: 2px solid var(--fpt-accent) !important;
+    color: var(--fpt-accent) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-border:hover {
+    background: var(--fpt-accent) !important;
+    color: #fff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(14, 26, 79, 0.3) !important;
+}
+
+/* Section titles with FPT accent color */
+.section-title {
+    color: var(--fpt-accent) !important;
+}
+
+/* Services section icons with FPT primary color */
+.services-item .icon i {
+    color: var(--fpt-primary) !important;
+}
+
+/* Carousel captions with FPT branding - Buttons only at bottom right */
+.carousel-caption {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+    padding: 40px !important;
+}
+
+
+
+
+
+
+
+/* Button positioned at bottom right */
+.carousel-caption .hero-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+    margin-top: auto !important;
+}
+
+.carousel-caption .btn-common {
+    margin-left: 12px !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .carousel-caption {
+        padding: 20px !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+
+    .carousel-caption .hero-actions {
+        justify-content: center !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    .carousel-caption .btn-common {
+        margin-left: 0 !important;
+    }
+}
+
+/* Counter section background - FPT Orange */
+.counter-section {
+    background: var(--fpt-primary) !important;
+    color: #fff !important;
+}
+
+/* Community Section Styles */
+#community {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+    border-top: 3px solid var(--fpt-primary) !important;
+}
+
+.community-benefits {
+    background: white !important;
+    padding: 30px !important;
+    border-radius: 15px !important;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1) !important;
+    margin: 20px 0 !important;
+}
+
+.community-benefits h6 {
+    color: var(--fpt-primary) !important;
+    font-size: 1.2rem !important;
+    margin-bottom: 20px !important;
+}
+
+.community-benefits p {
+    margin-bottom: 10px !important;
+    color: #333 !important;
+    font-size: 0.95rem !important;
+}
+
+.btn-common {
+    background: var(--fpt-primary) !important;
+    border: 2px solid var(--fpt-primary) !important;
+    color: white !important;
+    padding: 15px 40px !important;
+    border-radius: 25px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+    text-decoration: none !important;
+    font-size: 1rem !important;
+}
+
+.btn-common:hover {
+    background: var(--fpt-primary-hover) !important;
+    border-color: var(--fpt-primary-hover) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.3) !important;
+    text-decoration: none !important;
+}
+
+/* Music-themed Scroll to Top Button */
+.music-scroll-btn {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    width: 70px !important;
+    height: 70px !important;
+    background: linear-gradient(135deg, var(--fpt-primary) 0%, #ff8c42 50%, var(--fpt-primary) 100%) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.4) !important;
+    transition: all 0.3s ease !important;
+    z-index: 9999 !important;
+    overflow: hidden !important;
+    border: 3px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.music-scroll-btn:hover {
+    transform: translateY(-5px) scale(1.1) !important;
+    box-shadow: 0 15px 35px rgba(255, 106, 0, 0.6) !important;
+    background: linear-gradient(135deg, #ff7f24 0%, #ff6a00 50%, #ff7f24 100%) !important;
+}
+
+.music-scroll-btn .music-icon {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-bottom: 2px !important;
+}
+
+.music-scroll-btn .note {
+    position: absolute !important;
+    color: #fff !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    animation: musicFloat 2s ease-in-out infinite !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+}
+
+.music-scroll-btn .note-1 {
+    animation-delay: 0s !important;
+    transform: translateX(-8px) !important;
+}
+
+.music-scroll-btn .note-2 {
+    animation-delay: 0.3s !important;
+    transform: translateX(0px) !important;
+    font-size: 18px !important;
+}
+
+.music-scroll-btn .note-3 {
+    animation-delay: 0.6s !important;
+    transform: translateX(8px) !important;
+}
+
+.music-scroll-btn .scroll-text {
+    color: #fff !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    margin-top: 2px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+/* Music floating animation */
+@keyframes musicFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg) !important;
+        opacity: 0.8 !important;
+    }
+    25% {
+        transform: translateY(-3px) rotate(-5deg) !important;
+        opacity: 1 !important;
+    }
+    50% {
+        transform: translateY(-6px) rotate(0deg) !important;
+        opacity: 0.9 !important;
+    }
+    75% {
+        transform: translateY(-3px) rotate(5deg) !important;
+        opacity: 1 !important;
+    }
+}
+
+/* Pulse effect for the button */
+.music-scroll-btn::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: -2px !important;
+    right: -2px !important;
+    bottom: -2px !important;
+    background: linear-gradient(45deg, transparent, rgba(255, 106, 0, 0.3), transparent) !important;
+    border-radius: 50% !important;
+    animation: pulse 2s ease-in-out infinite !important;
+    z-index: -1 !important;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1) !important;
+        opacity: 0.7 !important;
+    }
+    50% {
+        transform: scale(1.1) !important;
+        opacity: 0.3 !important;
+    }
+    100% {
+        transform: scale(1) !important;
+        opacity: 0.7 !important;
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .music-scroll-btn {
+        width: 60px !important;
+        height: 60px !important;
+        bottom: 20px !important;
+        right: 20px !important;
+    }
+
+    .music-scroll-btn .note {
+        font-size: 14px !important;
+    }
+
+    .music-scroll-btn .note-2 {
+        font-size: 16px !important;
+    }
+
+    .music-scroll-btn .scroll-text {
+        font-size: 9px !important;
+    }
+}
+
+/* Sponsors section - Equal height boxes */
+.spnsors-logo {
+    height: 120px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 20px !important;
+    background: #fff !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.spnsors-logo:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    border-color: var(--fpt-primary) !important;
+}
+
+.spnsors-logo img {
+    max-height: 80px !important;
+    max-width: 150px !important;
+    object-fit: contain !important;
+    filter: grayscale(100%) !important;
+    transition: all 0.3s ease !important;
+}
+
+.spnsors-logo:hover img {
+    filter: grayscale(0%) !important;
+}
+
+/* Ensure equal spacing */
+#sponsors .row .col-md-3 {
+    margin-bottom: 20px !important;
+}
+
+.counter-section .icon i {
+    color: #fff !important;
+}
+
+.counter-section p,
+.counter-section span {
+    color: #fff !important;
+}
+
+/* Schedule section - FPT theme colors */
+.schedule .section-title {
+    color: var(--fpt-accent) !important;
+}
+
+/* Schedule tabs - FPT orange for active state */
+.schedule .nav-tabs .nav-link.active {
+    background: var(--fpt-primary) !important;
+    border-color: var(--fpt-primary) !important;
+    color: #fff !important;
+}
+
+.schedule .nav-tabs .nav-link {
+    color: var(--fpt-accent) !important;
+    border-color: #e5e7eb !important;
+}
+
+.schedule .nav-tabs .nav-link:hover {
+    background: var(--fpt-primary-hover) !important;
+    border-color: var(--fpt-primary-hover) !important;
+    color: #fff !important;
+}
+
+/* Schedule cards */
+.schedule .card-header {
+    background: #fff !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.schedule .card-header:hover {
+    background: #f8f9fa !important;
+}
+
+.schedule .card {
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.schedule .card:hover {
+    box-shadow: 0 4px 16px rgba(255, 106, 0, 0.15) !important;
+    border-color: var(--fpt-primary) !important;
+}
+
+/* Time and location styling */
+.schedule .time {
+    color: var(--fpt-primary) !important;
+    font-weight: 600 !important;
+}
+
+.schedule .location span {
+    color: var(--fpt-primary) !important;
+    font-weight: 600 !important;
+}
+
+/* Music Event Description Styles */
+.event-description {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+    padding: 50px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
+    margin-top: 30px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border: 2px solid rgba(255, 106, 0, 0.1) !important;
+}
+
+.event-description::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    background: linear-gradient(90deg, var(--fpt-primary) 0%, var(--fpt-primary-hover) 50%, var(--fpt-primary) 100%) !important;
+    animation: shimmer 3s ease-in-out infinite !important;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) !important; }
+    50% { transform: translateX(100%) !important; }
+    100% { transform: translateX(-100%) !important; }
+}
+
+.event-description .lead {
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    color: var(--fpt-accent) !important;
+    margin-bottom: 30px !important;
+    line-height: 1.6 !important;
+    position: relative !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.event-description .lead::after {
+    content: '🎵' !important;
+    position: absolute !important;
+    right: -30px !important;
+    top: 0 !important;
+    font-size: 1.2rem !important;
+    animation: bounce 2s ease-in-out infinite !important;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0) !important; }
+    40% { transform: translateY(-10px) !important; }
+    60% { transform: translateY(-5px) !important; }
+}
+
+.event-description p {
+    font-size: 1.1rem !important;
+    color: #444 !important;
+    line-height: 1.8 !important;
+    margin-bottom: 25px !important;
+    position: relative !important;
+    padding-left: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+.event-description p::before {
+    content: '♪' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    color: var(--fpt-primary) !important;
+    font-size: 1.2rem !important;
+    font-weight: bold !important;
+    animation: pulse 2s ease-in-out infinite !important;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5 !important; transform: scale(1) !important; }
+    50% { opacity: 1 !important; transform: scale(1.2) !important; }
+    100% { opacity: 0.5 !important; transform: scale(1) !important; }
+}
+
+.event-description p:hover {
+    transform: translateX(10px) !important;
+    color: var(--fpt-accent) !important;
+}
+
+.event-description p:last-child {
+    margin-bottom: 0 !important;
+}
+
+.event-description p:last-child::after {
+    content: '🎤' !important;
+    position: absolute !important;
+    right: -25px !important;
+    bottom: 0 !important;
+    font-size: 1.1rem !important;
+    animation: rotate 3s linear infinite !important;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg) !important; }
+    to { transform: rotate(360deg) !important; }
+}
+
+/* Mobile responsive for description */
+@media (max-width: 768px) {
+    .event-description {
+        padding: 30px 25px !important;
+        margin-top: 20px !important;
+        border-radius: 15px !important;
+    }
+
+    .event-description .lead {
+        font-size: 1.2rem !important;
+    }
+
+    .event-description .lead::after {
+        right: -20px !important;
+        font-size: 1rem !important;
+    }
+
+    .event-description p {
+        font-size: 1rem !important;
+        padding-left: 15px !important;
+    }
+
+    .event-description p::before {
+        font-size: 1rem !important;
+    }
+
+    .event-description p:last-child::after {
+        right: -15px !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* Featured Artists Section - FPT Theme */
+#team .section-title {
+    color: var(--fpt-accent) !important;
+}
+
+/* Simple Artist Cards - Perfect Equal Height */
+.simple-artist-card {
+    background: white !important;
+    border-radius: 15px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+    height: 400px !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 30px !important;
+}
+
+.simple-artist-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 15px 40px rgba(255, 106, 0, 0.2) !important;
+}
+
+.artist-image {
+    width: 100% !important;
+    height: 280px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    flex-shrink: 0 !important;
+}
+
+.artist-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    transition: all 0.3s ease !important;
+}
+
+.simple-artist-card:hover .artist-image img {
+    transform: scale(1.05) !important;
+}
+
+.artist-info {
+    padding: 20px !important;
+    text-align: center !important;
+    height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+}
+
+.artist-info h3 {
+    color: var(--fpt-accent) !important;
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    line-height: 1.2 !important;
+}
+
+.artist-info p {
+    color: #666 !important;
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+    font-weight: 500 !important;
+    line-height: 1.3 !important;
+}
+
+/* Perfect equal height layout */
+.row.justify-content-center {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
+}
+
+.row.justify-content-center > div {
+    display: flex !important;
+    margin-bottom: 30px !important;
+    height: 400px !important;
+}
+
+#team .btn-common {
+    background: var(--fpt-primary) !important;
+    border: 2px solid var(--fpt-primary) !important;
+    color: white !important;
+    padding: 15px 40px !important;
+    border-radius: 30px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+    text-decoration: none !important;
+    font-size: 1rem !important;
+    margin-top: 30px !important;
+    box-shadow: 0 4px 15px rgba(255, 106, 0, 0.2) !important;
+}
+
+#team .btn-common:hover {
+    background: var(--fpt-primary-hover) !important;
+    border-color: var(--fpt-primary-hover) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 25px rgba(255, 106, 0, 0.4) !important;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+/* Mobile responsive for artist cards */
+@media (max-width: 768px) {
+    .simple-artist-card {
+        height: 350px !important;
+    }
+
+    .row.justify-content-center > div {
+        height: 350px !important;
+    }
+
+    .artist-image {
+        height: 230px !important;
+    }
+
+    .artist-info {
+        height: 120px !important;
+        padding: 15px !important;
+    }
+
+    .artist-info h3 {
+        font-size: 1.1rem !important;
+    }
+
+    .artist-info p {
+        font-size: 0.9rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .simple-artist-card {
+        height: 320px !important;
+    }
+
+    .row.justify-content-center > div {
+        height: 320px !important;
+    }
+
+    .artist-image {
+        height: 200px !important;
+    }
+
+    .artist-info {
+        height: 120px !important;
+        padding: 12px !important;
+    }
+
+    #team .btn-common {
+        padding: 12px 30px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Gallery Section Styles */
+#gallery .section-title {
+    color: var(--fpt-accent) !important;
+}
+
+.btn-browse-all {
+    background: var(--fpt-primary) !important;
+    border: 2px solid var(--fpt-primary) !important;
+    color: white !important;
+    padding: 10px 25px !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+    text-decoration: none !important;
+    font-size: 0.9rem !important;
+    box-shadow: 0 3px 10px rgba(255, 106, 0, 0.2) !important;
+}
+
+.btn-browse-all:hover {
+    background: var(--fpt-primary-hover) !important;
+    border-color: var(--fpt-primary-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(255, 106, 0, 0.3) !important;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+/* Small Hero Banner Styles */
+.hero--compact {
+    height: 60vh !important;
+    min-height: 400px !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.hero-track {
+    display: flex !important;
+    height: 100% !important;
+    transition: transform 0.5s ease !important;
+}
+
+.hero-slide {
+    min-width: 100% !important;
+    height: 100% !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.hero-slide::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    z-index: 1 !important;
+}
+
+.hero-content {
+    position: relative !important;
+    z-index: 2 !important;
+    text-align: center !important;
+    color: white !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+    padding: 40px !important;
+}
+
+.hero-actions {
+    display: flex !important;
+    gap: 15px !important;
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+    flex-wrap: wrap !important;
+    margin-top: auto !important;
+}
+
+.btn-primary {
+    background: var(--fpt-primary) !important;
+    border: 2px solid var(--fpt-primary) !important;
+    color: white !important;
+    padding: 12px 24px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+}
+
+.btn-primary:hover {
+    background: var(--fpt-primary-hover) !important;
+    border-color: var(--fpt-primary-hover) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.3) !important;
+    text-decoration: none !important;
+}
+
+.btn-ghost {
+    background: var(--fpt-primary) !important;
+    border: 2px solid var(--fpt-primary) !important;
+    color: white !important;
+    padding: 12px 24px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+}
+
+.btn-ghost:hover {
+    background: var(--fpt-primary-hover) !important;
+    border-color: var(--fpt-primary-hover) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.3) !important;
+    text-decoration: none !important;
+}
+
+.hero-nav {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    color: white !important;
+    font-size: 24px !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    z-index: 3 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.hero-nav:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-50%) scale(1.1) !important;
+}
+
+.hero-nav.prev {
+    left: 20px !important;
+}
+
+.hero-nav.next {
+    right: 20px !important;
+}
+
+.hero-progress {
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    gap: 10px !important;
+    z-index: 3 !important;
+}
+
+.hero-progress-bar {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.hero-progress-bar.active {
+    background: var(--fpt-primary) !important;
+    transform: scale(1.2) !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .hero--compact {
+        height: 50vh !important;
+        min-height: 300px !important;
+    }
+
+    .hero-content {
+        padding: 20px !important;
+        align-items: center !important;
+    }
+
+    .hero-actions {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }
+
+    .btn-primary, .btn-ghost {
+        width: 200px !important;
+        text-align: center !important;
+    }
+
+    .hero-nav {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 20px !important;
+    }
+
+    .hero-nav.prev {
+        left: 10px !important;
+    }
+
+    .hero-nav.next {
+        right: 10px !important;
+    }
+}

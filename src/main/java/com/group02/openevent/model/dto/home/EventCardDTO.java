@@ -30,7 +30,8 @@ public class EventCardDTO {
     private Integer registered;
     private String city;
     private String organizer;
-    private Double price;
+    private Double minPrice;
+    private Double maxPrice;
     private boolean poster;
     
     // Computed fields for display
@@ -54,12 +55,34 @@ public class EventCardDTO {
             return minutes + "m";
         }
     }
-    
+
     public String getPriceLabel() {
-        if (price == null || price == 0) {
+        // Both prices are null or zero - free event
+        if ((minPrice == null || minPrice == 0) && (maxPrice == null || maxPrice == 0)) {
             return "Free";
         }
-        return String.format("%.0fk", price / 1000);
+
+        // Only one price or same price - single price display
+        if (minPrice != null && maxPrice != null && minPrice.equals(maxPrice)) {
+            return String.format("%.0fk", minPrice / 1000);
+        }
+
+        // Price range
+        if (minPrice != null && maxPrice != null) {
+            return String.format("%.0fk - %.0fk", minPrice / 1000, maxPrice / 1000);
+        }
+
+        // Only min price available
+        if (minPrice != null && minPrice > 0) {
+            return String.format("From %.0fk", minPrice / 1000);
+        }
+
+        // Only max price available
+        if (maxPrice != null && maxPrice > 0) {
+            return String.format("Up to %.0fk", maxPrice / 1000);
+        }
+
+        return "Free";
     }
     
     public boolean isLive() {

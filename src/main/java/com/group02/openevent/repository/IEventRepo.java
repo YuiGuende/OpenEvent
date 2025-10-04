@@ -27,7 +27,8 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     Page<Event> findByStatus(EventStatus status, Pageable pageable);
     Page<Event> findByEventTypeAndStatus(EventType eventType, EventStatus status, Pageable pageable);
 
-    List<Event> findByPosterTrueAndStatus(EventStatus status);
+    @Query("SELECT e FROM Event e WHERE e.poster = true AND e.status = :status")
+    List<Event> findByPosterTrueAndStatus(@Param("status") EventStatus status);
 
     @Query("SELECT e FROM Event e WHERE e.status = :status ORDER BY e.createdAt DESC")
     List<Event> findRecommendedEvents(@Param("status") EventStatus status, Pageable pageable);

@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS account (
     updated_at DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6)
 );
 
--- Create minimal user table if not exists  
-CREATE TABLE IF NOT EXISTS user (
+-- Create minimal customer table if not exists
+CREATE TABLE IF NOT EXISTS customer (
     user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     account_id BIGINT NOT NULL,
     email VARCHAR(255) NOT NULL,

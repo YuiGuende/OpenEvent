@@ -11,6 +11,8 @@ import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -29,8 +31,8 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class EventServiceImpl implements EventService {
-
-
+    @Autowired
+    OrderService orderService;
     IMusicEventRepo musicEventRepo;
     IEventRepo eventRepo;
     EventMapper eventMapper;
@@ -51,6 +53,25 @@ public class EventServiceImpl implements EventService {
     @Override
     public MusicEvent saveMusicEvent(MusicEvent musicEvent) {
         return null;
+    }
+
+    @Override
+    public List<EventCardDTO> getCustomerEvents(Long customerId) {
+        List<Event> events = orderService.findConfirmedEventsByCustomerId(customerId);
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventCardDTO> getLiveEvents(int i) {
+        List<Event> events = eventRepo.findRecommendedEvents(
+                EventStatus.ONGOING,
+                PageRequest.of(0, i)
+        );
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -144,6 +165,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventCardDTO> getPosterEvents() {
         List<Event> posterEvents = eventRepo.findByPosterTrueAndStatus(EventStatus.PUBLIC);
+        System.out.println("posterEvents size(in service): " + posterEvents.size());
         return posterEvents.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -162,6 +184,14 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventCardDTO convertToDTO(Event event) {
+        String organizer = event.getOrganization() != null && event.getOrganization().getOrgName() != null
+                ? event.getOrganization().getOrgName()
+                : (event.getHost() != null ? event.getHost().getHostName() : "Unknown");
+        String city = event.getPlaces() != null && !event.getPlaces().isEmpty()
+                ? event.getPlaces().get(0).getPlaceName()
+                : "TBA";
+        Integer registered = 0;
+        registered = orderService.countUniqueParticipantsByEventId(event.getId());
         return EventCardDTO.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -173,10 +203,11 @@ public class EventServiceImpl implements EventService {
                 .endsAt(event.getEndsAt())
                 .enrollDeadline(event.getEnrollDeadline())
                 .capacity(event.getCapacity())
-                .registered(0) // TODO: Get actual registration count from Order/Registration table
-                .city(event.getPlaces().getFirst().getPlaceName()) // TODO: Extract from Places
-                .organizer(event.getOrganization().getOrgName()) // TODO: Get from Host/Organizer
-                .price(0.0) // TODO: Get from ticket pricing
+                .registered(registered) // TODO: Get actual registration count from Order/Registration table
+                .city(city) // TODO: Extract from Places
+                .organizer(organizer) // TODO: Get from Host/Organizer
+                .maxPrice(event.getMaxTicketPice())
+                .minPrice(event.getMinTicketPice())// TODO: Get from ticket pricing
                 .poster(event.isPoster())
                 .build();
     }

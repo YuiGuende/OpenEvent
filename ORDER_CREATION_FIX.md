@@ -66,7 +66,7 @@ Added logging in both `OrderController` and `OrderServiceImpl` to trace the exac
 2. **Follow the steps in order**:
    - Step 1: Check Authentication
    - Step 2: Login with test credentials
-   - Step 5: Check User Data (ensure user record exists)
+   - Step 5: Check User Data (ensure customer record exists)
    - Step 6: Create Order (this should now work without "Unknown error")
    - Step 7: Create Payment
 

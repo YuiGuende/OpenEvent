@@ -28,13 +28,23 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-//        // Get poster events for hero slider
-//        List<EventCardDTO> posterEvents = eventService.getPosterEvents();
-//        model.addAttribute("posterEvents", posterEvents);
-//
-//        // Get recommended events
-//        List<EventCardDTO> recommendedEvents = eventService.getRecommendedEvents(6);
-//        model.addAttribute("recommendedEvents", recommendedEvents);
+        System.out.println("home page");
+        // Get poster events for hero slider
+        List<EventCardDTO> posterEvents = eventService.getPosterEvents();
+        model.addAttribute("posterEvents", posterEvents);
+        System.out.println("home page 1");
+        System.out.println("PosterEvents size: " + posterEvents.size());
+
+        // Get live events
+        List<EventCardDTO> liveEvents = eventService.getLiveEvents(6);
+        model.addAttribute("liveEvents", liveEvents);
+
+        // Get your events (for now, using recommended events - TODO: implement user-specific events)
+        List<EventCardDTO> myEvents = eventService.getCustomerEvents(2L);//id ví dụ
+        model.addAttribute("myEvents", myEvents);
+        // Get recommended events
+        List<EventCardDTO> recommendedEvents = eventService.getRecommendedEvents(6);
+        model.addAttribute("recommendedEvents", recommendedEvents);
 
         return "index";
     }

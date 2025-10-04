@@ -5,7 +5,7 @@ import com.group02.openevent.model.dto.response.AuthResponse;
 import com.group02.openevent.model.dto.request.LoginRequest;
 import com.group02.openevent.model.dto.request.RegisterRequest;
 import com.group02.openevent.model.enums.Role;
-import com.group02.openevent.model.user.User;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.AuthService;
@@ -64,13 +64,11 @@ public class AuthServiceImpl implements AuthService {
 		account = accountRepo.save(account);
 
 		// Luôn tạo User record cho mọi account
-		User user = new User();
-		user.setAccount(account);
-		user.setPhoneNumber(request.getPhoneNumber());
-		user.setOrganization(request.getOrganization());
-		user.setEmail(request.getEmail().trim());
-		user.setPoints(0);
-		userRepo.save(user);
+		Customer customer = new Customer();
+		customer.setAccount(account);
+		customer.setPhoneNumber(request.getPhoneNumber());
+		customer.setPoints(0);
+		userRepo.save(customer);
 
 		// Do NOT auto-login after registration; redirect to login page with success flag
 		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/login?registered=1");

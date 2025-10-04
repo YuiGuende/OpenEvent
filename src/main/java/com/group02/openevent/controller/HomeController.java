@@ -1,7 +1,7 @@
 package com.group02.openevent.controller;
 
 import com.group02.openevent.model.account.Account;
-import com.group02.openevent.model.dto.home.EventCardDTO;
+import com.group02.openevent.dto.home.EventCardDTO;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.service.EventService;
 import jakarta.servlet.http.HttpSession;

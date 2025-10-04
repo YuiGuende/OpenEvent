@@ -1,7 +1,7 @@
 package com.group02.openevent.controller.event;
 
-import com.group02.openevent.model.dto.ScheduleDTO;
-import com.group02.openevent.model.dto.music.MusicEventDetailDTO;
+import com.group02.openevent.dto.ScheduleDTO;
+import com.group02.openevent.dto.music.MusicEventDetailDTO;
 import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.IMusicService;

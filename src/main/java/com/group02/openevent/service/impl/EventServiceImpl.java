@@ -1,9 +1,9 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.dto.home.EventCardDTO;
+import com.group02.openevent.dto.home.EventCardDTO;
 import com.group02.openevent.mapper.EventMapper;
-import com.group02.openevent.model.dto.request.EventCreationRequest;
-import com.group02.openevent.model.dto.response.EventResponse;
+import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;

@@ -1,5 +1,6 @@
 package com.group02.openevent.service;
 
+import com.group02.openevent.dto.ticket.TicketTypeDTO;
 import com.group02.openevent.model.ticket.TicketType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +26,12 @@ public interface TicketTypeService {
     boolean isTicketTypeAvailable(Long ticketTypeId);
     Integer getTotalSoldByEventId(Long eventId);
     Integer getTotalAvailableByEventId(Long eventId);
+
+    List<TicketTypeDTO> getTicketTypeDTOsByEventId(Long eventId);
+    List<TicketTypeDTO> getAvailableTicketTypeDTOsByEventId(Long eventId);
+    Optional<TicketTypeDTO> getTicketTypeDTOById(Long ticketTypeId);
+    TicketType saveTicketType(TicketType ticketType);
+    TicketTypeDTO convertToDTO(TicketType ticketType);
+    Integer getTotalSoldTickets(Long eventId);
+    Integer getTotalTicketCapacity(Long eventId);
 }

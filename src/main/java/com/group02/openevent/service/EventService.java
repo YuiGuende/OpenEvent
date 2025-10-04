@@ -2,10 +2,10 @@ package com.group02.openevent.service;
 
 
 
-import com.group02.openevent.model.dto.home.EventCardDTO;
+import com.group02.openevent.dto.home.EventCardDTO;
 import com.group02.openevent.model.event.*;
-import com.group02.openevent.model.dto.request.EventCreationRequest;
-import com.group02.openevent.model.dto.response.EventResponse;
+import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.model.enums.EventType;

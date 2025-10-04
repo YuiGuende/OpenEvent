@@ -8,7 +8,7 @@ import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.OrderService;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -66,9 +66,9 @@ public class OrderController {
      * Tạo order mới với TicketType
      */
     @PostMapping("/create-with-ticket-types")
-    public ResponseEntity<?> createWithTicketTypes(@Valid @RequestBody CreateOrderWithTicketTypeRequest request, HttpSession session) {
+    public ResponseEntity<?> createWithTicketTypes(@Valid @RequestBody CreateOrderWithTicketTypeRequest request, HttpServletRequest httpRequest) {
         try {
-            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            Long accountId = (Long) httpRequest.getAttribute("currentUserId");
             if (accountId == null) {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
             }
@@ -129,8 +129,8 @@ public class OrderController {
      * Lấy tất cả orders của user hiện tại
      */
     @GetMapping("/my-orders")
-    public ResponseEntity<?> getMyOrders(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> getMyOrders(HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
@@ -149,8 +149,8 @@ public class OrderController {
      * Kiểm tra xem user đã đăng ký event này chưa
      */
     @GetMapping("/check-registration/{eventId}")
-    public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
@@ -171,8 +171,8 @@ public class OrderController {
      * Hủy order
      */
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
@@ -189,8 +189,8 @@ public class OrderController {
      * Xác nhận order (sau khi thanh toán thành công)
      */
     @PostMapping("/{orderId}/confirm")
-    public ResponseEntity<?> confirmOrder(@PathVariable Long orderId, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> confirmOrder(@PathVariable Long orderId, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }

@@ -218,7 +218,7 @@ public class PaymentServiceImpl implements PaymentService {
             LocalDateTime now = LocalDateTime.now();
             List<Payment> expiredPayments = allPendingPayments.stream()
                 .filter(p -> p.getExpiredAt() != null && p.getExpiredAt().isBefore(now))
-                .toList();
+                .collect(Collectors.toList());
 
             for (Payment payment : expiredPayments) {
                 payment.setStatus(PaymentStatus.EXPIRED);

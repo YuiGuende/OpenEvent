@@ -7,7 +7,7 @@ import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.dto.payment.PaymentResult;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -68,9 +68,9 @@ public class PaymentController {
      */
     @GetMapping("/history")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> getPaymentHistory(HttpSession session) {
+    public ResponseEntity<Map<String, Object>> getPaymentHistory(HttpServletRequest request) {
         try {
-            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            Long accountId = (Long) request.getAttribute("currentUserId");
             if (accountId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -123,9 +123,9 @@ public class PaymentController {
      */
     @PostMapping("/create-for-order/{orderId}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> createPaymentForOrder(@PathVariable Long orderId, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> createPaymentForOrder(@PathVariable Long orderId, HttpServletRequest request) {
         try {
-            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            Long accountId = (Long) request.getAttribute("currentUserId");
             if (accountId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,

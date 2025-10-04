@@ -41,6 +41,12 @@ public class HomeController {
 		userInfo.put("accountId", account.getAccountId());
 		userInfo.put("email", account.getEmail());
 		userInfo.put("role", account.getRole().name());
+		
+		// Add session token for API calls
+		String sessionToken = (String) session.getAttribute("SESSION_TOKEN");
+		if (sessionToken != null) {
+			userInfo.put("sessionToken", sessionToken);
+		}
 
 		return ResponseEntity.ok(userInfo);
 	}

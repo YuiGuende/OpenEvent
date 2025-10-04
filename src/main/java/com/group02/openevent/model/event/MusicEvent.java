@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@DiscriminatorValue("MusicEvent")
+@DiscriminatorValue("MUSIC")
 public class MusicEvent extends Event {
     @Column(name = "music_type")
     String musicType;

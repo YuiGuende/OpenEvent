@@ -164,7 +164,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventCardDTO> getPosterEvents() {
-        List<Event> posterEvents = eventRepo.findByPosterTrueAndStatus(EventStatus.PUBLIC);
+        List<Event> posterEvents = eventRepo.findByPosterTrue();
         System.out.println("posterEvents size(in service): " + posterEvents.size());
         return posterEvents.stream()
                 .map(this::convertToDTO)

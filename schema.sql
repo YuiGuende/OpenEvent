@@ -70,6 +70,22 @@ CREATE TABLE user
     CONSTRAINT fk_user_org FOREIGN KEY (organization_id) REFERENCES organization (org_id)
 );
 
+-- User Sessions Table
+CREATE TABLE user_sessions
+(
+    session_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_token    VARCHAR(255) NOT NULL UNIQUE,
+    account_id       BIGINT NOT NULL,
+    ip_address       VARCHAR(45),
+    user_agent       VARCHAR(500),
+    created_at       DATETIME(6) NOT NULL,
+    last_accessed_at DATETIME(6) NOT NULL,
+    expires_at       DATETIME(6) NOT NULL,
+    is_active        BOOLEAN NOT NULL DEFAULT TRUE,
+    device_info      VARCHAR(200),
+    CONSTRAINT fk_session_account FOREIGN KEY (account_id) REFERENCES account (account_id) ON DELETE CASCADE
+);
+
 -- 3. Event và các bảng liên quan
 CREATE TABLE event
 (
@@ -358,6 +374,14 @@ CREATE INDEX idx_payments_transaction_id ON payments (transaction_id);
 -- 10. Indexes for Event Images Table (Performance Optimization)
 CREATE INDEX idx_eventimage_event_id ON event_image (event_id);
 CREATE INDEX idx_eventimage_main_poster ON event_image (event_id, main_poster);
+
+-- 11. Indexes for User Sessions Table (Performance Optimization)
+CREATE INDEX idx_user_sessions_token ON user_sessions (session_token);
+CREATE INDEX idx_user_sessions_account_id ON user_sessions (account_id);
+CREATE INDEX idx_user_sessions_active ON user_sessions (is_active, expires_at);
+CREATE INDEX idx_user_sessions_expires_at ON user_sessions (expires_at);
+CREATE INDEX idx_user_sessions_ip_address ON user_sessions (ip_address);
+CREATE INDEX idx_user_sessions_last_accessed ON user_sessions (last_accessed_at);
 
 -- 11. INSERT SAMPLE DATA
 -- Sample accounts

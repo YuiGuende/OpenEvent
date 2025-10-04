@@ -36,3 +36,7 @@ INSERT IGNORE INTO account (email, password_hash, role) VALUES
 SELECT 'Setup completed. Accounts in database:' as status;
 SELECT account_id, email, role FROM account;
 
+
+
+
+

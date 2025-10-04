@@ -404,6 +404,13 @@
                             '<strong>📌 You have an unpaid order for this event!</strong><br>' +
                             '<span style="font-size: 14px;">Redirecting you to payment page...</span>' +
                             '</div>';
+                    } else {
+                        // New order created successfully
+                        document.getElementById('result').innerHTML = 
+                            '<div style="color: #28a745; margin: 20px 0; padding: 15px; border: 1px solid #28a745; background-color: #d4edda; border-radius: 4px;">' +
+                            '<strong>✅ Order created successfully!</strong><br>' +
+                            '<span style="font-size: 14px;">Creating payment link...</span>' +
+                            '</div>';
                     }
                     
                     // Create payment for the order (works for both new and pending orders)

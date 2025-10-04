@@ -62,7 +62,7 @@ public class Event {
     @Column(name = "event_title", nullable = false, length = 150)
     private String title;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url",columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     @Column(columnDefinition = "TEXT")

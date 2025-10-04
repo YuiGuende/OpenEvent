@@ -93,7 +93,7 @@ public class OrderServiceImpl implements OrderService {
 
             // Create order
             Order order = new Order();
-            order.setUser(customer);
+            order.setCustomer(customer);
             order.setEvent(event);
             order.setTicketType(ticketType);
             order.setParticipantName(request.getParticipantName());
@@ -117,13 +117,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> getOrdersByUser(Customer customer) {
+    public List<Order> getOrdersByCustomer(Customer customer) {
         return orderRepo.findByCustomer(customer);
     }
 
     @Override
-    public List<Order> getOrdersByUserId(Long userId) {
-        return orderRepo.findByUserId(userId);
+    public List<Order> getOrdersByCustomerId(Long customerId) {
+        return orderRepo.findByCustomerId(customerId);
     }
 
     @Override
@@ -172,8 +172,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public boolean hasUserRegisteredForEvent(Long userId, Long eventId) {
-        List<Order> orders = orderRepo.findByUserId(userId);
+    public Order save(Order order) {
+        return orderRepo.save(order);
+    }
+
+    @Override
+    public boolean hasCustomerRegisteredForEvent(Long customerId, Long eventId) {
+        List<Order> orders = orderRepo.findByCustomerId(customerId);
         // Only count as registered if order is CONFIRMED or PAID (payment successful)
         // PENDING orders (unpaid) are not counted as registered
         return orders.stream()
@@ -183,8 +188,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Optional<Order> getPendingOrderForEvent(Long userId, Long eventId) {
-        List<Order> orders = orderRepo.findByUserId(userId);
+    public Optional<Order> getPendingOrderForEvent(Long customerId, Long eventId) {
+        List<Order> orders = orderRepo.findByCustomerId(customerId);
         return orders.stream()
                 .filter(order -> order.getEvent().getId().equals(eventId) && 
                                order.getStatus() == OrderStatus.PENDING)

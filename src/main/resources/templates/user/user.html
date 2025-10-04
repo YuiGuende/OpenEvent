@@ -31,10 +31,10 @@
 <body>
 	<h1>Trang User</h1>
 <<<<<<< HEAD:src/main/resources/templates/customer/customer.html
-	<p>Xin chào USER.</p>
+	<p>Xin chào CUSTOMER.</p>
 	<p><a href="/templates/security/auth.html">Đăng xuất (xóa cookie trình duyệt hoặc đóng tab)</a></p>
 =======
-	<p>Xin chào <span class="current-role" id="currentRole">USER</span>.</p>
+	<p>Xin chào <span class="current-role" id="currentRole">CUSTOMER</span>.</p>
 	
 	<button class="role-switch" onclick="switchRole()" id="switchButton">
 		Chuyển thành Host
@@ -71,7 +71,7 @@
 			
 			currentRoleElement.textContent = userInfo.role;
 			
-			if (userInfo.role === 'USER') {
+			if (userInfo.role === 'CUSTOMER') {
 				switchButton.textContent = 'Chuyển thành Host';
 			} else if (userInfo.role === 'HOST') {
 				switchButton.textContent = 'Chuyển thành User';

@@ -13,8 +13,8 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     
     List<Order> findByCustomer(Customer customer);
     
-    @Query("SELECT o FROM Order o WHERE o.customer.customerId = :userId")
-    List<Order> findByUserId(@Param("userId") Long userId);
+    @Query("SELECT o FROM Order o WHERE o.customer.customerId = :customerId")
+    List<Order> findByCustomerId(@Param("customerId") Long customerId);
     
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
     List<Order> findByEventId(@Param("eventId") Long eventId);

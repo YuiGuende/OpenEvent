@@ -29,19 +29,19 @@ public interface IPaymentRepo extends JpaRepository<Payment, Long> {
     // Tìm payments theo status
     List<Payment> findByStatus(PaymentStatus status);
     
-    // Tìm payments theo user
-    @Query("SELECT p FROM Payment p WHERE p.order.customer.customerId = :userId ORDER BY p.createdAt DESC")
-    List<Payment> findByOrder_User_UserId(@Param("userId") Long userId);
+    // Tìm payments theo customer
+    @Query("SELECT p FROM Payment p WHERE p.order.customer.customerId = :customerId ORDER BY p.createdAt DESC")
+    List<Payment> findByOrder_Customer_CustomerId(@Param("customerId") Long customerId);
     
-    // Tìm payments theo user và status
-    @Query("SELECT p FROM Payment p WHERE p.order.customer.customerId = :userId AND p.status = :status ORDER BY p.createdAt DESC")
-    List<Payment> findByOrder_User_UserIdAndStatus(@Param("userId") Long userId, @Param("status") PaymentStatus status);
+    // Tìm payments theo customer và status
+    @Query("SELECT p FROM Payment p WHERE p.order.customer.customerId = :customerId AND p.status = :status ORDER BY p.createdAt DESC")
+    List<Payment> findByOrder_Customer_CustomerIdAndStatus(@Param("customerId") Long customerId, @Param("status") PaymentStatus status);
     
     // Tìm payments đang pending (chưa thanh toán)
     @Query("SELECT p FROM Payment p WHERE p.status = 'PENDING' AND p.expiredAt < :currentTime")
     List<Payment> findExpiredPendingPayments(@Param("currentTime") java.time.LocalDateTime currentTime);
     
-    // Đếm số payments theo user và status
-    @Query("SELECT COUNT(p) FROM Payment p WHERE p.order.customer.customerId = :userId AND p.status = :status")
-    long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") PaymentStatus status);
+    // Đếm số payments theo customer và status
+    @Query("SELECT COUNT(p) FROM Payment p WHERE p.order.customer.customerId = :customerId AND p.status = :status")
+    long countByCustomerIdAndStatus(@Param("customerId") Long customerId, @Param("status") PaymentStatus status);
 }

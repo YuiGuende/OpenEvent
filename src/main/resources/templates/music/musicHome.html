@@ -972,95 +972,7 @@
 <!-- Sponsors Section End -->
 
 <!-- Ticket Pricing Area Start -->
-<!--<section id="pricing" class="section-padding">-->
-<!--    <div class="container">-->
-<!--        <div class="row">-->
-<!--            <div class="col-12">-->
-<!--                <div class="section-title-header text-center">-->
-<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>-->
-<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Choose the right package to fully enjoy FPT Music Festival 2025</p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <div class="row">-->
-<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
-<!--                <div class="price-block-wrapper wow fadeInLeft" data-wow-delay="0.2s">-->
-<!--                    <div class="icon">-->
-<!--                        <i class="lni-write"></i>-->
-<!--                    </div>-->
-<!--                    <div class="colmun-title">-->
-<!--                        <h5>Class C Seats</h5>-->
-<!--                    </div>-->
-<!--                    <div class="price">-->
-<!--                        <h2>150,000 VND</h2>-->
-<!--                        <p>500 Tickets Available</p>-->
-<!--                    </div>-->
-<!--                    <div class="pricing-list">-->
-<!--                        <ul>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">General Admission</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Water & Snacks</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Access to Food Court</span></li>-->
-<!--                            <li><i class="lni-close"></i><span class="text">VIP Meet & Greet</span></li>-->
-<!--                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Music Workshops</span></li>-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
-<!--                <div class="price-block-wrapper wow fadeInUp" data-wow-delay="0.3s">-->
-<!--                    <div class="icon">-->
-<!--                        <i class="lni-layers"></i>-->
-<!--                    </div>-->
-<!--                    <div class="colmun-title">-->
-<!--                        <h5>Class B Seats</h5>-->
-<!--                    </div>-->
-<!--                    <div class="price">-->
-<!--                        <h2>250,000 VND</h2>-->
-<!--                        <p>300 Tickets Available</p>-->
-<!--                    </div>-->
-<!--                    <div class="pricing-list">-->
-<!--                        <ul>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Seating</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Free Beverages</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Complimentary Meal</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Meet & Greet</span></li>-->
-<!--                            <li><i class="lni-close"></i><span class="text">Backstage Access</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Exclusive Workshops</span></li>-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3">-->
-<!--                <div class="price-block-wrapper wow fadeInRight" data-wow-delay="0.4s">-->
-<!--                    <div class="icon">-->
-<!--                        <i class="lni-leaf"></i>-->
-<!--                    </div>-->
-<!--                    <div class="colmun-title">-->
-<!--                        <h5>Class A Seats</h5>-->
-<!--                    </div>-->
-<!--                    <div class="price">-->
-<!--                        <h2>400,000 VND</h2>-->
-<!--                        <p>150 Tickets Available</p>-->
-<!--                    </div>-->
-<!--                    <div class="pricing-list">-->
-<!--                        <ul>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">VIP Front Row Seating</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Premium Bar Access</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Gourmet Catering</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Backstage Access</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Artist Photo Session</span></li>-->
-<!--                            <li><i class="lni-check-mark-circle"></i><span class="text">Private Masterclass</span></li>-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                    <a href="#" class="btn btn-common">Buy Ticket</a>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
+
 <section id="pricing" class="section-padding">
     <div class="container">
         <div class="row">
@@ -1132,36 +1044,60 @@
 <!-- Ticket Pricing Area End -->
 
 <!-- Event Slides Section Start -->
-<section id="event-slides" class="section-padding">
+<section id="event-slides" class="section-padding" th:if="${event != null}">
     <div class="container">
         <div class="row">
+            <!-- Tiêu đề -->
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">All the information you need for the best experience at FPT Music Festival</p>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        All the information you need for the best experience at
+                        <span th:text="${event.title}">FPT Music Festival</span>
+                    </p>
                 </div>
             </div>
+
+            <!-- Bên trái: Google Map -->
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
-                <div class="video">
-                    <img class="img-fluid" th:src="@{/music/assets/img/about/about.jpg}" alt="Event Guidelines">
+                <div class="video" style="border-radius:10px; overflow:hidden;">
+                    <iframe
+                            th:src="@{|https://www.google.com/maps?q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}&output=embed|}"
+                            width="100%" height="350" style="border:0;" allowfullscreen="">
+                    </iframe>
                 </div>
+
+                <!-- Nút mở Google Maps -->
+                <a class="btn btn-outline-primary mt-3"
+                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}"
+                   target="_blank">
+                    Open in Google Maps
+                </a>
             </div>
+
+            <!-- Bên phải: Nội dung hướng dẫn -->
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
-                <p class="intro-desc">Join us at FPT University Da Nang for an unforgettable music experience! Here's everything you need to know to make the most of your visit:
+                <p class="intro-desc">
+                    Join us at
+                    <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>
+                    for an unforgettable experience!
                 </p>
+
                 <h2 class="intro-title">Event Day Instructions</h2>
+
                 <ul class="list-specification">
-                    <li><i class="lni-check-mark-circle"></i> <strong>Arrival:</strong> Come to FPT University Da Nang at Ngu Hanh Son</li>
-                    <li><i class="lni-check-mark-circle"></i> <strong>Check-in:</strong> Go to Alpha Building for registration and ticket verification</li>
-                    <li><i class="lni-check-mark-circle"></i> <strong>Navigation:</strong> Follow the directional signs to reach the event venue</li>
-                    <li><i class="lni-check-mark-circle"></i> <strong>Main Venue:</strong> Event takes place in Gamma Building lobby</li>
-                    <li><i class="lni-check-mark-circle"></i> <strong>Dress Code:</strong> Casual comfortable clothing, FPT colors preferred</li>
-                    <li><i class="lni-check-mark-circle"></i> <strong>Bring:</strong> Your ticket, student ID, and positive energy!</li>
+                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"
+                        th:if="${#strings.trim(line) != ''}">
+                        <i class="lni-check-mark-circle"></i>
+                        <span th:text="${#strings.trim(line) + '.'}">Instruction</span>
+                    </li>
                 </ul>
             </div>
         </div>
     </div>
 </section>
+
+
 <!-- Event Slides Section End -->
 
 <!-- Blog Section Start -->

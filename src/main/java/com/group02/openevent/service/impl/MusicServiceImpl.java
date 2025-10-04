@@ -30,16 +30,22 @@ public class MusicServiceImpl implements IMusicService {
                     MusicEventDetailDTO dto = new MusicEventDetailDTO(
                             e.getDescription(),
                             e.getTitle(),
+                            e.getCapacity(),
                             e.getStartsAt(),
                             e.getEndsAt(),
                             e.getCreatedAt(),
                             null,//chưa có trường dữ liệu, không được sửa
                             e.getEventType(),
-                            e.getBenefits()
+                            e.getBenefits(),
+                            null, // imageUrls sẽ set sau
+                            null, // speakers sẽ set sau
+                            null, // schedules sẽ set sau
+                            null, // places sẽ set sau
+                            e.getVenueAddress(), // venue address
+                            e.getGuidelines()    // guidelines
                     );
 
-                    // 🔹 Capacity
-                    dto.setCapacity(e.getCapacity());
+                    // Capacity đã được set trong constructor
 
                     // 🔹 Images
                     if (e.getEventImages() != null) {

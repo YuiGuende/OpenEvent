@@ -65,6 +65,8 @@ public class MusicController {
             if (ticketTypes != null && !ticketTypes.isEmpty()) {
                 System.out.println("First ticket: " + ticketTypes.get(0).getName() + " - " + ticketTypes.get(0).getPrice());
             }
+            System.out.println("Event venue address: " + (event != null ? event.getVenueAddress() : "NULL"));
+            System.out.println("Event guidelines: " + (event != null ? event.getGuidelines() : "NULL"));
             System.out.println("========================");
             
         } catch (Exception e) {

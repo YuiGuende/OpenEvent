@@ -124,11 +124,23 @@ public class Event {
             foreignKey = @ForeignKey(name = "fk_event_org"))
     private Organization organization;
 
+
     public Event() {
     }
 
-    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+    @Column(name = "venue_address", length = 500)
+    private String venueAddress;
+
+    @Column(name = "guidelines", columnDefinition = "TEXT")
+    private String guidelines;
+
+
+
+    
+
+    public Event(Long id, boolean poster, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages, Organization organization, String venueAddress, String guidelines) {
         this.id = id;
+        this.poster = poster;
         this.parentEvent = parentEvent;
         this.subEvents = subEvents;
         this.title = title;
@@ -149,9 +161,30 @@ public class Event {
         this.speakers = speakers;
         this.places = places;
         this.eventImages = eventImages;
+        this.organization = organization;
+        this.venueAddress = venueAddress;
+        this.guidelines = guidelines;
     }
 
     // Getter & Setter
+
+
+
+    public String getVenueAddress() {
+        return venueAddress;
+    }
+
+    public void setVenueAddress(String venueAddress) {
+        this.venueAddress = venueAddress;
+    }
+
+    public String getGuidelines() {
+        return guidelines;
+    }
+
+    public void setGuidelines(String guidelines) {
+        this.guidelines = guidelines;
+    }
 
 
     public Integer getCapacity() {

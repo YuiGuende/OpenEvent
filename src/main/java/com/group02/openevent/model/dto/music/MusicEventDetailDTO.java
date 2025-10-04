@@ -32,6 +32,8 @@ public class MusicEventDetailDTO {
     private List<SpeakerDTO> speakers;     // danh sách nghệ sĩ
     private List<ScheduleDTO> schedules;   // lịch biểu
     private List<PlaceDTO> places;         // địa điểm
+    private String venueAddress;           // địa chỉ venue
+    private String guidelines;             // hướng dẫn sự kiện
 
     public MusicEventDetailDTO(String description, String title, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, LocalDateTime updatedAt, EventType eventType, String benefits) {
         this.description = description;
@@ -45,7 +47,7 @@ public class MusicEventDetailDTO {
     }
 
 
-    public MusicEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, LocalDateTime updatedAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places) {
+    public MusicEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, LocalDateTime updatedAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines) {
         this.description = description;
         this.title = title;
         this.capacity = capacity;
@@ -59,6 +61,8 @@ public class MusicEventDetailDTO {
         this.speakers = speakers;
         this.schedules = schedules;
         this.places = places;
+        this.venueAddress = venueAddress;
+        this.guidelines = guidelines;
     }
 
     // Getter & Setter cho tất cả fields
@@ -145,6 +149,22 @@ public class MusicEventDetailDTO {
 
     public void setBenefits(String benefits) {
         this.benefits = benefits;
+    }
+
+    public String getVenueAddress() {
+        return venueAddress;
+    }
+
+    public void setVenueAddress(String venueAddress) {
+        this.venueAddress = venueAddress;
+    }
+
+    public String getGuidelines() {
+        return guidelines;
+    }
+
+    public void setGuidelines(String guidelines) {
+        this.guidelines = guidelines;
     }
 
 // ... giữ nguyên getter/setter cũ

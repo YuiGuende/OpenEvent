@@ -7,7 +7,7 @@ CREATE TABLE account
     account_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role          ENUM('ADMIN','HOST','USER') NOT NULL
+    role          ENUM('ADMIN','HOST','CUSTOMER') NOT NULL
 );
 
 CREATE TABLE organization
@@ -60,7 +60,7 @@ CREATE TABLE admin
 
 CREATE TABLE customer
 (
-    user_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    customer_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
     email           VARCHAR(100),
     organization_id BIGINT,
     phone_number    VARCHAR(20),
@@ -214,9 +214,9 @@ CREATE TABLE host
     created_at  DATETIME(6) NOT NULL,
     organize_id BIGINT,
     event_id    BIGINT NOT NULL,
-    user_id     BIGINT NOT NULL,
+    customer_id BIGINT NOT NULL,
     CONSTRAINT fk_host_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES customer (user_id),
+    CONSTRAINT fk_host_user FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
     CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
 );
 
@@ -224,13 +224,13 @@ CREATE TABLE host
 CREATE TABLE event_guests
 (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    customer_id BIGINT NOT NULL,
     event_id BIGINT NOT NULL,
     joined_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     status ENUM('ACTIVE', 'LEFT', 'REMOVED') NOT NULL DEFAULT 'ACTIVE',
-    CONSTRAINT fk_eventguest_user FOREIGN KEY (user_id) REFERENCES customer (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_eventguest_user FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON DELETE CASCADE,
     CONSTRAINT fk_eventguest_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
-    UNIQUE KEY UK_user_event_guest (user_id, event_id)
+    UNIQUE KEY UK_user_event_guest (customer_id, event_id)
 );
 
 CREATE TABLE host_subscriptions
@@ -244,15 +244,41 @@ CREATE TABLE host_subscriptions
     CONSTRAINT fk_sub_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans (plan_id)
 );
 
--- 5. Order System (Simplified Model - No OrderItem)
+-- 5. Voucher System (Discount Codes) - Must be created before orders
+CREATE TABLE vouchers
+(
+    voucher_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code              VARCHAR(20) NOT NULL UNIQUE,
+    discount_amount   DECIMAL(10,2) NOT NULL,
+    quantity          INT NOT NULL DEFAULT 1,
+    status            ENUM('ACTIVE','EXPIRED','DISABLED') NOT NULL DEFAULT 'ACTIVE',
+    created_at        DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    expires_at        DATETIME(6) DEFAULT NULL,
+    description       VARCHAR(500) DEFAULT NULL,
+    created_by        BIGINT DEFAULT NULL,
+    CONSTRAINT fk_voucher_creator FOREIGN KEY (created_by) REFERENCES account (account_id) ON DELETE SET NULL
+);
+
+-- 6. Order System (Simplified Model - No OrderItem)
 CREATE TABLE orders
 (
     order_id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id                  BIGINT NOT NULL,
+    customer_id              BIGINT NOT NULL,
     event_id                 BIGINT NOT NULL,
     ticket_type_id           BIGINT NOT NULL,
     status                   ENUM('PENDING','CONFIRMED','PAID','CANCELLED','EXPIRED','REFUNDED') NOT NULL DEFAULT 'PENDING',
+    
+    -- Pricing fields
+    original_price           DECIMAL(10,2) NOT NULL,
+    host_discount_percent    DECIMAL(5,2) DEFAULT 0,
+    host_discount_amount     DECIMAL(10,2) DEFAULT 0,
+    voucher_discount_amount  DECIMAL(10,2) DEFAULT 0,
     total_amount             DECIMAL(10,2) NOT NULL DEFAULT 0,
+    
+    -- Voucher information
+    voucher_id               BIGINT DEFAULT NULL,
+    voucher_code             VARCHAR(20) DEFAULT NULL,
+    
     participant_name         VARCHAR(100) DEFAULT NULL,
     participant_email        VARCHAR(100) DEFAULT NULL,
     participant_phone        VARCHAR(20) DEFAULT NULL,
@@ -260,12 +286,26 @@ CREATE TABLE orders
     notes                    VARCHAR(1000) DEFAULT NULL,
     created_at               DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at               DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
-    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES customer (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_user FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON DELETE CASCADE,
     CONSTRAINT fk_order_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
-    CONSTRAINT fk_order_tickettype FOREIGN KEY (ticket_type_id) REFERENCES ticket_type (ticket_type_id) ON DELETE CASCADE
+    CONSTRAINT fk_order_tickettype FOREIGN KEY (ticket_type_id) REFERENCES ticket_type (ticket_type_id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers (voucher_id) ON DELETE SET NULL
 );
 
--- 6. Payment System (PayOS Integration)
+-- Voucher Usage Tracking
+CREATE TABLE voucher_usage
+(
+    usage_id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    voucher_id        BIGINT NOT NULL,
+    order_id          BIGINT NOT NULL,
+    used_at           DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    discount_applied  DECIMAL(10,2) NOT NULL,
+    CONSTRAINT fk_voucherusage_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers (voucher_id) ON DELETE CASCADE,
+    CONSTRAINT fk_voucherusage_order FOREIGN KEY (order_id) REFERENCES orders (order_id) ON DELETE CASCADE,
+    UNIQUE KEY UK_voucher_order (voucher_id, order_id)
+);
+
+-- 7. Payment System (PayOS Integration)
 -- Simplified payment system using only Orders (no OrderItem or Ticket)
 
 -- Bảng payments chỉ hỗ trợ Order-based flow với PayOS
@@ -303,14 +343,14 @@ CREATE TABLE payments
 CREATE TABLE reports
 (
     report_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id    BIGINT NOT NULL,
+    customer_id BIGINT NOT NULL,
     event_id   BIGINT NOT NULL,
     content    TEXT   NOT NULL,
     type       ENUM('SPAM','ABUSE','OTHER') NOT NULL,
     status     ENUM('PENDING','SEEN','RESOLVED') DEFAULT 'PENDING',
     seen       BOOLEAN  DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_report_user FOREIGN KEY (user_id) REFERENCES customer (user_id),
+    CONSTRAINT fk_report_user FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
     CONSTRAINT fk_report_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
@@ -322,10 +362,10 @@ CREATE TABLE notifications
     message         VARCHAR(500) NOT NULL,
     is_read         BOOLEAN  DEFAULT FALSE,
     target_url      VARCHAR(255),
-    type            ENUM('REPORT','HOST_REQUEST','NOTIFICATION','USER_NOTIFICATION') NOT NULL,
+    type            ENUM('REPORT','HOST_REQUEST','NOTIFICATION','CUSTOMER_NOTIFICATION') NOT NULL,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES customer (user_id),
-    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES customer (user_id)
+    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES customer (customer_id),
+    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES customer (customer_id)
 );
 
 CREATE TABLE requests
@@ -345,19 +385,19 @@ CREATE INDEX idx_tickettype_event_id ON ticket_type (event_id);
 CREATE INDEX idx_tickettype_sale_dates ON ticket_type (start_sale_date, end_sale_date);
 CREATE INDEX idx_tickettype_quantity ON ticket_type (total_quantity, sold_quantity);
 
-CREATE INDEX idx_orders_user_id ON orders (user_id);
+CREATE INDEX idx_orders_customer_id ON orders (customer_id);
 CREATE INDEX idx_orders_event_id ON orders (event_id);
 CREATE INDEX idx_orders_status ON orders (status);
 CREATE INDEX idx_orders_created_at ON orders (created_at);
-CREATE INDEX idx_orders_user_status ON orders (user_id, status);
+CREATE INDEX idx_orders_customer_status ON orders (customer_id, status);
 CREATE INDEX idx_orders_tickettype_id ON orders (ticket_type_id);
-CREATE INDEX idx_orders_user_tickettype ON orders (user_id, ticket_type_id);
+CREATE INDEX idx_orders_customer_tickettype ON orders (customer_id, ticket_type_id);
 CREATE INDEX idx_orders_event_tickettype ON orders (event_id, ticket_type_id);
 
 -- 9. Indexes for Payment Tables (Performance Optimization)
 
 -- Indexes for Event Guests (Performance Optimization)
-CREATE INDEX idx_eventguests_user_id ON event_guests (user_id);
+CREATE INDEX idx_eventguests_customer_id ON event_guests (customer_id);
 CREATE INDEX idx_eventguests_event_id ON event_guests (event_id);
 CREATE INDEX idx_eventguests_status ON event_guests (status);
 CREATE INDEX idx_eventguests_joined_at ON event_guests (joined_at);
@@ -383,15 +423,32 @@ CREATE INDEX idx_user_sessions_expires_at ON user_sessions (expires_at);
 CREATE INDEX idx_user_sessions_ip_address ON user_sessions (ip_address);
 CREATE INDEX idx_user_sessions_last_accessed ON user_sessions (last_accessed_at);
 
+-- 12. Indexes for Voucher System (Performance Optimization)
+CREATE INDEX idx_vouchers_code ON vouchers (code);
+CREATE INDEX idx_vouchers_status ON vouchers (status);
+CREATE INDEX idx_vouchers_expires_at ON vouchers (expires_at);
+CREATE INDEX idx_vouchers_status_expires ON vouchers (status, expires_at);
+CREATE INDEX idx_vouchers_created_by ON vouchers (created_by);
+
+CREATE INDEX idx_voucher_usage_voucher_id ON voucher_usage (voucher_id);
+CREATE INDEX idx_voucher_usage_order_id ON voucher_usage (order_id);
+CREATE INDEX idx_voucher_usage_used_at ON voucher_usage (used_at);
+
+-- 13. Indexes for Updated Orders Table (Performance Optimization)
+CREATE INDEX idx_orders_voucher_id ON orders (voucher_id);
+CREATE INDEX idx_orders_voucher_code ON orders (voucher_code);
+CREATE INDEX idx_orders_original_price ON orders (original_price);
+CREATE INDEX idx_orders_total_amount ON orders (total_amount);
+
 -- 11. INSERT SAMPLE DATA
 -- Sample accounts
 INSERT INTO account (email, password_hash, role) VALUES
 ('admin@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN'),
 ('host1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
 ('host2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
-('user1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER'),
-('user2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER'),
-('user3@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER');
+('user1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER'),
+('user2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER'),
+('user3@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER');
 
 -- Sample organizations
 INSERT INTO organization (org_name, description, email, phone, address, created_at) VALUES
@@ -431,12 +488,12 @@ INSERT INTO customer (email, phone_number, points, account_id, organization_id) 
 ('user3@openevent.com', '0901234572', 25, 6, 3);
 
 -- Sample events
-INSERT INTO event (event_type, event_title, description, starts_at, ends_at, enroll_deadline, status, image_url, points, benefits, learning_objects, created_at, public_date) VALUES
-('MusicEvent', 'Spring Music Festival 2024', 'Annual spring music festival featuring local and international artists', '2024-04-15 18:00:00', '2024-04-15 23:00:00', '2024-04-10 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 20, 'Free drinks and snacks, Meet & greet with artists', 'Experience diverse music genres, Network with music enthusiasts', NOW(), NOW()),
-('WorkshopEvent', 'AI & Machine Learning Workshop', 'Hands-on workshop covering basics of AI and ML with practical examples', '2024-04-20 09:00:00', '2024-04-20 17:00:00', '2024-04-18 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 50, 'Certificate of completion, Course materials, Lunch included', 'Learn AI fundamentals, Build your first ML model, Understand data preprocessing', NOW(), NOW()),
-('ConferenceEvent', 'Digital Marketing Summit 2024', 'Premier conference for digital marketing professionals and enthusiasts', '2024-05-05 08:00:00', '2024-05-05 18:00:00', '2024-05-01 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 30, 'Networking opportunities, Conference materials, Refreshments', 'Latest marketing trends, Social media strategies, ROI optimization techniques', NOW(), NOW()),
+INSERT INTO event (event_type, event_title, description, starts_at, ends_at, enroll_deadline, status, image_url, points, benefits, learning_objects, created_at, public_at) VALUES
+('MUSIC', 'Spring Music Festival 2024', 'Annual spring music festival featuring local and international artists', '2024-04-15 18:00:00', '2024-04-15 23:00:00', '2024-04-10 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 20, 'Free drinks and snacks, Meet & greet with artists', 'Experience diverse music genres, Network with music enthusiasts', NOW(), NOW()),
+('WORKSHOP', 'AI & Machine Learning Workshop', 'Hands-on workshop covering basics of AI and ML with practical examples', '2024-04-20 09:00:00', '2024-04-20 17:00:00', '2024-04-18 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 50, 'Certificate of completion, Course materials, Lunch included', 'Learn AI fundamentals, Build your first ML model, Understand data preprocessing', NOW(), NOW()),
+('OTHERS', 'Digital Marketing Summit 2024', 'Premier conference for digital marketing professionals and enthusiasts', '2024-05-05 08:00:00', '2024-05-05 18:00:00', '2024-05-01 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 30, 'Networking opportunities, Conference materials, Refreshments', 'Latest marketing trends, Social media strategies, ROI optimization techniques', NOW(), NOW()),
 ('CompetitionEvent', 'Coding Challenge 2024', 'Annual programming competition for students and professionals', '2024-05-12 10:00:00', '2024-05-12 16:00:00', '2024-05-08 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 40, 'Cash prizes, Certificates, Job opportunities', 'Problem-solving skills, Algorithm optimization, Team collaboration', NOW(), NOW()),
-('MusicEvent', 'Jazz Night at the Park', 'Relaxing evening of jazz music in outdoor setting', '2024-04-25 19:00:00', '2024-04-25 22:00:00', '2024-04-23 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 15, 'Outdoor seating, Light refreshments', 'Appreciate jazz music, Relaxing atmosphere', NOW(), NOW());
+('MUSIC', 'Jazz Night at the Park', 'Relaxing evening of jazz music in outdoor setting', '2024-04-25 19:00:00', '2024-04-25 22:00:00', '2024-04-23 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 15, 'Outdoor seating, Light refreshments', 'Appreciate jazz music, Relaxing atmosphere', NOW(), NOW());
 
 -- Sample event-specific details
 INSERT INTO music_event (event_id, genre, performer_count) VALUES
@@ -501,7 +558,7 @@ INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sol
 (5, 'Premium Seating', 'Front row seating with table service', 3200.00, 40, 12, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
 
 -- Sample hosts
-INSERT INTO host (created_at, event_id, user_id, organize_id) VALUES
+INSERT INTO host (created_at, event_id, customer_id, organize_id) VALUES
 (NOW(), 1, 1, 3), -- Host1 organizes Spring Music Festival for Creative Arts Center
 (NOW(), 2, 1, 1), -- Host1 organizes AI Workshop for HCMC University  
 (NOW(), 3, 2, 2), -- Host2 organizes Marketing Summit for Tech Hub Vietnam
@@ -509,20 +566,20 @@ INSERT INTO host (created_at, event_id, user_id, organize_id) VALUES
 (NOW(), 5, 2, 3); -- Host2 organizes Jazz Night for Creative Arts Center
 
 -- Sample event guests (some users already joined events)
-INSERT INTO event_guests (user_id, event_id, joined_at, status) VALUES
+INSERT INTO event_guests (customer_id, event_id, joined_at, status) VALUES
 (3, 1, '2024-03-15 10:30:00', 'ACTIVE'), -- user1 joined Spring Music Festival
 (4, 1, '2024-03-16 14:20:00', 'ACTIVE'), -- user2 joined Spring Music Festival  
 (5, 2, '2024-03-20 09:15:00', 'ACTIVE'), -- user3 joined AI Workshop
 (3, 3, '2024-04-02 16:45:00', 'ACTIVE'), -- user1 joined Marketing Summit
 (4, 5, '2024-04-05 11:30:00', 'ACTIVE'); -- user2 joined Jazz Night
 
--- Sample orders (some completed purchases)
-INSERT INTO orders (user_id, event_id, ticket_type_id, status, total_amount, participant_name, participant_email, participant_phone, created_at) VALUES
-(3, 1, 1, 'PAID', 150000.00, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', '2024-03-15 10:30:00'),
-(4, 1, 2, 'PAID', 200000.00, 'Tran Thi User2', 'user2@openevent.com', '0901234571', '2024-03-16 14:20:00'),
-(5, 2, 1, 'PAID', 100000.00, 'Le Van User3', 'user3@openevent.com', '0901234572', '2024-03-20 09:15:00'),
-(3, 3, 1, 'CONFIRMED', 250000.00, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', '2024-04-02 16:45:00'),
-(4, 5, 1, 'PENDING', 80000.00, 'Tran Thi User2', 'user2@openevent.com', '0901234571', '2024-04-05 11:30:00');
+-- Sample orders (some completed purchases) - Updated with new pricing fields
+INSERT INTO orders (customer_id, event_id, ticket_type_id, status, original_price, host_discount_percent, host_discount_amount, voucher_discount_amount, total_amount, participant_name, participant_email, participant_phone, created_at) VALUES
+(3, 1, 1, 'PAID', 200000.00, 0.00, 0.00, 0.00, 200000.00, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', '2024-03-15 10:30:00'),
+(4, 1, 2, 'PAID', 300000.00, 0.00, 0.00, 0.00, 300000.00, 'Tran Thi User2', 'user2@openevent.com', '0901234571', '2024-03-16 14:20:00'),
+(5, 2, 1, 'PAID', 100000.00, 0.00, 0.00, 0.00, 100000.00, 'Le Van User3', 'user3@openevent.com', '0901234572', '2024-03-20 09:15:00'),
+(3, 3, 1, 'CONFIRMED', 250000.00, 0.00, 0.00, 0.00, 250000.00, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', '2024-04-02 16:45:00'),
+(4, 5, 1, 'PENDING', 180000.00, 0.00, 0.00, 0.00, 180000.00, 'Tran Thi User2', 'user2@openevent.com', '0901234571', '2024-04-05 11:30:00');
 
 -- Sample payments
 INSERT INTO payments (order_id, amount, status, description, created_at, paid_at) VALUES
@@ -547,15 +604,42 @@ INSERT INTO host_subscriptions (host_id, plan_id, start_date, end_date) VALUES
 INSERT INTO event_sequence (next_val) VALUES (6);
 
 -- Sample reports
-INSERT INTO reports (user_id, event_id, content, type, status, created_at) VALUES
+INSERT INTO reports (customer_id, event_id, content, type, status, created_at) VALUES
 (4, 1, 'The sound system was too loud during the first hour', 'OTHER', 'RESOLVED', '2024-03-16 20:30:00'),
 (5, 2, 'Workshop materials were very helpful', 'OTHER', 'SEEN', '2024-03-20 18:45:00');
 
 -- Sample notifications
 INSERT INTO notifications (receiver_id, sender_id, message, type, is_read, created_at) VALUES
-(3, NULL, 'Welcome to OpenEvent! Start exploring amazing events.', 'USER_NOTIFICATION', TRUE, '2024-03-01 10:00:00'),
-(4, NULL, 'Your payment for Spring Music Festival has been confirmed.', 'USER_NOTIFICATION', TRUE, '2024-03-16 14:26:00'),
-(5, NULL, 'Reminder: AI Workshop starts tomorrow at 9:00 AM.', 'USER_NOTIFICATION', FALSE, '2024-04-19 18:00:00'),
+(3, NULL, 'Welcome to OpenEvent! Start exploring amazing events.', 'CUSTOMER_NOTIFICATION', TRUE, '2024-03-01 10:00:00'),
+(4, NULL, 'Your payment for Spring Music Festival has been confirmed.', 'CUSTOMER_NOTIFICATION', TRUE, '2024-03-16 14:26:00'),
+(5, NULL, 'Reminder: AI Workshop starts tomorrow at 9:00 AM.', 'CUSTOMER_NOTIFICATION', FALSE, '2024-04-19 18:00:00'),
 (1, NULL, 'Your event "Spring Music Festival" has received 50+ registrations!', 'HOST_REQUEST', FALSE, '2024-03-20 15:30:00');
+
+-- Sample vouchers (Discount Codes)
+INSERT INTO vouchers (code, discount_amount, quantity, status, description, created_at, expires_at, created_by) VALUES
+('WELCOME50', 50000.00, 100, 'ACTIVE', 'Welcome discount 50k for new users', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 1),
+('SAVE20K', 20000.00, 50, 'ACTIVE', 'Save 20k on any event', NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), 1),
+('FESTIVAL100', 100000.00, 20, 'ACTIVE', 'Special festival discount 100k', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), 1),
+('STUDENT30', 30000.00, 200, 'ACTIVE', 'Student discount 30k', NOW(), DATE_ADD(NOW(), INTERVAL 60 DAY), 1),
+('EARLYBIRD', 15000.00, 75, 'ACTIVE', 'Early bird discount 15k', NOW(), DATE_ADD(NOW(), INTERVAL 45 DAY), 1),
+('VIP200', 200000.00, 10, 'ACTIVE', 'VIP discount 200k for premium events', NOW(), DATE_ADD(NOW(), INTERVAL 90 DAY), 1),
+('EXPIRED10', 10000.00, 5, 'EXPIRED', 'Expired test voucher', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), 1),
+('UNLIMITED', 25000.00, 999, 'ACTIVE', 'Unlimited use voucher 25k (no expiry)', NOW(), NULL, 1);
+
+-- Sample orders with voucher usage (Updated with new pricing fields)
+INSERT INTO orders (customer_id, event_id, ticket_type_id, status, original_price, host_discount_percent, host_discount_amount, voucher_discount_amount, total_amount, voucher_id, voucher_code, participant_name, participant_email, participant_phone, created_at) VALUES
+-- Order with voucher discount
+(3, 1, 1, 'PENDING', 200000.00, 0.00, 0.00, 50000.00, 150000.00, 1, 'WELCOME50', 'Nguyen Van User1', 'user1@openevent.com', '0901234570', NOW()),
+-- Order with host discount
+(4, 2, 1, 'PENDING', 100000.00, 10.00, 10000.00, 0.00, 90000.00, NULL, NULL, 'Tran Thi User2', 'user2@openevent.com', '0901234571', NOW()),
+-- Order with both host and voucher discount
+(5, 3, 1, 'PENDING', 250000.00, 15.00, 37500.00, 20000.00, 192500.00, 2, 'SAVE20K', 'Le Van User3', 'user3@openevent.com', '0901234572', NOW()),
+-- Order without any discount
+(3, 4, 1, 'PENDING', 150000.00, 0.00, 0.00, 0.00, 150000.00, NULL, NULL, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', NOW());
+
+-- Sample voucher usage records
+INSERT INTO voucher_usage (voucher_id, order_id, discount_applied, used_at) VALUES
+(1, 6, 50000.00, NOW()),
+(2, 8, 20000.00, NOW());
 
 SELECT 'Sample data inserted successfully!' as status;

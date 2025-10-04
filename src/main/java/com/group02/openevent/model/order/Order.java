@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.model.voucher.Voucher;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,8 +40,30 @@ public class Order {
     @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
+    // Pricing fields
+    @Column(name = "original_price", precision = 10, scale = 2, nullable = false)
+    private BigDecimal originalPrice;
+
+    @Column(name = "host_discount_percent", precision = 5, scale = 2)
+    private BigDecimal hostDiscountPercent = BigDecimal.ZERO;
+
+    @Column(name = "host_discount_amount", precision = 10, scale = 2)
+    private BigDecimal hostDiscountAmount = BigDecimal.ZERO;
+
+    @Column(name = "voucher_discount_amount", precision = 10, scale = 2)
+    private BigDecimal voucherDiscountAmount = BigDecimal.ZERO;
+
     @Column(name = "total_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    // Voucher information
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucher_id")
+    @JsonIgnoreProperties({"voucherUsages"})
+    private Voucher voucher;
+
+    @Column(name = "voucher_code", length = 20)
+    private String voucherCode;
 
     @Column(name = "participant_name", length = 100)
     private String participantName;
@@ -71,8 +94,22 @@ public class Order {
     // Business Logic Methods
     public void calculateTotalAmount() {
         if (ticketType != null) {
-            this.totalAmount = ticketType.getPrice();
+            this.originalPrice = ticketType.getPrice();
+            
+            // Calculate host discount amount
+            if (hostDiscountPercent != null && hostDiscountPercent.compareTo(BigDecimal.ZERO) > 0) {
+                this.hostDiscountAmount = originalPrice.multiply(hostDiscountPercent.divide(new BigDecimal("100")));
+            }
+            
+            // Calculate final total amount
+            this.totalAmount = originalPrice.subtract(hostDiscountAmount).subtract(voucherDiscountAmount);
+            
+            // Ensure total amount is not negative
+            if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+                this.totalAmount = BigDecimal.ZERO;
+            }
         } else {
+            this.originalPrice = BigDecimal.ZERO;
             this.totalAmount = BigDecimal.ZERO;
         }
     }
@@ -80,8 +117,8 @@ public class Order {
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
 
-    public Customer getUser() { return customer; }
-    public void setUser(Customer customer) { this.customer = customer; }
+    public Customer getCustomer() { return customer; }
+    public void setCustomer(Customer customer) { this.customer = customer; }
 
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
@@ -118,4 +155,29 @@ public class Order {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    // New getters and setters for pricing fields
+    public BigDecimal getOriginalPrice() { return originalPrice; }
+    public void setOriginalPrice(BigDecimal originalPrice) { this.originalPrice = originalPrice; }
+
+    public BigDecimal getHostDiscountPercent() { return hostDiscountPercent; }
+    public void setHostDiscountPercent(BigDecimal hostDiscountPercent) { 
+        this.hostDiscountPercent = hostDiscountPercent; 
+        calculateTotalAmount();
+    }
+
+    public BigDecimal getHostDiscountAmount() { return hostDiscountAmount; }
+    public void setHostDiscountAmount(BigDecimal hostDiscountAmount) { this.hostDiscountAmount = hostDiscountAmount; }
+
+    public BigDecimal getVoucherDiscountAmount() { return voucherDiscountAmount; }
+    public void setVoucherDiscountAmount(BigDecimal voucherDiscountAmount) { 
+        this.voucherDiscountAmount = voucherDiscountAmount; 
+        calculateTotalAmount();
+    }
+
+    public Voucher getVoucher() { return voucher; }
+    public void setVoucher(Voucher voucher) { this.voucher = voucher; }
+
+    public String getVoucherCode() { return voucherCode; }
+    public void setVoucherCode(String voucherCode) { this.voucherCode = voucherCode; }
 }

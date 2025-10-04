@@ -28,11 +28,11 @@ public class CommonController {
 			return ResponseEntity.badRequest().body("Account not found");
 		}
 
-		// Chỉ cho phép chuyển đổi giữa USER và HOST
-		if (account.getRole() == Role.USER) {
+		// Chỉ cho phép chuyển đổi giữa CUSTOMER và HOST
+		if (account.getRole() == Role.CUSTOMER) {
 			account.setRole(Role.HOST);
 		} else if (account.getRole() == Role.HOST) {
-			account.setRole(Role.USER);
+			account.setRole(Role.CUSTOMER);
 		} else {
 			return ResponseEntity.badRequest().body("Cannot switch role for this account type");
 		}

@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const payload = {
                 email: document.getElementById('regEmail')?.value || '',
                 password: document.getElementById('regPassword')?.value || '',
-                role: document.getElementById('regRole')?.value || 'USER',
+                role: document.getElementById('regRole')?.value || 'CUSTOMER',
                 phone: document.getElementById('regPhone')?.value || '',
                 organization: document.getElementById('regOrg')?.value || ''
             };

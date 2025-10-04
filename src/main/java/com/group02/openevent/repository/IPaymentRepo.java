@@ -30,11 +30,11 @@ public interface IPaymentRepo extends JpaRepository<Payment, Long> {
     List<Payment> findByStatus(PaymentStatus status);
     
     // Tìm payments theo user
-    @Query("SELECT p FROM Payment p WHERE p.order.user.userId = :userId ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Payment p WHERE p.order.customer.customerId = :userId ORDER BY p.createdAt DESC")
     List<Payment> findByOrder_User_UserId(@Param("userId") Long userId);
     
     // Tìm payments theo user và status
-    @Query("SELECT p FROM Payment p WHERE p.order.user.userId = :userId AND p.status = :status ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Payment p WHERE p.order.customer.customerId = :userId AND p.status = :status ORDER BY p.createdAt DESC")
     List<Payment> findByOrder_User_UserIdAndStatus(@Param("userId") Long userId, @Param("status") PaymentStatus status);
     
     // Tìm payments đang pending (chưa thanh toán)
@@ -42,6 +42,6 @@ public interface IPaymentRepo extends JpaRepository<Payment, Long> {
     List<Payment> findExpiredPendingPayments(@Param("currentTime") java.time.LocalDateTime currentTime);
     
     // Đếm số payments theo user và status
-    @Query("SELECT COUNT(p) FROM Payment p WHERE p.order.user.userId = :userId AND p.status = :status")
+    @Query("SELECT COUNT(p) FROM Payment p WHERE p.order.customer.customerId = :userId AND p.status = :status")
     long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") PaymentStatus status);
 }

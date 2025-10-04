@@ -1,7 +1,7 @@
 
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.dto.UserDto;
+import com.group02.openevent.dto.UserDto;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IUserRepo;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.group02.openevent.controller.event;
 
-import com.group02.openevent.model.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.request.EventCreationRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

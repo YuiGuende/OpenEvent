@@ -109,6 +109,7 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
 		<!-- Xóa dependency tự tham chiếu này vì nó gây vấn đề -->
 		<!-- <dependency>
 			<groupId>com.group02</groupId>
@@ -153,6 +154,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

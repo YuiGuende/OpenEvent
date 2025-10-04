@@ -36,10 +36,8 @@ public class CommonController {
 		} else {
 			return ResponseEntity.badRequest().body("Cannot switch role for this account type");
 		}
-
 		accountRepo.save(account);
 		session.setAttribute("ACCOUNT_ROLE", account.getRole().name());
-
 		return ResponseEntity.ok("Role switched successfully");
 	}
 

@@ -1,0 +1,18 @@
+/* Simple Orange Hover CSS */
+
+/* Schedule tabs hover effect */
+.schedule-tab-title .nav-link:hover {
+    background-color: #FF6B35 !important;
+    color: white !important;
+}
+
+.schedule-tab-title .nav-link.active {
+    background-color: #FF6B35 !important;
+    color: white !important;
+}
+
+/* Activity cards hover effect */
+.card-header:hover {
+    background-color: #FF6B35 !important;
+    color: white !important;
+}

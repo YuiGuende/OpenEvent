@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open.events - Events</title>
-    <link rel="stylesheet" th:href="@{/css/host.css}">
-    <link rel="stylesheet" th:href="@{/css/event.css}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/modal.css}">
 </head>
-<body>
-<main class="main-content event-wrapper">
+<div th:fragment="content">
     <div class="page-header">
         <div class="breadcrumbs">
             <span class="link" data-link="host" style="cursor:pointer">Bảng điều khiển</span>
@@ -37,7 +31,6 @@
         <button class="btn-create-event">
             <i class="fas fa-calendar-plus"></i> Tạo sự kiện
         </button>
-
     </div>
 
     <div class="event-tabs">
@@ -68,80 +61,105 @@
             <button class="action-btn"><i class="fas fa-ellipsis-v"></i></button>
         </div>
     </div>
-</main>
-<div id="createEventModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
 
-        <h2>✨ Tạo sự kiện của bạn</h2>
-        <p class="subtitle">Hãy cho chúng tôi biết về sự kiện của bạn</p>
+    <!-- Modal -->
+    <div id="createEventModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
 
-        <form
-                action="#"
-                role="form"
-                method="post"
-                th:action="@{/api/events/saveEvent}"
-                th:object="${eventForm}"
-        >
-            <label>Tên sự kiện *</label>
-            <input type="text" th:field="*{title}" placeholder="Nhập tên sự kiện">
+            <h2>✨ Tạo sự kiện của bạn</h2>
+            <p class="subtitle">Hãy cho chúng tôi biết về sự kiện của bạn</p>
 
-            <label>Thể loại sự kiện</label>
-            <select th:field="*{eventType}">
-                <option th:each=" p : ${listTypeEvent}" th:value="${p}" th:text="${p}"></option>
-            </select>
+            <form th:action="@{/api/events/saveEvent}" th:object="${eventForm}" method="post">
+                <label>Tên sự kiện *</label>
+                <input type="text" th:field="*{title}" placeholder="Nhập tên sự kiện">
 
-            <label>Mô tả sự kiện</label>
-            <textarea th:field="*{description}" placeholder="Hãy cho mọi người biết điều gì sẽ có tại sự kiện..."></textarea>
+                <label>Thể loại sự kiện</label>
+                <select th:field="*{eventType}">
+                    <option th:each="p : ${listTypeEvent}" th:value="${p}" th:text="${p}"></option>
+                </select>
 
-            <div>
-                <lable> Hạn đăng ký sự kiện </lable>
-                <input th:field="*{enrollDeadline}" type="datetime-local">
-            </div>
-            
-            
-            <div class="date-time">
+                <label>Mô tả sự kiện</label>
+                <textarea th:field="*{description}"
+                          placeholder="Hãy cho mọi người biết điều gì sẽ có tại sự kiện..."></textarea>
+
                 <div>
-                    <label>Ngày & giờ bắt đầu *</label>
-                    <input th:field="*{startsAt}" type="datetime-local">
+                    <label>Hạn đăng ký sự kiện</label>
+                    <input th:field="*{enrollDeadline}" type="datetime-local">
                 </div>
-                <div>
-                    <label>Ngày & giờ kết thúc</label>
-                    <input th:field="*{endsAt}" type="datetime-local">
-                </div>
-            </div>
 
-            <button type="submit" class="submit-btn">📅 Tiếp tục thiết lập</button>
-        </form>
+                <div class="date-time">
+                    <div>
+                        <label>Ngày & giờ bắt đầu *</label>
+                        <input th:field="*{startsAt}" type="datetime-local">
+                    </div>
+                    <div>
+                        <label>Ngày & giờ kết thúc</label>
+                        <input th:field="*{endsAt}" type="datetime-local">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">📅 Tiếp tục thiết lập</button>
+            </form>
+        </div>
     </div>
+
 </div>
 
-<script th:src="@{/js/host.js}"></script>
 <script>
-    document.getElementById('nav-dashboard')?.addEventListener('click', () => window.location.href = '/host');
-    document.querySelector('[data-link="host"]')?.addEventListener('click', () => window.location.href = '/host');
+// Modal functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('createEventModal');
+    const openBtn = document.querySelector('.btn-create-event');
+    const closeBtn = document.querySelector('.close');
 
-    // document.querySelector('.btn-create-event')?.addEventListener('click', function() {
-    //     window.location.href = '/create';
-    // });
-    const modal = document.getElementById("createEventModal");
-    const btn = document.querySelector(".btn-create-event");
-    const closeBtn = document.querySelector(".modal .close");
+    // Open modal
+    if (openBtn) {
+        openBtn.addEventListener('click', function() {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+    }
 
-    btn.addEventListener("click", () => {
-        modal.style.display = "flex"; // hiện pop-up
-    });
+    // Close modal
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
 
-    closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
 
-    window.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.style.display = "none";
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
         }
     });
 
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const title = document.querySelector('input[th\\:field="*{title}"]');
+            const startsAt = document.querySelector('input[th\\:field="*{startsAt}"]');
+            
+            if (!title.value.trim()) {
+                e.preventDefault();
+                alert('Vui lòng nhập tên sự kiện');
+                title.focus();
+                return;
+            }
+            
+            if (!startsAt.value) {
+                e.preventDefault();
+                alert('Vui lòng chọn ngày và giờ bắt đầu');
+                startsAt.focus();
+                return;
+            }
+        });
+    }
+});
 </script>
-</body>
-</html>
+

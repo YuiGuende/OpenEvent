@@ -69,17 +69,6 @@ public class EventController {
     public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
         return eventService.saveWorkshopEvent(event);
     }
-    @GetMapping("/event")
-    public String userRegistration(Model model) {
-        //Empty Userform model object to store from data
-        log.info("da vao ham nay");
-        EventCreationRequest request = new EventCreationRequest();
-        model.addAttribute("eventForm", request);
-        List<String> listTypeEvent = Arrays.asList("MUSIC", "FESTIVAL", "WORKSHOP","COMPETITION","OTHERS");
-        model.addAttribute("listTypeEvent", listTypeEvent);
-        return "host/events";
-
-    }
 
     // POST - create event
     @PostMapping("/saveEvent")
@@ -123,8 +112,6 @@ public class EventController {
                 return FestivalEvent.class;
             case "COMPETITION":
                 return CompetitionEvent.class;
-            case "CONFERENCE":
-                return Event.class;
             case "OTHERS":
                 return Event.class;
             default:

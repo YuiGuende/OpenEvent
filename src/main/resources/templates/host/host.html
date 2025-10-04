@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open.events - Dashboard</title>
     <link rel="stylesheet" th:href="@{/css/host.css}">
+    <link rel="stylesheet" th:href="@{/css/event.css}">
+    <link rel="stylesheet" th:href="@{/css/modal.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -41,7 +43,7 @@
         <div class="nav-section">
             <h3 class="nav-title">OVERVIEW</h3>
             <ul class="nav-list">
-                <li class="nav-item active" id="nav-host" onclick= "loadPage('/dashboard')">
+                <li class="nav-item active" id="nav-host">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Bảng điều khiển nhà tổ chức</span>
                 </li>
@@ -51,12 +53,12 @@
         <div class="nav-section">
             <h3 class="nav-title">QUẢN LÝ</h3>
             <ul class="nav-list">
-                <li class="nav-item" id="nav-events" onclick="loadPage('/events')">
+                <li class="nav-item" id="nav-events" >
                     <i class="fas fa-calendar"></i>
                     <span>Sự kiện</span>
                 </li>
 
-                <li class="nav-item" onclick="loadPage('/settings')">
+                <li class="nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Cài đặt</span>
                 </li>
@@ -81,21 +83,13 @@
         <div class="url-info">https://app.Open.events/manage/events</div>
     </div>
 </aside>
-<main class="main-content">
     <!-- Nội dung sẽ thay đổi -->
-    <div th:fragment="content"></div>
+<main class="main-content">
+    <div th:replace="~{__${content}__}"></div>
 </main>
-<script>
-    function loadPage(url) {
-        fetch(url) // gọi tới controller trả về fragment
-            .then(response => response.text())
-            .then(html => {
-                document.querySelector(".main-content").innerHTML = html;
-                history.pushState(null, "", url); // thay đổi URL nhưng không reload
-            })
-            .catch(err => console.error(err));
-    }
-</script>
+
+
+<script th:src="@{/js/host.js}"></script>
 
 </body>
 </html>

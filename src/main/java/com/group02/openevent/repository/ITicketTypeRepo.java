@@ -40,4 +40,7 @@ public interface ITicketTypeRepo extends JpaRepository<TicketType, Long> {
 
     @Query("SELECT SUM(tt.totalQuantity - tt.soldQuantity) FROM TicketType tt WHERE tt.event.id = :eventId")
     Integer getTotalAvailableByEventId(@Param("eventId") Long eventId);
+
+    @Query("SELECT SUM(t.totalQuantity) FROM TicketType t WHERE t.event.id = :eventId")
+    Integer getTotalTicketCapacityByEventId(@Param("eventId") Long eventId);
 }

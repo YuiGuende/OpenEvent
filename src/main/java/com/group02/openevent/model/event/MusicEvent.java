@@ -5,8 +5,18 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@DiscriminatorValue("MusicEvent")
+@DiscriminatorValue("MUSIC")
 public class MusicEvent extends Event {
+    @Column(name = "music_type")
+    String musicType;
+
+    public String getMusicType() {
+        return musicType;
+    }
+
+    public void setMusicType(String musicType) {
+        this.musicType = musicType;
+    }
 
     @Column(name = "genre")
     private String genre;
@@ -15,6 +25,7 @@ public class MusicEvent extends Event {
     private Integer performerCount;
 
     public MusicEvent() {
+
     }
 
     public MusicEvent(String genre, Integer performerCount) {

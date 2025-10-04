@@ -1,8 +1,8 @@
 package com.group02.openevent.controller.auth;
 
-import com.group02.openevent.model.dto.AuthResponse;
-import com.group02.openevent.model.dto.LoginRequest;
-import com.group02.openevent.model.dto.RegisterRequest;
+import com.group02.openevent.dto.response.AuthResponse;
+import com.group02.openevent.dto.request.LoginRequest;
+import com.group02.openevent.dto.request.RegisterRequest;
 import com.group02.openevent.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,11 @@
 package com.group02.openevent.model.organization;
 
+import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.user.Customer;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "organization")
@@ -34,6 +38,14 @@ public class Organization {
 
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
+
+    @OneToOne
+    @JoinColumn(name = "representative_id", referencedColumnName = "customer_id",
+            foreignKey = @ForeignKey(name = "fk_org_customer"))
+    private Customer representative;
+
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = false)
+    private List<Event> events = new ArrayList<>();
 
 	public Long getOrgId() {
 		return orgId;
@@ -106,4 +118,20 @@ public class Organization {
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
+
+    public Customer getRepresentative() {
+        return representative;
+    }
+
+    public void setRepresentative(Customer representative) {
+        this.representative = representative;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<Event> events) {
+        this.events = events;
+    }
 }

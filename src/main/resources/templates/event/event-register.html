@@ -325,14 +325,14 @@
             return price;
         }
 
-        // Load current user info
+        // Load current customer info
         function loadUserInfo() {
-            fetch('/api/current-user')
+            fetch('/api/current-customer')
                 .then(response => response.json())
                 .then(data => {
                     if (data.authenticated) {
                         currentUser = data;
-                        // Pre-fill form with user data
+                        // Pre-fill form with customer data
                         document.getElementById('email').value = data.email;
                     } else {
                         // User not authenticated, redirect to login
@@ -340,7 +340,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading user info:', error);
+                    console.error('Error loading customer info:', error);
                     window.location.href = '/login';
                 });
         }
@@ -397,7 +397,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Check if this is a pending order (user already started but didn't complete payment)
+                    // Check if this is a pending order (customer already started but didn't complete payment)
                     if (data.isPendingOrder) {
                         document.getElementById('result').innerHTML = 
                             '<div style="color: #0066cc; margin: 20px 0; padding: 15px; border: 1px solid #0066cc; background-color: #e6f2ff; border-radius: 4px;">' +
@@ -426,7 +426,7 @@
                     if (data.message && data.message.includes('already registered')) {
                         document.getElementById('result').innerHTML = 
                             '<div style="color: orange; margin: 20px 0; padding: 10px; border: 1px solid orange; background-color: #fff3cd;">' +
-                            'You have already registered for this event. <a href="/user/orders" style="color: #856404;">View your orders</a>' +
+                            'You have already registered for this event. <a href="/customer/orders" style="color: #856404;">View your orders</a>' +
                             '</div>';
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Pay & Register for Event';
@@ -447,7 +447,7 @@
             .catch(error => {
                 console.error('Payment error:', error);
                 
-                // Don't show error message if user already registered (already handled above)
+                // Don't show error message if customer already registered (already handled above)
                 if (error.message === 'Already registered') {
                     return;
                 }
@@ -462,7 +462,7 @@
             });
         }
 
-        // Check if user already registered for this event
+        // Check if customer already registered for this event
         function checkRegistrationStatus() {
             fetch(`/api/orders/check-registration/${eventId}`, {
                 credentials: 'include'
@@ -474,7 +474,7 @@
                     document.getElementById('result').innerHTML = 
                         '<div style="color: green; margin: 20px 0; padding: 15px; border: 1px solid green; background-color: #d4edda; border-radius: 4px;">' +
                         '<strong>✓ You have already registered for this event!</strong><br>' +
-                        '<a href="/user/orders" style="color: #155724; text-decoration: underline;">View your orders</a>' +
+                        '<a href="/customer/orders" style="color: #155724; text-decoration: underline;">View your orders</a>' +
                         '</div>';
                     
                     // Disable the form

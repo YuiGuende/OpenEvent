@@ -36,4 +36,6 @@ public interface EventService {
     EventCardDTO convertToDTO(Event event);
     EventResponse saveEvent(EventCreationRequest event);
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
+    List<EventCardDTO> getCustomerEvents(Long customerId);
+    List<EventCardDTO> getLiveEvents(int i);
 }

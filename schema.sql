@@ -58,7 +58,7 @@ CREATE TABLE admin
     CONSTRAINT fk_admin_account FOREIGN KEY (account_id) REFERENCES account (account_id)
 );
 
-CREATE TABLE user
+CREATE TABLE customer
 (
     user_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     email           VARCHAR(100),
@@ -200,7 +200,7 @@ CREATE TABLE host
     event_id    BIGINT NOT NULL,
     user_id     BIGINT NOT NULL,
     CONSTRAINT fk_host_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES user (user_id),
+    CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES customer (user_id),
     CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
 );
 
@@ -212,7 +212,7 @@ CREATE TABLE event_guests
     event_id BIGINT NOT NULL,
     joined_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     status ENUM('ACTIVE', 'LEFT', 'REMOVED') NOT NULL DEFAULT 'ACTIVE',
-    CONSTRAINT fk_eventguest_user FOREIGN KEY (user_id) REFERENCES user (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_eventguest_user FOREIGN KEY (user_id) REFERENCES customer (user_id) ON DELETE CASCADE,
     CONSTRAINT fk_eventguest_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
     UNIQUE KEY UK_user_event_guest (user_id, event_id)
 );
@@ -244,7 +244,7 @@ CREATE TABLE orders
     notes                    VARCHAR(1000) DEFAULT NULL,
     created_at               DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at               DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
-    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES user (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES customer (user_id) ON DELETE CASCADE,
     CONSTRAINT fk_order_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
     CONSTRAINT fk_order_tickettype FOREIGN KEY (ticket_type_id) REFERENCES ticket_type (ticket_type_id) ON DELETE CASCADE
 );
@@ -294,7 +294,7 @@ CREATE TABLE reports
     status     ENUM('PENDING','SEEN','RESOLVED') DEFAULT 'PENDING',
     seen       BOOLEAN  DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_report_user FOREIGN KEY (user_id) REFERENCES user (user_id),
+    CONSTRAINT fk_report_user FOREIGN KEY (user_id) REFERENCES customer (user_id),
     CONSTRAINT fk_report_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
@@ -308,8 +308,8 @@ CREATE TABLE notifications
     target_url      VARCHAR(255),
     type            ENUM('REPORT','HOST_REQUEST','NOTIFICATION','USER_NOTIFICATION') NOT NULL,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES user (user_id),
-    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES user (user_id)
+    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES customer (user_id),
+    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES customer (user_id)
 );
 
 CREATE TABLE requests
@@ -399,7 +399,7 @@ INSERT INTO admin (name, email, phone_number, account_id) VALUES
 ('System Admin', 'admin@openevent.com', '0901234567', 1);
 
 -- Sample users
-INSERT INTO user (email, phone_number, points, account_id, organization_id) VALUES
+INSERT INTO customer (email, phone_number, points, account_id, organization_id) VALUES
 ('host1@openevent.com', '0901234568', 100, 2, 1),
 ('host2@openevent.com', '0901234569', 150, 3, 2),
 ('user1@openevent.com', '0901234570', 50, 4, 1),

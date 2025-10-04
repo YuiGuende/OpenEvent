@@ -30,7 +30,7 @@
 </head>
 <body>
 	<h1>Trang User</h1>
-<<<<<<< HEAD:src/main/resources/templates/user/user.html
+<<<<<<< HEAD:src/main/resources/templates/customer/customer.html
 	<p>Xin chào USER.</p>
 	<p><a href="/templates/security/auth.html">Đăng xuất (xóa cookie trình duyệt hoặc đóng tab)</a></p>
 =======
@@ -82,7 +82,7 @@
 
 		// Cập nhật giao diện dựa trên role hiện tại
 		window.onload = function() {
-			fetch('/api/current-user')
+			fetch('/api/current-customer')
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {
@@ -100,6 +100,6 @@
 				});
 		};
 	</script>
->>>>>>> quan:src/main/resources/static/user/user.html
+>>>>>>> quan:src/main/resources/static/customer/customer.html
 </body>
 </html> 

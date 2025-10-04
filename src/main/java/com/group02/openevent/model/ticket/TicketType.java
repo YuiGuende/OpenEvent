@@ -21,7 +21,7 @@ public class TicketType {
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Column(name = "description", length = 1000)
+    @Column(name = "description", length = 1000)//tinyMCE
     private String description;
 
     @Column(name = "price", precision = 38, scale = 2, nullable = false)

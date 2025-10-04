@@ -6,7 +6,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.ticket.TicketType;
-import com.group02.openevent.model.user.User;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
@@ -64,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Order createOrderWithTicketTypes(CreateOrderWithTicketTypeRequest request, User user) {
+    public Order createOrderWithTicketTypes(CreateOrderWithTicketTypeRequest request, Customer customer) {
         try {
             // Validate event exists
             Event event = eventRepo.findById(request.getEventId())
@@ -93,7 +93,7 @@ public class OrderServiceImpl implements OrderService {
 
             // Create order
             Order order = new Order();
-            order.setUser(user);
+            order.setUser(customer);
             order.setEvent(event);
             order.setTicketType(ticketType);
             order.setParticipantName(request.getParticipantName());
@@ -117,8 +117,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> getOrdersByUser(User user) {
-        return orderRepo.findByUser(user);
+    public List<Order> getOrdersByUser(Customer customer) {
+        return orderRepo.findByCustomer(customer);
     }
 
     @Override
@@ -189,6 +189,16 @@ public class OrderServiceImpl implements OrderService {
                 .filter(order -> order.getEvent().getId().equals(eventId) && 
                                order.getStatus() == OrderStatus.PENDING)
                 .findFirst();
+    }
+
+    @Override
+    public Integer countUniqueParticipantsByEventId(Long eventId) {
+        return orderRepo.countConfirmedParticipantsByEventId(eventId);
+    }
+
+    @Override
+    public List<Event> findConfirmedEventsByCustomerId(Long customerId) {
+        return orderRepo.findEventsByCustomerId(customerId);
     }
 }
 

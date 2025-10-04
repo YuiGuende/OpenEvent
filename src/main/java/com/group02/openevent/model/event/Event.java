@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
+import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.model.user.Host;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -109,7 +111,7 @@ public class Event {
             inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "event_place",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
@@ -123,6 +125,16 @@ public class Event {
     @JoinColumn(name = "org_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_org"))
     private Organization organization;
+
+    @ManyToOne
+    @JoinColumn(name = "host_id", nullable = true,
+            foreignKey = @ForeignKey(name = "fk_event_host"))
+    private Host host;
+
+    @OneToMany( cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "event_id")
+    private List<TicketType> ticketTypes = new ArrayList<>();
+
 
     public Event() {
     }
@@ -153,6 +165,35 @@ public class Event {
 
     // Getter & Setter
 
+
+    public Host getHost() {
+        return host;
+    }
+
+    public void setHost(Host host) {
+        this.host = host;
+    }
+
+    public double getMaxTicketPice() {
+        double maxTicketPice = 0;
+        for (TicketType ticketType : ticketTypes) {
+            if (ticketType.getPrice().doubleValue() > maxTicketPice) {
+                maxTicketPice = ticketType.getPrice().doubleValue();
+            }
+        }
+        return maxTicketPice;
+
+    }
+    public double getMinTicketPice() {
+        double minTicketPice = 0;
+        for (TicketType ticketType : ticketTypes) {
+            if (ticketType.getPrice().doubleValue() < minTicketPice) {
+                minTicketPice = ticketType.getPrice().doubleValue();
+            }
+        }
+        return minTicketPice;
+
+    }
 
     public Integer getCapacity() {
         return capacity;

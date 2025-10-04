@@ -1,7 +1,7 @@
 package com.group02.openevent.model.organization;
 
 import com.group02.openevent.model.event.Event;
-import com.group02.openevent.model.user.User;
+import com.group02.openevent.model.user.Customer;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,9 +40,9 @@ public class Organization {
 	private LocalDateTime updatedAt;
 
     @OneToOne
-    @JoinColumn(name = "representative_id", referencedColumnName = "user_id",
-            foreignKey = @ForeignKey(name = "fk_org_user"))
-    private User representative;
+    @JoinColumn(name = "representative_id", referencedColumnName = "customer_id",
+            foreignKey = @ForeignKey(name = "fk_org_customer"))
+    private Customer representative;
 
     @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Event> events = new ArrayList<>();
@@ -119,11 +119,11 @@ public class Organization {
 		this.updatedAt = updatedAt;
 	}
 
-    public User getRepresentative() {
+    public Customer getRepresentative() {
         return representative;
     }
 
-    public void setRepresentative(User representative) {
+    public void setRepresentative(Customer representative) {
         this.representative = representative;
     }
 

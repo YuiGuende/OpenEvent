@@ -325,7 +325,7 @@ CREATE TABLE `host` (
   KEY `fk_host_event` (`event_id`),
   KEY `fk_host_user` (`user_id`),
   CONSTRAINT `fk_host_event` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`),
-  CONSTRAINT `fk_host_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+  CONSTRAINT `fk_host_user` FOREIGN KEY (`user_id`) REFERENCES `customer` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -448,13 +448,13 @@ LOCK TABLES `ticket_type` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `user`
+-- Table structure for table `customer`
 --
 
-DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `customer`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user` (
+CREATE TABLE `customer` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `email` varchar(100) DEFAULT NULL,
   `organization` varchar(150) DEFAULT NULL,
@@ -468,13 +468,13 @@ CREATE TABLE `user` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user`
+-- Dumping data for table `customer`
 --
 
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'phongle@gmail.com','',NULL,0,2);
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+LOCK TABLES `customer` WRITE;
+/*!40000 ALTER TABLE `customer` DISABLE KEYS */;
+INSERT INTO `customer` VALUES (1,'phongle@gmail.com','',NULL,0,2);
+/*!40000 ALTER TABLE `customer` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -529,7 +529,7 @@ CREATE TABLE `orders` (
   PRIMARY KEY (`order_id`),
   KEY `fk_order_user` (`user_id`),
   KEY `fk_order_event` (`event_id`),
-  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+  CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `customer` (`user_id`),
   CONSTRAINT `fk_order_event` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

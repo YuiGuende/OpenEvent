@@ -54,4 +54,4 @@ public class AuthResponse {
 	public void setRedirectPath(String redirectPath) {
 		this.redirectPath = redirectPath;
 	}
-} 
+}

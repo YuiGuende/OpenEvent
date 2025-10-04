@@ -6,9 +6,13 @@ import com.group02.openevent.dto.request.LoginRequest;
 import com.group02.openevent.dto.request.RegisterRequest;
 import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.session.Session;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.AuthService;
+import com.group02.openevent.service.SessionService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,13 +26,15 @@ public class AuthServiceImpl implements AuthService {
 	private final IUserRepo userRepo;
 	private final PasswordEncoder passwordEncoder;
 	private final HttpSession httpSession;
+	private final SessionService sessionService;
 
 	public AuthServiceImpl(IAccountRepo accountRepo, IUserRepo userRepo,
-			PasswordEncoder passwordEncoder, HttpSession httpSession) {
+			PasswordEncoder passwordEncoder, HttpSession httpSession, SessionService sessionService) {
 		this.accountRepo = accountRepo;
 		this.userRepo = userRepo;
 		this.passwordEncoder = passwordEncoder;
 		this.httpSession = httpSession;
+		this.sessionService = sessionService;
 	}
 
 	private String redirectFor(Role role) {
@@ -91,6 +97,37 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalArgumentException("Email hoặc mật khẩu không đúng");
 		}
 
+		// Set HTTP session attributes for backward compatibility
+		httpSession.setAttribute("ACCOUNT_ID", account.getAccountId());
+		httpSession.setAttribute("ACCOUNT_ROLE", account.getRole().name());
+
+		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), redirectFor(account.getRole()));
+	}
+
+	/**
+	 * Enhanced login method that creates a custom session
+	 */
+	public AuthResponse loginWithSession(LoginRequest request, HttpServletRequest httpRequest) {
+		// Validate input
+		if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+			throw new IllegalArgumentException("Email không được để trống");
+		}
+		if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+			throw new IllegalArgumentException("Mật khẩu không được để trống");
+		}
+
+		Account account = accountRepo.findByEmail(request.getEmail().trim())
+				.orElseThrow(() -> new IllegalArgumentException("Email hoặc mật khẩu không đúng"));
+
+		if (!passwordEncoder.matches(request.getPassword(), account.getPasswordHash())) {
+			throw new IllegalArgumentException("Email hoặc mật khẩu không đúng");
+		}
+
+		// Create custom session
+		Session session = sessionService.createSession(account, httpRequest);
+
+		// Set session token in HTTP session for backward compatibility
+		httpSession.setAttribute("SESSION_TOKEN", session.getSessionToken());
 		httpSession.setAttribute("ACCOUNT_ID", account.getAccountId());
 		httpSession.setAttribute("ACCOUNT_ROLE", account.getRole().name());
 

@@ -1,5 +1,6 @@
 package com.group02.openevent.controller.event;
 
+import com.group02.openevent.model.dto.ScheduleDTO;
 import com.group02.openevent.model.dto.music.MusicEventDetailDTO;
 import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.service.IMusicService;
@@ -8,13 +9,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class MusicController {
 
     private final IMusicService musicService;
-
 
     public MusicController(IMusicService musicService) {
         this.musicService = musicService;
@@ -27,6 +30,19 @@ public class MusicController {
             List<EventImage> eventImages = musicService.getEventImages(id);
             model.addAttribute("event", event); // truyền 1 object duy nhất
             model.addAttribute("eventImages", eventImages);
+
+            // Group schedules by day
+            Map<LocalDate, List<ScheduleDTO>> schedulesByDay = event.getSchedules().stream()
+                    .collect(Collectors.groupingBy(sc -> sc.getStartTime().toLocalDate()));
+            
+            // Convert to List for Thymeleaf iteration
+            List<Map.Entry<LocalDate, List<ScheduleDTO>>> scheduleEntries = schedulesByDay.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByKey()) // Sort by date
+                    .collect(Collectors.toList());
+
+            model.addAttribute("schedulesByDay", schedulesByDay);
+            model.addAttribute("scheduleEntries", scheduleEntries);
             
             // Debug info
             System.out.println("=== EVENT DEBUG INFO ===");

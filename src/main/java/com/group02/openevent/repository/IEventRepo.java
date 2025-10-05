@@ -14,9 +14,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface IEventRepo extends JpaRepository<Event, Integer> {
+public interface IEventRepo extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE TYPE(e) = :eventType")
     List<Event> findByEventType(@Param("eventType") Class<? extends Event> eventType);
@@ -31,6 +32,7 @@ public interface IEventRepo extends JpaRepository<Event, Integer> {
     boolean removeEventById(int id);
     boolean deleteEventByTitle(String title);
     List<Event> findByTitle(String title);
+    List<Event> findByStatus(EventStatus status);
     // Pageable listing
     @Query("SELECT e FROM Event e JOIN e.places p WHERE p.id = :placeId")
     List<Event> findByPlaceId(@Param("placeId") int placeId);
@@ -46,4 +48,10 @@ public interface IEventRepo extends JpaRepository<Event, Integer> {
 //            "AND e.endsAt <= :end " +
 //            "AND e.createdBy.id = :userId")
 //    List<Event> findEventsBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("userId") int userId);
+
+    @Query("SELECT e FROM Event e WHERE e.poster = true AND e.status = :status")
+    List<Event> findByPosterTrueAndStatus(@Param("status") EventStatus status);
+
+    @Query("SELECT e FROM Event e WHERE e.status = :status ORDER BY e.createdAt DESC")
+    List<Event> findRecommendedEvents(@Param("status") EventStatus status, Pageable pageable);
 }

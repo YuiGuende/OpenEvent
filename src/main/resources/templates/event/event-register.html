@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for Event - OpenEvent</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #eventInfo {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        #eventInfo h2 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        form div {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        #ticketInfo {
+            border-left: 4px solid #3498db;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #2980b9;
+        }
+        
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        #result {
+            margin-top: 20px;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Register for Event</h1>
+    
+    <div id="eventInfo">
+        <h2 id="eventTitle">Event Title</h2>
+        <p><strong>Date:</strong> <span id="eventDate">Event Date</span></p>
+        <p><strong>Location:</strong> <span id="eventLocation">Event Location</span></p>
+    </div>
+    
+    <form id="registrationForm">
+        <div>
+            <label for="ticketType">Select Ticket Type:</label>
+            <select id="ticketType" name="ticketType" required>
+                <option value="">Loading ticket types...</option>
+            </select>
+            <div id="ticketInfo" style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; display: none;">
+                <p><strong>Price:</strong> <span id="selectedPrice" style="color: #e67e22; font-weight: bold; font-size: 18px;">0 VND</span></p>
+                <p><strong>Available:</strong> <span id="selectedAvailable">0</span> tickets</p>
+                <p id="selectedDescription" style="font-style: italic;"></p>
+            </div>
+        </div>
+        
+        <div>
+            <label for="fullName">Full Name:</label>
+            <input type="text" id="fullName" name="fullName" required>
+        </div>
+        
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" required>
+        </div>
+        
+        <div>
+            <label for="organization">Organization (Optional):</label>
+            <input type="text" id="organization" name="organization">
+        </div>
+        
+        <div>
+            <label for="notes">Additional Notes (Optional):</label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+        </div>
+        
+        <button type="submit" id="submitBtn">Pay & Register for Event</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div class="back-link">
+        <a href="/">← Back to Home</a>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let eventId = null;
+        let ticketTypes = [];
+        let selectedTicketType = null;
+
+        // Get event ID from URL
+        function getEventIdFromUrl() {
+            const path = window.location.pathname;
+            const parts = path.split('/');
+            return parts[parts.length - 2]; // /event/{id}/register
+        }
+
+        // Load event details from API
+        function loadEventDetails() {
+            eventId = getEventIdFromUrl();
+            
+            fetch('/api/event/' + eventId)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Event not found');
+                    }
+                    return response.json();
+                })
+                .then(event => {
+                    // Display event information
+                    document.getElementById('eventTitle').textContent = event.title;
+                    
+                    // Format date
+                    const startDate = new Date(event.startsAt);
+                    const endDate = new Date(event.endsAt);
+                    const dateStr = startDate.toLocaleDateString('vi-VN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    const timeStr = startDate.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) + ' - ' + endDate.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    document.getElementById('eventDate').textContent = dateStr + ' (' + timeStr + ')';
+                    
+                    // Get location from event places (mock for now)
+                    document.getElementById('eventLocation').textContent = getEventLocation(event.type);
+                    
+                    // Load ticket types after event details are loaded
+                    loadTicketTypes();
+                })
+                .catch(error => {
+                    console.error('Error loading event details:', error);
+                    document.getElementById('eventTitle').textContent = 'Event Not Found';
+                    document.getElementById('eventDate').textContent = 'N/A';
+                    document.getElementById('eventLocation').textContent = 'N/A';
+                });
+        }
+
+        // Load ticket types for the event
+        function loadTicketTypes() {
+            fetch(`/api/ticket-types/event/${eventId}`)
+                .then(response => response.json())
+                .then(data => {
+                    ticketTypes = data;
+                    populateTicketTypeDropdown();
+                })
+                .catch(error => {
+                    console.error('Error loading ticket types:', error);
+                    document.getElementById('ticketType').innerHTML = 
+                        '<option value="">Error loading ticket types</option>';
+                });
+        }
+
+        // Populate ticket type dropdown
+        function populateTicketTypeDropdown() {
+            const select = document.getElementById('ticketType');
+            select.innerHTML = '<option value="">-- Select a ticket type --</option>';
+            
+            if (ticketTypes.length === 0) {
+                select.innerHTML = '<option value="">No ticket types available</option>';
+                return;
+            }
+
+            ticketTypes.forEach(ticketType => {
+                const option = document.createElement('option');
+                option.value = ticketType.ticketTypeId;
+                option.textContent = `${ticketType.name} - ${formatPrice(ticketType.price)} VND`;
+                option.dataset.ticketType = JSON.stringify(ticketType);
+                select.appendChild(option);
+            });
+
+            // Add event listener for ticket type selection
+            select.addEventListener('change', handleTicketTypeChange);
+        }
+
+        // Handle ticket type selection change
+        function handleTicketTypeChange(event) {
+            const selectedOption = event.target.selectedOptions[0];
+            const ticketInfo = document.getElementById('ticketInfo');
+            
+            if (!selectedOption.value) {
+                ticketInfo.style.display = 'none';
+                selectedTicketType = null;
+                return;
+            }
+
+            selectedTicketType = JSON.parse(selectedOption.dataset.ticketType);
+            
+            // Update ticket info display
+            document.getElementById('selectedPrice').textContent = formatPrice(selectedTicketType.price) + ' VND';
+            document.getElementById('selectedAvailable').textContent = selectedTicketType.availableQuantity;
+            document.getElementById('selectedDescription').textContent = selectedTicketType.description || 'No description available';
+            
+            ticketInfo.style.display = 'block';
+        }
+
+        // Format price with thousand separators
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN').format(price);
+        }
+
+        // Helper function to get event location (mock implementation)
+        function getEventLocation(eventType) {
+            const locations = {
+                'MusicEvent': 'Outdoor Stage, HCMC',
+                'WorkshopEvent': 'Workshop Room 1, Hanoi',
+                'CompetitionEvent': 'Main Auditorium, Da Nang',
+                'ConferenceEvent': 'Conference Hall, HCMC'
+            };
+            return locations[eventType] || 'TBA';
+        }
+
+        // Calculate event price based on event type and points
+        function calculateEventPrice(event) {
+            const basePrices = {
+                'MusicEvent': 250000,
+                'WorkshopEvent': 150000,
+                'CompetitionEvent': 500000,
+                'FestivalEvent': 200000,
+                'ConferenceEvent': 300000
+            };
+            
+            // Base price by event type
+            let price = basePrices[event.type] || 100000;
+            
+            // Adjust price based on points (higher points = higher value)
+            if (event.points) {
+                price += event.points * 1000; // 1000 VND per point
+            }
+            
+            return price;
+        }
+
+        // Load current customer info
+        function loadUserInfo() {
+            fetch('/api/current-customer')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.authenticated) {
+                        currentUser = data;
+                        // Pre-fill form with customer data
+                        document.getElementById('email').value = data.email;
+                    } else {
+                        // User not authenticated, redirect to login
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading customer info:', error);
+                    window.location.href = '/login';
+                });
+        }
+
+        // Handle form submission
+        function handleSubmit(e) {
+            e.preventDefault();
+            
+            // Validate ticket type selection
+            if (!selectedTicketType) {
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: red; margin: 20px 0; padding: 10px; border: 1px solid red; background-color: #ffe6e6;">' +
+                    'Please select a ticket type before proceeding.' +
+                    '</div>';
+                return;
+            }
+
+            // Check if ticket is still available
+            if (selectedTicketType.availableQuantity <= 0) {
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: red; margin: 20px 0; padding: 10px; border: 1px solid red; background-color: #ffe6e6;">' +
+                    'Selected ticket type is no longer available.' +
+                    '</div>';
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing Payment...';
+            
+            // Create order with ticket type
+            const orderData = {
+                eventId: parseInt(eventId),
+                orderItems: [{
+                    ticketTypeId: selectedTicketType.ticketTypeId,
+                    quantity: 1
+                }],
+                participantName: document.getElementById('fullName').value,
+                participantEmail: document.getElementById('email').value,
+                participantPhone: document.getElementById('phone').value,
+                participantOrganization: document.getElementById('organization').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            // Create order first
+            fetch('/api/orders/create-with-ticket-types', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Check if this is a pending order (customer already started but didn't complete payment)
+                    if (data.isPendingOrder) {
+                        document.getElementById('result').innerHTML = 
+                            '<div style="color: #0066cc; margin: 20px 0; padding: 15px; border: 1px solid #0066cc; background-color: #e6f2ff; border-radius: 4px;">' +
+                            '<strong>📌 You have an unpaid order for this event!</strong><br>' +
+                            '<span style="font-size: 14px;">Redirecting you to payment page...</span>' +
+                            '</div>';
+                    }
+                    
+                    // Create payment for the order (works for both new and pending orders)
+                    return fetch(`/api/payments/create-for-order/${data.orderId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    });
+                } else {
+                    // Handle specific error messages
+                    if (data.message && data.message.includes('already registered')) {
+                        document.getElementById('result').innerHTML = 
+                            '<div style="color: orange; margin: 20px 0; padding: 10px; border: 1px solid orange; background-color: #fff3cd;">' +
+                            'You have already registered for this event. <a href="/customer/orders" style="color: #856404;">View your orders</a>' +
+                            '</div>';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Pay & Register for Event';
+                        return Promise.reject(new Error('Already registered'));
+                    }
+                    throw new Error(data.message || 'Order creation failed');
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to PayOS payment page
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    throw new Error(data.message || 'Payment creation failed');
+                }
+            })
+            .catch(error => {
+                console.error('Payment error:', error);
+                
+                // Don't show error message if customer already registered (already handled above)
+                if (error.message === 'Already registered') {
+                    return;
+                }
+                
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: red; margin: 20px 0; padding: 10px; border: 1px solid red; background-color: #ffe6e6;">' +
+                    'Payment failed: ' + error.message + '. Please try again.' +
+                    '</div>';
+                
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pay & Register for Event';
+            });
+        }
+
+        // Check if customer already registered for this event
+        function checkRegistrationStatus() {
+            fetch(`/api/orders/check-registration/${eventId}`, {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.isRegistered) {
+                    // User already registered, show message and disable form
+                    document.getElementById('result').innerHTML = 
+                        '<div style="color: green; margin: 20px 0; padding: 15px; border: 1px solid green; background-color: #d4edda; border-radius: 4px;">' +
+                        '<strong>✓ You have already registered for this event!</strong><br>' +
+                        '<a href="/customer/orders" style="color: #155724; text-decoration: underline;">View your orders</a>' +
+                        '</div>';
+                    
+                    // Disable the form
+                    document.getElementById('registrationForm').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking registration status:', error);
+            });
+        }
+
+        // Load page data
+        window.onload = function() {
+            loadEventDetails();
+            loadUserInfo();
+            // Check registration status after getting event ID
+            setTimeout(checkRegistrationStatus, 500);
+        };
+
+        // Add form event listener
+        document.getElementById('registrationForm').addEventListener('submit', handleSubmit);
+    </script>
+</body>
+</html>

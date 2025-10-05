@@ -6,10 +6,7 @@ import com.group02.openevent.repository.IAccountRepo;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 public class CommonController {
@@ -21,7 +18,7 @@ public class CommonController {
 
 	@PostMapping("/api/switch-role")
 	public ResponseEntity<String> switchRole(HttpSession session) {
-		Integer accountId = (Integer) session.getAttribute("ACCOUNT_ID");
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
 		if (accountId == null) {
 			return ResponseEntity.badRequest().body("Not logged in");
 		}
@@ -46,23 +43,4 @@ public class CommonController {
 		return ResponseEntity.ok("Role switched successfully");
 	}
 
-	@GetMapping("/api/current-user")
-	public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession session) {
-		Integer accountId = (Integer) session.getAttribute("ACCOUNT_ID");
-		if (accountId == null) {
-			return ResponseEntity.badRequest().body(Map.of("error", "Not logged in"));
-		}
-
-		Account account = accountRepo.findById(accountId).orElse(null);
-		if (account == null) {
-			return ResponseEntity.badRequest().body(Map.of("error", "Account not found"));
-		}
-
-		Map<String, Object> userInfo = new HashMap<>();
-		userInfo.put("accountId", account.getAccountId());
-		userInfo.put("email", account.getEmail());
-		userInfo.put("role", account.getRole().name());
-
-		return ResponseEntity.ok(userInfo);
-	}
 }

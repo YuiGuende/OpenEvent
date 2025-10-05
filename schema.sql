@@ -1,82 +1,18 @@
+CREATE DATABASE IF NOT EXISTS openevent CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE openevent;
+
+-- 1. Bảng gốc
 CREATE TABLE account
 (
-    account_id    INT AUTO_INCREMENT PRIMARY KEY,
+    account_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('ADMIN','HOST','USER') NOT NULL
 );
 
-CREATE TABLE admin
-(
-    admin_id     INT AUTO_INCREMENT PRIMARY KEY,
-    email        VARCHAR(100),
-    name         VARCHAR(50) NOT NULL,
-    phone_number VARCHAR(20),
-    account_id   INT         NOT NULL UNIQUE,
-    CONSTRAINT fk_admin_account FOREIGN KEY (account_id) REFERENCES account (account_id)
-);
-
-CREATE TABLE event
-(
-    id               INT PRIMARY KEY,
-    event_type       VARCHAR(31)  NOT NULL,
-    benefits         TEXT,
-    created_at       DATETIME(6) NOT NULL,
-    description      TEXT,
-    ends_at          DATETIME(6) NOT NULL,
-    enroll_deadline  DATETIME(6) NOT NULL,
-    image_url        VARCHAR(255),
-    learning_objects TEXT,
-    points           INT,
-    public_date      DATETIME(6),
-    starts_at        DATETIME(6) NOT NULL,
-    status           ENUM('CANCEL','DRAFT','FINISH','ONGOING','PUBLIC') NOT NULL,
-    event_title      VARCHAR(150) NOT NULL,
-    competition_type VARCHAR(255),
-    prize_pool       VARCHAR(255),
-    rules            TEXT,
-    culture          VARCHAR(255),
-    highlight        TEXT,
-    materials_link   VARCHAR(255),
-    topic            VARCHAR(255),
-    parent_event_id  INT,
-    CONSTRAINT fk_event_parent FOREIGN KEY (parent_event_id) REFERENCES event (id)
-);
-
-CREATE TABLE event_place
-(
-    event_id INT NOT NULL,
-    place_id INT NOT NULL,
-    CONSTRAINT fk_eventplace_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_eventplace_place FOREIGN KEY (place_id) REFERENCES place (place_id)
-);
-
-CREATE TABLE event_schedule
-(
-    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
-    activity    VARCHAR(255),
-    end_time    DATETIME(6),
-    start_time  DATETIME(6),
-    event_id    INT NOT NULL,
-    CONSTRAINT fk_schedule_event FOREIGN KEY (event_id) REFERENCES event (id)
-);
-
-CREATE TABLE event_sequence
-(
-    next_val BIGINT
-);
-
-CREATE TABLE event_speaker
-(
-    event_id   INT NOT NULL,
-    speaker_id INT NOT NULL,
-    CONSTRAINT fk_eventspeaker_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_eventspeaker_speaker FOREIGN KEY (speaker_id) REFERENCES speaker (speaker_id)
-);
-
 CREATE TABLE organization
 (
-    org_id      INT AUTO_INCREMENT PRIMARY KEY,
+    org_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
     address     VARCHAR(300),
     created_at  DATETIME(6) NOT NULL,
     description VARCHAR(1000),
@@ -89,65 +25,265 @@ CREATE TABLE organization
 
 CREATE TABLE place
 (
-    place_id   INT AUTO_INCREMENT PRIMARY KEY,
+    place_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
     building   ENUM('ALPHA','BETA','NONE') NOT NULL,
     place_name VARCHAR(150) NOT NULL
 );
 
 CREATE TABLE speaker
 (
-    speaker_id   INT AUTO_INCREMENT PRIMARY KEY,
+    speaker_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
     default_role ENUM('ARTIST','MC','OTHER','PERFORMER','SINGER','SPEAKER') NOT NULL,
     image_url    VARCHAR(255),
     name         VARCHAR(100) NOT NULL,
     profile      VARCHAR(255)
 );
 
-CREATE TABLE ticket_type
+CREATE TABLE subscription_plans
 (
-    ticket_type_id INT AUTO_INCREMENT PRIMARY KEY,
-    name           VARCHAR(255),
-    price          DECIMAL(38, 2),
-    total_quantity INT,
-    event_id       INT NOT NULL,
-    CONSTRAINT fk_tickettype_event FOREIGN KEY (event_id) REFERENCES event (id)
+    plan_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(100)   NOT NULL,
+    price           DECIMAL(10, 2) NOT NULL,
+    duration_months INT            NOT NULL
 );
 
-CREATE TABLE user
+-- 2. Bảng phụ thuộc account / organization
+CREATE TABLE admin
 (
-    user_id         INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email        VARCHAR(100),
+    name         VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(20),
+    account_id   BIGINT NOT NULL UNIQUE,
+    CONSTRAINT fk_admin_account FOREIGN KEY (account_id) REFERENCES account (account_id)
+);
+
+CREATE TABLE customer
+(
+    user_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     email           VARCHAR(100),
     organization_id BIGINT,
     phone_number    VARCHAR(20),
     points          INT NOT NULL,
-    account_id      INT NOT NULL UNIQUE,
+    account_id      BIGINT NOT NULL UNIQUE,
     CONSTRAINT fk_user_account FOREIGN KEY (account_id) REFERENCES account (account_id),
     CONSTRAINT fk_user_org FOREIGN KEY (organization_id) REFERENCES organization (org_id)
 );
 
+-- 3. Event và các bảng liên quan
+CREATE TABLE event
+(
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_type       VARCHAR(31)  NOT NULL,
+    event_title      VARCHAR(150) NOT NULL,
+    description      TEXT,
+    starts_at        DATETIME(6) NOT NULL,
+    ends_at          DATETIME(6) NOT NULL,
+    enroll_deadline  DATETIME(6) NOT NULL,
+    status           ENUM('CANCEL','DRAFT','FINISH','ONGOING','PUBLIC') NOT NULL,
+    image_url        VARCHAR(255),
+    points           INT DEFAULT 0,
+    benefits         TEXT,
+    learning_objects TEXT,
+    
+    -- Thời gian thay đổi trạng thái
+    created_at       DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    draft_at         DATETIME(6),
+    public_at      DATETIME(6),
+    ongoing_at       DATETIME(6),
+    finish_at        DATETIME(6),
+    cancel_at        DATETIME(6),
+    
+    parent_event_id  BIGINT,
+    CONSTRAINT fk_event_parent FOREIGN KEY (parent_event_id) REFERENCES event (id)
+);
+
+CREATE TABLE event_sequence
+(
+    next_val BIGINT
+);
+
+CREATE TABLE event_place
+(
+    event_id BIGINT NOT NULL,
+    place_id BIGINT NOT NULL,
+    CONSTRAINT fk_eventplace_event FOREIGN KEY (event_id) REFERENCES event (id),
+    CONSTRAINT fk_eventplace_place FOREIGN KEY (place_id) REFERENCES place (place_id)
+);
+
+CREATE TABLE event_schedule
+(
+    schedule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    activity    VARCHAR(255),
+    end_time    DATETIME(6),
+    start_time  DATETIME(6),
+    event_id    BIGINT NOT NULL,
+    CONSTRAINT fk_schedule_event FOREIGN KEY (event_id) REFERENCES event (id)
+);
+
+-- Event-specific tables
+CREATE TABLE music_event
+(
+    event_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    genre           VARCHAR(100),
+    performer_count INT,
+    CONSTRAINT fk_music_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+CREATE TABLE workshop_event
+(
+    event_id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    max_participants  INT,
+    skill_level       VARCHAR(50),
+    prerequisites     TEXT,
+    CONSTRAINT fk_workshop_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+CREATE TABLE competition_event
+(
+    event_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    prize_pool       VARCHAR(255),
+    competition_type VARCHAR(255),
+    rules            TEXT,
+    CONSTRAINT fk_competition_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+CREATE TABLE conference_event
+(
+    event_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    conference_type  VARCHAR(100),
+    max_attendees    INT,
+    agenda           TEXT,
+    CONSTRAINT fk_conference_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+CREATE TABLE event_speaker
+(
+    event_id   BIGINT NOT NULL,
+    speaker_id BIGINT NOT NULL,
+    role       ENUM('ARTIST','MC','OTHER','PERFORMER','SINGER','SPEAKER') NOT NULL DEFAULT 'SPEAKER',
+    CONSTRAINT fk_eventspeaker_event FOREIGN KEY (event_id) REFERENCES event (id),
+    CONSTRAINT fk_eventspeaker_speaker FOREIGN KEY (speaker_id) REFERENCES speaker (speaker_id)
+);
+
+CREATE TABLE event_image
+(
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id    BIGINT NOT NULL,
+    url         VARCHAR(255) NOT NULL,
+    order_index INT DEFAULT 1,
+    main_poster BOOLEAN DEFAULT FALSE,
+    CONSTRAINT fk_eventimage_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+-- 4.1. Ticket Types (Host tạo loại vé cho Event)
+CREATE TABLE ticket_type
+(
+    ticket_type_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id         BIGINT NOT NULL,
+    name             VARCHAR(100) NOT NULL,
+    description      VARCHAR(1000) DEFAULT NULL,
+    price            DECIMAL(38,2) NOT NULL,
+    total_quantity   INT NOT NULL,
+    sold_quantity    INT NOT NULL DEFAULT 0,
+    start_sale_date  DATETIME(6) DEFAULT NULL,
+    end_sale_date    DATETIME(6) DEFAULT NULL,
+    CONSTRAINT fk_tickettype_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+-- 4. Host và Guest (mối quan hệ User-Event)
 CREATE TABLE host
 (
-    host_id     INT AUTO_INCREMENT PRIMARY KEY,
+    host_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
     created_at  DATETIME(6) NOT NULL,
-    organize_id INT,
-    event_id    INT NOT NULL,
-    user_id     INT NOT NULL,
+    organize_id BIGINT,
+    event_id    BIGINT NOT NULL,
+    user_id     BIGINT NOT NULL,
     CONSTRAINT fk_host_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES user (user_id),
+    CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES customer (user_id),
     CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
 );
 
-CREATE TABLE ticket
+-- Bảng event_guests: mối quan hệ User tham gia Event (Guest)
+CREATE TABLE event_guests
 (
-    ticket_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    ticket_type_id BIGINT NOT NULL,
-    user_id        BIGINT NOT NULL,
-    purchase_date  DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_ticket_type FOREIGN KEY (ticket_type_id) REFERENCES ticket_type (ticket_type_id),
-    CONSTRAINT fk_ticket_user FOREIGN KEY (user_id) REFERENCES user (user_id),
-    UNIQUE KEY uq_user_ticket (user_id, ticket_type_id)
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    event_id BIGINT NOT NULL,
+    joined_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    status ENUM('ACTIVE', 'LEFT', 'REMOVED') NOT NULL DEFAULT 'ACTIVE',
+    CONSTRAINT fk_eventguest_user FOREIGN KEY (user_id) REFERENCES customer (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_eventguest_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
+    UNIQUE KEY UK_user_event_guest (user_id, event_id)
 );
 
+CREATE TABLE host_subscriptions
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    host_id    BIGINT NOT NULL,
+    plan_id    BIGINT NOT NULL,
+    start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    end_date   DATETIME,
+    CONSTRAINT fk_sub_host FOREIGN KEY (host_id) REFERENCES host (host_id),
+    CONSTRAINT fk_sub_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans (plan_id)
+);
+
+-- 5. Order System (Simplified Model - No OrderItem)
+CREATE TABLE orders
+(
+    order_id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id                  BIGINT NOT NULL,
+    event_id                 BIGINT NOT NULL,
+    ticket_type_id           BIGINT NOT NULL,
+    status                   ENUM('PENDING','CONFIRMED','PAID','CANCELLED','EXPIRED','REFUNDED') NOT NULL DEFAULT 'PENDING',
+    total_amount             DECIMAL(10,2) NOT NULL DEFAULT 0,
+    participant_name         VARCHAR(100) DEFAULT NULL,
+    participant_email        VARCHAR(100) DEFAULT NULL,
+    participant_phone        VARCHAR(20) DEFAULT NULL,
+    participant_organization VARCHAR(150) DEFAULT NULL,
+    notes                    VARCHAR(1000) DEFAULT NULL,
+    created_at               DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at               DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES customer (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_tickettype FOREIGN KEY (ticket_type_id) REFERENCES ticket_type (ticket_type_id) ON DELETE CASCADE
+);
+
+-- 6. Payment System (PayOS Integration)
+-- Simplified payment system using only Orders (no OrderItem or Ticket)
+
+-- Bảng payments chỉ hỗ trợ Order-based flow với PayOS
+-- order_id: Liên kết với orders
+-- payos_payment_id: ID thanh toán từ PayOS
+-- transaction_id: Mã giao dịch từ PayOS
+CREATE TABLE payments
+(
+    payment_id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id                BIGINT NOT NULL,
+    payos_payment_id        BIGINT DEFAULT NULL,
+    payment_link_id         VARCHAR(100) DEFAULT NULL,
+    checkout_url            VARCHAR(500) DEFAULT NULL,
+    qr_code                 VARCHAR(500) DEFAULT NULL,
+    transaction_id          VARCHAR(255) DEFAULT NULL,
+    amount                  DECIMAL(10,2) NOT NULL,
+    currency                VARCHAR(3) NOT NULL DEFAULT 'VND',
+    status                  ENUM('PENDING','PAID','CANCELLED','EXPIRED','REFUNDED') NOT NULL DEFAULT 'PENDING',
+    description             VARCHAR(500) DEFAULT NULL,
+    return_url              VARCHAR(500) DEFAULT NULL,
+    cancel_url              VARCHAR(500) DEFAULT NULL,
+    expired_at              DATETIME(6) DEFAULT NULL,
+    paid_at                 DATETIME(6) DEFAULT NULL,
+    cancelled_at            DATETIME(6) DEFAULT NULL,
+    payos_signature         VARCHAR(500) DEFAULT NULL,
+    created_at              DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at              DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES orders (order_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY UK_payment_order (order_id)
+);
+
+-- Migration completed: Simplified Order system (no OrderItem, no Ticket)
+
+-- 7. Reports / Notifications / Requests
 CREATE TABLE reports
 (
     report_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -158,22 +294,22 @@ CREATE TABLE reports
     status     ENUM('PENDING','SEEN','RESOLVED') DEFAULT 'PENDING',
     seen       BOOLEAN  DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_report_user FOREIGN KEY (user_id) REFERENCES user (user_id),
+    CONSTRAINT fk_report_user FOREIGN KEY (user_id) REFERENCES customer (user_id),
     CONSTRAINT fk_report_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
 CREATE TABLE notifications
 (
     notification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    receiver_id     BIGINT       NOT NULL,
+    receiver_id     BIGINT NOT NULL,
     sender_id       BIGINT,
     message         VARCHAR(500) NOT NULL,
     is_read         BOOLEAN  DEFAULT FALSE,
     target_url      VARCHAR(255),
     type            ENUM('REPORT','HOST_REQUEST','NOTIFICATION','USER_NOTIFICATION') NOT NULL,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES user (user_id),
-    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES user (user_id)
+    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES customer (user_id),
+    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES customer (user_id)
 );
 
 CREATE TABLE requests
@@ -188,21 +324,214 @@ CREATE TABLE requests
     CONSTRAINT fk_request_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
-CREATE TABLE subscription_plans
-(
-    plan_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name            VARCHAR(100)   NOT NULL,
-    price           DECIMAL(10, 2) NOT NULL,
-    duration_months INT            NOT NULL
-);
+-- 8. Indexes for New Order System (Performance Optimization)
+CREATE INDEX idx_tickettype_event_id ON ticket_type (event_id);
+CREATE INDEX idx_tickettype_sale_dates ON ticket_type (start_sale_date, end_sale_date);
+CREATE INDEX idx_tickettype_quantity ON ticket_type (total_quantity, sold_quantity);
 
-CREATE TABLE host_subscriptions
-(
-    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    host_id    BIGINT NOT NULL,
-    plan_id    BIGINT NOT NULL,
-    start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    end_date   DATETIME,
-    CONSTRAINT fk_sub_host FOREIGN KEY (host_id) REFERENCES host (host_id),
-    CONSTRAINT fk_sub_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans (plan_id)
-);
+CREATE INDEX idx_orders_user_id ON orders (user_id);
+CREATE INDEX idx_orders_event_id ON orders (event_id);
+CREATE INDEX idx_orders_status ON orders (status);
+CREATE INDEX idx_orders_created_at ON orders (created_at);
+CREATE INDEX idx_orders_user_status ON orders (user_id, status);
+CREATE INDEX idx_orders_tickettype_id ON orders (ticket_type_id);
+CREATE INDEX idx_orders_user_tickettype ON orders (user_id, ticket_type_id);
+CREATE INDEX idx_orders_event_tickettype ON orders (event_id, ticket_type_id);
+
+-- 9. Indexes for Payment Tables (Performance Optimization)
+
+-- Indexes for Event Guests (Performance Optimization)
+CREATE INDEX idx_eventguests_user_id ON event_guests (user_id);
+CREATE INDEX idx_eventguests_event_id ON event_guests (event_id);
+CREATE INDEX idx_eventguests_status ON event_guests (status);
+CREATE INDEX idx_eventguests_joined_at ON event_guests (joined_at);
+-- Index cho constraint UK_user_event_guest đã được tự động tạo
+
+CREATE INDEX idx_payments_order_id ON payments (order_id);
+CREATE INDEX idx_payments_status ON payments (status);
+CREATE INDEX idx_payments_payos_id ON payments (payos_payment_id);
+CREATE INDEX idx_payments_link_id ON payments (payment_link_id);
+CREATE INDEX idx_payments_expired_at ON payments (expired_at);
+CREATE INDEX idx_payments_status_created ON payments (status, created_at);
+CREATE INDEX idx_payments_transaction_id ON payments (transaction_id);
+
+-- 10. Indexes for Event Images Table (Performance Optimization)
+CREATE INDEX idx_eventimage_event_id ON event_image (event_id);
+CREATE INDEX idx_eventimage_main_poster ON event_image (event_id, main_poster);
+
+-- 11. INSERT SAMPLE DATA
+-- Sample accounts
+INSERT INTO account (email, password_hash, role) VALUES
+('admin@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN'),
+('host1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
+('host2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
+('user1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER'),
+('user2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER'),
+('user3@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER');
+
+-- Sample organizations
+INSERT INTO organization (org_name, description, email, phone, address, created_at) VALUES
+('HCMC University', 'Ho Chi Minh City University of Technology', 'contact@hcmut.edu.vn', '028-38647256', '268 Ly Thuong Kiet, District 10, HCMC', NOW()),
+('Tech Hub Vietnam', 'Technology and Innovation Hub', 'info@techhub.vn', '028-12345678', '123 Nguyen Hue, District 1, HCMC', NOW()),
+('Creative Arts Center', 'Center for Creative Arts and Culture', 'hello@creativecenter.vn', '028-87654321', '456 Le Loi, District 3, HCMC', NOW());
+
+-- Sample places
+INSERT INTO place (building, place_name) VALUES
+('ALPHA', 'Alpha Auditorium'),
+('ALPHA', 'Alpha Conference Room A'),
+('ALPHA', 'Alpha Conference Room B'),
+('BETA', 'Beta Main Hall'),
+('BETA', 'Beta Meeting Room 1'),
+('BETA', 'Beta Meeting Room 2'),
+('NONE', 'Online Platform'),
+('NONE', 'Outdoor Stage');
+
+-- Sample speakers
+INSERT INTO speaker (name, default_role, profile, image_url) VALUES
+('Dr. Nguyen Van A', 'SPEAKER', 'Expert in AI and Machine Learning', 'https://via.placeholder.com/150'),
+('Ms. Tran Thi B', 'SPEAKER', 'Digital Marketing Specialist', 'https://via.placeholder.com/150'),
+('Mr. Le Van C', 'PERFORMER', 'Professional Musician and Composer', 'https://via.placeholder.com/150'),
+('DJ Mike', 'ARTIST', 'Electronic Music Producer', 'https://via.placeholder.com/150'),
+('Chef Anna', 'OTHER', 'Culinary Expert and Food Blogger', 'https://via.placeholder.com/150');
+
+-- Sample admin
+INSERT INTO admin (name, email, phone_number, account_id) VALUES
+('System Admin', 'admin@openevent.com', '0901234567', 1);
+
+-- Sample users
+INSERT INTO customer (email, phone_number, points, account_id, organization_id) VALUES
+('host1@openevent.com', '0901234568', 100, 2, 1),
+('host2@openevent.com', '0901234569', 150, 3, 2),
+('user1@openevent.com', '0901234570', 50, 4, 1),
+('user2@openevent.com', '0901234571', 75, 5, NULL),
+('user3@openevent.com', '0901234572', 25, 6, 3);
+
+-- Sample events
+INSERT INTO event (event_type, event_title, description, starts_at, ends_at, enroll_deadline, status, image_url, points, benefits, learning_objects, created_at, public_date) VALUES
+('MusicEvent', 'Spring Music Festival 2024', 'Annual spring music festival featuring local and international artists', '2024-04-15 18:00:00', '2024-04-15 23:00:00', '2024-04-10 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 20, 'Free drinks and snacks, Meet & greet with artists', 'Experience diverse music genres, Network with music enthusiasts', NOW(), NOW()),
+('WorkshopEvent', 'AI & Machine Learning Workshop', 'Hands-on workshop covering basics of AI and ML with practical examples', '2024-04-20 09:00:00', '2024-04-20 17:00:00', '2024-04-18 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 50, 'Certificate of completion, Course materials, Lunch included', 'Learn AI fundamentals, Build your first ML model, Understand data preprocessing', NOW(), NOW()),
+('ConferenceEvent', 'Digital Marketing Summit 2024', 'Premier conference for digital marketing professionals and enthusiasts', '2024-05-05 08:00:00', '2024-05-05 18:00:00', '2024-05-01 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 30, 'Networking opportunities, Conference materials, Refreshments', 'Latest marketing trends, Social media strategies, ROI optimization techniques', NOW(), NOW()),
+('CompetitionEvent', 'Coding Challenge 2024', 'Annual programming competition for students and professionals', '2024-05-12 10:00:00', '2024-05-12 16:00:00', '2024-05-08 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 40, 'Cash prizes, Certificates, Job opportunities', 'Problem-solving skills, Algorithm optimization, Team collaboration', NOW(), NOW()),
+('MusicEvent', 'Jazz Night at the Park', 'Relaxing evening of jazz music in outdoor setting', '2024-04-25 19:00:00', '2024-04-25 22:00:00', '2024-04-23 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 15, 'Outdoor seating, Light refreshments', 'Appreciate jazz music, Relaxing atmosphere', NOW(), NOW());
+
+-- Sample event-specific details
+INSERT INTO music_event (event_id, genre, performer_count) VALUES
+(1, 'Pop, Rock, Electronic', 8),
+(5, 'Jazz, Blues', 4);
+
+INSERT INTO workshop_event (event_id, max_participants, skill_level, prerequisites) VALUES
+(2, 50, 'Beginner to Intermediate', 'Basic programming knowledge preferred');
+
+INSERT INTO conference_event (event_id, conference_type, max_attendees, agenda) VALUES
+(3, 'Professional Development', 200, 'Keynote speeches, Panel discussions, Networking sessions');
+
+INSERT INTO competition_event (event_id, prize_pool, competition_type, rules) VALUES
+(4, '10,000,000 VND', 'Individual and Team', 'Max 4 hours, Any programming language allowed');
+
+-- Sample event places
+INSERT INTO event_place (event_id, place_id) VALUES
+(1, 8), -- Spring Music Festival - Outdoor Stage
+(2, 1), -- AI Workshop - Alpha Auditorium  
+(3, 4), -- Digital Marketing Summit - Beta Main Hall
+(4, 2), -- Coding Challenge - Alpha Conference Room A
+(5, 8); -- Jazz Night - Outdoor Stage
+
+-- Sample event speakers
+INSERT INTO event_speaker (event_id, speaker_id, role) VALUES
+(1, 3, 'PERFORMER'),
+(1, 4, 'ARTIST'),
+(2, 1, 'SPEAKER'),
+(3, 2, 'SPEAKER'),
+(5, 3, 'PERFORMER');
+
+-- Sample event images
+INSERT INTO event_image (event_id, url, order_index, main_poster) VALUES
+(1, 'https://via.placeholder.com/800x600/FF6B6B/FFFFFF?text=Spring+Music+Festival', 1, TRUE),
+(1, 'https://via.placeholder.com/800x600/4ECDC4/FFFFFF?text=Stage+Setup', 2, FALSE),
+(2, 'https://via.placeholder.com/800x600/45B7D1/FFFFFF?text=AI+Workshop', 1, TRUE),
+(3, 'https://via.placeholder.com/800x600/96CEB4/FFFFFF?text=Marketing+Summit', 1, TRUE),
+(4, 'https://via.placeholder.com/800x600/FFEAA7/000000?text=Coding+Challenge', 1, TRUE),
+(5, 'https://via.placeholder.com/800x600/DDA0DD/000000?text=Jazz+Night', 1, TRUE);
+
+-- Sample ticket types (Updated with current dates for testing)
+INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sold_quantity, start_sale_date, end_sale_date) VALUES
+-- Spring Music Festival
+(1, 'Early Bird', 'Early bird discount ticket', 2000.00, 100, 25, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'General Admission', 'Standard admission ticket', 3000.00, 200, 45, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'VIP Pass', 'VIP access with premium benefits', 5000.00, 50, 12, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+
+-- AI Workshop
+(2, 'Student Ticket', 'Discounted price for students', 1000.00, 30, 8, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(2, 'Professional Ticket', 'Regular price for professionals', 3500.00, 20, 5, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+
+-- Digital Marketing Summit
+(3, 'Standard Pass', 'Access to all sessions', 2500.00, 150, 32, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(3, 'Premium Pass', 'All sessions + networking dinner', 4000.00, 50, 18, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+
+-- Coding Challenge
+(4, 'Individual Entry', 'Single participant entry', 1500.00, 80, 15, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(4, 'Team Entry', 'Team of up to 4 members', 4500.00, 20, 6, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+
+-- Jazz Night
+(5, 'General Seating', 'Standard outdoor seating', 1800.00, 120, 28, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(5, 'Premium Seating', 'Front row seating with table service', 3200.00, 40, 12, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
+
+-- Sample hosts
+INSERT INTO host (created_at, event_id, user_id, organize_id) VALUES
+(NOW(), 1, 1, 3), -- Host1 organizes Spring Music Festival for Creative Arts Center
+(NOW(), 2, 1, 1), -- Host1 organizes AI Workshop for HCMC University  
+(NOW(), 3, 2, 2), -- Host2 organizes Marketing Summit for Tech Hub Vietnam
+(NOW(), 4, 1, 1), -- Host1 organizes Coding Challenge for HCMC University
+(NOW(), 5, 2, 3); -- Host2 organizes Jazz Night for Creative Arts Center
+
+-- Sample event guests (some users already joined events)
+INSERT INTO event_guests (user_id, event_id, joined_at, status) VALUES
+(3, 1, '2024-03-15 10:30:00', 'ACTIVE'), -- user1 joined Spring Music Festival
+(4, 1, '2024-03-16 14:20:00', 'ACTIVE'), -- user2 joined Spring Music Festival  
+(5, 2, '2024-03-20 09:15:00', 'ACTIVE'), -- user3 joined AI Workshop
+(3, 3, '2024-04-02 16:45:00', 'ACTIVE'), -- user1 joined Marketing Summit
+(4, 5, '2024-04-05 11:30:00', 'ACTIVE'); -- user2 joined Jazz Night
+
+-- Sample orders (some completed purchases)
+INSERT INTO orders (user_id, event_id, ticket_type_id, status, total_amount, participant_name, participant_email, participant_phone, created_at) VALUES
+(3, 1, 1, 'PAID', 150000.00, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', '2024-03-15 10:30:00'),
+(4, 1, 2, 'PAID', 200000.00, 'Tran Thi User2', 'user2@openevent.com', '0901234571', '2024-03-16 14:20:00'),
+(5, 2, 1, 'PAID', 100000.00, 'Le Van User3', 'user3@openevent.com', '0901234572', '2024-03-20 09:15:00'),
+(3, 3, 1, 'CONFIRMED', 250000.00, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', '2024-04-02 16:45:00'),
+(4, 5, 1, 'PENDING', 80000.00, 'Tran Thi User2', 'user2@openevent.com', '0901234571', '2024-04-05 11:30:00');
+
+-- Sample payments
+INSERT INTO payments (order_id, amount, status, description, created_at, paid_at) VALUES
+(1, 150000.00, 'PAID', 'Payment for Spring Music Festival - Early Bird', '2024-03-15 10:35:00', '2024-03-15 10:36:00'),
+(2, 200000.00, 'PAID', 'Payment for Spring Music Festival - General Admission', '2024-03-16 14:25:00', '2024-03-16 14:26:00'),
+(3, 100000.00, 'PAID', 'Payment for AI Workshop - Student Ticket', '2024-03-20 09:20:00', '2024-03-20 09:21:00'),
+(4, 250000.00, 'PENDING', 'Payment for Digital Marketing Summit - Standard Pass', '2024-04-02 16:50:00', NULL),
+(5, 80000.00, 'PENDING', 'Payment for Jazz Night - General Seating', '2024-04-05 11:35:00', NULL);
+
+-- Sample subscription plans
+INSERT INTO subscription_plans (name, price, duration_months) VALUES
+('Basic Plan', 99000.00, 1),
+('Pro Plan', 299000.00, 3),
+('Premium Plan', 999000.00, 12);
+
+-- Sample host subscriptions
+INSERT INTO host_subscriptions (host_id, plan_id, start_date, end_date) VALUES
+(1, 2, '2024-01-01 00:00:00', '2024-04-01 00:00:00'),
+(2, 3, '2024-02-01 00:00:00', '2025-02-01 00:00:00');
+
+-- Initialize event sequence
+INSERT INTO event_sequence (next_val) VALUES (6);
+
+-- Sample reports
+INSERT INTO reports (user_id, event_id, content, type, status, created_at) VALUES
+(4, 1, 'The sound system was too loud during the first hour', 'OTHER', 'RESOLVED', '2024-03-16 20:30:00'),
+(5, 2, 'Workshop materials were very helpful', 'OTHER', 'SEEN', '2024-03-20 18:45:00');
+
+-- Sample notifications
+INSERT INTO notifications (receiver_id, sender_id, message, type, is_read, created_at) VALUES
+(3, NULL, 'Welcome to OpenEvent! Start exploring amazing events.', 'USER_NOTIFICATION', TRUE, '2024-03-01 10:00:00'),
+(4, NULL, 'Your payment for Spring Music Festival has been confirmed.', 'USER_NOTIFICATION', TRUE, '2024-03-16 14:26:00'),
+(5, NULL, 'Reminder: AI Workshop starts tomorrow at 9:00 AM.', 'USER_NOTIFICATION', FALSE, '2024-04-19 18:00:00'),
+(1, NULL, 'Your event "Spring Music Festival" has received 50+ registrations!', 'HOST_REQUEST', FALSE, '2024-03-20 15:30:00');
+
+SELECT 'Sample data inserted successfully!' as status;

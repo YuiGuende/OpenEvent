@@ -52,7 +52,7 @@
 		Chuyển thành User
 	</button>
 	
-	<p><a href="/security/auth.html">Đăng xuất (xóa cookie trình duyệt hoặc đóng tab)</a></p>
+	<p><a href="/">Back to Home</a></p>
 
 	<script>
 		function switchRole() {
@@ -94,7 +94,7 @@
 
 		// Cập nhật giao diện dựa trên role hiện tại
 		window.onload = function() {
-			fetch('/api/current-user')
+			fetch('/api/current-customer')
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {

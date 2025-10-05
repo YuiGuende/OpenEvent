@@ -15,7 +15,7 @@
             <h1>Đăng nhập</h1>
             <div class="input-box">
                 <input type="email" id="loginEmail" name="email" placeholder="Email" required>
-                <i class='bx bx-user'></i>
+                <i class='bx bx-customer'></i>
             </div>
             <div class="input-box">
                 <input type="password" id="loginPassword" name="password" placeholder="Mật khẩu" required>
@@ -48,13 +48,9 @@
                 <i class='bx bx-show' id="toggleRegPw" style="cursor: pointer;"></i>
             </div>
 
-            <div class="input-box">
-                <select id="regRole" name="role">
-                    <option value="USER">USER</option>
-                    <option value="SPONSOR">SPONSOR</option>
-                    <option value="TEACHER">TEACHER</option>
-                </select>
-            </div>
+            <!-- Hidden input để gửi role mặc định là USER -->
+            <input type="hidden" name="role" value="USER">
+
             <div class="input-box">
                 <input type="text" id="regPhone" name="phone" placeholder="Số điện thoại" required>
                 <i class='bx bx-phone'></i>
@@ -86,5 +82,22 @@
 <!--<script th:src="@{/js/login.js}"></script>-->
 <!--<script th:src="@{/js/register.js}"></script>-->
 <script th:src="@{/js/auth.js}"></script>
+
+<script>
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+
+    // Show registration success notice
+    (function showNotice() {
+        if (getQueryParam('registered') === '1') {
+            const notice = document.getElementById('notice');
+            notice.textContent = 'Registration successful! Please login.';
+            notice.style.color = 'green';
+            notice.style.display = 'block';
+        }
+    })();
+</script>
 </body>
-</html> 
+</html>

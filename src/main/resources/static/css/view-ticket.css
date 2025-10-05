@@ -1,0 +1,173 @@
+* { box-sizing: border-box; }
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0; padding: 0;
+    background: #f4f6f9;
+    color: #333;
+}
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.left, .right { padding: 24px; }
+.left { flex: 2; min-width: 300px; }
+.right { flex: 1; min-width: 280px; background: #fafafa; border-left: 1px solid #eee; }
+
+h2 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
+.event-info p { margin: 0; color: #666; font-size: 14px; }
+
+.promo { margin: 20px 0; display: flex; gap: 8px; }
+.promo input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+.promo button {
+    padding: 10px 16px;
+    border: none;
+    background: #ef7813;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.promo button:hover { background: #f39445; }
+
+.ticket {
+    border: 1px solid #f87204;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.ticket:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.ticket.selected {
+    border-color: #4CAF50;
+    background: #f6fffa;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+.ticket h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.price { font-weight: 500; margin: 6px 0; color: #4CAF50; }
+.quantity {
+    display: flex; align-items: center; gap: 10px; margin-top: 10px;
+}
+.quantity button {
+    width: 32px; height: 32px;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s;
+}
+.event-thumb {
+    width: 100%;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.event-thumb img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover; /* ảnh gọn, không méo */
+    max-height: 200px; /* giữ ảnh không quá dài */
+}
+
+.quantity button:hover { background: #f0f0f0; }
+.quantity span { font-size: 15px; min-width: 20px; text-align: center; }
+
+.summary h3 { margin-top: 0; font-weight: 600; }
+.summary ul { list-style: none; padding: 0; margin: 0 0 15px; }
+.summary li { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+#total { font-size: 18px; font-weight: 700; color: #e65c00; margin-top: 12px; }
+
+.payment-methods {
+    display: flex; flex-wrap: wrap;
+    gap: 16px; margin: 20px 0; justify-content: center;
+}
+.payment-option {
+    flex: 1 1 120px; max-width: 150px;
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.payment-option:hover {
+    border-color: #4CAF50;
+    transform: translateY(-3px);
+}
+.payment-option input[type="radio"] { display: none; }
+.payment-option img {
+    width: 48px; height: 48px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+.payment-option span {
+    display: block;
+    font-size: 14px; font-weight: 500;
+}
+.payment-option input[type="radio"]:checked + img,
+.payment-option input[type="radio"]:checked + span {
+    filter: hue-rotate(90deg);
+    font-weight: 600;
+    color: #4CAF50;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 14px;
+    background: #e65c00;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+.checkout-btn:hover { background: #d35400; }
+
+.ticket .desc {
+    font-size: 13px;
+    color: #555;
+    margin: 4px 0 8px;
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+}
+.ticket.expanded .desc {
+    -webkit-line-clamp: unset;
+    display: block;
+}
+.see-more-btn {
+    border: none;
+    background: none;
+    color: #4CAF50;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 8px;
+}
+.see-more-btn:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container { flex-direction: column; }
+    .right { border-left: none; border-top: 1px solid #eee; }
+}

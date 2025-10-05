@@ -3,20 +3,33 @@ package com.group02.openevent.controller.event;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
-import com.group02.openevent.service.impl.CloudinaryServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import com.group02.openevent.model.dto.request.EventCreationRequest;
+import com.group02.openevent.model.dto.response.EventResponse;
+import com.group02.openevent.model.event.Event;
+import com.group02.openevent.service.EventService;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-@RestController
+@Controller
 @RequestMapping("/api/events")
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class EventController {
 
     private final EventService eventService;
@@ -29,22 +42,24 @@ public class EventController {
         this.imageService = imageService;
     }
 
-    @Autowired
-    private ObjectMapper objectMapper;
+
 
 
     // POST - create event
     @PostMapping("save/music")
+    @ResponseBody
     public MusicEvent saveMusic(@RequestBody MusicEvent event) {
         return eventService.saveMusicEvent(event);
     }
 
     @PostMapping("save/festival")
+    @ResponseBody
     public FestivalEvent saveFestival(@RequestBody FestivalEvent event) {
         return eventService.saveFestivalEvent(event);
     }
 
     @PostMapping("save/competition")
+    @ResponseBody
     public CompetitionEvent saveCompetition(@RequestBody CompetitionEvent event) {
         return eventService.saveCompetitionEvent(event);
     }
@@ -52,19 +67,49 @@ public class EventController {
 
 
     @PostMapping("save/workshop")
+    @ResponseBody
     public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
         return eventService.saveWorkshopEvent(event);
     }
+    @GetMapping("/event")
+    public String userRegistration(Model model) {
+        //Empty Userform model object to store from data
+        log.info("da vao ham nay");
+        EventCreationRequest request = new EventCreationRequest();
+        model.addAttribute("eventForm", request);
+        List<String> listTypeEvent = Arrays.asList("MUSIC", "FESTIVAL", "WORKSHOP","COMPETITION","OTHERS");
+        model.addAttribute("listTypeEvent", listTypeEvent);
+        return "host/events";
 
+    }
+
+    // POST - create event
+    @PostMapping("/saveEvent")
+    public String createEvent(RedirectAttributes redirectAttributes,
+                              @ModelAttribute("eventForm") EventCreationRequest request) {
+        log.info("Controller Create User");
+         EventResponse savedEvent =  eventService.saveEvent(request);
+        return "redirect:/manage/" + savedEvent.getId();
+    }
+
+    // Màn hình quản lý / chỉnh sửa event
+    @GetMapping("/manage/{id}")
+    public String manageEvent(@PathVariable Long id, Model model) {
+        Event event = eventService.getEventById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        return "host/manage-event"; // -> host/manage-event.html
+    }
 
     // GET - get event by id
     @GetMapping("/{id}")
-    public Optional<Event> getEvent(@PathVariable Integer id) {
+    public Optional<Event> getEvent(@PathVariable Long id) {
         return eventService.getEventById(id);
     }
 
+
     // GET - get event by type
     @GetMapping("/type/{type}")
+    @ResponseBody
     public List<Event> getEventsByType(@PathVariable String type) {
         Class<? extends Event> eventType = getEventTypeClass(type);
         return eventService.getEventsByType(eventType);
@@ -95,11 +140,12 @@ public class EventController {
     }
 
     @PostMapping("/upload/image")
+    @ResponseBody
     public ResponseEntity<Event> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam("index") int index,
             @RequestParam("mainPoster") boolean mainPoster,
-            @RequestParam("eventId") Integer eventId) throws IOException {
+            @RequestParam("eventId") Long eventId) throws IOException {
         String url = imageService.saveImage(file);
         Optional<Event> optionalEvent = eventService.getEventById(eventId);
         if (optionalEvent.isPresent()) {

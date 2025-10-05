@@ -66,8 +66,8 @@ public class AgentEventService {
             Event existing = null;
 
             if (args.containsKey("event_id")) {
-                Integer id = (Integer) args.get("event_id");
-                Optional<Event> eventOpt = eventService.getEventById(id);
+                Long id = (Long) args.get("event_id");
+                Optional<Event> eventOpt = eventService.getEventByEventId(id);
                 if (eventOpt.isPresent()) {
                     existing = eventOpt.get();
                 }
@@ -107,7 +107,7 @@ public class AgentEventService {
             boolean deleted = false;
 
             if (args.containsKey("event_id")) {
-                Integer id = (Integer) args.get("event_id");
+                Long id = (Long) args.get("event_id");
                 deleted = eventService.removeEvent(id);
             } else if (args.containsKey("title")) {
                 String title = (String) args.get("title");

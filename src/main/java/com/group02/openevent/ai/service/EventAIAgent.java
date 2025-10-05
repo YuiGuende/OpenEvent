@@ -296,8 +296,8 @@ hoặc
 
 // Parent Event
                                 if (action.getArgs().containsKey("parent_event_id")) {
-                                    Integer parentId = (Integer) action.getArgs().get("parent_event_id");
-                                    Event parent = eventService.getEventById(parentId).orElse(null);
+                                    Long parentId = (Long) action.getArgs().get("parent_event_id");
+                                    Event parent = eventService.getEventByEventId(parentId).orElse(null);
                                     if (parent != null) {
                                         event.setParentEvent(parent);
                                     }
@@ -337,8 +337,8 @@ hoặc
 
                                 // 1. Tìm sự kiện theo id hoặc title
                                 if (action.getArgs().containsKey("event_id")) {
-                                    int eventId = (int) action.getArgs().get("event_id");
-                                    existing = eventService.getEventById(eventId).orElse(null);; // service trả về Optional<Event>
+                                    long eventId = (long) action.getArgs().get("event_id");
+                                    existing = eventService.getEventByEventId(eventId).orElse(null); // service trả về Optional<Event>
                                 } else if (action.getArgs().containsKey("original_title")) {
                                     String oriTitle = (String) action.getArgs().get("original_title");
                                     existing = eventService.getFirstEventByTitle(oriTitle).orElse(null);
@@ -398,7 +398,7 @@ hoặc
                             case "DELETE_EVENT" -> {
                                 boolean deletedOne = false;
                                 if (action.getArgs().containsKey("event_id")) {
-                                    int id = (int) action.getArgs().get("event_id");
+                                    long id = (long) action.getArgs().get("event_id");
                                     deletedOne = eventService.removeEvent(id);
                                 } else if (action.getArgs().containsKey("title")) {
                                     String title = (String) action.getArgs().get("title");
@@ -556,8 +556,17 @@ hoặc
                 return "Không có cuộc trò chuyện nào được ghi nhận.";
             }
 
+            // Chỉ lấy các message từ user và assistant, bỏ qua system message
+            List<Message> userMessages = conversationHistory.stream()
+                    .filter(msg -> !msg.getRole().equals("system"))
+                    .collect(java.util.stream.Collectors.toList());
+
+            if (userMessages.size() <= 1) {
+                return "📭 Chưa có cuộc trò chuyện thực sự nào được ghi nhận.";
+            }
+
             StringBuilder summary = new StringBuilder("📌 TÓM TẮT CUỘC TRÒ CHUYỆN:\n");
-            for (Message msg : conversationHistory) {
+            for (Message msg : userMessages) {
                 summary.append(msg.getRole().equals("user") ? "🧑‍💻 Bạn: " : "🤖 AI: ")
                         .append(msg.getContent()).append("\n");
             }

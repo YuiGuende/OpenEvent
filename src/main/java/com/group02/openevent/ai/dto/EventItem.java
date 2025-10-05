@@ -7,7 +7,7 @@ import java.util.List;
 
 public class EventItem {
 
-    private Integer id;                // ID sự kiện
+    private Long id;                // ID sự kiện
     private String title;              // event_title
     private String description;        // mô tả
     private LocalDateTime startsAt;    // thời gian bắt đầu
@@ -21,7 +21,7 @@ public class EventItem {
 
     public EventItem() {}
 
-    public EventItem(Integer id, String title, String description, LocalDateTime startsAt, LocalDateTime endsAt, String place, LocalDateTime enrollDeadline, LocalDateTime createdAt, EventType eventType, EventStatus eventStatus, String priority) {
+    public EventItem(Long id, String title, String description, LocalDateTime startsAt, LocalDateTime endsAt, String place, LocalDateTime enrollDeadline, LocalDateTime createdAt, EventType eventType, EventStatus eventStatus, String priority) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -36,8 +36,8 @@ public class EventItem {
     }
 
     // Getters & Setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

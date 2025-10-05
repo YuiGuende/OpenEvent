@@ -4,6 +4,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,25 +20,27 @@ public class Host {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organize_id", 
             foreignKey = @ForeignKey(name = "fk_host_org"))
     private Organization organization;
     
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "event_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_host_event"))
-    private Event event;
+    // Removed bidirectional mapping to prevent circular reference
+    // Event already has @ManyToOne mapping to Host via host_id
+    // This was causing duplicate rows in Hibernate
     
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_host_customer"))
     private Customer customer;
+    
+    @Column(name = "host_discount_percent", precision = 5, scale = 2)
+    private BigDecimal hostDiscountPercent = BigDecimal.ZERO;
 
 
 
     // Host có thể trực tiếp tạo nhiều sự kiện
-    @OneToMany(mappedBy = "host", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "host", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Event> events;
 
     public Host() {
@@ -67,13 +70,8 @@ public class Host {
         this.organization = organization;
     }
 
-    public Event getEvent() {
-        return event;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
-    }
+    // Removed getEvent() and setEvent() methods
+    // Event can access Host via host_id, no need for bidirectional mapping
 
     public Customer getCustomer() {
         return customer;
@@ -89,6 +87,14 @@ public class Host {
 
     public void setEvents(List<Event> events) {
         this.events = events;
+    }
+    
+    public BigDecimal getHostDiscountPercent() {
+        return hostDiscountPercent;
+    }
+    
+    public void setHostDiscountPercent(BigDecimal hostDiscountPercent) {
+        this.hostDiscountPercent = hostDiscountPercent;
     }
 
     // Method to get host name from customer or organization
@@ -107,9 +113,7 @@ public class Host {
         return "Host{" +
                 "id=" + id +
                 ", createdAt=" + createdAt +
-                ", organization=" + organization +
-                ", event=" + event +
-                ", customer=" + customer +
+                ", hostDiscountPercent=" + hostDiscountPercent +
                 '}';
     }
 }

@@ -102,36 +102,36 @@ public class Event {
 
     private Integer points;
 
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<EventSchedule> schedules = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(name = "event_place",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
     private List<Place> places;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private Set<EventImage> eventImages;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "org_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_org"))
     private Organization organization;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "host_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_host"))
     private Host host;
 
-    @OneToMany( cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private List<TicketType> ticketTypes = new ArrayList<>();
 
@@ -368,23 +368,11 @@ public class Event {
     public String toString() {
         return "Event{" +
                 "id=" + id +
-                ", parentEvent=" + parentEvent +
-                ", subEvents=" + subEvents +
                 ", title='" + title + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
-                ", description='" + description + '\'' +
-                ", publicDate=" + publicDate +
                 ", eventType=" + eventType +
-                ", enrollDeadline=" + enrollDeadline +
+                ", status=" + status +
                 ", startsAt=" + startsAt +
                 ", endsAt=" + endsAt +
-                ", createdAt=" + createdAt +
-                ", status=" + status +
-                ", benefits='" + benefits + '\'' +
-                ", learningObjects='" + learningObjects + '\'' +
-                ", schedules='" + schedules + '\'' +
-                ", points=" + points +
-                ", places=" + places +
                 '}';
     }
 

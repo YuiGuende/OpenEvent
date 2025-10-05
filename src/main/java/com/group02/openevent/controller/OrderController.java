@@ -98,7 +98,6 @@ public class OrderController {
                 orderService.cancelOrder(existingOrder.getOrderId());
                 
                 // Log the cancellation
-                System.out.println("Cancelled old pending order: " + existingOrder.getOrderId() + " for customer: " + customer.getCustomerId());
             }
 
             Order order = orderService.createOrderWithTicketTypes(request, customer);

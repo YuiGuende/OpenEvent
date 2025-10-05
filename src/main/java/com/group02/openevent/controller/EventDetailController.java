@@ -60,6 +60,13 @@ public class EventDetailController {
 			eventData.put("learningObjects", event.getLearningObjects());
 			eventData.put("imageUrl", event.getImageUrl());
 			
+			// Add host discount information
+			if (event.getHost() != null && event.getHost().getHostDiscountPercent() != null) {
+				eventData.put("hostDiscountPercent", event.getHost().getHostDiscountPercent());
+			} else {
+				eventData.put("hostDiscountPercent", 0);
+			}
+			
 			// Add event-specific data based on type
 			String eventType = event.getEventType().toString();
 			if ("MUSIC".equals(eventType)) {

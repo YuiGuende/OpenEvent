@@ -14,7 +14,7 @@ public class Place {
     @Column(name = "place_id")
     private Integer id;
 
-    @ManyToMany(mappedBy = "places")
+    @ManyToMany(mappedBy = "places", fetch = FetchType.LAZY)
     private List<Event> events;
 
     @Enumerated(EnumType.STRING)

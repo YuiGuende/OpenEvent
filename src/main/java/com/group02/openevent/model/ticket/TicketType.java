@@ -12,7 +12,7 @@ public class TicketType {
     @Column(name = "ticket_type_id")
     private Long ticketTypeId;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_tickettype_event"))
     private Event event;

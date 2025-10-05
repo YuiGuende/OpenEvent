@@ -12,6 +12,7 @@ import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.TicketTypeService;
+import com.group02.openevent.service.VoucherService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,16 @@ public class OrderServiceImpl implements OrderService {
     private final IEventRepo eventRepo;
     private final ITicketTypeRepo ticketTypeRepo;
     private final TicketTypeService ticketTypeService;
+    private final VoucherService voucherService;
 
     public OrderServiceImpl(IOrderRepo orderRepo, IEventRepo eventRepo, 
-                           ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService) {
+                           ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService,
+                           VoucherService voucherService) {
         this.orderRepo = orderRepo;
         this.eventRepo = eventRepo;
         this.ticketTypeRepo = ticketTypeRepo;
         this.ticketTypeService = ticketTypeService;
+        this.voucherService = voucherService;
     }
 
     @Override
@@ -103,11 +107,31 @@ public class OrderServiceImpl implements OrderService {
             order.setNotes(request.getNotes());
             order.setStatus(OrderStatus.PENDING);
 
-            // Calculate total amount
+            // Set host discount from event
+            if (event.getHost() != null && event.getHost().getHostDiscountPercent() != null) {
+                order.setHostDiscountPercent(event.getHost().getHostDiscountPercent());
+            }
+
+            // Calculate total amount first
             order.calculateTotalAmount();
 
-            // Save order
+            // Save order first to get ID
             Order savedOrder = orderRepo.save(order);
+
+            // Process voucher code if provided (after order is saved)
+            if (request.getVoucherCode() != null && !request.getVoucherCode().trim().isEmpty()) {
+                try {
+                    // Apply voucher to saved order
+                    voucherService.applyVoucherToOrder(request.getVoucherCode(), savedOrder);
+                    
+                    // Recalculate total amount after voucher
+                    savedOrder.calculateTotalAmount();
+                    savedOrder = orderRepo.save(savedOrder);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // Continue without voucher if it fails
+                }
+            }
             
             return savedOrder;
             

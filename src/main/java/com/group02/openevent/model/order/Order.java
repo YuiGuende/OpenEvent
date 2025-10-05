@@ -18,19 +18,19 @@ public class Order {
     @Column(name = "order_id")
     private Long orderId;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_customer"))
     @JsonIgnoreProperties({"orders", "passwordHash", "account"})
     private Customer customer;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_event"))
     @JsonIgnoreProperties({"orders", "ticketTypes", "eventImages", "host"})
     private Event event;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_type_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_tickettype"))
     @JsonIgnoreProperties({"event", "orders"})
@@ -101,13 +101,21 @@ public class Order {
                 this.hostDiscountAmount = originalPrice.multiply(hostDiscountPercent.divide(new BigDecimal("100")));
             }
             
-            // Calculate final total amount
-            this.totalAmount = originalPrice.subtract(hostDiscountAmount).subtract(voucherDiscountAmount);
+            // Calculate price after discounts
+            BigDecimal priceAfterDiscounts = originalPrice.subtract(hostDiscountAmount).subtract(voucherDiscountAmount);
             
-            // Ensure total amount is not negative
-            if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
-                this.totalAmount = BigDecimal.ZERO;
+            // Ensure price after discounts is not negative
+            if (priceAfterDiscounts.compareTo(BigDecimal.ZERO) < 0) {
+                priceAfterDiscounts = BigDecimal.ZERO;
             }
+            
+            // Calculate VAT (10%) on price after discounts
+            BigDecimal vat = priceAfterDiscounts.multiply(new BigDecimal("0.10"));
+            
+            // Final total amount = price after discounts + VAT
+            this.totalAmount = priceAfterDiscounts.add(vat);
+            
+            
         } else {
             this.originalPrice = BigDecimal.ZERO;
             this.totalAmount = BigDecimal.ZERO;

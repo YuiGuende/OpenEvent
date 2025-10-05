@@ -19,6 +19,7 @@ import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
 import vn.payos.model.v2.paymentRequests.PaymentLinkItem;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -47,21 +48,27 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             // Prepare PayOS payment request using SDK
             long orderCode = System.currentTimeMillis() / 1000; // Use timestamp as order code
-            int amount = order.getTotalAmount().intValue();
+            
+            // Convert BigDecimal to long (PayOS expects amount in VNĐ, not cents)
+            long amount = order.getTotalAmount().longValue();
+            
             // PayOS description max 25 characters
             String description = "Order #" + order.getOrderId();
+            
+            // Debug logging
+            logger.info("Order total amount: {} VNĐ, PayOS amount: {} VNĐ", order.getTotalAmount(), amount);
 
             // Create payment item
             PaymentLinkItem item = PaymentLinkItem.builder()
                 .name("Event Registration - " + order.getEvent().getTitle())
                 .quantity(1)
-                .price((long)amount)
+                .price(amount)
                 .build();
 
             // Create payment request
             CreatePaymentLinkRequest paymentRequest = CreatePaymentLinkRequest.builder()
                 .orderCode(orderCode)
-                .amount((long)amount)
+                .amount(amount)
                 .description(description)
                 .item(item)
                 .returnUrl(returnUrl)

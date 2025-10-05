@@ -17,6 +17,7 @@ public class CreateOrderWithTicketTypeRequest {
     private String participantPhone;
     private String participantOrganization;
     private String notes;
+    private String voucherCode;
     
     @Valid
     @NotNull(message = "Order items are required")
@@ -88,6 +89,14 @@ public class CreateOrderWithTicketTypeRequest {
         this.notes = notes;
     }
 
+    public String getVoucherCode() {
+        return voucherCode;
+    }
+
+    public void setVoucherCode(String voucherCode) {
+        this.voucherCode = voucherCode;
+    }
+
     public List<OrderItemRequest> getOrderItems() {
         return orderItems;
     }
@@ -150,6 +159,7 @@ public class CreateOrderWithTicketTypeRequest {
                 ", participantPhone='" + participantPhone + '\'' +
                 ", participantOrganization='" + participantOrganization + '\'' +
                 ", notes='" + notes + '\'' +
+                ", voucherCode='" + voucherCode + '\'' +
                 ", orderItems=" + orderItems +
                 '}';
     }

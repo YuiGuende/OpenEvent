@@ -29,13 +29,10 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         try {
-            System.out.println("home page");
             
             // Get poster events for hero slider
             List<EventCardDTO> posterEvents = eventService.getPosterEvents();
             model.addAttribute("posterEvents", posterEvents != null ? posterEvents : List.of());
-            System.out.println("home page 1");
-            System.out.println("PosterEvents size: " + (posterEvents != null ? posterEvents.size() : 0));
 
             // Get live events
             List<EventCardDTO> liveEvents = eventService.getLiveEvents(6);

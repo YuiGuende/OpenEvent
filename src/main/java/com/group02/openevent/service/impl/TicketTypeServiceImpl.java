@@ -157,7 +157,6 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Transactional(readOnly = true)
     public List<TicketTypeDTO> getTicketTypeDTOsByEventId(Long eventId) {
         List<TicketType> ticketTypeList = ticketTypeRepo.findByEventId(eventId);
-        System.out.println("ticketTypeList=================369==========: " + ticketTypeList.size());
         return ticketTypeRepo.findByEventId(eventId)
                 .stream()
                 .map(this::convertToDTO)
@@ -195,12 +194,10 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Override
     public TicketTypeDTO convertToDTO(TicketType ticketType) {
         try {
-            System.out.println("ticketType===>" + ticketType);
             LocalDateTime now = LocalDateTime.now();
             boolean isAvailable = ticketType.getAvailableQuantity() > 0
                     && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
                     && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
-            System.out.println("isAvailable===>" + isAvailable);
             
             TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
                     .ticketTypeId(ticketType.getTicketTypeId())
@@ -219,7 +216,6 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                     .endSaleDate(ticketType.getEndSaleDate())
                     .isAvailable(isAvailable)
                     .build();
-            System.out.println("ticketTypeDTO==>" + ticketTypeDTO);
             return ticketTypeDTO;
         } catch (Exception e) {
             System.err.println("Error converting TicketType to DTO: " + e.getMessage());

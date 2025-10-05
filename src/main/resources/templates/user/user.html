@@ -82,7 +82,7 @@
 
 		// Cập nhật giao diện dựa trên role hiện tại
 		window.onload = function() {
-			fetch('/api/current-customer')
+			fetch('/api/current-user')
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {

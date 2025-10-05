@@ -28,22 +28,22 @@ INSERT IGNORE INTO speaker (name, default_role, profile, image_url) VALUES
 
 -- 4. Insert Events (main events for testing)
 INSERT IGNORE INTO event (event_type, event_title, description, starts_at, ends_at, enroll_deadline, status, image_url, points, benefits, learning_objects, created_at, draft_at, public_at) VALUES
-('MusicEvent', 'Music Festival 2025', 'Join us for an amazing music festival featuring top artists from Vietnam and around the world. Experience live performances, workshops, and networking opportunities.', '2025-09-17 18:00:00', '2025-09-17 23:00:00', '2025-09-15 23:59:59', 'PUBLIC', 'https://example.com/music-festival.jpg', 50, 'Certificate of participation, Networking opportunities, Live performances', 'Music appreciation, Event management, Networking skills', NOW(), NOW(), NOW()),
-('WorkshopEvent', 'Tech Workshop 2025', 'Hands-on workshop covering modern web development technologies including React, Node.js, and cloud deployment.', '2025-09-20 09:00:00', '2025-09-20 17:00:00', '2025-09-18 23:59:59', 'PUBLIC', 'https://example.com/tech-workshop.jpg', 75, 'Certificate of completion, Project portfolio, Job opportunities', 'Web development, React.js, Node.js, Cloud deployment', NOW(), NOW(), NOW()),
-('CompetitionEvent', 'Business Pitch Competition', 'Showcase your innovative business ideas and compete for amazing prizes. Perfect for entrepreneurs and startup enthusiasts.', '2025-09-22 08:00:00', '2025-09-22 18:00:00', '2025-09-20 23:59:59', 'PUBLIC', 'https://example.com/business-pitch.jpg', 100, 'Cash prizes, Mentorship opportunities, Investment connections', 'Pitching skills, Business planning, Presentation techniques', NOW(), NOW(), NOW()),
+('MUSIC', 'Music Festival 2025', 'Join us for an amazing music festival featuring top artists from Vietnam and around the world. Experience live performances, workshops, and networking opportunities.', '2025-09-17 18:00:00', '2025-09-17 23:00:00', '2025-09-15 23:59:59', 'PUBLIC', 'https://example.com/music-festival.jpg', 50, 'Certificate of participation, Networking opportunities, Live performances', 'Music appreciation, Event management, Networking skills', NOW(), NOW(), NOW()),
+('WORKSHOP', 'Tech Workshop 2025', 'Hands-on workshop covering modern web development technologies including React, Node.js, and cloud deployment.', '2025-09-20 09:00:00', '2025-09-20 17:00:00', '2025-09-18 23:59:59', 'PUBLIC', 'https://example.com/tech-workshop.jpg', 75, 'Certificate of completion, Project portfolio, Job opportunities', 'Web development, React.js, Node.js, Cloud deployment', NOW(), NOW(), NOW()),
+('COMPETITION', 'Business Pitch Competition', 'Showcase your innovative business ideas and compete for amazing prizes. Perfect for entrepreneurs and startup enthusiasts.', '2025-09-22 08:00:00', '2025-09-22 18:00:00', '2025-09-20 23:59:59', 'PUBLIC', 'https://example.com/business-pitch.jpg', 100, 'Cash prizes, Mentorship opportunities, Investment connections', 'Pitching skills, Business planning, Presentation techniques', NOW(), NOW(), NOW()),
 ('ConferenceEvent', 'AI & Tech Conference 2025', 'Join industry leaders and experts for an in-depth conference on Artificial Intelligence, Machine Learning, and emerging technologies.', '2025-09-25 09:00:00', '2025-09-25 18:00:00', '2025-09-23 23:59:59', 'PUBLIC', 'https://example.com/ai-conference.jpg', 80, 'Conference materials, Networking lunch, Expert insights', 'AI fundamentals, Machine Learning, Industry trends', NOW(), NOW(), NOW());
 
 -- 5. Insert Music Events (specific fields)
 INSERT IGNORE INTO music_event (event_id, genre, performer_count) 
-SELECT id, 'Pop Rock', 5 FROM event WHERE event_type = 'MusicEvent' LIMIT 1;
+SELECT id, 'Pop Rock', 5 FROM event WHERE event_type = 'MUSIC' LIMIT 1;
 
 -- 6. Insert Workshop Events (specific fields)
 INSERT IGNORE INTO workshop_event (event_id, max_participants, skill_level, prerequisites) 
-SELECT id, 30, 'Intermediate', 'Basic programming knowledge recommended' FROM event WHERE event_type = 'WorkshopEvent' LIMIT 1;
+SELECT id, 30, 'Intermediate', 'Basic programming knowledge recommended' FROM event WHERE event_type = 'WORKSHOP' LIMIT 1;
 
 -- 7. Insert Competition Events (specific fields)
 INSERT IGNORE INTO competition_event (event_id, prize_pool, competition_type, rules) 
-SELECT id, '10,000,000 VND', 'Business Pitch', 'Participants must present a 5-minute business pitch. Judges will evaluate based on innovation, feasibility, and presentation quality.' FROM event WHERE event_type = 'CompetitionEvent' LIMIT 1;
+SELECT id, '10,000,000 VND', 'Business Pitch', 'Participants must present a 5-minute business pitch. Judges will evaluate based on innovation, feasibility, and presentation quality.' FROM event WHERE event_type = 'COMPETITION' LIMIT 1;
 
 -- 8. Insert Conference Events (specific fields)
 INSERT IGNORE INTO conference_event (event_id, conference_type, max_attendees, agenda) 
@@ -52,27 +52,27 @@ SELECT id, 'Technology Conference', 200, '9:00 AM - Welcome & Keynote, 10:30 AM 
 -- 9. Insert Places for Events
 INSERT IGNORE INTO event_place (event_id, place_id) 
 SELECT e.id, p.place_id FROM event e, place p 
-WHERE (e.event_type = 'MusicEvent' AND p.place_name = 'Outdoor Stage')
-   OR (e.event_type = 'WorkshopEvent' AND p.place_name = 'Workshop Room 1')
-   OR (e.event_type = 'CompetitionEvent' AND p.place_name = 'Main Auditorium')
+WHERE (e.event_type = 'MUSIC' AND p.place_name = 'Outdoor Stage')
+   OR (e.event_type = 'WORKSHOP' AND p.place_name = 'Workshop Room 1')
+   OR (e.event_type = 'COMPETITION' AND p.place_name = 'Main Auditorium')
    OR (e.event_type = 'ConferenceEvent' AND p.place_name = 'Conference Room A');
 
 -- 10. Insert Speakers for Events
 INSERT IGNORE INTO event_speaker (event_id, speaker_id, role) 
 SELECT e.id, s.speaker_id, 'PERFORMER' FROM event e, speaker s 
-WHERE e.event_type = 'MusicEvent' AND s.name = 'Ms. Tran Thi B'
+WHERE e.event_type = 'MUSIC' AND s.name = 'Ms. Tran Thi B'
 UNION ALL
 SELECT e.id, s.speaker_id, 'MC' FROM event e, speaker s 
-WHERE e.event_type = 'MusicEvent' AND s.name = 'Mr. Le Van C'
+WHERE e.event_type = 'MUSIC' AND s.name = 'Mr. Le Van C'
 UNION ALL
 SELECT e.id, s.speaker_id, 'SPEAKER' FROM event e, speaker s 
-WHERE e.event_type = 'WorkshopEvent' AND s.name = 'Dr. Nguyen Van A'
+WHERE e.event_type = 'WORKSHOP' AND s.name = 'Dr. Nguyen Van A'
 UNION ALL
 SELECT e.id, s.speaker_id, 'SPEAKER' FROM event e, speaker s 
-WHERE e.event_type = 'CompetitionEvent' AND s.name = 'Prof. Pham Van D'
+WHERE e.event_type = 'COMPETITION' AND s.name = 'Prof. Pham Van D'
 UNION ALL
 SELECT e.id, s.speaker_id, 'MC' FROM event e, speaker s 
-WHERE e.event_type = 'CompetitionEvent' AND s.name = 'Mr. Le Van C'
+WHERE e.event_type = 'COMPETITION' AND s.name = 'Mr. Le Van C'
 UNION ALL
 SELECT e.id, s.speaker_id, 'SPEAKER' FROM event e, speaker s 
 WHERE e.event_type = 'ConferenceEvent' AND s.name = 'Dr. Nguyen Van A'
@@ -82,59 +82,59 @@ WHERE e.event_type = 'ConferenceEvent' AND s.name = 'Artist Hoang Thi E';
 
 -- 11. Insert Event Images
 INSERT IGNORE INTO event_image (event_id, url, order_index, main_poster) 
-SELECT e.id, 'https://example.com/music-festival-1.jpg', 1, true FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT e.id, 'https://example.com/music-festival-1.jpg', 1, true FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT e.id, 'https://example.com/music-festival-2.jpg', 2, false FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT e.id, 'https://example.com/music-festival-2.jpg', 2, false FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT e.id, 'https://example.com/tech-workshop-1.jpg', 1, true FROM event e WHERE e.event_type = 'WorkshopEvent'
+SELECT e.id, 'https://example.com/tech-workshop-1.jpg', 1, true FROM event e WHERE e.event_type = 'WORKSHOP'
 UNION ALL
-SELECT e.id, 'https://example.com/business-pitch-1.jpg', 1, true FROM event e WHERE e.event_type = 'CompetitionEvent'
+SELECT e.id, 'https://example.com/business-pitch-1.jpg', 1, true FROM event e WHERE e.event_type = 'COMPETITION'
 UNION ALL
 SELECT e.id, 'https://example.com/ai-conference-1.jpg', 1, true FROM event e WHERE e.event_type = 'ConferenceEvent';
 
 -- 11. Insert Ticket Types for Events
 INSERT IGNORE INTO ticket_type (name, price, total_quantity, event_id)
-SELECT 'General Admission', 250000, 100, e.id FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT 'General Admission', 250000, 100, e.id FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT 'VIP', 500000, 50, e.id FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT 'VIP', 500000, 50, e.id FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT 'Workshop Pass', 150000, 30, e.id FROM event e WHERE e.event_type = 'WorkshopEvent'
+SELECT 'Workshop Pass', 150000, 30, e.id FROM event e WHERE e.event_type = 'WORKSHOP'
 UNION ALL
-SELECT 'Competition Entry', 500000, 20, e.id FROM event e WHERE e.event_type = 'CompetitionEvent'
+SELECT 'Competition Entry', 500000, 20, e.id FROM event e WHERE e.event_type = 'COMPETITION'
 UNION ALL
 SELECT 'Conference Pass', 300000, 200, e.id FROM event e WHERE e.event_type = 'ConferenceEvent';
 
 -- 12. Insert Event Schedules
 INSERT IGNORE INTO event_schedule (event_id, activity, start_time, end_time) 
-SELECT e.id, 'Opening Ceremony', '2025-09-17 18:00:00', '2025-09-17 18:30:00' FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT e.id, 'Opening Ceremony', '2025-09-17 18:00:00', '2025-09-17 18:30:00' FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT e.id, 'Live Performance 1', '2025-09-17 18:30:00', '2025-09-17 20:00:00' FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT e.id, 'Live Performance 1', '2025-09-17 18:30:00', '2025-09-17 20:00:00' FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT e.id, 'Break', '2025-09-17 20:00:00', '2025-09-17 20:15:00' FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT e.id, 'Break', '2025-09-17 20:00:00', '2025-09-17 20:15:00' FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT e.id, 'Live Performance 2', '2025-09-17 20:15:00', '2025-09-17 21:45:00' FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT e.id, 'Live Performance 2', '2025-09-17 20:15:00', '2025-09-17 21:45:00' FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT e.id, 'Closing Ceremony', '2025-09-17 21:45:00', '2025-09-17 22:00:00' FROM event e WHERE e.event_type = 'MusicEvent'
+SELECT e.id, 'Closing Ceremony', '2025-09-17 21:45:00', '2025-09-17 22:00:00' FROM event e WHERE e.event_type = 'MUSIC'
 UNION ALL
-SELECT e.id, 'Introduction & Setup', '2025-09-20 09:00:00', '2025-09-20 09:30:00' FROM event e WHERE e.event_type = 'WorkshopEvent'
+SELECT e.id, 'Introduction & Setup', '2025-09-20 09:00:00', '2025-09-20 09:30:00' FROM event e WHERE e.event_type = 'WORKSHOP'
 UNION ALL
-SELECT e.id, 'React Basics Workshop', '2025-09-20 09:30:00', '2025-09-20 12:00:00' FROM event e WHERE e.event_type = 'WorkshopEvent'
+SELECT e.id, 'React Basics Workshop', '2025-09-20 09:30:00', '2025-09-20 12:00:00' FROM event e WHERE e.event_type = 'WORKSHOP'
 UNION ALL
-SELECT e.id, 'Lunch Break', '2025-09-20 12:00:00', '2025-09-20 13:00:00' FROM event e WHERE e.event_type = 'WorkshopEvent'
+SELECT e.id, 'Lunch Break', '2025-09-20 12:00:00', '2025-09-20 13:00:00' FROM event e WHERE e.event_type = 'WORKSHOP'
 UNION ALL
-SELECT e.id, 'Node.js Backend Workshop', '2025-09-20 13:00:00', '2025-09-20 15:30:00' FROM event e WHERE e.event_type = 'WorkshopEvent'
+SELECT e.id, 'Node.js Backend Workshop', '2025-09-20 13:00:00', '2025-09-20 15:30:00' FROM event e WHERE e.event_type = 'WORKSHOP'
 UNION ALL
-SELECT e.id, 'Cloud Deployment Workshop', '2025-09-20 15:30:00', '2025-09-20 17:00:00' FROM event e WHERE e.event_type = 'WorkshopEvent'
+SELECT e.id, 'Cloud Deployment Workshop', '2025-09-20 15:30:00', '2025-09-20 17:00:00' FROM event e WHERE e.event_type = 'WORKSHOP'
 UNION ALL
-SELECT e.id, 'Registration & Welcome', '2025-09-22 08:00:00', '2025-09-22 08:30:00' FROM event e WHERE e.event_type = 'CompetitionEvent'
+SELECT e.id, 'Registration & Welcome', '2025-09-22 08:00:00', '2025-09-22 08:30:00' FROM event e WHERE e.event_type = 'COMPETITION'
 UNION ALL
-SELECT e.id, 'Pitch Presentations', '2025-09-22 08:30:00', '2025-09-22 12:00:00' FROM event e WHERE e.event_type = 'CompetitionEvent'
+SELECT e.id, 'Pitch Presentations', '2025-09-22 08:30:00', '2025-09-22 12:00:00' FROM event e WHERE e.event_type = 'COMPETITION'
 UNION ALL
-SELECT e.id, 'Lunch & Networking', '2025-09-22 12:00:00', '2025-09-22 13:00:00' FROM event e WHERE e.event_type = 'CompetitionEvent'
+SELECT e.id, 'Lunch & Networking', '2025-09-22 12:00:00', '2025-09-22 13:00:00' FROM event e WHERE e.event_type = 'COMPETITION'
 UNION ALL
-SELECT e.id, 'Final Presentations', '2025-09-22 13:00:00', '2025-09-22 16:00:00' FROM event e WHERE e.event_type = 'CompetitionEvent'
+SELECT e.id, 'Final Presentations', '2025-09-22 13:00:00', '2025-09-22 16:00:00' FROM event e WHERE e.event_type = 'COMPETITION'
 UNION ALL
-SELECT e.id, 'Awards Ceremony', '2025-09-22 16:00:00', '2025-09-22 18:00:00' FROM event e WHERE e.event_type = 'CompetitionEvent'
+SELECT e.id, 'Awards Ceremony', '2025-09-22 16:00:00', '2025-09-22 18:00:00' FROM event e WHERE e.event_type = 'COMPETITION'
 UNION ALL
 SELECT e.id, 'Welcome & Registration', '2025-09-25 09:00:00', '2025-09-25 09:30:00' FROM event e WHERE e.event_type = 'ConferenceEvent'
 UNION ALL

@@ -4,20 +4,34 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "hosts")
+@Table(name = "host")
 public class Host {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "host_id")
     private Long id;
-    private String hostName;
-    private String description;
-    @OneToOne
-    @JoinColumn(name = "customer_id")
+    
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @ManyToOne
+    @JoinColumn(name = "organize_id", 
+            foreignKey = @ForeignKey(name = "fk_host_org"))
+    private Organization organization;
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "event_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_host_event"))
+    private Event event;
+    
+    @OneToOne(optional = false)
+    @JoinColumn(name = "customer_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_host_customer"))
     private Customer customer;
 
 
@@ -37,20 +51,28 @@ public class Host {
         this.id = id;
     }
 
-    public String getHostName() {
-        return hostName;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getDescription() {
-        return description;
+    public Organization getOrganization() {
+        return organization;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
     }
 
     public Customer getCustomer() {
@@ -69,14 +91,25 @@ public class Host {
         this.events = events;
     }
 
+    // Method to get host name from customer or organization
+    public String getHostName() {
+        if (customer != null && customer.getAccount() != null) {
+            return customer.getAccount().getEmail();
+        }
+        if (organization != null && organization.getOrgName() != null) {
+            return organization.getOrgName();
+        }
+        return "Unknown Host";
+    }
+
     @Override
     public String toString() {
         return "Host{" +
                 "id=" + id +
-                ", hostName='" + hostName + '\'' +
-                ", description='" + description + '\'' +
+                ", createdAt=" + createdAt +
+                ", organization=" + organization +
+                ", event=" + event +
                 ", customer=" + customer +
-                ", events=" + events +
                 '}';
     }
 }

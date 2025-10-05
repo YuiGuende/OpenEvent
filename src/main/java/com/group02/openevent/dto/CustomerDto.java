@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class UserDto {
+public class CustomerDto {
 
     @NotBlank(message = "Email không được để trống")
     @Pattern(regexp = ".*@gmail\\.com$", message = "Email phải có định dạng @gmail.com")
@@ -25,10 +25,10 @@ public class UserDto {
     private String phoneNumber;
     private String organization;
 
-    public UserDto() {
+    public CustomerDto() {
     }
 
-    public UserDto(String email, String password, String name, String phoneNumber, String organization) {
+    public CustomerDto(String email, String password, String name, String phoneNumber, String organization) {
         this.email = email;
         this.password = password;
         this.name = name;

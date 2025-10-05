@@ -6,6 +6,7 @@ CREATE TABLE account
 (
     account_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(100) NOT NULL UNIQUE,
+    phone_number VARCHAR(20),
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('ADMIN','HOST','CUSTOMER') NOT NULL
 );
@@ -20,7 +21,8 @@ CREATE TABLE organization
     org_name    VARCHAR(150) NOT NULL,
     phone       VARCHAR(20),
     updated_at  DATETIME(6),
-    website     VARCHAR(200)
+    website     VARCHAR(200),
+    representative_id BIGINT
 );
 
 CREATE TABLE place
@@ -70,6 +72,9 @@ CREATE TABLE customer
     CONSTRAINT fk_user_org FOREIGN KEY (organization_id) REFERENCES organization (org_id)
 );
 
+-- Add foreign key constraint for organization representative
+ALTER TABLE organization ADD CONSTRAINT fk_org_customer FOREIGN KEY (representative_id) REFERENCES customer (customer_id);
+
 -- User Sessions Table
 CREATE TABLE user_sessions
 (
@@ -93,11 +98,13 @@ CREATE TABLE event
     event_type       VARCHAR(31)  NOT NULL,
     event_title      VARCHAR(150) NOT NULL,
     description      TEXT,
+    image_url        LONGTEXT,
+    capacity         INT,
+    public_date      DATETIME(6),
     starts_at        DATETIME(6) NOT NULL,
     ends_at          DATETIME(6) NOT NULL,
     enroll_deadline  DATETIME(6) NOT NULL,
     status           ENUM('CANCEL','DRAFT','FINISH','ONGOING','PUBLIC') NOT NULL,
-    image_url        VARCHAR(255),
     points           INT DEFAULT 0,
     benefits         TEXT,
     learning_objects TEXT,
@@ -105,7 +112,7 @@ CREATE TABLE event
     -- Thời gian thay đổi trạng thái
     created_at       DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     draft_at         DATETIME(6),
-    public_at      DATETIME(6),
+    public_at        DATETIME(6),
     ongoing_at       DATETIME(6),
     finish_at        DATETIME(6),
     cancel_at        DATETIME(6),
@@ -173,6 +180,15 @@ CREATE TABLE conference_event
     CONSTRAINT fk_conference_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
 );
 
+CREATE TABLE festival_event
+(
+    event_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    culture          VARCHAR(100),
+    traditions       TEXT,
+    activities       TEXT,
+    CONSTRAINT fk_festival_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
 CREATE TABLE event_speaker
 (
     event_id   BIGINT NOT NULL,
@@ -202,6 +218,7 @@ CREATE TABLE ticket_type
     price            DECIMAL(38,2) NOT NULL,
     total_quantity   INT NOT NULL,
     sold_quantity    INT NOT NULL DEFAULT 0,
+    sale             DECIMAL(38,2) DEFAULT 0,
     start_sale_date  DATETIME(6) DEFAULT NULL,
     end_sale_date    DATETIME(6) DEFAULT NULL,
     CONSTRAINT fk_tickettype_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
@@ -216,7 +233,7 @@ CREATE TABLE host
     event_id    BIGINT NOT NULL,
     customer_id BIGINT NOT NULL,
     CONSTRAINT fk_host_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_host_user FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
+    CONSTRAINT fk_host_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
     CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
 );
 
@@ -492,8 +509,9 @@ INSERT INTO event (event_type, event_title, description, starts_at, ends_at, enr
 ('MUSIC', 'Spring Music Festival 2024', 'Annual spring music festival featuring local and international artists', '2024-04-15 18:00:00', '2024-04-15 23:00:00', '2024-04-10 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 20, 'Free drinks and snacks, Meet & greet with artists', 'Experience diverse music genres, Network with music enthusiasts', NOW(), NOW()),
 ('WORKSHOP', 'AI & Machine Learning Workshop', 'Hands-on workshop covering basics of AI and ML with practical examples', '2024-04-20 09:00:00', '2024-04-20 17:00:00', '2024-04-18 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 50, 'Certificate of completion, Course materials, Lunch included', 'Learn AI fundamentals, Build your first ML model, Understand data preprocessing', NOW(), NOW()),
 ('OTHERS', 'Digital Marketing Summit 2024', 'Premier conference for digital marketing professionals and enthusiasts', '2024-05-05 08:00:00', '2024-05-05 18:00:00', '2024-05-01 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 30, 'Networking opportunities, Conference materials, Refreshments', 'Latest marketing trends, Social media strategies, ROI optimization techniques', NOW(), NOW()),
-('CompetitionEvent', 'Coding Challenge 2024', 'Annual programming competition for students and professionals', '2024-05-12 10:00:00', '2024-05-12 16:00:00', '2024-05-08 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 40, 'Cash prizes, Certificates, Job opportunities', 'Problem-solving skills, Algorithm optimization, Team collaboration', NOW(), NOW()),
-('MUSIC', 'Jazz Night at the Park', 'Relaxing evening of jazz music in outdoor setting', '2024-04-25 19:00:00', '2024-04-25 22:00:00', '2024-04-23 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 15, 'Outdoor seating, Light refreshments', 'Appreciate jazz music, Relaxing atmosphere', NOW(), NOW());
+('COMPETITION', 'Coding Challenge 2024', 'Annual programming competition for students and professionals', '2024-05-12 10:00:00', '2024-05-12 16:00:00', '2024-05-08 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 40, 'Cash prizes, Certificates, Job opportunities', 'Problem-solving skills, Algorithm optimization, Team collaboration', NOW(), NOW()),
+('MUSIC', 'Jazz Night at the Park', 'Relaxing evening of jazz music in outdoor setting', '2024-04-25 19:00:00', '2024-04-25 22:00:00', '2024-04-23 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 15, 'Outdoor seating, Light refreshments', 'Appreciate jazz music, Relaxing atmosphere', NOW(), NOW()),
+('FESTIVAL', 'Cultural Festival 2024', 'Multi-day cultural festival celebrating local traditions and arts', '2024-06-01 10:00:00', '2024-06-03 22:00:00', '2024-05-28 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 35, 'Cultural experiences, Traditional food, Art exhibitions', 'Learn about local culture, Traditional crafts, Community engagement', NOW(), NOW());
 
 -- Sample event-specific details
 INSERT INTO music_event (event_id, genre, performer_count) VALUES
@@ -509,13 +527,17 @@ INSERT INTO conference_event (event_id, conference_type, max_attendees, agenda) 
 INSERT INTO competition_event (event_id, prize_pool, competition_type, rules) VALUES
 (4, '10,000,000 VND', 'Individual and Team', 'Max 4 hours, Any programming language allowed');
 
+INSERT INTO festival_event (event_id, culture, traditions, activities) VALUES
+(6, 'Vietnamese Culture', 'Traditional Vietnamese customs and heritage', 'Cultural performances, Traditional food, Art workshops, Community games');
+
 -- Sample event places
 INSERT INTO event_place (event_id, place_id) VALUES
 (1, 8), -- Spring Music Festival - Outdoor Stage
 (2, 1), -- AI Workshop - Alpha Auditorium  
 (3, 4), -- Digital Marketing Summit - Beta Main Hall
 (4, 2), -- Coding Challenge - Alpha Conference Room A
-(5, 8); -- Jazz Night - Outdoor Stage
+(5, 8), -- Jazz Night - Outdoor Stage
+(6, 4); -- Cultural Festival - Beta Main Hall
 
 -- Sample event speakers
 INSERT INTO event_speaker (event_id, speaker_id, role) VALUES
@@ -523,7 +545,8 @@ INSERT INTO event_speaker (event_id, speaker_id, role) VALUES
 (1, 4, 'ARTIST'),
 (2, 1, 'SPEAKER'),
 (3, 2, 'SPEAKER'),
-(5, 3, 'PERFORMER');
+(5, 3, 'PERFORMER'),
+(6, 5, 'OTHER'); -- Cultural Festival - Chef Anna as cultural expert
 
 -- Sample event images
 INSERT INTO event_image (event_id, url, order_index, main_poster) VALUES
@@ -532,30 +555,35 @@ INSERT INTO event_image (event_id, url, order_index, main_poster) VALUES
 (2, 'https://via.placeholder.com/800x600/45B7D1/FFFFFF?text=AI+Workshop', 1, TRUE),
 (3, 'https://via.placeholder.com/800x600/96CEB4/FFFFFF?text=Marketing+Summit', 1, TRUE),
 (4, 'https://via.placeholder.com/800x600/FFEAA7/000000?text=Coding+Challenge', 1, TRUE),
-(5, 'https://via.placeholder.com/800x600/DDA0DD/000000?text=Jazz+Night', 1, TRUE);
+(5, 'https://via.placeholder.com/800x600/DDA0DD/000000?text=Jazz+Night', 1, TRUE),
+(6, 'https://via.placeholder.com/800x600/F39C12/FFFFFF?text=Cultural+Festival', 1, TRUE);
 
 -- Sample ticket types (Updated with current dates for testing)
-INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sold_quantity, start_sale_date, end_sale_date) VALUES
+INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sold_quantity, sale, start_sale_date, end_sale_date) VALUES
 -- Spring Music Festival
-(1, 'Early Bird', 'Early bird discount ticket', 2000.00, 100, 25, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(1, 'General Admission', 'Standard admission ticket', 3000.00, 200, 45, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(1, 'VIP Pass', 'VIP access with premium benefits', 5000.00, 50, 12, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'Early Bird', 'Early bird discount ticket', 2000.00, 100, 25, 200.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'General Admission', 'Standard admission ticket', 3000.00, 200, 45, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'VIP Pass', 'VIP access with premium benefits', 5000.00, 50, 12, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- AI Workshop
-(2, 'Student Ticket', 'Discounted price for students', 1000.00, 30, 8, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(2, 'Professional Ticket', 'Regular price for professionals', 3500.00, 20, 5, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(2, 'Student Ticket', 'Discounted price for students', 1000.00, 30, 8, 100.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(2, 'Professional Ticket', 'Regular price for professionals', 3500.00, 20, 5, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- Digital Marketing Summit
-(3, 'Standard Pass', 'Access to all sessions', 2500.00, 150, 32, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(3, 'Premium Pass', 'All sessions + networking dinner', 4000.00, 50, 18, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(3, 'Standard Pass', 'Access to all sessions', 2500.00, 150, 32, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(3, 'Premium Pass', 'All sessions + networking dinner', 4000.00, 50, 18, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- Coding Challenge
-(4, 'Individual Entry', 'Single participant entry', 1500.00, 80, 15, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(4, 'Team Entry', 'Team of up to 4 members', 4500.00, 20, 6, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(4, 'Individual Entry', 'Single participant entry', 1500.00, 80, 15, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(4, 'Team Entry', 'Team of up to 4 members', 4500.00, 20, 6, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- Jazz Night
-(5, 'General Seating', 'Standard outdoor seating', 1800.00, 120, 28, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(5, 'Premium Seating', 'Front row seating with table service', 3200.00, 40, 12, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
+(5, 'General Seating', 'Standard outdoor seating', 1800.00, 120, 28, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(5, 'Premium Seating', 'Front row seating with table service', 3200.00, 40, 12, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+
+-- Cultural Festival
+(6, 'Day Pass', 'Single day access to festival', 1500.00, 200, 45, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(6, 'Full Festival Pass', 'Access to all 3 days', 4000.00, 100, 22, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
 
 -- Sample hosts
 INSERT INTO host (created_at, event_id, customer_id, organize_id) VALUES
@@ -563,7 +591,8 @@ INSERT INTO host (created_at, event_id, customer_id, organize_id) VALUES
 (NOW(), 2, 1, 1), -- Host1 organizes AI Workshop for HCMC University  
 (NOW(), 3, 2, 2), -- Host2 organizes Marketing Summit for Tech Hub Vietnam
 (NOW(), 4, 1, 1), -- Host1 organizes Coding Challenge for HCMC University
-(NOW(), 5, 2, 3); -- Host2 organizes Jazz Night for Creative Arts Center
+(NOW(), 5, 2, 3), -- Host2 organizes Jazz Night for Creative Arts Center
+(NOW(), 6, 2, 3); -- Host2 organizes Cultural Festival for Creative Arts Center
 
 -- Sample event guests (some users already joined events)
 INSERT INTO event_guests (customer_id, event_id, joined_at, status) VALUES
@@ -601,7 +630,7 @@ INSERT INTO host_subscriptions (host_id, plan_id, start_date, end_date) VALUES
 (2, 3, '2024-02-01 00:00:00', '2025-02-01 00:00:00');
 
 -- Initialize event sequence
-INSERT INTO event_sequence (next_val) VALUES (6);
+INSERT INTO event_sequence (next_val) VALUES (7);
 
 -- Sample reports
 INSERT INTO reports (customer_id, event_id, content, type, status, created_at) VALUES

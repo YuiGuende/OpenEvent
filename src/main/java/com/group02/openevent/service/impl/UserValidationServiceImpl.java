@@ -1,9 +1,9 @@
 
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.dto.UserDto;
+import com.group02.openevent.dto.CustomerDto;
 import com.group02.openevent.repository.IAccountRepo;
-import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,26 +18,26 @@ public class UserValidationServiceImpl {
     private IAccountRepo accountRepo;
 
     @Autowired
-    private IUserRepo userRepo;
+    private ICustomerRepo customerRepo;
 
     private static final Pattern GMAIL_PATTERN = Pattern.compile(".*@gmail\\.com$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{10,11}$");
     private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-ZàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđĐ\\s]+$");
 
-    public List<String> validateUserDto(UserDto userDto) {
+    public List<String> validateCustomerDto(CustomerDto customerDto) {
         List<String> errors = new ArrayList<>();
 
         // Validate email
-        validateEmail(userDto.getEmail(), errors);
+        validateEmail(customerDto.getEmail(), errors);
 
         // Validate phone number
-        validatePhoneNumber(userDto.getPhoneNumber(), errors);
+        validatePhoneNumber(customerDto.getPhoneNumber(), errors);
 
         // Validate name
-        validateName(userDto.getName(), errors);
+        validateName(customerDto.getName(), errors);
 
         // Validate password
-        validatePassword(userDto.getPassword(), errors);
+        validatePassword(customerDto.getPassword(), errors);
 
         return errors;
     }
@@ -75,7 +75,7 @@ public class UserValidationServiceImpl {
         }
 
         // Check if phone exists in database
-        if (userRepo.existsByPhoneNumber(phoneNumber)) {
+        if (customerRepo.existsByPhoneNumber(phoneNumber)) {
             errors.add("Số điện thoại đã tồn tại trong hệ thống");
         }
     }

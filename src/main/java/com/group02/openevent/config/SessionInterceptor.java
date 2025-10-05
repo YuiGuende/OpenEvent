@@ -24,17 +24,32 @@ public class SessionInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // PRIORITY 1: Check HTTP Session first (for web pages)
+        if (request.getSession(false) != null) {
+            Long accountId = (Long) request.getSession(false).getAttribute("ACCOUNT_ID");
+            if (accountId != null) {
+                // User is logged in via HTTP session, allow access
+                request.setAttribute("currentUserId", accountId);
+                request.setAttribute("HTTP_SESSION", true);
+                return true;
+            }
+        }
+
+        // PRIORITY 2: Check session token (for API calls)
         String sessionToken = extractSessionToken(request);
         if (sessionToken == null) {
-            // Check if user is logged in via HTTP session
-            if (request.getSession(false) != null) {
-                Long accountId = (Long) request.getSession(false).getAttribute("ACCOUNT_ID");
-                if (accountId != null) {
-                    // User is logged in via HTTP session, allow access
-                    request.setAttribute("currentUserId", accountId);
-                    request.setAttribute("HTTP_SESSION", true);
-                    return true;
+            // For web pages, redirect to login with current URL
+            if (request.getRequestURI().startsWith("/event/") || 
+                request.getRequestURI().startsWith("/user/") ||
+                request.getRequestURI().startsWith("/admin/") ||
+                request.getRequestURI().startsWith("/host/")) {
+                
+                String currentUrl = request.getRequestURI();
+                if (request.getQueryString() != null) {
+                    currentUrl += "?" + request.getQueryString();
                 }
+                response.sendRedirect("/login?redirect=" + java.net.URLEncoder.encode(currentUrl, "UTF-8"));
+                return false;
             }
             
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -73,9 +88,8 @@ public class SessionInterceptor implements HandlerInterceptor {
     private boolean isPublicPath(String path) {
         return path.startsWith("/api/auth/") ||
                path.startsWith("/api/sessions/") ||
-               path.startsWith("/api/ticket-types/event/") ||
-               path.startsWith("/api/event/") ||
                path.startsWith("/api/events/public") ||
+               path.startsWith("/api/ticket-types/event/") ||
                path.startsWith("/api/test/") ||
                path.startsWith("/static/") ||
                path.startsWith("/css/") ||
@@ -84,8 +98,7 @@ public class SessionInterceptor implements HandlerInterceptor {
                path.equals("/") ||
                path.equals("/index.html") ||
                path.startsWith("/login") ||
-               path.startsWith("/register") ||
-               path.startsWith("/api/current-user");
+               path.startsWith("/register");
     }
     
     private String extractSessionToken(HttpServletRequest request) {

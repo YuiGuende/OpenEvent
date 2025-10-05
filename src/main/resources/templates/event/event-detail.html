@@ -84,7 +84,7 @@
             const locations = {
                 'MusicEvent': 'Outdoor Stage, HCMC',
                 'WorkshopEvent': 'Workshop Room 1, Hanoi',
-                'CompetitionEvent': 'Main Auditorium, Da Nang',
+                'COMPETITION': 'Main Auditorium, Da Nang',
                 'ConferenceEvent': 'Conference Hall, HCMC'
             };
             return locations[eventType] || 'TBA';
@@ -95,7 +95,7 @@
             const types = {
                 'MusicEvent': 'Music Festival',
                 'WorkshopEvent': 'Workshop',
-                'CompetitionEvent': 'Competition',
+                'COMPETITION': 'Competition',
                 'FestivalEvent': 'Festival',
                 'ConferenceEvent': 'Conference'
             };
@@ -126,7 +126,7 @@
                 eventInfo.appendChild(skillElement);
             }
             
-            if (event.type === 'CompetitionEvent' && event.prizePool) {
+            if (event.type === 'COMPETITION' && event.prizePool) {
                 const prizeElement = document.createElement('p');
                 prizeElement.innerHTML = '<strong>Prize Pool:</strong> <span>' + event.prizePool + '</span>';
                 eventInfo.appendChild(prizeElement);
@@ -147,7 +147,7 @@
 
         // Check if customer is authenticated
         function checkAuthentication() {
-            fetch('/api/current-customer')
+            fetch('/api/current-user')
                 .then(response => response.json())
                 .then(data => {
                     if (data.authenticated) {
@@ -169,8 +169,9 @@
                 // User is logged in, redirect to registration form
                 window.location.href = '/event/' + eventId + '/register';
             } else {
-                // User not logged in, redirect to login
-                window.location.href = '/login';
+                // User not logged in, redirect to login with current URL
+                const currentUrl = window.location.pathname;
+                window.location.href = '/login?redirect=' + encodeURIComponent(currentUrl);
             }
         }
 

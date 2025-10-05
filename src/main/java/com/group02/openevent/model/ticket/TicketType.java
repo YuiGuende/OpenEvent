@@ -62,6 +62,9 @@ public class TicketType {
 
     // Helper method to get final price after discount
     public BigDecimal getFinalPrice() {
+        if (sale == null) {
+            return price;
+        }
         return price.subtract(sale);
     }
     // Business Logic Methods

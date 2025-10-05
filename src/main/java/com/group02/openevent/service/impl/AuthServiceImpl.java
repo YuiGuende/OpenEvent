@@ -8,7 +8,7 @@ import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.session.Session;
 import com.group02.openevent.repository.IAccountRepo;
-import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.service.AuthService;
 import com.group02.openevent.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,20 +18,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
-import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 	private final IAccountRepo accountRepo;
-	private final IUserRepo userRepo;
+	private final ICustomerRepo customerRepo;
 	private final PasswordEncoder passwordEncoder;
 	private final HttpSession httpSession;
 	private final SessionService sessionService;
 
-	public AuthServiceImpl(IAccountRepo accountRepo, IUserRepo userRepo,
+	public AuthServiceImpl(IAccountRepo accountRepo, ICustomerRepo customerRepo,
 			PasswordEncoder passwordEncoder, HttpSession httpSession, SessionService sessionService) {
 		this.accountRepo = accountRepo;
-		this.userRepo = userRepo;
+		this.customerRepo = customerRepo;
 		this.passwordEncoder = passwordEncoder;
 		this.httpSession = httpSession;
 		this.sessionService = sessionService;
@@ -74,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
 		customer.setAccount(account);
 		customer.setPhoneNumber(request.getPhoneNumber());
 		customer.setPoints(0);
-		userRepo.save(customer);
+		customerRepo.save(customer);
 
 		// Do NOT auto-login after registration; redirect to login page with success flag
 		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/login?registered=1");

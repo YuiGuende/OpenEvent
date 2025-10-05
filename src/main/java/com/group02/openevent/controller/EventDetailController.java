@@ -62,16 +62,16 @@ public class EventDetailController {
 			
 			// Add event-specific data based on type
 			String eventType = event.getEventType().toString();
-			if ("MusicEvent".equals(eventType)) {
+			if ("MUSIC".equals(eventType)) {
 				com.group02.openevent.model.event.MusicEvent musicEvent = (com.group02.openevent.model.event.MusicEvent) event;
 				eventData.put("genre", musicEvent.getGenre());
 				eventData.put("performerCount", musicEvent.getPerformerCount());
-			} else if ("WorkshopEvent".equals(eventType)) {
+			} else if ("WORKSHOP".equals(eventType)) {
 				com.group02.openevent.model.event.WorkshopEvent workshopEvent = (com.group02.openevent.model.event.WorkshopEvent) event;
 				eventData.put("maxParticipants", workshopEvent.getMaxParticipants());
 				eventData.put("skillLevel", workshopEvent.getSkillLevel());
 				eventData.put("prerequisites", workshopEvent.getPrerequisites());
-			} else if ("CompetitionEvent".equals(eventType)) {
+			} else if ("COMPETITION".equals(eventType)) {
 				com.group02.openevent.model.event.CompetitionEvent competitionEvent = (com.group02.openevent.model.event.CompetitionEvent) event;
 				eventData.put("prizePool", competitionEvent.getPrizePool());
 				eventData.put("competitionType", competitionEvent.getCompetitionType());

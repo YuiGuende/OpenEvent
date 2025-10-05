@@ -4,7 +4,7 @@ import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.OrderService;
@@ -26,14 +26,14 @@ import java.util.Optional;
 public class OrderController {
 
     private final OrderService orderService;
-    private final IUserRepo userRepo;
+    private final ICustomerRepo customerRepo;
     private final IEventRepo eventRepo;
     private final ITicketTypeRepo ticketTypeRepo;
     private final VoucherService voucherService;
 
-    public OrderController(OrderService orderService, IUserRepo userRepo, IEventRepo eventRepo, ITicketTypeRepo ticketTypeRepo, VoucherService voucherService) {
+    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IEventRepo eventRepo, ITicketTypeRepo ticketTypeRepo, VoucherService voucherService) {
         this.orderService = orderService;
-        this.userRepo = userRepo;
+        this.customerRepo = customerRepo;
         this.eventRepo = eventRepo;
         this.ticketTypeRepo = ticketTypeRepo;
         this.voucherService = voucherService;
@@ -76,7 +76,7 @@ public class OrderController {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
             }
 
-            Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
             if (customer == null) {
                 return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
             }
@@ -137,7 +137,7 @@ public class OrderController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
-        Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
         if (customer == null) {
             return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
         }
@@ -157,7 +157,7 @@ public class OrderController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
-        Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
         if (customer == null) {
             return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
         }

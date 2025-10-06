@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPT Programming Competition 2025 - Test</title>
+    <link rel="stylesheet" href="css/test-styles.css">
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="competition-badge">COMPETITION EVENT</div>
+            <h1>FPT Programming Competition 2025</h1>
+            <p>Join the biggest programming competition at FPT University! Test your coding skills, compete with talented students, and win amazing prizes.</p>
+            <a href="#" class="btn">Register Now</a>
+            
+            <!-- Countdown Timer -->
+            <div class="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="days">29</span>
+                    <span class="countdown-label">DAYS</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="hours">20</span>
+                    <span class="countdown-label">HOURS</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="minutes">38</span>
+                    <span class="countdown-label">MINUTES</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="seconds">40</span>
+                    <span class="countdown-label">SECONDS</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section">
+        <div class="container">
+            <h2>About This Competition</h2>
+            <div class="card">
+                <h3>FPT Competition 2025 - The Biggest Competition Event at FPT University</h3>
+                <p>This is a comprehensive programming competition designed to challenge students' coding abilities across multiple domains including algorithms, web development, and mobile app creation.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prize Section -->
+    <section class="section">
+        <div class="container">
+            <h2>Prizes & Awards</h2>
+            <div class="prize-section">
+                <h3>🏆 Competition Prizes</h3>
+                <ul>
+                    <li><strong>1st Place:</strong> 10,000,000 VND + Certificate</li>
+                    <li><strong>2nd Place:</strong> 5,000,000 VND + Certificate</li>
+                    <li><strong>3rd Place:</strong> 2,000,000 VND + Certificate</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rules Section -->
+    <section class="section">
+        <div class="container">
+            <h2>Competition Rules</h2>
+            <div class="rules-section">
+                <h3>📋 Rules & Regulations</h3>
+                <ol>
+                    <li>Individual participation only</li>
+                    <li>No cheating or plagiarism</li>
+                    <li>Follow time limits strictly</li>
+                    <li>Submit solutions before deadline</li>
+                    <li>Respect judges' decisions</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <!-- Requirements Section -->
+    <section class="section">
+        <div class="container">
+            <h2>Requirements</h2>
+            <div class="requirements-section">
+                <h3>✅ Participation Requirements</h3>
+                <ul>
+                    <li>Must be FPT University student</li>
+                    <li>Basic programming knowledge required</li>
+                    <li>Laptop with development environment</li>
+                    <li>Valid student ID</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Judges Section -->
+    <section class="section">
+        <div class="container">
+            <h2>Our Judges</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="judge-card">
+                    <img src="img/speaker/speakers-1.jpg" alt="Dr. Nguyen Van A">
+                    <h4>Dr. Nguyen Van A</h4>
+                    <p>Head Judge</p>
+                    <p>Expert in AI and Machine Learning</p>
+                </div>
+                <div class="judge-card">
+                    <img src="img/speaker/speakers-2.jpg" alt="Prof. Le Thi B">
+                    <h4>Prof. Le Thi B</h4>
+                    <p>Algorithm Judge</p>
+                    <p>Renowned software engineer</p>
+                </div>
+                <div class="judge-card">
+                    <img src="img/team/team-01.jpg" alt="Mr. Tran Van C">
+                    <h4>Mr. Tran Van C</h4>
+                    <p>Web Development Judge</p>
+                    <p>Event management specialist</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Registration Section -->
+    <section class="section">
+        <div class="container">
+            <h2>Registration Packages</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div class="card">
+                    <h3>Standard Registration</h3>
+                    <p><strong>FREE</strong></p>
+                    <p>Free participation with all competition benefits</p>
+                    <ul>
+                        <li>Competition access</li>
+                        <li>Certificate of participation</li>
+                        <li>Networking opportunities</li>
+                    </ul>
+                    <a href="#" class="btn">Register Now</a>
+                </div>
+                <div class="card">
+                    <h3>Premium Registration</h3>
+                    <p><strong>50,000 VND</strong></p>
+                    <p>Includes lunch, networking session, and mentorship</p>
+                    <ul>
+                        <li>All standard benefits</li>
+                        <li>Lunch provided</li>
+                        <li>Networking session</li>
+                        <li>Mentorship program</li>
+                    </ul>
+                    <a href="#" class="btn">Register Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Simple countdown timer
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const eventDate = new Date("2025-02-15T09:00:00").getTime();
+            const distance = eventDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerHTML = days;
+            document.getElementById("hours").innerHTML = hours;
+            document.getElementById("minutes").innerHTML = minutes;
+            document.getElementById("seconds").innerHTML = seconds;
+
+            if (distance < 0) {
+                document.getElementById("days").innerHTML = "0";
+                document.getElementById("hours").innerHTML = "0";
+                document.getElementById("minutes").innerHTML = "0";
+                document.getElementById("seconds").innerHTML = "0";
+            }
+        }
+
+        // Update countdown every second
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>

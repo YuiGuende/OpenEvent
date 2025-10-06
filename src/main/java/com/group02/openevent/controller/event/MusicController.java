@@ -52,22 +52,22 @@ public class MusicController {
             model.addAttribute("schedulesByDay", schedulesByDay);
             model.addAttribute("scheduleEntries", scheduleEntries);
             
-            // Debug info
-            System.out.println("=== EVENT DEBUG INFO ===");
-            System.out.println("Event loaded: " + (event != null ? event.getTitle() : "NULL"));
-            System.out.println("Event capacity: " + (event != null ? event.getCapacity() : "NULL"));
-            System.out.println("Event places: " + (event != null && event.getPlaces() != null ? event.getPlaces().size() : 0));
-            System.out.println("Event benefits: " + (event != null ? event.getBenefits() : "NULL"));
-            System.out.println("Event startsAt: " + (event != null ? event.getStartsAt() : "NULL"));
-            System.out.println("Event endsAt: " + (event != null ? event.getEndsAt() : "NULL"));
-            System.out.println("Event images count: " + (eventImages != null ? eventImages.size() : 0));
-            System.out.println("Ticket types count: " + (ticketTypes != null ? ticketTypes.size() : 0));
-            if (ticketTypes != null && !ticketTypes.isEmpty()) {
-                System.out.println("First ticket: " + ticketTypes.get(0).getName() + " - " + ticketTypes.get(0).getPrice());
-            }
-            System.out.println("Event venue address: " + (event != null ? event.getVenueAddress() : "NULL"));
-            System.out.println("Event guidelines: " + (event != null ? event.getGuidelines() : "NULL"));
-            System.out.println("========================");
+//            // Debug info
+//            System.out.println("=== EVENT DEBUG INFO ===");
+//            System.out.println("Event loaded: " + (event != null ? event.getTitle() : "NULL"));
+//            System.out.println("Event capacity: " + (event != null ? event.getCapacity() : "NULL"));
+//            System.out.println("Event places: " + (event != null && event.getPlaces() != null ? event.getPlaces().size() : 0));
+//            System.out.println("Event benefits: " + (event != null ? event.getBenefits() : "NULL"));
+//            System.out.println("Event startsAt: " + (event != null ? event.getStartsAt() : "NULL"));
+//            System.out.println("Event endsAt: " + (event != null ? event.getEndsAt() : "NULL"));
+//            System.out.println("Event images count: " + (eventImages != null ? eventImages.size() : 0));
+//            System.out.println("Ticket types count: " + (ticketTypes != null ? ticketTypes.size() : 0));
+//            if (ticketTypes != null && !ticketTypes.isEmpty()) {
+//                System.out.println("First ticket: " + ticketTypes.get(0).getName() + " - " + ticketTypes.get(0).getPrice());
+//            }
+//            System.out.println("Event venue address: " + (event != null ? event.getVenueAddress() : "NULL"));
+//            System.out.println("Event guidelines: " + (event != null ? event.getGuidelines() : "NULL"));
+//            System.out.println("========================");
             
         } catch (Exception e) {
             System.err.println("Error loading event: " + e.getMessage());

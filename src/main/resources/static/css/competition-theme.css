@@ -1,0 +1,650 @@
+/* Competition Theme CSS - Orange/Competition themed styles */
+
+/* Primary Colors */
+:root {
+    --competition-primary: #ff6a00;
+    --competition-secondary: #ff8c00;
+    --competition-accent: #ffd700;
+    --competition-dark: #d35400;
+    --competition-light: #fff3e0;
+    --competition-text: #333;
+    --competition-text-light: #666;
+    --competition-bg: #fafafa;
+}
+
+/* Global Competition Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Competition Badge */
+.competition-badge {
+    background: linear-gradient(45deg, var(--competition-primary), var(--competition-secondary));
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(255, 106, 0, 0.3);
+}
+
+/* Prize Section */
+.prize-section {
+    background: linear-gradient(135deg, var(--competition-accent), #ffed4e);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.prize-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.prize-section h3 {
+    color: #b8860b;
+    font-weight: 800;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.prize-section p {
+    position: relative;
+    z-index: 1;
+    font-weight: 600;
+    color: #8b6914;
+}
+
+/* Rules Section */
+.rules-section {
+    background: #f8f9fa;
+    border-left: 4px solid var(--competition-primary);
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rules-section h4 {
+    color: var(--competition-primary);
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+/* Requirements Section */
+.requirements-section {
+    background: var(--competition-light);
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(255, 234, 167, 0.3);
+}
+
+.requirements-section h4 {
+    color: var(--competition-dark);
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+/* Judge Card Styles */
+.judge-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.judge-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+}
+
+.judge-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--competition-primary), var(--competition-secondary));
+    z-index: 1;
+}
+
+.judge-image {
+    position: relative;
+    overflow: hidden;
+    height: 280px;
+}
+
+.judge-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.judge-card:hover .judge-image img {
+    transform: scale(1.05);
+}
+
+.judge-info {
+    padding: 20px;
+    text-align: center;
+    background: white;
+}
+
+.judge-info h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--competition-text);
+    margin-bottom: 8px;
+}
+
+.judge-info p {
+    color: var(--competition-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* Section Title Styles */
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--competition-text);
+    margin-bottom: 15px;
+    position: relative;
+    text-align: center;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: var(--competition-primary);
+    margin: 15px auto 0;
+    border-radius: 2px;
+}
+
+/* Competition-specific button styles */
+.btn-common {
+    background: linear-gradient(45deg, var(--competition-primary), var(--competition-secondary));
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 106, 0, 0.3);
+}
+
+.btn-common:hover {
+    background: linear-gradient(45deg, var(--competition-dark), var(--competition-primary));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.4);
+    color: white;
+}
+
+/* Competition Countdown Styles */
+.time-countdown .time-entry {
+    background: linear-gradient(135deg, var(--competition-primary), var(--competition-secondary));
+    color: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 0 10px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.3);
+}
+
+.time-countdown .time-entry span {
+    font-size: 2.5rem;
+    font-weight: 800;
+    display: block;
+    line-height: 1;
+}
+
+.time-countdown .time-entry .label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
+}
+
+/* Competition Gallery Styles */
+.gallery-box {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.gallery-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-box .img-thumb {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.gallery-box .img-thumb img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-box:hover .img-thumb img {
+    transform: scale(1.1);
+}
+
+.overlay-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 106, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+.gallery-box:hover .overlay-box {
+    opacity: 1;
+}
+
+.overlay-box a {
+    color: white;
+    font-size: 2rem;
+    text-decoration: none;
+}
+
+/* Competition Pricing Styles */
+.price-block-wrapper {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.price-block-wrapper:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.price-block-wrapper .icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--competition-primary), var(--competition-secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 2rem;
+}
+
+.price-block-wrapper .price h2 {
+    color: var(--competition-primary);
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+/* Competition-specific form styles */
+.form-control:focus {
+    border-color: var(--competition-primary);
+    box-shadow: 0 0 0 0.2rem rgba(255, 106, 0, 0.25);
+}
+
+/* Competition table styles */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 106, 0, 0.05);
+}
+
+.table thead th {
+    background: linear-gradient(135deg, var(--competition-primary), var(--competition-secondary));
+    color: white;
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Competition FAQ styles */
+.accordion .card-header {
+    background: var(--competition-light);
+    border-bottom: 2px solid var(--competition-primary);
+}
+
+.accordion .header-title {
+    color: var(--competition-primary);
+    font-weight: 600;
+}
+
+/* Competition Hero Slider */
+.hero--slider {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.hero-track::-webkit-scrollbar {
+    display: none;
+}
+
+.hero-slide {
+    position: relative;
+    min-width: 100vw;
+    height: 70vh;
+    background-position: center;
+    background-size: cover;
+    scroll-snap-align: start;
+}
+
+.hero-slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(255, 106, 0, 0.4);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    color: #fff;
+    padding-bottom: 60px;
+    padding-right: 40px;
+}
+
+.hero-content h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.hero-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 106, 0, 0.9);
+    border: none;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.hero-nav:hover {
+    background: var(--competition-primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.hero-nav.prev {
+    left: 20px;
+}
+
+.hero-nav.next {
+    right: 20px;
+}
+
+.hero-progress {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.hero-progress-bar {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hero-progress-bar.active {
+    background: white;
+}
+
+.hero-progress-bar:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.hero--compact .hero-slide {
+    height: 50vh;
+}
+
+/* Competition Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--competition-primary), var(--competition-secondary));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.back-to-top:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(255, 106, 0, 0.4);
+    color: white;
+}
+
+.competition-icon {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+}
+
+.scroll-text {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-slide {
+        height: 60vh;
+    }
+    
+    .hero-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        max-width: 200px;
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .time-countdown .time-entry {
+        margin: 0 5px;
+        padding: 15px;
+    }
+    
+    .time-countdown .time-entry span {
+        font-size: 2rem;
+    }
+    
+    .back-to-top {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .time-countdown .time-entry {
+        margin: 0 2px;
+        padding: 10px;
+    }
+    
+    .time-countdown .time-entry span {
+        font-size: 1.5rem;
+    }
+    
+    .time-countdown .time-entry .label {
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation Classes */
+.wow {
+    visibility: hidden;
+}
+
+.fadeInUp {
+    animation: fadeInUp 0.8s ease-in-out;
+}
+
+.fadeInDown {
+    animation: fadeInDown 0.8s ease-in-out;
+}
+
+.fadeInLeft {
+    animation: fadeInLeft 0.8s ease-in-out;
+}
+
+.fadeInRight {
+    animation: fadeInRight 0.8s ease-in-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

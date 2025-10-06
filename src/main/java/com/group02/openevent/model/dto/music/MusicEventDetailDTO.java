@@ -167,5 +167,5 @@ public class MusicEventDetailDTO {
         this.guidelines = guidelines;
     }
 
-// ... giữ nguyên getter/setter cũ
+
 }

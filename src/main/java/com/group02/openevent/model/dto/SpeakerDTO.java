@@ -6,6 +6,10 @@ public class SpeakerDTO {
     private String imageUrl;
     private String profile;
 
+    // Default constructor
+    public SpeakerDTO() {
+    }
+
     public SpeakerDTO(String name, String role, String imageUrl, String profile) {
         this.name = name;
         this.role = role;

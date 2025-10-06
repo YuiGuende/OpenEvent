@@ -1,101 +1,116 @@
-package com.group02.openevent.controller.event;
+package com.group02.openevent.service.impl;
 
+import com.group02.openevent.model.dto.PlaceDTO;
+import com.group02.openevent.model.dto.ScheduleDTO;
+import com.group02.openevent.model.dto.SpeakerDTO;
 import com.group02.openevent.model.dto.competition.CompetitionEventDetailDTO;
-import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.CompetitionEvent;
+import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.repository.ICompetitionEventRepo;
 import com.group02.openevent.service.ICompetitionService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-@RestController
-@RequestMapping("/api/competition")
-public class CompetitionRestController {
+import java.util.stream.Collectors;
+@Service
+public class CompetitionServiceImpl implements ICompetitionService {
+
     private final ICompetitionEventRepo competitionEventRepo;
-    private final ICompetitionService competitionService;
-
-    public CompetitionRestController(ICompetitionEventRepo competitionEventRepo, ICompetitionService competitionService) {
+    public CompetitionServiceImpl(ICompetitionEventRepo competitionEventRepo) {
         this.competitionEventRepo = competitionEventRepo;
-        this.competitionService = competitionService;
-    }
-
-    // Lấy tất cả competition events
-    @GetMapping
-    public List<CompetitionEventDetailDTO> getAllCompetitions() {
-        return competitionService.getAllCompetitionEvents();
-    }
-
-    // Lấy chi tiết 1 competition theo id
-    @GetMapping("/{id}")
-    public CompetitionEventDetailDTO getCompetitionById(@PathVariable Long id) {
-        return competitionService.getCompetitionEventById(id);
     }
 
 
-    @PostMapping
-    public ResponseEntity<?> createCompetition(@RequestBody CompetitionEventDetailDTO dto) {
-        try {
-            // Validate input
-            if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Title không được để trống"));
-            }
-            if (dto.getDescription() == null || dto.getDescription().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Description không được để trống"));
-            }
-            if (dto.getStartsAt() == null || dto.getEndsAt() == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Start time và End time không được để trống"));
-            }
-            if (dto.getStartsAt().isAfter(dto.getEndsAt())) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Start time phải trước End time"));
-            }
+    @Override
+    public List<CompetitionEventDetailDTO> getAllCompetitionEvents() {
+        return competitionEventRepo.findAll().stream().map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
 
-            // Chuyển DTO thành Entity để lưu DB
-            CompetitionEvent event = new CompetitionEvent();
-            event.setTitle(dto.getTitle());
-            event.setDescription(dto.getDescription());
-            event.setCapacity(dto.getCapacity());
-            event.setStartsAt(dto.getStartsAt());
-            event.setEndsAt(dto.getEndsAt());
-            event.setBenefits(dto.getBenefits());
-            event.setEventType(dto.getEventType());
-            event.setVenueAddress(dto.getVenueAddress());
-            event.setGuidelines(dto.getGuidelines());
-            event.setCreatedAt(LocalDateTime.now());
-            event.setStatus(EventStatus.DRAFT);
-            event.setEnrollDeadline(LocalDateTime.now().plusDays(7));
+    @Override
+    public CompetitionEventDetailDTO getCompetitionEventById(Long id) {
+        CompetitionEvent event = competitionEventRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Competition Event not found with id " + id));
+        return mapToDTO(event);
+    }
 
-            CompetitionEvent saved = competitionEventRepo.save(event);
+    // Hàm riêng để chuyển Entity -> DTO
+    private CompetitionEventDetailDTO mapToDTO(CompetitionEvent e) {
+        if (e == null) return null;
 
-            // Trả lại dữ liệu vừa tạo
-            CompetitionEventDetailDTO response = new CompetitionEventDetailDTO(
-                    saved.getDescription(),
-                    saved.getTitle(),
-                    saved.getCapacity(),
-                    saved.getStartsAt(),
-                    saved.getEndsAt(),
-                    saved.getCreatedAt(),
-                    saved.getEventType(),
-                    saved.getBenefits(),
-                    dto.getImageUrls(), // giữ nguyên từ request
-                    dto.getSpeakers(),  // giữ nguyên từ request
-                    dto.getSchedules(), // giữ nguyên từ request
-                    dto.getPlaces(),    // giữ nguyên từ request
-                    saved.getVenueAddress(),
-                    saved.getGuidelines()
-            );
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (Exception e) {
-            System.err.println("Error creating competition: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau."));
+        // 1️⃣ Khởi tạo DTO cơ bản (các field chính của sự kiện)
+        CompetitionEventDetailDTO dto = new CompetitionEventDetailDTO(
+                e.getDescription(),
+                e.getTitle(),
+                e.getCapacity(),
+                e.getStartsAt(),
+                e.getEndsAt(),
+                e.getCreatedAt(),
+                null,//chưa có trường dữ liệu, không được sửa
+                e.getEventType(),
+                e.getBenefits(),
+                null, // imageUrls sẽ set sau
+                null, // speakers sẽ set sau
+                null, // schedules sẽ set sau
+                null, // places sẽ set sau
+                e.getVenueAddress(), // venue address
+                e.getGuidelines()    // guidelines
+        );
+        // 2️⃣ Ảnh sự kiện (EventImages → imageUrls)
+        if (e.getEventImages() != null && !e.getEventImages().isEmpty()) {
+            List<String> imageUrls = e.getEventImages().stream()
+                    .sorted(Comparator.comparing(EventImage::getOrderIndex)) // Sắp theo thứ tự
+                    .map(EventImage::getUrl)
+                    .collect(Collectors.toList());
+            dto.setImageUrls(imageUrls); // ⚡ cần có trường này trong DTO
         }
+
+        // 3️⃣ Diễn giả (Speakers → SpeakerDTO)
+        if (e.getSpeakers() != null && !e.getSpeakers().isEmpty()) {
+            dto.setSpeakers(
+                    e.getSpeakers().stream()
+                            .distinct()
+                            .map(sp -> new SpeakerDTO(
+                                    sp.getName(),
+                                    sp.getDefaultRole() != null ? sp.getDefaultRole().name() : "Speaker",
+                                    sp.getImageUrl(),
+                                    sp.getProfile()
+                            ))
+                            .collect(Collectors.toList())
+            );
+        }
+
+        // 4️⃣ Lịch trình (Schedules → ScheduleDTO)
+        if (e.getSchedules() != null && !e.getSchedules().isEmpty()) {
+            dto.setSchedules(
+                    e.getSchedules().stream()
+                            .map(sc -> new ScheduleDTO(
+                                    sc.getActivity(),
+                                    sc.getStartTime(),
+                                    sc.getEndTime()
+                            ))
+                            .collect(Collectors.toList())
+            );
+        }
+
+        // 5️⃣ Địa điểm (Places → PlaceDTO)
+        if (e.getPlaces() != null && !e.getPlaces().isEmpty()) {
+            dto.setPlaces(
+                    e.getPlaces().stream()
+                            .map(p -> new PlaceDTO(
+                                    p.getPlaceName(),
+                                    p.getBuilding() != null ? p.getBuilding().name() : ""
+                            ))
+                            .collect(Collectors.toList())
+            );
+        }
+
+        // 6️⃣ Thông tin địa điểm & hướng dẫn thêm
+        dto.setVenueAddress(e.getVenueAddress());
+        dto.setGuidelines(e.getGuidelines());
+
+        return dto;
     }
 
 }

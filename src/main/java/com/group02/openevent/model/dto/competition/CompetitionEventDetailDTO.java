@@ -23,121 +23,152 @@ public class CompetitionEventDetailDTO {
     private LocalDateTime endsAt;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private EventType eventType;
     private String benefits;
 
-    // Competition specific fields
-    private String prize;           // Giải thưởng
-    private String rules;           // Luật thi đấu
-    private String requirements;    // Yêu cầu tham gia
-    private String registrationFee; // Lệ phí đăng ký
-    private String maxParticipants; // Số lượng thí sinh tối đa
-
-    // Common fields
+    // 🔹 mở rộng thêm
     private List<String> imageUrls;        // gallery, banner
-    private List<SpeakerDTO> speakers;     // ban giám khảo, MC
-    private List<ScheduleDTO> schedules;   // lịch biểu thi đấu
-    private List<PlaceDTO> places;         // địa điểm thi
+    private List<SpeakerDTO> speakers;     // danh sách nghệ sĩ
+    private List<ScheduleDTO> schedules;   // lịch biểu
+    private List<PlaceDTO> places;         // địa điểm
+    private String venueAddress;           // địa chỉ venue
+    private String guidelines;             // hướng dẫn sự kiện
 
-    // Constructors
-    public CompetitionEventDetailDTO() {}
 
-    public CompetitionEventDetailDTO(String description, String title, Integer capacity, 
-                                   LocalDateTime startsAt, LocalDateTime endsAt, 
-                                   LocalDateTime createdAt, LocalDateTime updatedAt, 
-                                   EventType eventType, String benefits) {
-        this.description = description;
-        this.title = title;
-        this.capacity = capacity;
-        this.startsAt = startsAt;
-        this.endsAt = endsAt;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.eventType = eventType;
-        this.benefits = benefits;
+    public CompetitionEventDetailDTO() {
     }
 
-    public CompetitionEventDetailDTO(String description, String title, Integer capacity, 
-                                   LocalDateTime startsAt, LocalDateTime endsAt, 
-                                   LocalDateTime createdAt, LocalDateTime updatedAt, 
-                                   EventType eventType, String benefits, 
-                                   String prize, String rules, String requirements, 
-                                   String registrationFee, String maxParticipants,
-                                   List<String> imageUrls, List<SpeakerDTO> speakers, 
-                                   List<ScheduleDTO> schedules, List<PlaceDTO> places) {
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
+    public List<SpeakerDTO> getSpeakers() {
+        return speakers;
+    }
+
+    public void setSpeakers(List<SpeakerDTO> speakers) {
+        this.speakers = speakers;
+    }
+
+    public List<ScheduleDTO> getSchedules() {
+        return schedules;
+    }
+
+    public void setSchedules(List<ScheduleDTO> schedules) {
+        this.schedules = schedules;
+    }
+
+    public List<PlaceDTO> getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(List<PlaceDTO> places) {
+        this.places = places;
+    }
+
+    public String getVenueAddress() {
+        return venueAddress;
+    }
+
+    public void setVenueAddress(String venueAddress) {
+        this.venueAddress = venueAddress;
+    }
+
+    public String getGuidelines() {
+        return guidelines;
+    }
+
+    public void setGuidelines(String guidelines) {
+        this.guidelines = guidelines;
+    }
+
+    // Default constructor
+    public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, Object o, EventType eventType, String benefits, Object object, Object o1, Object object1, Object o2, String venueAddress, String guidelines) {
+    }
+
+    public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines) {
         this.description = description;
         this.title = title;
         this.capacity = capacity;
         this.startsAt = startsAt;
         this.endsAt = endsAt;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.eventType = eventType;
         this.benefits = benefits;
-        this.prize = prize;
-        this.rules = rules;
-        this.requirements = requirements;
-        this.registrationFee = registrationFee;
-        this.maxParticipants = maxParticipants;
         this.imageUrls = imageUrls;
         this.speakers = speakers;
         this.schedules = schedules;
         this.places = places;
+        this.venueAddress = venueAddress;
+        this.guidelines = guidelines;
     }
 
-    // Getters and Setters
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getDescription() {
+        return description;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Integer getCapacity() { return capacity; }
-    public void setCapacity(Integer capacity) { this.capacity = capacity; }
+    public String getTitle() {
+        return title;
+    }
 
-    public LocalDateTime getStartsAt() { return startsAt; }
-    public void setStartsAt(LocalDateTime startsAt) { this.startsAt = startsAt; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public LocalDateTime getEndsAt() { return endsAt; }
-    public void setEndsAt(LocalDateTime endsAt) { this.endsAt = endsAt; }
+    public Integer getCapacity() {
+        return capacity;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDateTime getStartsAt() {
+        return startsAt;
+    }
 
-    public EventType getEventType() { return eventType; }
-    public void setEventType(EventType eventType) { this.eventType = eventType; }
+    public void setStartsAt(LocalDateTime startsAt) {
+        this.startsAt = startsAt;
+    }
 
-    public String getBenefits() { return benefits; }
-    public void setBenefits(String benefits) { this.benefits = benefits; }
+    public LocalDateTime getEndsAt() {
+        return endsAt;
+    }
 
-    public String getPrize() { return prize; }
-    public void setPrize(String prize) { this.prize = prize; }
+    public void setEndsAt(LocalDateTime endsAt) {
+        this.endsAt = endsAt;
+    }
 
-    public String getRules() { return rules; }
-    public void setRules(String rules) { this.rules = rules; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    public String getRequirements() { return requirements; }
-    public void setRequirements(String requirements) { this.requirements = requirements; }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
-    public String getRegistrationFee() { return registrationFee; }
-    public void setRegistrationFee(String registrationFee) { this.registrationFee = registrationFee; }
 
-    public String getMaxParticipants() { return maxParticipants; }
-    public void setMaxParticipants(String maxParticipants) { this.maxParticipants = maxParticipants; }
+    public EventType getEventType() {
+        return eventType;
+    }
 
-    public List<String> getImageUrls() { return imageUrls; }
-    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
 
-    public List<SpeakerDTO> getSpeakers() { return speakers; }
-    public void setSpeakers(List<SpeakerDTO> speakers) { this.speakers = speakers; }
+    public String getBenefits() {
+        return benefits;
+    }
 
-    public List<ScheduleDTO> getSchedules() { return schedules; }
-    public void setSchedules(List<ScheduleDTO> schedules) { this.schedules = schedules; }
-
-    public List<PlaceDTO> getPlaces() { return places; }
-    public void setPlaces(List<PlaceDTO> places) { this.places = places; }
+    public void setBenefits(String benefits) {
+        this.benefits = benefits;
+    }
 }

@@ -24,11 +24,734 @@
     <link rel="stylesheet" th:href="@{/competition/assets/css/themeColors.css}">
     <!-- Competition Main CSS -->
     <link rel="stylesheet" th:href="@{/competition/assets/css/competition-main.css}">
-      
+
     <!-- Competition Theme CSS với màu cam đẹp -->
     <link rel="stylesheet" th:href="@{/css/competition-theme.css}">
 
-    <!-- Clean CSS - Simple and maintainable -->
+    <!-- Custom Competition Styling -->
+    <style>
+        /* Global Background Pattern */
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            background-attachment: fixed;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ff6b35" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23f7931e" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ff6b35" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="%23f7931e" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="%23ff6b35" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+        /* Competition Countdown Timer Styling */
+        .time-countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .time-entry {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            overflow: visible;
+            transition: all 0.3s ease;
+        }
+        
+        .time-entry::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border-radius: 20px;
+            padding: 2px;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+        }
+        
+        .time-entry:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(255, 107, 53, 0.25);
+        }
+
+        .time-entry::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 107, 53, 0.05), transparent);
+            pointer-events: none;
+        }
+
+        .time-entry span {
+            display: block;
+            font-size: 3rem;
+            font-weight: 900;
+            color: #2c3e50;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            line-height: 1;
+            margin-bottom: 10px;
+            font-family: 'Arial Black', Arial, sans-serif;
+            animation: numberGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes numberGlow {
+            0% {
+                filter: drop-shadow(0 0 5px rgba(255, 107, 53, 0.3));
+            }
+            100% {
+                filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.6));
+            }
+        }
+
+        .time-entry .label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #495057 !important;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            line-height: 1.2;
+            margin-top: 5px;
+        }
+
+        /* Competition Header Styling */
+        .heading-count h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #2c3e50;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes titlePulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.3));
+            }
+            50% {
+                filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.6));
+            }
+        }
+
+        /* Competition Button Styling */
+        .btn-common {
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            border: none;
+            border-radius: 50px;
+            padding: 18px 45px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+            transition: all 0.4s ease;
+            color: #fff;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-common::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-common:hover::before {
+            left: 100%;
+        }
+
+        .btn-common:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6);
+            color: #fff;
+        }
+
+        /* Competition Separator */
+        .countdown-separator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .separator-line {
+            height: 4px;
+            width: 100px;
+            background: linear-gradient(90deg, transparent, #ff6b35, #f7931e, #ff6b35, transparent);
+            border-radius: 2px;
+            animation: lineGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes lineGlow {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 15px rgba(255, 107, 53, 0.6);
+            }
+        }
+
+        .separator-icon {
+            margin: 0 25px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+            animation: iconRotate 4s linear infinite;
+            position: relative;
+        }
+        
+        @keyframes iconRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .separator-icon i {
+            color: #fff;
+            font-size: 1.5rem;
+        }
+        
+        /* Competition Event Description Styling */
+        .event-description-box {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.15);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .event-description-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            border-radius: 25px;
+            padding: 3px;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            z-index: -1;
+        }
+        
+        .event-description-box:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 60px rgba(255, 107, 53, 0.25);
+        }
+        
+        .event-description-box h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #2c3e50;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .event-description-box .lead {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-start;
+            text-align: left;
+            font-weight: 500;
+        }
+        
+        .event-description-box .trophy-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+            margin-top: 3px;
+            flex-shrink: 0;
+            animation: trophyBounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes trophyBounce {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+        
+        .event-description-box p {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .event-description-box i {
+            color: #ff6b35;
+            margin-right: 12px;
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+        
+        .competition-badge {
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+            animation: badgeGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes badgeGlow {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+            }
+            50% {
+                box-shadow: 0 6px 25px rgba(255, 107, 53, 0.5);
+            }
+        }
+        
+        /* Counter Section Styling */
+        .counter-section {
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .counter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="counterGrain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ffffff" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="%23ffffff" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="%23ffffff" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23counterGrain)"/></svg>');
+            pointer-events: none;
+        }
+        
+        .work-counter-widget {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .counter {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .counter:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 1);
+        }
+        
+        .counter .icon {
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+        
+        .counter .icon i {
+            font-size: 3rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+        
+        .timer-icon {
+            font-size: 3rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            display: inline-block;
+            line-height: 1;
+        }
+        
+        .timer-svg {
+            width: 3rem;
+            height: 3rem;
+            color: #ffffff;
+            filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+        
+        .time-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            display: inline-block;
+            line-height: 1;
+            letter-spacing: 2px;
+        }
+        
+        .time-icon {
+            font-size: 3rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            display: inline-block;
+            line-height: 1;
+        }
+        
+        .time-fa-icon {
+            font-size: 3rem;
+            color: #ffffff !important;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+        
+        .clock-icon {
+            width: 3rem;
+            height: 3rem;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+        
+        .clock-icon::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 1rem;
+            background: #ffffff;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(0deg);
+        }
+        
+        .clock-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 1px;
+            height: 0.8rem;
+            background: #ffffff;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(90deg);
+        }
+        
+        @keyframes iconPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .counter p {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.3;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .counter span {
+            font-size: 0.9rem;
+            color: #ffffff;
+            font-weight: 500;
+            line-height: 1.4;
+            flex-shrink: 0;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .separator-icon span {
+            color: #fff;
+            font-size: 1.5rem;
+        }
+
+        /* Competition Title Styling */
+        .section-title {
+            color: #2c3e50;
+            font-weight: 900;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Competition Animation Effects */
+        .time-entry {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .time-entry:hover {
+            animation: none;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        /* Competition Badge Styling */
+        .competition-badge {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            display: inline-block;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3); }
+            to { box-shadow: 0 4px 25px rgba(255, 107, 53, 0.6); }
+        }
+
+        /* Competition Section Background */
+        .countdown-timer {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .countdown-timer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ff6b35" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23f7931e" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ff6b35" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="%23f7931e" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="%23ff6b35" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
+        /* Competition Icon Styling */
+        .trophy-icon {
+            font-size: 1.3em;
+            display: inline-block;
+            margin-right: 10px;
+            animation: trophyBounce 2s ease-in-out infinite;
+            filter: drop-shadow(2px 2px 4px rgba(255, 107, 53, 0.3));
+            line-height: 1;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        /* Separator icon specific styling */
+        .separator-icon .trophy-icon {
+            font-size: 1.6em;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            line-height: 1;
+        }
+
+        /* Text alignment for paragraphs with trophy icons */
+        .lead, p {
+            display: flex;
+            align-items: center;
+            text-align: left;
+        }
+
+        .lead .trophy-icon, p .trophy-icon {
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        @keyframes trophyBounce {
+            0%, 100% {
+                transform: translateY(0px);
+                filter: drop-shadow(2px 2px 4px rgba(255, 107, 53, 0.3));
+            }
+            50% {
+                transform: translateY(-3px);
+                filter: drop-shadow(2px 2px 8px rgba(255, 107, 53, 0.6));
+            }
+        }
+
+        .lni-timer {
+            color: #ff6b35 !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .lni-medall {
+            color: #ff6b35 !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* About Section - Equal Height Cards */
+        .about-item {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .about-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .about-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .about-text {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .about-text h3 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .about-text h3 a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        
+        .about-text h3 a:hover {
+            color: #ff6b35;
+        }
+        
+        .about-text p {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        
+        .about-text .btn {
+            margin-top: auto;
+            align-self: flex-start;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .time-countdown {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .time-entry {
+                min-width: 130px;
+                padding: 25px 20px;
+            }
+
+            .time-entry span {
+                font-size: 2.4rem;
+            }
+
+            .heading-count h2 {
+                font-size: 2rem;
+            }
+            
+            .about-item img {
+                height: 180px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .time-entry {
+                min-width: 120px;
+                padding: 20px 15px;
+            }
+
+            .time-entry span {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+
+`     <!-- Clean CSS - Simple and maintainable -->
   </head>
   <body>
 <!-- Banner, in ra ảnh -->
@@ -82,7 +805,7 @@
                 <div class="countdown-separator wow fadeInUp" data-wow-delay="0.4s">
                     <div class="separator-line"></div>
                     <div class="separator-icon">
-                        <i class="lni-trophy"></i>
+                        <span class="trophy-icon">🏆</span>
                     </div>
                     <div class="separator-line"></div>
                 </div>
@@ -175,7 +898,7 @@
 
                     <!-- Description -->
                     <p class="lead">
-                        <i class="lni-trophy"></i>
+                        <span class="trophy-icon">🏆</span>
                         <span th:text="${event.description}">Competition description</span>
                     </p>
 
@@ -188,15 +911,15 @@
                         End:
                         <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}"></span>
                     </p>
-                      
+
                       <!-- Competition Badge -->
                       <div class="text-center mb-4">
                           <span class="competition-badge">Competition Event</span>
                       </div>
-                      
+
                     <!-- Benefits -->
                     <p>
-                        <i class="lni-medall"></i>
+                        <span class="trophy-icon">🏆</span>
                         <span th:text="'Benefits: ' + ${event.benefits}">Benefits...</span>
                     </p>
                 </div>
@@ -206,6 +929,70 @@
 </section>
 
 <!-- Competition Event Description Section End -->
+
+<!-- Counter Area Start-->
+<!--<section class="counter-section section-padding">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+
+<!--            &lt;!&ndash; Location &ndash;&gt;-->
+<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
+<!--                <div class="counter wow fadeInRight" data-wow-delay="0.3s">-->
+<!--                    <div class="icon"><i class="lni-map"></i></div>-->
+<!--                    <p th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">-->
+<!--                        FPT University Da Nang-->
+<!--                    </p>-->
+<!--                    <span>Gamma Building, FPT City</span>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Time &ndash;&gt;-->
+<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
+<!--                <div class="counter wow fadeInRight" data-wow-delay="0.6s">-->
+<!--                    <div class="icon"><div class="clock-icon"></div></div>-->
+<!--                    <p th:text="${event.startsAt != null and event.endsAt != null-->
+<!--                        ? #temporals.format(event.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(event.endsAt, 'dd/MM/yyyy')-->
+<!--                        : '15/10/2025 - 13/10/2025'}">-->
+<!--                        15/10/2025 - 13/10/2025-->
+<!--                    </p>-->
+<!--                    <span th:text="${event.startsAt != null and event.endsAt != null-->
+<!--                        ? #temporals.format(event.startsAt, 'HH:mm') + ' – ' + #temporals.format(event.endsAt, 'HH:mm')-->
+<!--                        : '23:54 – 02:54'}">-->
+<!--                        23:54 – 02:54-->
+<!--                    </span>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Capacity &ndash;&gt;-->
+<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
+<!--                <div class="counter wow fadeInRight" data-wow-delay="0.9s">-->
+<!--                    <div class="icon"><i class="lni-users"></i></div>-->
+<!--                    <p th:text="${event.capacity != null-->
+<!--                        ? event.capacity + ' PARTICIPANTS'-->
+<!--                        : '100 PARTICIPANTS'}">-->
+<!--                        100 PARTICIPANTS-->
+<!--                    </p>-->
+<!--                    <span>REGISTER EARLY TO SECURE YOUR SPOT</span>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Competition Format &ndash;&gt;-->
+<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
+<!--                <div class="counter wow fadeInRight" data-wow-delay="1.2s">-->
+<!--                    <div class="icon"><i class="lni-target"></i></div>-->
+<!--                    <p th:text="${event.format != null-->
+<!--                        ? event.format + ' COMPETITION'-->
+<!--                        : 'TEAM COMPETITION'}">-->
+<!--                        TEAM COMPETITION-->
+<!--                    </p>-->
+<!--                    <span>JOIN THE CHALLENGE</span>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
+<!-- Counter Area End-->
 
 <!-- About Section Start -->
 <section id="about" class="section-padding">
@@ -280,7 +1067,7 @@
             <!-- Time -->
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.6s">
-                    <div class="icon"><i class="lni-timer"></i></div>
+                    <div class="icon"><div class="clock-icon"></div></div>
                     <p th:text="${event.startsAt != null and event.endsAt != null
                         ? #temporals.format(event.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(event.endsAt, 'dd/MM/yyyy')
                         : '15 - 17 Tháng 3, 2025'}">
@@ -307,16 +1094,15 @@
                 </div>
             </div>
 
-            <!-- Prize -->
+            <!-- Benefits -->
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="1.2s">
-                    <div class="icon"><i class="lni-trophy"></i></div>
-                    <p th:text="${event.prize != null
-                        ? event.prize
-                        : 'Amazing Prizes'}">
-                        Amazing Prizes
+                    <div class="icon"><i class="lni-coffee-cup"></i></div>
+                    <p th:text="${event.benefits != null
+                        ? event.benefits
+                        : 'Đồ ăn & Nước uống miễn phí'}">
+                        Đồ ăn & Nước uống miễn phí
                     </p>
-                    <span>Don't miss out</span>
                 </div>
             </div>
 
@@ -419,7 +1205,7 @@
                       </div>
                   </div>
               </div>
-              
+
                   </div>
 </section>
 <!-- Team Section End -->
@@ -438,7 +1224,7 @@
                 </div>
             </div>
                   </div>
-                  
+
         <div class="row">
             <!-- Loop qua tất cả ảnh của event -->
             <div class="col-md-6 col-sm-6 col-lg-4" th:each="img : ${event.imageUrls}">
@@ -459,24 +1245,24 @@
 <!-- Gallery Section End -->
 
 <!-- Rules Section -->
-  <section class="section-padding" th:if="${event.rules != null}">
+  <!-- <section class="section-padding" th:if="${event.rules != null}">
       <div class="container">
           <h2 class="section-title">Competition Rules</h2>
           <div class="rules-section">
               <p th:text="${event.rules}">Competition rules and regulations...</p>
           </div>
       </div>
-  </section>
+  </section> -->
 
   <!-- Requirements Section -->
-  <section class="section-padding" th:if="${event.requirements != null}">
+  <!-- <section class="section-padding" th:if="${event.requirements != null}">
       <div class="container">
           <h2 class="section-title">Requirements</h2>
           <div class="requirements-section">
               <p th:text="${event.requirements}">Participation requirements...</p>
           </div>
       </div>
-  </section>
+  </section> -->
 
 <!-- Ask Question Section Start -->
 <section id="faq" class="section-padding">
@@ -929,10 +1715,10 @@
           const prevBtn = document.getElementById('heroPrev');
           const nextBtn = document.getElementById('heroNext');
           const progressBars = document.querySelectorAll('.hero-progress-bar');
-          
+
           let currentSlide = 0;
         const totalSlides = heroSlides.length;
-          
+
           function updateSlider() {
             const translateX = -currentSlide * 100;
             heroTrack.style.transform = `translateX(${translateX}%)`;
@@ -942,21 +1728,21 @@
                   bar.classList.toggle('active', index === currentSlide);
               });
           }
-          
+
           function nextSlide() {
             currentSlide = (currentSlide + 1) % totalSlides;
               updateSlider();
           }
-          
+
           function prevSlide() {
             currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
               updateSlider();
           }
-          
+
         // Event listeners
           nextBtn.addEventListener('click', nextSlide);
           prevBtn.addEventListener('click', prevSlide);
-          
+
         // Progress bar click handlers
           progressBars.forEach((bar, index) => {
               bar.addEventListener('click', () => {

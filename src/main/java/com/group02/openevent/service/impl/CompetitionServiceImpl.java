@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Service
 public class CompetitionServiceImpl implements ICompetitionService {
 
@@ -30,6 +31,12 @@ public class CompetitionServiceImpl implements ICompetitionService {
 
     @Override
     public CompetitionEventDetailDTO getCompetitionEventById(Long id) {
+        System.out.println("DEBUG: Looking for CompetitionEvent with id: " + id);
+        
+        // Debug: List all competition events
+        System.out.println("DEBUG: All CompetitionEvents in DB:");
+        competitionEventRepo.findAll().forEach(e -> System.out.println("  - ID: " + e.getId() + ", Title: " + e.getTitle()));
+        
         CompetitionEvent event = competitionEventRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Competition Event not found with id " + id));
         return mapToDTO(event);
@@ -40,23 +47,19 @@ public class CompetitionServiceImpl implements ICompetitionService {
         if (e == null) return null;
 
         // 1️⃣ Khởi tạo DTO cơ bản (các field chính của sự kiện)
-        CompetitionEventDetailDTO dto = new CompetitionEventDetailDTO(
-                e.getDescription(),
-                e.getTitle(),
-                e.getCapacity(),
-                e.getStartsAt(),
-                e.getEndsAt(),
-                e.getCreatedAt(),
-                null,//chưa có trường dữ liệu, không được sửa
-                e.getEventType(),
-                e.getBenefits(),
-                null, // imageUrls sẽ set sau
-                null, // speakers sẽ set sau
-                null, // schedules sẽ set sau
-                null, // places sẽ set sau
-                e.getVenueAddress(), // venue address
-                e.getGuidelines()    // guidelines
-        );
+        CompetitionEventDetailDTO dto = new CompetitionEventDetailDTO();
+        // 🧩 1️⃣ Thông tin cơ bản
+        dto.setDescription(e.getDescription());
+        dto.setTitle(e.getTitle());
+        dto.setCapacity(e.getCapacity());
+        dto.setStartsAt(e.getStartsAt());
+        dto.setEndsAt(e.getEndsAt());
+        dto.setCreatedAt(e.getCreatedAt());
+        dto.setEventType(e.getEventType());
+        dto.setBenefits(e.getBenefits());
+        dto.setVenueAddress(e.getVenueAddress());
+        dto.setGuidelines(e.getGuidelines());
+
         // 2️⃣ Ảnh sự kiện (EventImages → imageUrls)
         if (e.getEventImages() != null && !e.getEventImages().isEmpty()) {
             List<String> imageUrls = e.getEventImages().stream()
@@ -109,6 +112,9 @@ public class CompetitionServiceImpl implements ICompetitionService {
         // 6️⃣ Thông tin địa điểm & hướng dẫn thêm
         dto.setVenueAddress(e.getVenueAddress());
         dto.setGuidelines(e.getGuidelines());
+        dto.setEligibility(e.getEligibility());
+        dto.setFormat(e.getFormat());
+        dto.setJudgingCriteria(e.getJudgingCriteria());
 
         return dto;
     }

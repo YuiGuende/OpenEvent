@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.group02.openevent.model.dto.PlaceDTO;
 import com.group02.openevent.model.dto.ScheduleDTO;
 import com.group02.openevent.model.dto.SpeakerDTO;
+import com.group02.openevent.model.enums.CompetitionFormat;
 import com.group02.openevent.model.enums.EventType;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -35,7 +36,59 @@ public class CompetitionEventDetailDTO {
     private String guidelines;             // hướng dẫn sự kiện
 
 
+    //mở rộng thêm của competition
+    private String eligibility;               // điều kiện tham gia
+    private CompetitionFormat format;         // SOLO hoặc TEAM
+    private String judgingCriteria;           // tiêu chí chấm điểm
+
+
+    public String getEligibility() {
+        return eligibility;
+    }
+
+    public void setEligibility(String eligibility) {
+        this.eligibility = eligibility;
+    }
+
+    public CompetitionFormat getFormat() {
+        return format;
+    }
+
+    public void setFormat(CompetitionFormat format) {
+        this.format = format;
+    }
+
+    public String getJudgingCriteria() {
+        return judgingCriteria;
+    }
+
+    public void setJudgingCriteria(String judgingCriteria) {
+        this.judgingCriteria = judgingCriteria;
+    }
+
     public CompetitionEventDetailDTO() {
+    }
+
+
+    //full constructure
+    public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines, String eligibility, CompetitionFormat format, String judgingCriteria) {
+        this.description = description;
+        this.title = title;
+        this.capacity = capacity;
+        this.startsAt = startsAt;
+        this.endsAt = endsAt;
+        this.createdAt = createdAt;
+        this.eventType = eventType;
+        this.benefits = benefits;
+        this.imageUrls = imageUrls;
+        this.speakers = speakers;
+        this.schedules = schedules;
+        this.places = places;
+        this.venueAddress = venueAddress;
+        this.guidelines = guidelines;
+        this.eligibility = eligibility;
+        this.format = format;
+        this.judgingCriteria = judgingCriteria;
     }
 
     public List<String> getImageUrls() {
@@ -88,6 +141,16 @@ public class CompetitionEventDetailDTO {
 
     // Default constructor
     public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, Object o, EventType eventType, String benefits, Object object, Object o1, Object object1, Object o2, String venueAddress, String guidelines) {
+        this.description = description;
+        this.title = title;
+        this.capacity = capacity;
+        this.startsAt = startsAt;
+        this.endsAt = endsAt;
+        this.createdAt = createdAt;
+        this.eventType = eventType;
+        this.benefits = benefits;
+        this.venueAddress = venueAddress;
+        this.guidelines = guidelines;
     }
 
     public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines) {

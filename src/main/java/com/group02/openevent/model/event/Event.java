@@ -323,7 +323,6 @@ public class Event {
         this.learningObjects = learningObjects;
     }
 
-
     public Integer getPoints() {
         return points;
     }

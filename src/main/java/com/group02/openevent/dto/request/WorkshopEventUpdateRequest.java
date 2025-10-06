@@ -9,7 +9,11 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FestivalEventCreationRequest extends EventCreationRequest {
-String culture;
-String highlight;
+@EqualsAndHashCode(callSuper = true)
+public class WorkshopEventUpdateRequest extends EventUpdateRequest {
+    String topic;
+    String materialsLink;
+    Integer maxParticipants;
+    String skillLevel;
+    String prerequisites;
 }

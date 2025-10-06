@@ -9,7 +9,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class WorkshopEventCreationRequest extends EventCreationRequest {
-    String topic;
-    String materialsLink;
+@EqualsAndHashCode(callSuper = true)
+public class CompetitionEventUpdateRequest extends EventUpdateRequest {
+    String competitionType;
+    String rules;
+    String prizePool;
 }

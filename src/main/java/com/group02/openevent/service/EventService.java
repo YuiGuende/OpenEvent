@@ -3,6 +3,7 @@ package com.group02.openevent.service;
 
 
 import com.group02.openevent.dto.home.EventCardDTO;
+import com.group02.openevent.dto.request.EventUpdateRequest;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.dto.request.EventCreationRequest;
 import com.group02.openevent.dto.response.EventResponse;
@@ -35,6 +36,7 @@ public interface EventService {
     List<EventCardDTO> getRecommendedEvents(int limit);
     EventCardDTO convertToDTO(Event event);
     EventResponse saveEvent(EventCreationRequest event);
+    EventResponse updateEvent(Long id, EventUpdateRequest event);
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
     List<EventCardDTO> getCustomerEvents(Long customerId);
     List<EventCardDTO> getLiveEvents(int i);

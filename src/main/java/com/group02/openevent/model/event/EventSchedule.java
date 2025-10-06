@@ -14,6 +14,7 @@ public class EventSchedule {
     @JoinColumn(name = "event_id", nullable = false)
     @JsonIgnore
     private Event event;
+
     private String activity;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

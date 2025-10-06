@@ -72,21 +72,23 @@ public class SessionInterceptor implements HandlerInterceptor {
     
     private boolean isPublicPath(String path) {
         return path.startsWith("/api/auth/") ||
-               path.startsWith("/api/sessions/") ||
+                path.startsWith("/api/sessions/") ||
                 path.startsWith("/api/requests") ||
-               path.startsWith("/api/ticket-types/event/") ||
-               path.startsWith("/api/event/") ||
-               path.startsWith("/api/events/public") ||
-               path.startsWith("/api/test/") ||
-               path.startsWith("/static/") ||
-               path.startsWith("/css/") ||
-               path.startsWith("/js/") ||
-               path.startsWith("/img/") ||
-               path.equals("/") ||
-               path.equals("/index.html") ||
-               path.startsWith("/login") ||
-               path.startsWith("/register") ||
-               path.startsWith("/api/current-user");
+                path.startsWith("/api/ticket-types/event/") ||
+                path.startsWith("/api/event/") ||
+                path.startsWith("/api/events/public") ||
+                path.startsWith("/api/test/") ||
+                path.startsWith("/static/") ||
+                path.startsWith("/css/") ||
+                path.startsWith("/js/") ||
+                path.startsWith("/img/") ||
+                path.equals("/") ||
+                path.equals("/index.html") ||
+                path.startsWith("/login") ||
+                path.startsWith("/register") ||
+                path.startsWith("/api/current-user") ||
+                path.startsWith("/api/events/") ||
+                path.startsWith("/api/events/update");
     }
     
     private String extractSessionToken(HttpServletRequest request) {

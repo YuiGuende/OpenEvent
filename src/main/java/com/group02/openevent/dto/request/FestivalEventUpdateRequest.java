@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MusicEventCreationRequest extends EventCreationRequest {
-    String musicType;
+@EqualsAndHashCode(callSuper = true)
+public class FestivalEventUpdateRequest extends EventUpdateRequest {
+String culture;
+String highlight;
 }

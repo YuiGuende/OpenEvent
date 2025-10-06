@@ -1,5 +1,6 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -17,6 +18,7 @@ public class EventImage {
 
     private boolean mainPoster = false;
     @ManyToOne
+    @JsonBackReference
     private Event event;
 
     public EventImage() {

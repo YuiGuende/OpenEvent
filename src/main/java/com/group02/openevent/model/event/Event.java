@@ -10,6 +10,7 @@ import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Host;
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -76,15 +77,17 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false, insertable = false, updatable = false)
-    private EventType eventType = EventType.OTHERS;
+    private EventType eventType;
 
     @Column(name = "enroll_deadline", nullable = false)
     private LocalDateTime enrollDeadline;
 
     @Column(name = "starts_at", nullable = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime startsAt;
 
     @Column(name = "ends_at", nullable = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime endsAt;
 
     @Column(name = "created_at", nullable = false)
@@ -131,8 +134,7 @@ public class Event {
             foreignKey = @ForeignKey(name = "fk_event_host"))
     private Host host;
 
-    @OneToMany( cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "event_id")
+    @OneToMany( mappedBy = "event",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TicketType> ticketTypes = new ArrayList<>();
 
 
@@ -402,5 +404,13 @@ public class Event {
 
     public void setOrganization(Organization organization) {
         this.organization = organization;
+    }
+
+    public List<TicketType> getTicketTypes() {
+        return ticketTypes;
+    }
+
+    public void setTicketTypes(List<TicketType> ticketTypes) {
+        this.ticketTypes = ticketTypes;
     }
 }

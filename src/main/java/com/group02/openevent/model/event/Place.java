@@ -1,5 +1,6 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group02.openevent.model.enums.Building;
 import jakarta.persistence.*;
 
@@ -15,6 +16,7 @@ public class Place {
     private Integer id;
 
     @ManyToMany(mappedBy = "places")
+    @JsonIgnore
     private List<Event> events;
 
     @Enumerated(EnumType.STRING)

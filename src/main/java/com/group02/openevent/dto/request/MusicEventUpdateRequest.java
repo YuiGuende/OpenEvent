@@ -9,8 +9,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CompetitionEventCreationRequest extends EventCreationRequest {
-    String competitionType;
-    String rules;
-    String prizePool;
+@EqualsAndHashCode(callSuper = true)
+public class MusicEventUpdateRequest extends EventUpdateRequest {
+    String musicType;
+    private String genre;
+    private Integer performerCount;
 }

@@ -1,10 +1,12 @@
 package com.group02.openevent.controller.event;
 
+import com.group02.openevent.dto.request.EventUpdateRequest;
+import com.group02.openevent.dto.request.WorkshopEventUpdateRequest;
+import com.group02.openevent.dto.response.ApiResponse;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,16 +18,16 @@ import com.group02.openevent.model.event.Event;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.util.Arrays;
+
 import java.util.List;
 import java.util.Optional;
 
-@Controller
+@RestController
 @RequestMapping("/api/events")
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class EventController {
+
 
     private final EventService eventService;
 
@@ -67,12 +69,22 @@ public class EventController {
 
     // POST - create event
     @PostMapping("/saveEvent")
-    public String createEvent(RedirectAttributes redirectAttributes,
-                              @ModelAttribute("eventForm") EventCreationRequest request) {
-        log.info("Controller Create User");
-         EventResponse savedEvent =  eventService.saveEvent(request);
-        return "redirect:/manage/" + savedEvent.getId();
+    public ApiResponse<EventResponse>createEvent(
+                                   @RequestBody EventCreationRequest request) {
+        log.info("startsAt = {}", request.getStartsAt());
+        log.info("endsAt = {}", request.getEndsAt());
+        ApiResponse<EventResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(eventService.saveEvent(request));
+        return apiResponse;
     }
+//    public String createEvent(RedirectAttributes redirectAttributes,
+//                              @ModelAttribute("eventForm") EventCreationRequest request) {
+//        log.info("startsAt = {}", request.getStartsAt());
+//        log.info("endsAt = {}", request.getEndsAt());
+//         EventResponse savedEvent =  eventService.saveEvent(request);
+//        log.info(String.valueOf(savedEvent.getEventType()));
+//        return "redirect:/manage/" + savedEvent.getId();
+//    }
 
     // Màn hình quản lý / chỉnh sửa event
     @GetMapping("/manage/{id}")
@@ -88,6 +100,15 @@ public class EventController {
         return eventService.getEventById(id);
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<EventResponse> updateEvent(@PathVariable("id") Long id,
+                                                     @RequestBody EventUpdateRequest request){
+        log.info("Controller Update User");
+        log.info(request.getSpeakers().getFirst().getName());
+        EventResponse updated = eventService.updateEvent(id, request);
+
+        return ResponseEntity.ok(updated);
+    }
 
     // GET - get event by type
     @GetMapping("/type/{type}")

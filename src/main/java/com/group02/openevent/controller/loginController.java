@@ -11,8 +11,12 @@ public class loginController {
         return "security/login";
     }
 /// demo
-    @GetMapping("/ticket")
+    @GetMapping("/update-event")
     public String showTicketDemo() {
-        return "event/view-ticket";
+        return "host/create-event";
+    }
+    @GetMapping("/your-events")
+    public String showYourEvent(){
+        return "host/your-events";
     }
 }

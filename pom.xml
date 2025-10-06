@@ -83,9 +83,13 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.5.5.Final</version>
+            <version>1.6.3</version>
         </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -142,7 +146,7 @@
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>1.5.5.Final</version>
+                            <version>1.6.3</version>
                         </path>
                         <path>
                             <groupId>org.projectlombok</groupId>

@@ -1,10 +1,13 @@
 package com.group02.openevent.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
-import com.group02.openevent.model.event.EventSchedule;
-import com.group02.openevent.model.event.Place;
-import com.group02.openevent.model.event.Speaker;
+import com.group02.openevent.model.event.*;
+import com.group02.openevent.model.organization.Organization;
+import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.model.user.Host;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
@@ -13,6 +16,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -22,8 +26,6 @@ import java.util.List;
 public class EventCreationRequest {
     Integer id;
     String title;
-    String imageUrl;
-
     @Enumerated(EnumType.STRING)
     EventType eventType;
 
@@ -36,12 +38,6 @@ public class EventCreationRequest {
     @Enumerated(EnumType.STRING)
     EventStatus status = EventStatus.DRAFT;
 
-    String benefits;
-    String learningObjects;
-    Integer points;
-    //*************
-    List<EventSchedule> schedules;
-    List<Speaker> speakers;
-    List<Place> places;
+
 
 }

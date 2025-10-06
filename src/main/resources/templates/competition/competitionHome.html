@@ -655,6 +655,80 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
+        /* Competition Details Section Styling - Music Theme */
+        .competition-detail-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 40px 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            border: 1px solid #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .competition-detail-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b35, #f7931e, #ffd700);
+        }
+        
+        .competition-detail-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .detail-icon {
+            margin-bottom: 25px;
+            flex-shrink: 0;
+        }
+        
+        .detail-icon i {
+            font-size: 2.5rem;
+            color: #ff6b35;
+            transition: all 0.3s ease;
+        }
+        
+        .competition-detail-card:hover .detail-icon i {
+            transform: scale(1.1);
+            color: #f7931e;
+        }
+        
+        .detail-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-content h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-content p {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
         /* About Section - Equal Height Cards */
         .about-item {
             height: 100%;
@@ -736,6 +810,19 @@
             
             .about-item img {
                 height: 180px;
+            }
+            
+            .competition-detail-card {
+                margin-bottom: 20px;
+                padding: 25px 20px;
+            }
+            
+            .detail-icon i {
+                font-size: 2.5rem;
+            }
+            
+            .detail-content h3 {
+                font-size: 1.3rem;
             }
         }
 
@@ -1041,6 +1128,61 @@
 </section>
 <!-- About Section End -->
 
+<!-- Competition Details Section Start -->
+<section id="competition-details" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Details</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Everything you need to know about participating in this competition</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Eligibility Card -->
+            <div class="col-lg-4 col-md-6 col-xs-12 mb-4" th:if="${event.eligibility != null}">
+                <div class="competition-detail-card wow fadeInLeft" data-wow-delay="0.3s">
+                    <div class="detail-icon">
+                        <i class="lni-users"></i>
+                    </div>
+                    <div class="detail-content">
+                        <h3>Eligibility</h3>
+                        <p th:text="${event.eligibility}">Who can participate in this competition...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Format Card -->
+            <div class="col-lg-4 col-md-6 col-xs-12 mb-4" th:if="${event.format != null}">
+                <div class="competition-detail-card wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="detail-icon">
+                        <i class="lni-target"></i>
+                    </div>
+                    <div class="detail-content">
+                        <h3>Competition Format</h3>
+                        <p th:text="${event.format}">How the competition will be structured...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Judging Criteria Card -->
+            <div class="col-lg-4 col-md-6 col-xs-12 mb-4" th:if="${event.judgingCriteria != null}">
+                <div class="competition-detail-card wow fadeInRight" data-wow-delay="0.5s">
+                    <div class="detail-icon">
+                        <i class="lni-medall"></i>
+                    </div>
+                    <div class="detail-content">
+                        <h3>Judging Criteria</h3>
+                        <p th:text="${event.judgingCriteria}">How participants will be evaluated...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Competition Details Section End -->
 
 <!-- Counter Area Start-->
 <section class="counter-section section-padding">

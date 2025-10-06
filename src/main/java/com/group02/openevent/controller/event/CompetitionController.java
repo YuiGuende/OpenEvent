@@ -2,7 +2,9 @@ package com.group02.openevent.controller.event;
 
 import com.group02.openevent.model.dto.ScheduleDTO;
 import com.group02.openevent.model.dto.competition.CompetitionEventDetailDTO;
+import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.ICompetitionService;
+import com.group02.openevent.service.TicketTypeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +19,11 @@ import java.util.stream.Collectors;
 public class CompetitionController {
 
     private final ICompetitionService competitionService;
+    private final TicketTypeService ticketTypeService;
 
-    public CompetitionController(ICompetitionService competitionService) {
+    public CompetitionController(ICompetitionService competitionService, TicketTypeService ticketTypeService) {
         this.competitionService = competitionService;
+        this.ticketTypeService = ticketTypeService;
     }
 
     @GetMapping("/competition/{id}")
@@ -40,9 +44,11 @@ public class CompetitionController {
                 .stream()
                 .sorted(Map.Entry.comparingByKey()) // Sort by date
                 .collect(Collectors.toList());
+        List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEventId(id);
 
         model.addAttribute("schedulesByDay", schedulesByDay);
-        model.addAttribute("scheduleEntries", scheduleEntries);;
+        model.addAttribute("scheduleEntries", scheduleEntries);
+        model.addAttribute("tickets", ticketTypes);
 
         model.addAttribute("event", event);
         model.addAttribute("eventImages", event.getImageUrls() != null ? event.getImageUrls() : List.of());

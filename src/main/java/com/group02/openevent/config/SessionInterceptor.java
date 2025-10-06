@@ -73,6 +73,7 @@ public class SessionInterceptor implements HandlerInterceptor {
     private boolean isPublicPath(String path) {
         return path.startsWith("/api/auth/") ||
                path.startsWith("/api/sessions/") ||
+                path.startsWith("/api/requests") ||
                path.startsWith("/api/ticket-types/event/") ||
                path.startsWith("/api/event/") ||
                path.startsWith("/api/events/public") ||

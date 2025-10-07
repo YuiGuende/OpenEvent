@@ -319,11 +319,22 @@ hoặc
 
                                 }
                                 
+                                // Get organization_id if provided
+                                Long orgId = null;
+                                if (action.getArgs().containsKey("organization_id") && action.getArgs().get("organization_id") != null) {
+                                    orgId = Long.valueOf(action.getArgs().get("organization_id").toString());
+                                }
+
                                 try {
-                                    agentEventService.saveEvent(event);
-                                    systemResult.append("✅ Đã thêm sự kiện: ").append(title).append(" vào lịch trình.\n");
+                                    // Use createEventByCustomer to handle host creation and organization assignment
+                                    Event saved = agentEventService.createEventByCustomer((long) userId, event, orgId);
+                                    systemResult.append("✅ Đã thêm sự kiện: ").append(saved.getTitle())
+                                            .append(saved.getOrganization() != null
+                                                    ? " (Org: " + saved.getOrganization().getOrgName() + ")"
+                                                    : " (không gắn Organization)")
+                                            .append("\n");
                                     shouldReload = true;
-                                    System.out.println("✅ Event saved successfully: " + title + " with ID: " + event.getId());
+                                    System.out.println("✅ Event saved successfully: " + saved.getTitle() + " with ID: " + saved.getId());
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     systemResult.append("❌ Lỗi khi lưu sự kiện: ").append(e.getMessage()).append("\n");

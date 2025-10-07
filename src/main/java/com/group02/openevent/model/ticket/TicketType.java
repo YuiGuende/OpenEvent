@@ -1,5 +1,4 @@
 package com.group02.openevent.model.ticket;
-
 import com.group02.openevent.model.event.Event;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -39,6 +38,8 @@ public class TicketType {
     @Column(name = "end_sale_date")
     private LocalDateTime endSaleDate;
 
+    @Column(name = "sale", precision = 38, scale = 2)
+    private BigDecimal sale = BigDecimal.ZERO;
     // Constructors
     public TicketType() {}
 
@@ -51,6 +52,18 @@ public class TicketType {
         this.soldQuantity = 0;
     }
 
+    public BigDecimal getSale() {
+        return sale;
+    }
+
+    public void setSale(BigDecimal sale) {
+        this.sale = sale;
+    }
+
+    // Helper method to get final price after discount
+    public BigDecimal getFinalPrice() {
+        return price.subtract(sale);
+    }
     // Business Logic Methods
     public Integer getAvailableQuantity() {
         return totalQuantity - soldQuantity;

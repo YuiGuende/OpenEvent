@@ -385,7 +385,7 @@
                 notes: document.getElementById('notes').value
             };
             
-            // Create order first
+            // Create order with HTTP session
             fetch('/api/orders/create-with-ticket-types', {
                 method: 'POST',
                 headers: {
@@ -403,6 +403,13 @@
                             '<div style="color: #0066cc; margin: 20px 0; padding: 15px; border: 1px solid #0066cc; background-color: #e6f2ff; border-radius: 4px;">' +
                             '<strong>📌 You have an unpaid order for this event!</strong><br>' +
                             '<span style="font-size: 14px;">Redirecting you to payment page...</span>' +
+                            '</div>';
+                    } else {
+                        // New order created successfully
+                        document.getElementById('result').innerHTML = 
+                            '<div style="color: #28a745; margin: 20px 0; padding: 15px; border: 1px solid #28a745; background-color: #d4edda; border-radius: 4px;">' +
+                            '<strong>✅ Order created successfully!</strong><br>' +
+                            '<span style="font-size: 14px;">Creating payment link...</span>' +
                             '</div>';
                     }
                     
@@ -479,12 +486,41 @@
             });
         }
 
+        // Check if user is authenticated
+        function checkAuthentication() {
+            return fetch('/api/current-user')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.authenticated) {
+                        // User not logged in, redirect to login
+                        document.getElementById('result').innerHTML = 
+                            '<div style="color: red; margin: 20px 0; padding: 15px; border: 1px solid red; background-color: #ffe6e6; border-radius: 4px;">' +
+                            '<strong>⚠️ You must be logged in to register for events!</strong><br>' +
+                            '<a href="/login" style="color: #721c24; text-decoration: underline;">Click here to login</a>' +
+                            '</div>';
+                        
+                        // Disable the form
+                        document.getElementById('registrationForm').style.display = 'none';
+                        return false;
+                    }
+                    return true;
+                })
+                .catch(error => {
+                    console.error('Error checking authentication:', error);
+                    return false;
+                });
+        }
+
         // Load page data
         window.onload = function() {
             loadEventDetails();
-            loadUserInfo();
-            // Check registration status after getting event ID
-            setTimeout(checkRegistrationStatus, 500);
+            checkAuthentication().then(isAuthenticated => {
+                if (isAuthenticated) {
+                    loadUserInfo();
+                    // Check registration status after getting event ID
+                    setTimeout(checkRegistrationStatus, 500);
+                }
+            });
         };
 
         // Add form event listener

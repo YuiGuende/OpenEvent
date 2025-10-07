@@ -1,5 +1,6 @@
 package com.group02.openevent.service.impl;
 
+import com.group02.openevent.dto.ticket.TicketTypeDTO;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.TicketTypeService;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -149,5 +151,87 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     public Integer getTotalAvailableByEventId(Long eventId) {
         Integer result = ticketTypeRepo.getTotalAvailableByEventId(eventId);
         return result != null ? result : 0;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketTypeDTO> getTicketTypeDTOsByEventId(Long eventId) {
+        List<TicketType> ticketTypeList = ticketTypeRepo.findByEventId(eventId);
+        System.out.println("ticketTypeList=================369==========: " + ticketTypeList.size());
+        return ticketTypeRepo.findByEventId(eventId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketTypeDTO> getAvailableTicketTypeDTOsByEventId(Long eventId) {
+        return ticketTypeRepo.findAvailableByEventIdIgnoreTime(eventId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<TicketTypeDTO> getTicketTypeDTOById(Long ticketTypeId) {
+        return ticketTypeRepo.findById(ticketTypeId)
+                .map(this::convertToDTO);
+    }
+
+    @Override
+    @Transactional
+    public TicketType saveTicketType(TicketType ticketType) {
+        return ticketTypeRepo.save(ticketType);
+    }
+
+//    @Override
+//    @Transactional
+//    public void deleteTicketType(Long ticketTypeId) {
+//        ticketTypeRepo.deleteById(ticketTypeId);
+//    }
+
+    @Override
+    public TicketTypeDTO convertToDTO(TicketType ticketType) {
+        System.out.println("ticketType===>" + ticketType);
+        LocalDateTime now = LocalDateTime.now();
+        boolean isAvailable = ticketType.getAvailableQuantity() > 0
+                && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
+                && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
+        System.out.println("isAvailable===>" + isAvailable);
+        TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
+                .ticketTypeId(ticketType.getTicketTypeId())
+                .eventId(ticketType.getEvent().getId())
+                .eventTitle(ticketType.getEvent().getTitle())
+                .eventImageUrl(ticketType.getEvent().getImageUrl())
+                .name(ticketType.getName())
+                .description(ticketType.getDescription())
+                .price(ticketType.getPrice())
+                .sale(ticketType.getSale())
+                .finalPrice(ticketType.getFinalPrice())
+                .totalQuantity(ticketType.getTotalQuantity())
+                .soldQuantity(ticketType.getSoldQuantity())
+                .availableQuantity(ticketType.getAvailableQuantity())
+                .startSaleDate(ticketType.getStartSaleDate())
+                .endSaleDate(ticketType.getEndSaleDate())
+                .isAvailable(isAvailable)
+                .build();
+        System.out.println("ticketTypeDTO==>" + ticketTypeDTO);
+        return ticketTypeDTO;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getTotalSoldTickets(Long eventId) {
+        Integer total = ticketTypeRepo.getTotalSoldByEventId(eventId);
+        return total != null ? total : 0;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getTotalTicketCapacity(Long eventId) {
+        Integer total = ticketTypeRepo.getTotalTicketCapacityByEventId(eventId);
+        return total != null ? total : 0;
     }
 }

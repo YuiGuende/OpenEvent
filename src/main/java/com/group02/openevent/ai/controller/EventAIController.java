@@ -7,12 +7,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.PlaceService;
 import com.group02.openevent.util.TimeSlotUnit;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,18 +42,31 @@ public class EventAIController {
 
     /**
      * Thực hiện action tạo event từ AI
-     * @param action Action từ AI
+     * @param request Map chứa action và userId
      * @return ResponseEntity chứa kết quả
      */
     @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createEvent(@RequestBody Action action) {
+    public ResponseEntity<Map<String, Object>> createEvent(@RequestBody Map<String, Object> request) {
         try {
+            Action action = (Action) request.get("action");
+            Integer userId = (Integer) request.get("userId");
+            
+            if (action == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "❌ Action không được để trống"));
+            }
+            
+            if (userId == null || userId <= 0) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "❌ User ID không hợp lệ"));
+            }
+            
             if (!"ADD_EVENT".equals(action.getToolName())) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "❌ Chỉ hỗ trợ action ADD_EVENT"));
             }
             
-            agentEventService.saveEventFromAction(action);
+            agentEventService.saveEventFromAction(action, userId.longValue());
             
             Map<String, Object> result = Map.of(
                 "success", true,

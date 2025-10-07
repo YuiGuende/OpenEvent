@@ -134,8 +134,13 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-    </dependencies>
-
+		<!-- Xóa dependency tự tham chiếu này vì nó gây vấn đề -->
+		<!-- <dependency>
+			<groupId>com.group02</groupId>
+			<artifactId>openevent</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency> -->
+	</dependencies>
 
 	<build>
 		<plugins>

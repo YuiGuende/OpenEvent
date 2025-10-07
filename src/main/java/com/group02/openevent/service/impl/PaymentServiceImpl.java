@@ -174,13 +174,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public List<Payment> getPaymentsByUserId(Long userId) {
-        return paymentRepo.findByOrder_User_UserId(userId);
+    public List<Payment> getPaymentsByCustomerId(Long customerId) {
+        return paymentRepo.findByOrder_Customer_CustomerId(customerId);
     }
 
     @Override
-    public List<Payment> getPaymentsByUserIdAndStatus(Long userId, PaymentStatus status) {
-        return paymentRepo.findByOrder_User_UserIdAndStatus(userId, status);
+    public List<Payment> getPaymentsByCustomerIdAndStatus(Long customerId, PaymentStatus status) {
+        return paymentRepo.findByOrder_Customer_CustomerIdAndStatus(customerId, status);
     }
 
     @Override
@@ -218,7 +218,7 @@ public class PaymentServiceImpl implements PaymentService {
             LocalDateTime now = LocalDateTime.now();
             List<Payment> expiredPayments = allPendingPayments.stream()
                 .filter(p -> p.getExpiredAt() != null && p.getExpiredAt().isBefore(now))
-                .toList();
+                .collect(Collectors.toList());
 
             for (Payment payment : expiredPayments) {
                 payment.setStatus(PaymentStatus.EXPIRED);

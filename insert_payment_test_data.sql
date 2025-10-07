@@ -152,6 +152,33 @@ SELECT e.id, 'Panel Discussion', '2025-09-25 16:00:00', '2025-09-25 17:30:00' FR
 UNION ALL
 SELECT e.id, 'Closing & Networking', '2025-09-25 17:30:00', '2025-09-25 18:00:00' FROM event e WHERE e.event_type = 'ConferenceEvent';
 
+-- 13. Insert Sample Vouchers (Discount Codes)
+INSERT IGNORE INTO vouchers (code, discount_amount, quantity, status, description, created_at, expires_at, created_by) VALUES
+('WELCOME50', 50000.00, 100, 'ACTIVE', 'Welcome discount 50k for new users', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 1),
+('SAVE20K', 20000.00, 50, 'ACTIVE', 'Save 20k on any event', NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), 1),
+('FESTIVAL100', 100000.00, 20, 'ACTIVE', 'Special festival discount 100k', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), 1),
+('STUDENT30', 30000.00, 200, 'ACTIVE', 'Student discount 30k', NOW(), DATE_ADD(NOW(), INTERVAL 60 DAY), 1),
+('EARLYBIRD', 15000.00, 75, 'ACTIVE', 'Early bird discount 15k', NOW(), DATE_ADD(NOW(), INTERVAL 45 DAY), 1),
+('VIP200', 200000.00, 10, 'ACTIVE', 'VIP discount 200k for premium events', NOW(), DATE_ADD(NOW(), INTERVAL 90 DAY), 1),
+('EXPIRED10', 10000.00, 5, 'EXPIRED', 'Expired test voucher', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), 1),
+('UNLIMITED', 25000.00, 999, 'ACTIVE', 'Unlimited use voucher 25k (no expiry)', NOW(), NULL, 1);
+
+-- 14. Insert Sample Orders with Voucher Usage (Updated with new pricing fields)
+INSERT IGNORE INTO orders (user_id, event_id, ticket_type_id, status, original_price, host_discount_percent, host_discount_amount, voucher_discount_amount, total_amount, voucher_id, voucher_code, participant_name, participant_email, participant_phone, created_at) VALUES
+-- Order with voucher discount
+(3, 1, 1, 'PENDING', 250000.00, 0.00, 0.00, 50000.00, 200000.00, 1, 'WELCOME50', 'Nguyen Van User1', 'user1@openevent.com', '0901234570', NOW()),
+-- Order with host discount
+(4, 2, 1, 'PENDING', 150000.00, 10.00, 15000.00, 0.00, 135000.00, NULL, NULL, 'Tran Thi User2', 'user2@openevent.com', '0901234571', NOW()),
+-- Order with both host and voucher discount
+(5, 3, 1, 'PENDING', 500000.00, 15.00, 75000.00, 20000.00, 405000.00, 2, 'SAVE20K', 'Le Van User3', 'user3@openevent.com', '0901234572', NOW()),
+-- Order without any discount
+(3, 4, 1, 'PENDING', 300000.00, 0.00, 0.00, 0.00, 300000.00, NULL, NULL, 'Nguyen Van User1', 'user1@openevent.com', '0901234570', NOW());
+
+-- 15. Insert Voucher Usage Records
+INSERT IGNORE INTO voucher_usage (voucher_id, order_id, discount_applied, used_at) VALUES
+(1, 1, 50000.00, NOW()),
+(2, 3, 20000.00, NOW());
+
 -- Display summary
 SELECT 'Payment test data inserted successfully!' as Status;
 
@@ -168,4 +195,10 @@ SELECT 'Event Schedules', COUNT(*) FROM event_schedule
 UNION ALL
 SELECT 'Event Speakers', COUNT(*) FROM event_speaker
 UNION ALL
-SELECT 'Event Images', COUNT(*) FROM event_image;
+SELECT 'Event Images', COUNT(*) FROM event_image
+UNION ALL
+SELECT 'Vouchers', COUNT(*) FROM vouchers
+UNION ALL
+SELECT 'Orders', COUNT(*) FROM orders
+UNION ALL
+SELECT 'Voucher Usage', COUNT(*) FROM voucher_usage;

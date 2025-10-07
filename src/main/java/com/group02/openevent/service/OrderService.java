@@ -16,14 +16,15 @@ public interface OrderService {
     Order createOrder(CreateOrderRequest request);
     Order createOrderWithTicketTypes(CreateOrderWithTicketTypeRequest request, Customer customer);
     Optional<Order> getById(Long orderId);
-    List<Order> getOrdersByUser(Customer customer);
-    List<Order> getOrdersByUserId(Long userId);
+    List<Order> getOrdersByCustomer(Customer customer);
+    List<Order> getOrdersByCustomerId(Long customerId);
     Page<Order> list(Pageable pageable);
     void delete(Long orderId);
     void cancelOrder(Long orderId);
     void confirmOrder(Long orderId);
-    boolean hasUserRegisteredForEvent(Long userId, Long eventId);
-    Optional<Order> getPendingOrderForEvent(Long userId, Long eventId);
+    Order save(Order order);
+    boolean hasCustomerRegisteredForEvent(Long customerId, Long eventId);
+    Optional<Order> getPendingOrderForEvent(Long customerId, Long eventId);
     Integer countUniqueParticipantsByEventId( Long eventId);
     List<Event> findConfirmedEventsByCustomerId(Long customerId);
 }

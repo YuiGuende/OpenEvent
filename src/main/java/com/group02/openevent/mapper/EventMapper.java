@@ -1,8 +1,7 @@
 package com.group02.openevent.mapper;
 
-import com.group02.openevent.model.dto.request.EventCreationRequest;
-import com.group02.openevent.model.dto.response.*;
-import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.response.*;
 import com.group02.openevent.model.event.*;
 import org.mapstruct.*;
 

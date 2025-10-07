@@ -49,8 +49,8 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
 //            "AND e.createdBy.id = :userId")
 //    List<Event> findEventsBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("userId") int userId);
 
-    @Query("SELECT e FROM Event e WHERE e.poster = true AND e.status = :status")
-    List<Event> findByPosterTrueAndStatus(@Param("status") EventStatus status);
+    @Query("SELECT e FROM Event e WHERE e.poster = true")
+    List<Event> findByPosterTrue();
 
     @Query("SELECT e FROM Event e WHERE e.status = :status ORDER BY e.createdAt DESC")
     List<Event> findRecommendedEvents(@Param("status") EventStatus status, Pageable pageable);

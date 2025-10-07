@@ -8,7 +8,8 @@ import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.OrderService;
-import jakarta.servlet.http.HttpSession;
+import com.group02.openevent.service.VoucherService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,12 +29,14 @@ public class OrderController {
     private final IUserRepo userRepo;
     private final IEventRepo eventRepo;
     private final ITicketTypeRepo ticketTypeRepo;
+    private final VoucherService voucherService;
 
-    public OrderController(OrderService orderService, IUserRepo userRepo, IEventRepo eventRepo, ITicketTypeRepo ticketTypeRepo) {
+    public OrderController(OrderService orderService, IUserRepo userRepo, IEventRepo eventRepo, ITicketTypeRepo ticketTypeRepo, VoucherService voucherService) {
         this.orderService = orderService;
         this.userRepo = userRepo;
         this.eventRepo = eventRepo;
         this.ticketTypeRepo = ticketTypeRepo;
+        this.voucherService = voucherService;
     }
 
     @PostMapping
@@ -66,37 +69,36 @@ public class OrderController {
      * Tạo order mới với TicketType
      */
     @PostMapping("/create-with-ticket-types")
-    public ResponseEntity<?> createWithTicketTypes(@Valid @RequestBody CreateOrderWithTicketTypeRequest request, HttpSession session) {
+    public ResponseEntity<?> createWithTicketTypes(@Valid @RequestBody CreateOrderWithTicketTypeRequest request, HttpServletRequest httpRequest) {
         try {
-            Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+            Long accountId = (Long) httpRequest.getAttribute("currentUserId");
             if (accountId == null) {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
             }
 
             Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
             if (customer == null) {
-                return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
+                return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
             }
 
-            // Check if user already registered (paid) for this event
-            if (orderService.hasUserRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
+            // Check if customer already registered (paid) for this event
+            if (orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false, 
                     "message", "You have already registered for this event"
                 ));
             }
 
-            // Check if user has pending (unpaid) order for this event
+            // Check if customer has pending (unpaid) order for this event
             Optional<Order> pendingOrder = orderService.getPendingOrderForEvent(customer.getCustomerId(), request.getEventId());
             if (pendingOrder.isPresent()) {
                 Order existingOrder = pendingOrder.get();
-                Map<String, Object> response = Map.of(
-                    "success", true,
-                    "orderId", existingOrder.getOrderId(),
-                    "message", "You have an unpaid order for this event. Please complete payment.",
-                    "isPendingOrder", true
-                );
-                return ResponseEntity.ok(response);
+                
+                // Cancel the old pending order
+                orderService.cancelOrder(existingOrder.getOrderId());
+                
+                // Log the cancellation
+                System.out.println("Cancelled old pending order: " + existingOrder.getOrderId() + " for customer: " + customer.getCustomerId());
             }
 
             Order order = orderService.createOrderWithTicketTypes(request, customer);
@@ -129,18 +131,18 @@ public class OrderController {
      * Lấy tất cả orders của user hiện tại
      */
     @GetMapping("/my-orders")
-    public ResponseEntity<?> getMyOrders(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> getMyOrders(HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
         Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
         if (customer == null) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
         }
 
-        List<Order> orders = orderService.getOrdersByUser(customer);
+        List<Order> orders = orderService.getOrdersByCustomer(customer);
         return ResponseEntity.ok(Map.of("success", true, "orders", orders));
     }
 
@@ -149,18 +151,18 @@ public class OrderController {
      * Kiểm tra xem user đã đăng ký event này chưa
      */
     @GetMapping("/check-registration/{eventId}")
-    public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
         Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
         if (customer == null) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
         }
 
-        boolean isRegistered = orderService.hasUserRegisteredForEvent(customer.getCustomerId(), eventId);
+        boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
         return ResponseEntity.ok(Map.of(
             "success", true,
             "isRegistered", isRegistered
@@ -171,8 +173,8 @@ public class OrderController {
      * Hủy order
      */
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
@@ -189,8 +191,8 @@ public class OrderController {
      * Xác nhận order (sau khi thanh toán thành công)
      */
     @PostMapping("/{orderId}/confirm")
-    public ResponseEntity<?> confirmOrder(@PathVariable Long orderId, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+    public ResponseEntity<?> confirmOrder(@PathVariable Long orderId, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
@@ -198,6 +200,91 @@ public class OrderController {
         try {
             orderService.confirmOrder(orderId);
             return ResponseEntity.ok(Map.of("success", true, "message", "Order confirmed successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Áp dụng voucher vào order
+     */
+    @PostMapping("/{orderId}/apply-voucher")
+    public ResponseEntity<?> applyVoucher(@PathVariable Long orderId, @RequestParam String voucherCode, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
+        }
+
+        try {
+            Optional<Order> orderOpt = orderService.getById(orderId);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Order not found"));
+            }
+
+            Order order = orderOpt.get();
+            
+            // Kiểm tra quyền sở hữu order
+            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
+                return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied"));
+            }
+
+            // Áp dụng voucher
+            voucherService.applyVoucherToOrder(voucherCode, order);
+            orderService.save(order);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true, 
+                "message", "Voucher applied successfully",
+                "discountAmount", order.getVoucherDiscountAmount(),
+                "newTotalAmount", order.getTotalAmount()
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Lấy danh sách voucher khả dụng
+     */
+    @GetMapping("/available-vouchers")
+    public ResponseEntity<?> getAvailableVouchers(HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
+        }
+
+        try {
+            var vouchers = voucherService.getAvailableVouchers();
+            return ResponseEntity.ok(Map.of("success", true, "vouchers", vouchers));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Kiểm tra voucher có khả dụng không
+     */
+    @GetMapping("/check-voucher")
+    public ResponseEntity<?> checkVoucher(@RequestParam String voucherCode, HttpServletRequest httpRequest) {
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
+        }
+
+        try {
+            boolean isAvailable = voucherService.isVoucherAvailable(voucherCode);
+            if (isAvailable) {
+                var voucher = voucherService.getVoucherByCode(voucherCode);
+                return ResponseEntity.ok(Map.of(
+                    "success", true, 
+                    "available", true,
+                    "discountAmount", voucher.get().getDiscountAmount(),
+                    "description", voucher.get().getDescription()
+                ));
+            } else {
+                return ResponseEntity.ok(Map.of("success", true, "available", false));
+            }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }

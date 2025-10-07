@@ -4,8 +4,15 @@ import com.group02.openevent.ai.dto.Action;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.organization.Organization;
+import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.Host;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.CustomerService;
+import com.group02.openevent.service.HostService;
+import com.group02.openevent.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +32,18 @@ public class AgentEventService {
     
     @Autowired
     private EventService eventService;
+    
+    @Autowired
+    private CustomerService customerService;
+    
+    @Autowired
+    private HostService hostService;
+    
+    @Autowired
+    private OrganizationService organizationService;
 
-    // ✅ Lưu sự kiện từ Action (ADD_EVENT)
-    public void saveEventFromAction(Action action) {
+    // ✅ Lưu sự kiện từ Action (ADD_EVENT) - New version with userId
+    public void saveEventFromAction(Action action, Long userId) {
         try {
             Map<String, Object> args = action.getArgs();
 
@@ -40,8 +56,15 @@ public class AgentEventService {
             event.setStatus(EventStatus.DRAFT); // mặc định khi tạo
             event.setEventType(EventType.OTHERS);
 
-            eventService.saveEvent(event);
-            System.out.println("✅ Đã lưu sự kiện: " + event.getTitle());
+            // Get organization_id if provided
+            Long organizationId = null;
+            if (args.containsKey("organization_id") && args.get("organization_id") != null) {
+                organizationId = Long.valueOf(args.get("organization_id").toString());
+            }
+
+            // Use createEventByCustomer to handle host creation and organization assignment
+            Event savedEvent = createEventByCustomer(userId, event, organizationId);
+            System.out.println("✅ Đã lưu sự kiện: " + savedEvent.getTitle());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,5 +166,53 @@ public class AgentEventService {
         }
 
         throw new IllegalArgumentException("❌ Không thể parse ngày giờ: " + input);
+    }
+
+    /**
+     * Tạo sự kiện bởi Customer với auto-promote Customer thành Host nếu cần
+     * @param userId ID của user (accountId)
+     * @param draft Event draft cần tạo
+     * @param organizationId ID của organization (optional)
+     * @return Event đã được lưu
+     */
+    public Event createEventByCustomer(Long userId, Event draft, @Nullable Long organizationId) {
+        // 1) Load customer
+        Customer c = customerService.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy customer từ userId=" + userId));
+        
+        // 2) Find or create Host (idempotent)
+        Host h = c.getHost();
+        if (h == null) {
+            h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -> {
+                Host nh = new Host();
+                nh.setCustomer(c);
+                // Set default host name from account email if available
+                if (c.getAccount() != null && c.getAccount().getEmail() != null) {
+                    nh.setHostName(c.getAccount().getEmail().split("@")[0]);
+                } else {
+                    nh.setHostName("Host_" + c.getCustomerId());
+                }
+                return hostService.save(nh);
+            });
+        }
+        
+        // 3) Required host
+        draft.setHost(h);
+        
+        // 4) Optional organization
+        if (organizationId != null) {
+            Organization org = organizationService.findById(organizationId)
+                    .orElseThrow(() -> new IllegalArgumentException("Organization không tồn tại"));
+            draft.setOrganization(org);
+        } else {
+            draft.setOrganization(null);
+        }
+        
+        // 5) Safe defaults
+        if (draft.getStatus() == null) draft.setStatus(EventStatus.DRAFT);
+        if (draft.getEventType() == null) draft.setEventType(EventType.OTHERS);
+        if (draft.getCreatedAt() == null) draft.setCreatedAt(LocalDateTime.now());
+        
+        return eventService.saveEvent(draft);
     }
 }

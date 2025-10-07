@@ -14,13 +14,17 @@
         <div class="hero-track" id="heroTrack">
             <div class="hero-slide"
                  th:each="event : ${posterEvents}"
-                 th:style="|background-image: url('@{${event.imageUrl}}')|">
+                 th:style="|background-image: url('${event.imageUrl}')|">
                 <div class="container hero-content">
-<!--                    <h1 th:text="${event.title}">Event Title</h1>-->
-<!--                    <p th:text="${event.description}">Event Description</p>-->
                     <div class="hero-actions">
-                        <a class="btn btn-primary" th:href="@{/events/{id}(id=${event.id})}">Get Ticket</a>
-                        <a class="btn btn-ghost" th:href="@{/events/{id}(id=${event.id})}">Explore More</a>
+                        <a class="btn btn-primary"
+                           th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}">
+                            Get Ticket
+                        </a>
+                        <a class="btn btn-ghost"
+                           th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}">
+                            Explore More
+                        </a>
                     </div>
                 </div>
             </div>
@@ -36,16 +40,304 @@
             </div>
         </div>
 
-
         <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
         <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
-
-
         <div class="hero-progress">
             <div class="hero-progress-bar" th:each="event : ${posterEvents}"></div>
+            <div class="hero-progress-bar" th:if="${#lists.isEmpty(posterEvents)}"></div>
         </div>
     </section>
 
+
+    <section class="section section-compact search-hero">
+        <div class="container">
+            <form class="event-search" th:action="@{/events}" method="get" role="search">
+                <label class="es-field es-grow">
+                    <span class="es-label">Tìm kiếm</span>
+                    <input class="es-input" type="text" name="q" placeholder="Tìm sự kiện, CLB, chủ đề…"/>
+                </label>
+                <label class="es-field">
+                    <span class="es-label">Loại</span>
+                    <select class="es-select" name="type">
+                        <option value="">Tất cả</option>
+                        <option>Music</option>
+                        <option>Workshop</option>
+                        <option>Conference</option>
+                        <option>Festival</option>
+                        <option>Competition</option>
+                        <option>Other</option>
+                    </select>
+                </label>
+
+                <label class="es-field">
+                    <span class="es-label">Thành phố</span>
+                    <select class="es-select" name="city">
+                        <option value="">Bất kỳ</option>
+                        <option>Hà Nội</option>
+                        <option>HCM</option>
+                        <option>Đà Nẵng</option>
+                        <option>Cần Thơ</option>
+                    </select>
+                </label>
+
+                <div class="es-field">
+                    <span class="es-label">Thời gian</span>
+                    <div class="es-inline">
+                        <input class="es-input" type="date" name="from"/>
+                        <span class="es-sep">–</span>
+                        <input class="es-input" type="date" name="to"/>
+                        <label class="es-check">
+                            <input type="checkbox" name="freeOnly" value="true"/>
+                            <span>Chỉ Free</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary es-submit" type="submit">Tìm sự kiện</button>
+            </form>
+
+            <div class="chip-row">
+                <a class="chip is-active" th:href="@{/events(reco='for-you')}">For you</a>
+                <a class="chip" th:href="@{/events(reco='near-you')}">Near you</a>
+                <a class="chip" th:href="@{/events(reco='trending')}">Trending</a>
+                <a class="chip" th:href="@{/events(freeOnly=true)}">Free</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="filter-row">
+                  <span class="filter-label">
+                      <span class="section-icon">📅</span>
+                      Your Events
+                  </span>
+                <a class="link" th:href="@{/events}">View All</a>
+            </div>
+
+            <div class="grid grid-3" th:if="${!#lists.isEmpty(myEvents)}">
+                <article class="event-card" th:each="ev : ${myEvents}">
+                    <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
+                       style="text-decoration: none; color: inherit;">
+                        <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
+                        <div class="card-body">
+                            <h3 class="card-title" th:text="${ev.title}">Event title</h3>
+                            <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">City • Date • Duration</p>
+                            <p class="event-org" th:text="${'Tổ chức: ' + ev.organizer}">Organizer: ...</p>
+
+
+                            <div class="capacity">
+                                <div class="capacity-row">
+                                    <span th:text="${'Đã đăng ký: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                    <span class="capacity-mini" th:text="${'Giá: ' + ev.priceLabel}">Price: Free</span>
+                                </div>
+                                <div class="bar">
+                                    <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
+                                </div>
+                            </div>
+
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
+                                <span class="badge badge-live" th:if="${ev.live}">Live</span>
+                                <span class="tag" th:if="${ev.soldOut}">Hết chỗ</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+            </div>
+
+            <div class="grid grid-3" th:if="${#lists.isEmpty(myEvents)}">
+                <article class="event-card">
+                    <img src="/img/event1.jpg" alt="UI/UX Bootcamp" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">UI/UX Bootcamp</h3>
+                        <p class="card-meta">Hà Nội • 20/09/2025 • 3h</p>
+                        <p class="event-org">Organizer: Design Lab</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Registered: 90 / 150</span>
+                                <span class="capacity-mini">Price: Free</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:60%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Workshop</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="event-card">
+                    <img src="/img/event2.jpg" alt="Summer Fest" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">Summer Fest</h3>
+                        <p class="card-meta">HCM • 22/09/2025 • 2h</p>
+                        <p class="event-org">Tổ chức: Event Hub</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Đã đăng ký: 480 / 600</span>
+                                <span class="capacity-mini">Giá: 100k</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:80%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Festival</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="event-card">
+                    <img src="/img/event3.jpg" alt="Open Campus Tour" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">Open Campus Tour</h3>
+                        <p class="card-meta">Đà Nẵng • 17/09/2025 • 1.5h</p>
+                        <p class="event-org">Tổ chức: FPT University</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Đã đăng ký: 150 / 150</span>
+                                <span class="capacity-mini">Giá: Free</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:100%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Conference</span>
+                            <span class="tag">Hết chỗ</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="pager">
+                <button class="icon-btn" aria-label="Prev">‹</button>
+                <span>1 / 5</span>
+                <button class="icon-btn" aria-label="Next">›</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section live">
+        <div class="container">
+            <div class="filter-row">
+                  <span class="filter-label">
+                      <span class="section-icon">🔴</span>
+                      Live Events
+                  </span>
+                <div class="chip-group">
+                    <button class="chip is-active" data-filter="all">All</button>
+                    <button class="chip" data-filter="Music">Music</button>
+                    <button class="chip" data-filter="Workshop">Workshop</button>
+                    <button class="chip" data-filter="Conference">Conference</button>
+                    <button class="chip" data-filter="Festival">Festival</button>
+                    <button class="chip" data-filter="Competition">Competition</button>
+                    <button class="chip" data-filter="Other">Other</button>
+                </div>
+            </div>
+
+            <div class="grid grid-3" th:if="${!#lists.isEmpty(liveEvents)}">
+                <article class="event-card" th:each="ev : ${liveEvents}" th:attr="data-tags=${ev.eventTypeTag}">
+                    <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
+                       style="text-decoration: none; color: inherit;">
+                        <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
+                        <div class="card-body">
+                            <h3 class="card-title" th:text="${ev.title}">Event title</h3>
+                            <p class="card-meta" th:text="${ev.city + ' • Hôm nay • ' + ev.durationLabel}">City • Today • Duration</p>
+                            <p class="event-org" th:text="${'Tổ chức: ' + ev.organizer}">Organizer: ...</p>
+
+                            <div class="capacity">
+                                <div class="capacity-row">
+                                    <span th:text="${'Đã đăng ký: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                    <span class="capacity-mini" th:text="${'Giá: ' + ev.priceLabel}">Price: Free</span>
+                                </div>
+                                <div class="bar">
+                                    <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
+                                </div>
+                            </div>
+
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
+                                <span class="badge badge-live">Live</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+            </div>
+
+            <div class="grid grid-3" th:if="${#lists.isEmpty(liveEvents)}">
+                Card 1
+                <article class="event-card" data-tags="Music">
+                    <img src="/img/event1.jpg" alt="Acoustic Night" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">Acoustic Night</h3>
+                        <p class="card-meta">HCM • Hôm nay • 2h</p>
+                        <p class="event-org">Organizer: Music Club</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Registered: 216 / 300</span>
+                                <span class="capacity-mini">Price: Free</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:72%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Music</span>
+                            <span class="tag">#Free</span>
+                            <span class="badge badge-live">Live</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="event-card" data-tags="Workshop">
+                    <img src="/img/event2.jpg" alt="AI Workshop" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">AI Workshop</h3>
+                        <p class="card-meta">Hà Nội • Hôm nay • 1h</p>
+                        <p class="event-org">Organizer: GDSC</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Registered: 110 / 200</span>
+                                <span class="capacity-mini">Price: 50k</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:55%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Workshop</span>
+                            <span class="badge badge-live">Live</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="event-card" data-tags="Conference">
+                    <img src="/img/event3.jpg" alt="Tech Summit" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">Tech Summit</h3>
+                        <p class="card-meta">Đà Nẵng • Hôm nay • 3h</p>
+                        <p class="event-org">Tổ chức: Biz Club</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Đã đăng ký: 352 / 400</span>
+                                <span class="capacity-mini">Giá: 200k</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:88%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Conference</span>
+                            <span class="badge badge-live">Live</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
     <section class="section">
         <div class="container">
@@ -64,33 +356,36 @@
 
             <div class="grid grid-3" th:if="${!#lists.isEmpty(recommendedEvents)}">
                 <article class="event-card" th:each="event : ${recommendedEvents}">
-                    <img class="event-cover" th:src="${event.imageUrl}" th:alt="${event.title}"/>
-                    <div class="card-body">
-                        <h3 class="card-title" th:text="${event.title}">Event title</h3>
-                        <p class="card-meta"
-                           th:text="${event.city + ' • ' + event.dateLabel + ' • ' + event.durationLabel}">
-                            City • Date • Duration
-                        </p>
-                        <p class="event-org" th:text="${'Tổ chức: ' + event.organizer}">Organizer: ...</p>
+                    <a th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
+                       style="text-decoration: none; color: inherit;">
+                        <img class="event-cover" th:src="${event.imageUrl}" th:alt="${event.title}"/>
+                        <div class="card-body">
+                            <h3 class="card-title" th:text="${event.title}">Event title</h3>
+                            <p class="card-meta"
+                               th:text="${event.city + ' • ' + event.dateLabel + ' • ' + event.durationLabel}">
+                                City • Date • Duration
+                            </p>
+                            <p class="event-org" th:text="${'Tổ chức: ' + event.organizer}">Organizer: ...</p>
 
-                        <div class="capacity">
-                            <div class="capacity-row">
-                                <span th:text="${'Đã đăng ký: ' + event.registered + ' / ' + event.capacity}">
-                                    Registered: 0 / 0
-                                </span>
-                                <span class="capacity-mini" th:text="${'Giá: ' + event.priceLabel}">Price: Free</span>
+                            <div class="capacity">
+                                <div class="capacity-row">
+                                    <span th:text="${'Đã đăng ký: ' + event.registered + ' / ' + event.capacity}">
+                                        Registered: 0 / 0
+                                    </span>
+                                    <span class="capacity-mini" th:text="${'Giá: ' + event.priceLabel}">Price: Free</span>
+                                </div>
+                                <div class="bar">
+                                    <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
+                                </div>
                             </div>
-                            <div class="bar">
-                                <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
+
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + event.eventTypeTag}">#Tag</span>
+                                <span class="badge badge-live" th:if="${event.live}">Live</span>
+                                <span class="tag" th:if="${event.soldOut}">Hết chỗ</span>
                             </div>
                         </div>
-
-                        <div class="event-tags">
-                            <span class="tag" th:text="${'#' + event.eventTypeTag}">#Tag</span>
-                            <span class="badge badge-live" th:if="${event.live}">Live</span>
-                            <span class="tag" th:if="${event.soldOut}">Hết chỗ</span>
-                        </div>
-                    </div>
+                    </a>
                 </article>
             </div>
 
@@ -167,8 +462,113 @@
         </div>
     </section>
 
+    <section class="section section-muted">
+        <div class="container">
+            <div class="honor-frame">
+                <div class="filter-row honor-head">
+                  <span class="filter-label">
+                      <span class="section-icon">🏆</span>
+                      Top Outstanding Students
+                  </span>
+                </div>
+
+                <div class="podium-layout">
+                    <!-- Slot 2 - Rank 2 (Left, Medium height) -->
+                    <div class="podium-slot slot-second">
+                        <div class="slot-number">2</div>
+                        <div class="featured-card rank-2">
+                            <div class="rank-badge">🥈 No.2</div>
+
+                            <div class="card-header">
+                                <span class="card-title-small">OUTSTANDING</span>
+                            </div>
+
+                            <div class="student-image-container">
+                                <img th:src="@{/img/sinhvien3.jpg}" alt="Trần Lê Gia Khang" class="student-image"/>
+                                <div class="background-graphic"></div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="student-title">Brother</div>
+                                <div class="student-name">TRẦN LÊ GIA KHANG</div>
+                                <div class="event-stats">15 Events</div>
+                            </div>
+
+                            <div class="decorative-elements">
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slot 1 - Rank 1 (Center, Highest) -->
+                    <div class="podium-slot slot-first">
+                        <div class="slot-number">1</div>
+                        <div class="featured-card rank-1">
+                            <div class="rank-badge">🥇 No.1</div>
+
+                            <div class="card-header">
+                                <span class="card-title-small">OUTSTANDING</span>
+                            </div>
+
+                            <div class="student-image-container">
+                                <img th:src="@{/img/sinhvien2.jpg}" alt="Trần Lê Gia Khang" class="student-image"/>
+                                <div class="background-graphic"></div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="student-title">Brother</div>
+                                <div class="student-name">TRẦN LÊ GIA KHANG</div>
+                                <div class="event-stats">15 Events</div>
+                            </div>
+
+                            <div class="decorative-elements">
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slot 3 - Rank 3 (Right, Lowest) -->
+                    <div class="podium-slot slot-third">
+                        <div class="slot-number">3</div>
+                        <div class="featured-card rank-3">
+                            <div class="rank-badge">🥉 No.3</div>
+
+                            <div class="card-header">
+                                <span class="card-title-small">OUTSTANDING</span>
+                            </div>
+
+                            <div class="student-image-container">
+                                <img th:src="@{/img/sinhvien2.jpg}" alt="Trần Lê Gia Khang" class="student-image"/>
+                                <div class="background-graphic"></div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="student-title">Brother</div>
+                                <div class="student-name">TRẦN LÊ GIA KHANG</div>
+                                <div class="event-stats">15 Events</div>
+                            </div>
+
+                            <div class="decorative-elements">
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                                <span class="deco-icon">✕</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </main>
+
 
 <div th:replace="fragments/footer :: siteFooter()"></div>
 

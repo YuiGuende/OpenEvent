@@ -7,20 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import com.group02.openevent.model.dto.request.EventCreationRequest;
-import com.group02.openevent.model.dto.response.EventResponse;
+import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.Event;
-import com.group02.openevent.service.EventService;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Arrays;
 import java.util.List;
@@ -88,7 +83,7 @@ public class EventController {
     public String createEvent(RedirectAttributes redirectAttributes,
                               @ModelAttribute("eventForm") EventCreationRequest request) {
         log.info("Controller Create User");
-         EventResponse savedEvent =  eventService.saveEvent(request);
+        EventResponse savedEvent =  eventService.saveEvent(request);
         return "redirect:/manage/" + savedEvent.getId();
     }
 

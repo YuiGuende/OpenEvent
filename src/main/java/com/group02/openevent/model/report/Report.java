@@ -12,8 +12,8 @@ public class Report {
     @Column(name = "report_id")
     private Long reportId;
     
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "customer_id", nullable = false)
+    private Long customerId;
     
     @Column(name = "event_id", nullable = false)
     private Long eventId;
@@ -38,8 +38,8 @@ public class Report {
     // Constructors
     public Report() {}
     
-    public Report(Long userId, Long eventId, String content, ReportType type) {
-        this.userId = userId;
+    public Report(Long customerId, Long eventId, String content, ReportType type) {
+        this.customerId = customerId;
         this.eventId = eventId;
         this.content = content;
         this.type = type;
@@ -49,8 +49,8 @@ public class Report {
     public Long getReportId() { return reportId; }
     public void setReportId(Long reportId) { this.reportId = reportId; }
     
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public Long getCustomerId() { return customerId; }
+    public void setCustomerId(Long customerId) { this.customerId = customerId; }
     
     public Long getEventId() { return eventId; }
     public void setEventId(Long eventId) { this.eventId = eventId; }

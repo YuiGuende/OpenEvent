@@ -47,7 +47,7 @@ public class Event {
             generator = "event_sequence"
     )
     private Long id;
-
+    @Column(nullable = true)
     private boolean poster;
 
     @ManyToOne

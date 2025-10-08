@@ -1,39 +1,39 @@
 <article class="card event-card" th:fragment="eventCard(ev)">
-  <div class="card-media">
-    <img th:src="${ev.coverUrl}" alt="">
-    <span class="status"
-          th:classappend="${ev.soldOut} ? ' is-soldout' : (${ev.isLive} ? ' is-live' : ' is-open')"
-          th:text="${ev.soldOut} ? 'Sold out' : (${ev.isLive} ? 'Live now' : 'Open')">Open</span>
-  </div>
-
-  <div class="card-body">
-    <h3 class="card-title" th:text="${ev.title}">Tên sự kiện</h3>
-    <p class="card-meta">
-      <span th:text="${ev.dateLabel}">17/09/2025</span> •
-      <span th:text="${ev.city}">HCM</span>
-    </p>
-
-    <div class="capacity">
-      <div class="capacity-row">
-        <span><strong th:text="${ev.registered}">0</strong>/<span th:text="${ev.capacity}">0</span> vé</span>
-        <span class="capacity-percent"
-              th:text="${T(java.lang.Math).round(ev.registered * 100.0 / ev.capacity)} + '%'">0%</span>
-      </div>
-      <div class="bar">
-        <div class="fill"
-             th:style="|width:${ T(java.lang.Math).min(100, T(java.lang.Math).round(ev.registered * 100.0 / ev.capacity)) }%|"></div>
-      </div>
+    <div class="card-media">
+        <img th:src="${ev.coverUrl}" alt="">
+        <span class="status"
+              th:classappend="${ev.soldOut} ? ' is-soldout' : (${ev.isLive} ? ' is-live' : ' is-open')"
+              th:text="${ev.soldOut} ? 'Sold out' : (${ev.isLive} ? 'Live now' : 'Open')">Open</span>
     </div>
 
-    <div class="meta-row">
-      <span class="meta"><span th:text="${ev.organizer}">Org</span></span>
-      <span class="meta"><span th:text="${ev.priceLabel}">Free</span></span>
-      <span class="meta"><span th:text="${ev.durationLabel}">2h</span></span>
-    </div>
+    <div class="card-body">
+        <h3 class="card-title" th:text="${ev.title}">Tên sự kiện</h3>
+        <p class="card-meta">
+            <span th:text="${ev.dateLabel}">17/09/2025</span> •
+            <span th:text="${ev.city}">HCM</span>
+        </p>
 
-    <div class="card-tags">
-      <span class="tag" th:each="t : ${ev.tags}" th:text="${t}">Tag</span>
+        <div class="capacity">
+            <div class="capacity-row">
+                <span><strong th:text="${ev.registered}">0</strong>/<span th:text="${ev.capacity}">0</span> vé</span>
+                <span class="capacity-percent"
+                      th:text="${T(java.lang.Math).round(ev.registered * 100.0 / ev.capacity)} + '%'">0%</span>
+            </div>
+            <div class="bar">
+                <div class="fill"
+                     th:style="|width:${ T(java.lang.Math).min(100, T(java.lang.Math).round(ev.registered * 100.0 / ev.capacity)) }%|"></div>
+            </div>
+        </div>
+
+        <div class="meta-row">
+            <span class="meta"><span th:text="${ev.organizer}">Org</span></span>
+            <span class="meta"><span th:text="${ev.priceLabel}">Free</span></span>
+            <span class="meta"><span th:text="${ev.durationLabel}">2h</span></span>
+        </div>
+
+        <div class="card-tags">
+            <span class="tag" th:each="t : ${ev.tags}" th:text="${t}">Tag</span>
+        </div>
     </div>
-  </div>
 </article>
 

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${festivalEvent != null ? festivalEvent.title + ' - Festival Event' : 'Festival Event - FPT University'}">FPT Festival 2025 - FPT University</title>
+    <title th:text="${festivalEvent != null ? festivalEvent.title + ' - Festival Event' : 'Festival Event - FPT University'}">
+        FPT Festival 2025 - FPT University</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
@@ -215,113 +216,120 @@
 <!-- Main Content - Only show if festivalEvent exists -->
 <div th:if="${festivalEvent != null}">
 
-<!-- Banner Section -->
-<section class="festival-banner-slider" th:if="${eventImages != null and !eventImages.isEmpty()}">
-    <div class="festival-slider-container">
-        <div class="festival-slider-track" id="festivalSliderTrack">
-            <div th:each="img, iterStat : ${eventImages}"
-                 class="festival-slide"
-                 th:classappend="${iterStat.first} ? 'active' : ''"
-                 th:style="'background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(' + ${img.url != null ? img.url : img} + ');'">
-                <div class="festival-banner-overlay">
-                    <div class="container">
-                        <div class="festival-banner-content">
-                            <div class="festival-banner-badge">
-                                <span class="badge bg-warning text-dark me-2" th:text="${festivalEvent != null ? festivalEvent.festivalType : 'Cultural Festival'}">Cultural Festival</span>
-                                <span class="badge bg-info text-white" th:text="${festivalEvent != null ? festivalEvent.festivalTheme : 'Technology & Culture'}">Technology & Culture</span>
-                            </div>
+    <!-- Banner Section -->
+    <section class="festival-banner-slider" th:if="${eventImages != null and !eventImages.isEmpty()}">
+        <div class="festival-slider-container">
+            <div class="festival-slider-track" id="festivalSliderTrack">
+                <div th:each="img, iterStat : ${eventImages}"
+                     class="festival-slide"
+                     th:classappend="${iterStat.first} ? 'active' : ''"
+                     th:style="'background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(' + ${img.url != null ? img.url : img} + ');'">
+                    <div class="festival-banner-overlay">
+                        <div class="container">
+                            <div class="festival-banner-content">
+                                <div class="festival-banner-badge">
+                                    <span class="badge bg-warning text-dark me-2"
+                                          th:text="${festivalEvent != null ? festivalEvent.festivalType : 'Cultural Festival'}">Cultural Festival</span>
+                                    <span class="badge bg-info text-white"
+                                          th:text="${festivalEvent != null ? festivalEvent.festivalTheme : 'Technology & Culture'}">Technology & Culture</span>
+                                </div>
 
-                            <h1 class="festival-banner-title" th:text="${festivalEvent != null ? festivalEvent.title : 'FPT Festival 2025'}">FPT Festival 2025</h1>
-                            <p class="festival-banner-subtitle" th:text="${festivalEvent != null ? festivalEvent.description : 'The biggest cultural festival at FPT University'}">The biggest cultural festival at FPT University</p>
+<!--                                <h1 class="festival-banner-title"-->
+<!--                                    th:text="${festivalEvent != null ? festivalEvent.title : 'FPT Festival 2025'}">FPT-->
+<!--                                    Festival 2025</h1>-->
+<!--                                <p class="festival-banner-subtitle"-->
+<!--                                   th:text="${festivalEvent != null ? festivalEvent.description : 'The biggest cultural festival at FPT University'}">-->
+<!--                                    The biggest cultural festival at FPT University</p>-->
 
-                            <div class="festival-banner-meta">
-                                <div class="festival-meta-item">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span th:text="${festivalEvent != null and festivalEvent.startsAt != null ? #temporals.format(festivalEvent.startsAt, 'dd/MM/yyyy') : '15/12/2025'}">15/12/2025</span>
-                </div>
-                                <div class="festival-meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span th:text="${festivalEvent != null ? festivalEvent.venueAddress : 'FPT University Hanoi'}">FPT University Hanoi</span>
-            </div>
-                                <div class="festival-meta-item">
-                                    <i class="fas fa-users"></i>
-                                    <span th:text="${festivalEvent.capacity} + ' people'">5000 people</span>
-        </div>
-    </div>
+<!--                                <div class="festival-banner-meta">-->
+<!--                                    <div class="festival-meta-item">-->
+<!--                                        <i class="fas fa-calendar-alt"></i>-->
+<!--                                        <span th:text="${festivalEvent != null and festivalEvent.startsAt != null ? #temporals.format(festivalEvent.startsAt, 'dd/MM/yyyy') : '15/12/2025'}">15/12/2025</span>-->
+<!--                                    </div>-->
+<!--                                    <div class="festival-meta-item">-->
+<!--                                        <i class="fas fa-map-marker-alt"></i>-->
+<!--                                        <span th:text="${festivalEvent != null ? festivalEvent.venueAddress : 'FPT University Hanoi'}">FPT University Hanoi</span>-->
+<!--                                    </div>-->
+<!--                                    <div class="festival-meta-item">-->
+<!--                                        <i class="fas fa-users"></i>-->
+<!--                                        <span th:text="${festivalEvent.capacity} + ' people'">5000 people</span>-->
+<!--                                    </div>-->
+<!--                                </div>-->
 
-                            <div class="festival-banner-actions">
-                                <a class="btn btn-lg festival-btn-primary" href="#tickets">
-                                    <i class="fas fa-ticket-alt me-2"></i>Register Now
-                                </a>
-                                <a class="btn btn-lg festival-btn-secondary" href="#about">
-                                    <i class="fas fa-info-circle me-2"></i>Learn More
-                                </a>
+<!--                                <div class="festival-banner-actions">-->
+<!--                                    <a class="btn btn-lg festival-btn-primary" href="#tickets">-->
+<!--                                        <i class="fas fa-ticket-alt me-2"></i>Register Now-->
+<!--                                    </a>-->
+<!--                                    <a class="btn btn-lg festival-btn-secondary" href="#about">-->
+<!--                                        <i class="fas fa-info-circle me-2"></i>Learn More-->
+<!--                                    </a>-->
+<!--                                </div>-->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Navigation buttons -->
-        <button class="festival-slider-nav festival-slider-prev" id="festivalSliderPrev" aria-label="Previous">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="festival-slider-nav festival-slider-next" id="festivalSliderNext" aria-label="Next">
-            <i class="fas fa-chevron-right"></i>
-        </button>
+            <!-- Navigation buttons -->
+            <button class="festival-slider-nav festival-slider-prev" id="festivalSliderPrev" aria-label="Previous">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="festival-slider-nav festival-slider-next" id="festivalSliderNext" aria-label="Next">
+                <i class="fas fa-chevron-right"></i>
+            </button>
 
-        <!-- Dots indicator -->
-        <div class="festival-slider-dots" th:if="${eventImages.size() > 1}">
+            <!-- Dots indicator -->
+            <div class="festival-slider-dots" th:if="${eventImages.size() > 1}">
             <span th:each="img, iterStat : ${eventImages}"
                   class="festival-slider-dot"
                   th:classappend="${iterStat.first} ? 'active' : ''"
                   th:data-slide="${iterStat.index}"></span>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Fallback banner if no images -->
-<section class="festival-banner" th:unless="${eventImages != null and !eventImages.isEmpty()}"
-         style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('/festival/assets/img/festival-banner.jpg');">
-    <div class="festival-banner-overlay">
-        <div class="container">
-            <div class="festival-banner-content">
-                <div class="festival-banner-badge">
-                    <span class="badge bg-warning text-dark me-2" th:text="${festivalEvent.festivalType}">Cultural Festival</span>
-                    <span class="badge bg-info text-white" th:text="${festivalEvent.festivalTheme}">Technology & Culture</span>
-                </div>
-
-                <h1 class="festival-banner-title" th:text="${festivalEvent.title}">FPT Festival 2025</h1>
-                <p class="festival-banner-subtitle" th:text="${festivalEvent.description}">Sự kiện văn hóa lớn nhất của FPT University</p>
-
-                <div class="festival-banner-meta">
-                    <div class="festival-meta-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span th:text="${#temporals.format(festivalEvent.startsAt, 'dd/MM/yyyy')}">15/12/2025</span>
+    <!-- Fallback banner if no images -->
+    <section class="festival-banner" th:unless="${eventImages != null and !eventImages.isEmpty()}"
+             style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('/festival/assets/img/festival-banner.jpg');">
+        <div class="festival-banner-overlay">
+            <div class="container">
+                <div class="festival-banner-content">
+                    <div class="festival-banner-badge">
+                        <span class="badge bg-warning text-dark me-2" th:text="${festivalEvent.festivalType}">Cultural Festival</span>
+                        <span class="badge bg-info text-white" th:text="${festivalEvent.festivalTheme}">Technology & Culture</span>
                     </div>
-                    <div class="festival-meta-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span th:text="${festivalEvent.venueAddress}">FPT University Hà Nội</span>
-                    </div>
-                    <div class="festival-meta-item">
-                        <i class="fas fa-users"></i>
-                        <span th:text="${festivalEvent.capacity} + ' người'">5000 người</span>
-                    </div>
-                </div>
 
-                <div class="festival-banner-actions">
-                    <a class="btn btn-lg festival-btn-primary" href="#tickets">
-                        <i class="fas fa-ticket-alt me-2"></i>Đăng Ký Tham Gia
-                    </a>
-                    <a class="btn btn-lg festival-btn-secondary" href="#about">
-                        <i class="fas fa-info-circle me-2"></i>Tìm Hiểu Thêm
-                    </a>
+                    <h1 class="festival-banner-title" th:text="${festivalEvent.title}">FPT Festival 2025</h1>
+                    <p class="festival-banner-subtitle" th:text="${festivalEvent.description}">Sự kiện văn hóa lớn nhất
+                        của FPT University</p>
+
+                    <div class="festival-banner-meta">
+                        <div class="festival-meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span th:text="${#temporals.format(festivalEvent.startsAt, 'dd/MM/yyyy')}">15/12/2025</span>
+                        </div>
+                        <div class="festival-meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span th:text="${festivalEvent.venueAddress}">FPT University Hà Nội</span>
+                        </div>
+                        <div class="festival-meta-item">
+                            <i class="fas fa-users"></i>
+                            <span th:text="${festivalEvent.capacity} + ' người'">5000 người</span>
+                        </div>
+                    </div>
+
+                    <div class="festival-banner-actions">
+                        <a class="btn btn-lg festival-btn-primary" href="#tickets">
+                            <i class="fas fa-ticket-alt me-2"></i>Đăng Ký Tham Gia
+                        </a>
+                        <a class="btn btn-lg festival-btn-secondary" href="#about">
+                            <i class="fas fa-info-circle me-2"></i>Tìm Hiểu Thêm
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <!-- Countdown Section -->
     <section class="festival-countdown">
@@ -335,17 +343,17 @@
                 <div class="festival-time-box">
                     <span class="festival-time-number" id="hours">00</span>
                     <span class="festival-time-label">HOURS</span>
-        </div>
+                </div>
                 <div class="festival-time-box">
                     <span class="festival-time-number" id="minutes">00</span>
                     <span class="festival-time-label">MINUTES</span>
-        </div>
+                </div>
                 <div class="festival-time-box">
                     <span class="festival-time-number" id="seconds">00</span>
                     <span class="festival-time-label">SECONDS</span>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
     </section>
 
     <!-- Description Section -->
@@ -387,32 +395,36 @@
                 <div class="festival-info-card">
                     <i class="fas fa-calendar-alt festival-info-icon"></i>
                     <div class="festival-info-title">Event Date</div>
-                    <div class="festival-info-value" th:text="${#temporals.format(festivalEvent.startsAt, 'dd/MM/yyyy')}">15/12/2025</div>
-            </div>
+                    <div class="festival-info-value"
+                         th:text="${#temporals.format(festivalEvent.startsAt, 'dd/MM/yyyy')}">15/12/2025
+                    </div>
+                </div>
 
                 <div class="festival-info-card">
                     <i class="fas fa-map-marker-alt festival-info-icon"></i>
                     <div class="festival-info-title">Venue</div>
                     <div class="festival-info-value" th:text="${festivalEvent.venueAddress}">FPT University Hanoi</div>
-            </div>
+                </div>
 
                 <div class="festival-info-card">
                     <i class="fas fa-star festival-info-icon"></i>
                     <div class="festival-info-title">Activities</div>
-                    <div class="festival-info-value" th:text="${festivalEvent.numberOfActivities} + ' activities'">25 activities</div>
-            </div>
+                    <div class="festival-info-value" th:text="${festivalEvent.numberOfActivities} + ' activities'">25
+                        activities
+                    </div>
+                </div>
 
                 <div class="festival-info-card">
                     <i class="fas fa-building festival-info-icon"></i>
                     <div class="festival-info-title">Organized By</div>
                     <div class="festival-info-value" th:text="${festivalEvent.mainOrganizer}">FPT University</div>
-            </div>
+                </div>
 
                 <div class="festival-info-card">
                     <i class="fas fa-user-friends festival-info-icon"></i>
                     <div class="festival-info-title">Target Audience</div>
                     <div class="festival-info-value" th:text="${festivalEvent.targetAudience}">FPT Students</div>
-            </div>
+                </div>
             </div>
         </div>
     </section>
@@ -424,9 +436,10 @@
                 <div class="col-12">
                     <div class="text-center mb-5">
                         <h1 class="festival-section-title">About FPT Festival</h1>
-                        <p class="festival-section-subtitle">FPT Festival 2025 - The biggest cultural event at FPT University</p>
-    </div>
-</div>
+                        <p class="festival-section-subtitle">FPT Festival 2025 - The biggest cultural event at FPT
+                            University</p>
+                    </div>
+                </div>
             </div>
             <div class="row">
                 <div class="col-lg-4 col-md-6 mb-4">
@@ -434,7 +447,8 @@
                         <img th:src="@{/festival/assets/img/about/img1.jpg}" alt="FPT Mission">
                         <div class="festival-about-text">
                             <h3><a href="#">Our Mission</a></h3>
-                            <p>Connecting the FPT student community through cultural activities, creating a creative space and inspiring the young generation to develop comprehensively.</p>
+                            <p>Connecting the FPT student community through cultural activities, creating a creative
+                                space and inspiring the young generation to develop comprehensively.</p>
                             <a class="about-btn" href="#">Learn More</a>
                         </div>
                     </div>
@@ -444,22 +458,24 @@
                         <img th:src="@{/festival/assets/img/about/img2.jpg}" alt="Festival Experience">
                         <div class="festival-about-text">
                             <h3><a href="#">What You Will Experience?</a></h3>
-                            <p>Over 25 diverse activities, intensive workshops, technology exhibitions and many other exciting cultural activities.</p>
+                            <p>Over 25 diverse activities, intensive workshops, technology exhibitions and many other
+                                exciting cultural activities.</p>
                             <a class="about-btn" href="#">Explore Now</a>
-        </div>
-    </div>
-</div>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="festival-about-item festival-card-hover">
                         <img th:src="@{/festival/assets/img/about/img3.jpg}" alt="Benefits">
                         <div class="festival-about-text">
                             <h3><a href="#">Benefits of Joining</a></h3>
-                            <p>Free participation, opportunity to receive gifts, networking with friends and experiencing unique cultural spaces.</p>
+                            <p>Free participation, opportunity to receive gifts, networking with friends and
+                                experiencing unique cultural spaces.</p>
                             <a class="about-btn" href="#">Register Now</a>
                         </div>
                     </div>
-        </div>
-        </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -471,16 +487,17 @@
                     <div class="text-center mb-5">
                         <h1 class="festival-section-title">Culture & Highlights</h1>
                         <p class="festival-section-subtitle">Discover the unique features of FPT Festival</p>
-        </div>
-    </div>
-</div>
+                    </div>
+                </div>
+            </div>
             <div class="festival-culture-grid">
                 <div class="festival-culture-item festival-card-hover">
                     <div class="festival-culture-icon">
                         <i class="fas fa-palette"></i>
                     </div>
                     <div class="festival-culture-title">Culture</div>
-                    <div class="festival-culture-description" th:text="${festivalEvent.culture != null ? festivalEvent.culture : 'Celebrating the cultural diversity and creativity of FPT students'}">
+                    <div class="festival-culture-description"
+                         th:text="${festivalEvent.culture != null ? festivalEvent.culture : 'Celebrating the cultural diversity and creativity of FPT students'}">
                         Celebrating the cultural diversity and creativity of FPT students
                     </div>
                 </div>
@@ -489,7 +506,8 @@
                         <i class="fas fa-gift"></i>
                     </div>
                     <div class="festival-culture-title">Benefits</div>
-                    <div class="festival-culture-description" th:text="${festivalEvent.benefits != null ? festivalEvent.benefits : 'Free participation, networking opportunities, and unique cultural experiences'}">
+                    <div class="festival-culture-description"
+                         th:text="${festivalEvent.benefits != null ? festivalEvent.benefits : 'Free participation, networking opportunities, and unique cultural experiences'}">
                         Free participation, networking opportunities, and unique cultural experiences
                     </div>
                 </div>
@@ -498,7 +516,8 @@
                         <i class="fas fa-theater-masks"></i>
                     </div>
                     <div class="festival-culture-title">Festival Theme</div>
-                    <div class="festival-culture-description" th:text="${festivalEvent.festivalTheme != null ? festivalEvent.festivalTheme : 'Technology & Culture - Innovation meets Tradition'}">
+                    <div class="festival-culture-description"
+                         th:text="${festivalEvent.festivalTheme != null ? festivalEvent.festivalTheme : 'Technology & Culture - Innovation meets Tradition'}">
                         Technology & Culture - Innovation meets Tradition
                     </div>
                 </div>
@@ -507,7 +526,8 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="festival-culture-title">Expected Attendees</div>
-                    <div class="festival-culture-description" th:text="${festivalEvent.expectedAttendees != null ? festivalEvent.expectedAttendees + ' participants' : '5000+ participants'}">
+                    <div class="festival-culture-description"
+                         th:text="${festivalEvent.expectedAttendees != null ? festivalEvent.expectedAttendees + ' participants' : '5000+ participants'}">
                         5000+ participants
                     </div>
                 </div>
@@ -523,64 +543,75 @@
                     <div class="text-center mb-5">
                         <h1 class="festival-section-title">Organizers</h1>
                         <p class="festival-section-subtitle">The people behind the success of FPT Festival</p>
-                </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Render organizers from database -->
-            <div class="row justify-content-center" th:if="${festivalEvent.speakers != null and !festivalEvent.speakers.isEmpty()}">
+            <div class="row justify-content-center"
+                 th:if="${festivalEvent.speakers != null and !festivalEvent.speakers.isEmpty()}">
                 <div class="col-lg-4 col-md-6 col-sm-6" th:each="speaker : ${festivalEvent.speakers}">
                     <div class="festival-speaker-card">
                         <img th:src="${speaker.imageUrl}" th:alt="${speaker.name}" class="festival-speaker-image">
                         <div class="festival-speaker-content">
                             <h4 class="festival-speaker-name" th:text="${speaker.name}">Speaker Name</h4>
-<!--                            <p class="festival-speaker-role" th:text="${speaker.role}">Role</p>-->
-<!--                            <p class="festival-speaker-bio" th:text="${speaker.bio != null ? speaker.bio : 'Professional organizer with extensive experience in event management and student engagement.'}">-->
-<!--                                Professional organizer with extensive experience in event management and student engagement.-->
-<!--                            </p>-->
+                            <!--                            <p class="festival-speaker-role" th:text="${speaker.role}">Role</p>-->
+                            <!--                            <p class="festival-speaker-bio" th:text="${speaker.bio != null ? speaker.bio : 'Professional organizer with extensive experience in event management and student engagement.'}">-->
+                            <!--                                Professional organizer with extensive experience in event management and student engagement.-->
+                            <!--                            </p>-->
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Fallback organizers if no data -->
-            <div class="row justify-content-center" th:unless="${festivalEvent.speakers != null and !festivalEvent.speakers.isEmpty()}">
+            <div class="row justify-content-center"
+                 th:unless="${festivalEvent.speakers != null and !festivalEvent.speakers.isEmpty()}">
                 <div class="col-lg-4 col-md-6 col-sm-6">
-                <div class="festival-speaker-card">
-                    <img th:src="@{/festival/assets/img/speaker/speakers-1.jpg}" alt="Main Organizer" class="festival-speaker-image">
-                    <div class="festival-speaker-content">
-                            <h4 class="festival-speaker-name" th:text="${festivalEvent.mainOrganizer != null ? festivalEvent.mainOrganizer : 'FPT University'}">FPT University</h4>
+                    <div class="festival-speaker-card">
+                        <img th:src="@{/festival/assets/img/speaker/speakers-1.jpg}" alt="Main Organizer"
+                             class="festival-speaker-image">
+                        <div class="festival-speaker-content">
+                            <h4 class="festival-speaker-name"
+                                th:text="${festivalEvent.mainOrganizer != null ? festivalEvent.mainOrganizer : 'FPT University'}">
+                                FPT University</h4>
                             <p class="festival-speaker-role">Main Organizer</p>
-                        <p class="festival-speaker-bio">
-                                The main organizing unit of FPT Festival, committed to providing the best experience for students.
-                                With experience in organizing many large events, we ensure all activities run smoothly and professionally.
-                        </p>
+                            <p class="festival-speaker-bio">
+                                The main organizing unit of FPT Festival, committed to providing the best experience for
+                                students.
+                                With experience in organizing many large events, we ensure all activities run smoothly
+                                and professionally.
+                            </p>
+                        </div>
                     </div>
                 </div>
-                </div>
                 <div class="col-lg-4 col-md-6 col-sm-6">
-                <div class="festival-speaker-card">
-                    <img th:src="@{/festival/assets/img/speaker/speakers-2.jpg}" alt="Event Manager" class="festival-speaker-image">
-                    <div class="festival-speaker-content">
+                    <div class="festival-speaker-card">
+                        <img th:src="@{/festival/assets/img/speaker/speakers-2.jpg}" alt="Event Manager"
+                             class="festival-speaker-image">
+                        <div class="festival-speaker-content">
                             <h4 class="festival-speaker-name">Event Management Team</h4>
                             <p class="festival-speaker-role">Event Manager</p>
-                        <p class="festival-speaker-bio">
+                            <p class="festival-speaker-bio">
                                 Professional team ensuring all activities run smoothly and successfully.
-                                We are responsible for logistics, technical aspects and coordinating activities throughout the festival.
-                        </p>
+                                We are responsible for logistics, technical aspects and coordinating activities
+                                throughout the festival.
+                            </p>
+                        </div>
                     </div>
                 </div>
-                </div>
                 <div class="col-lg-4 col-md-6 col-sm-6">
-                <div class="festival-speaker-card">
-                    <img th:src="@{/festival/assets/img/speaker/speakers-1.jpg}" alt="Student Union" class="festival-speaker-image">
-                    <div class="festival-speaker-content">
+                    <div class="festival-speaker-card">
+                        <img th:src="@{/festival/assets/img/speaker/speakers-1.jpg}" alt="Student Union"
+                             class="festival-speaker-image">
+                        <div class="festival-speaker-content">
                             <h4 class="festival-speaker-name">Student Union</h4>
                             <p class="festival-speaker-role">Co-Organizer</p>
-                        <p class="festival-speaker-bio">
-                                Representing the voice of students, ensuring the festival reflects the right needs and desires.
+                            <p class="festival-speaker-bio">
+                                Representing the voice of students, ensuring the festival reflects the right needs and
+                                desires.
                                 We connect the student community and create the most meaningful experiences.
-                        </p>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -596,7 +627,7 @@
                     <div class="text-center mb-5">
                         <h1 class="festival-section-title">Event Schedule</h1>
                         <p class="festival-section-subtitle">Detailed timeline of activities</p>
-                </div>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -604,11 +635,16 @@
                     <div class="festival-event-info">
                         <div class="schedule-container">
                             <div class="schedule-item" th:each="schedule : ${festivalEvent.schedules}">
-                <div class="schedule-time">
-                                    <div class="schedule-day" th:text="${#temporals.format(schedule.startTime, 'dd/MM')}">15/12</div>
-                                    <div class="schedule-date" th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">08:00 - 10:00</div>
-                </div>
-                <div class="schedule-details">
+                                <div class="schedule-time">
+                                    <div class="schedule-day"
+                                         th:text="${#temporals.format(schedule.startTime, 'dd/MM')}">15/12
+                                    </div>
+                                    <div class="schedule-date"
+                                         th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">
+                                        08:00 - 10:00
+                                    </div>
+                                </div>
+                                <div class="schedule-details">
                                     <div class="schedule-title" th:text="${schedule.activity}">Opening Ceremony</div>
                                     <div class="schedule-desc">Festival activity</div>
                                 </div>
@@ -628,9 +664,9 @@
                     <div class="text-center mb-5">
                         <h1 class="festival-section-title">Event Gallery</h1>
                         <p class="festival-section-subtitle">Beautiful moments from FPT Festival</p>
-        </div>
-    </div>
-</div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Gallery with Images -->
             <div class="festival-gallery-grid" th:if="${eventImages != null and !eventImages.isEmpty()}">
@@ -678,9 +714,9 @@
                     <img src="/images/festival-gallery-6.svg" alt="Festival Image 6" class="img-fluid">
                     <div class="festival-gallery-overlay">
                         <i class="fas fa-search-plus"></i>
-        </div>
-    </div>
-</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -694,148 +730,157 @@
                         <p class="festival-section-subtitle">Choose the right package for your needs</p>
                     </div>
                 </div>
-        </div>
+            </div>
             <div class="festival-ticket-grid">
                 <div class="festival-ticket-card" th:each="ticket : ${tickets}">
                     <i class="fas fa-ticket-alt festival-ticket-icon"></i>
                     <h3 class="festival-ticket-name" th:text="${ticket.name}">Standard Package</h3>
-                    <div class="festival-ticket-price" th:text="${ticket.price == 0 ? 'Free' : ticket.price + ' VND'}">Free</div>
+                    <div class="festival-ticket-price" th:text="${ticket.price == 0 ? 'Free' : ticket.price + ' VND'}">
+                        Free
+                    </div>
 
                     <div class="festival-ticket-description" th:text="${ticket.description}">
                         Basic package for students, including participation in all main festival activities.
-        </div>
+                    </div>
 
 
-                    <button class="festival-ticket-button" th:if="${ticket.isAvailable()}" th:href="@{'/ticket/buy/' + ${ticket.ticketTypeId}}">
+                    <button class="festival-ticket-button" th:if="${ticket.isAvailable()}"
+                            th:href="@{'/ticket/buy/' + ${ticket.ticketTypeId}}">
                         Register Now
                     </button>
 
-                    <button class="festival-ticket-button" style="background: #ccc; cursor: not-allowed;" th:if="${!ticket.isAvailable()}">
+                    <button class="festival-ticket-button" style="background: #ccc; cursor: not-allowed;"
+                            th:if="${!ticket.isAvailable()}">
                         Sold Out
                     </button>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
     </section>
-<!-- Sponsors Section Start -->
-<section id="sponsors" class="section-padding">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Our Sponsors</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Thank you to our partners who have joined FPT Music Festival 2025</p>
+    <!-- Sponsors Section Start -->
+    <section id="sponsors" class="section-padding">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-title-header text-center">
+                        <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Our Sponsors</h1>
+                        <p class="wow fadeInDown" data-wow-delay="0.2s">Thank you to our partners who have joined FPT
+                            Music Festival 2025</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-30 text-center wow fadeInDown" data-wow-delay="0.3s">
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                    <div class="spnsors-logo">
+                        <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-01.png}"
+                                         alt="Sponsor 1"></a>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                    <div class="spnsors-logo">
+                        <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-02.png}"
+                                         alt="Sponsor 2"></a>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                    <div class="spnsors-logo">
+                        <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-03.jpg}"
+                                         alt="Sponsor 3"></a>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12">
+                    <div class="spnsors-logo">
+                        <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-04.png}"
+                                         alt="Sponsor 4"></a>
+                    </div>
+                </div>
+                <div class="col-12 text-center">
+                    <a href="#" class="btn btn-common">become a sponsor</a>
                 </div>
             </div>
         </div>
-        <div class="row mb-30 text-center wow fadeInDown" data-wow-delay="0.3s">
-            <div class="col-md-3 col-sm-3 col-xs-12">
-                <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-01.png}" alt="Sponsor 1"></a>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-3 col-xs-12">
-                <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-02.png}" alt="Sponsor 2"></a>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-3 col-xs-12">
-                <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-03.jpg}" alt="Sponsor 3"></a>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-3 col-xs-12">
-                <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/festival/assets/img/sponsors/logo-04.png}" alt="Sponsor 4"></a>
-                </div>
-            </div>
-            <div class="col-12 text-center">
-                <a href="#" class="btn btn-common">become a sponsor</a>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- Sponsors Section End -->
+    </section>
+    <!-- Sponsors Section End -->
 
-<!-- Event Slides Section Start -->
-<!--<section id="event-slides" class="section-padding">-->
-<!--    <div class="container">-->
-<!--        <div class="row">-->
-<!--            &lt;!&ndash; Tiêu đề &ndash;&gt;-->
-<!--            <div class="col-12">-->
-<!--                <div class="section-title-header text-center">-->
-<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>-->
-<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">-->
-<!--                        All the information you need for the best experience at-->
-<!--                    </p>-->
-<!--                </div>-->
-<!--            </div>-->
+    <!-- Event Slides Section Start -->
+    <!--<section id="event-slides" class="section-padding">-->
+    <!--    <div class="container">-->
+    <!--        <div class="row">-->
+    <!--            &lt;!&ndash; Tiêu đề &ndash;&gt;-->
+    <!--            <div class="col-12">-->
+    <!--                <div class="section-title-header text-center">-->
+    <!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>-->
+    <!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">-->
+    <!--                        All the information you need for the best experience at-->
+    <!--                    </p>-->
+    <!--                </div>-->
+    <!--            </div>-->
 
-<!--            &lt;!&ndash; Bên trái: Google Map &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">-->
-<!--                <div class="video" style="border-radius:10px; overflow:hidden;">-->
-<!--                    <iframe-->
-<!--                            th:src="@{|https://www.google.com/maps?q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}&output=embed|}"-->
-<!--                            width="100%" height="350" style="border:0;" allowfullscreen="">-->
-<!--                    </iframe>-->
-<!--                </div>-->
+    <!--            &lt;!&ndash; Bên trái: Google Map &ndash;&gt;-->
+    <!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">-->
+    <!--                <div class="video" style="border-radius:10px; overflow:hidden;">-->
+    <!--                    <iframe-->
+    <!--                            th:src="@{|https://www.google.com/maps?q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}&output=embed|}"-->
+    <!--                            width="100%" height="350" style="border:0;" allowfullscreen="">-->
+    <!--                    </iframe>-->
+    <!--                </div>-->
 
-<!--                &lt;!&ndash; Nút mở Google Maps &ndash;&gt;-->
-<!--                <a class="btn btn-outline-primary mt-3"-->
-<!--                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}"-->
-<!--                   target="_blank">-->
-<!--                    Open in Google Maps-->
-<!--                </a>-->
-<!--            </div>-->
+    <!--                &lt;!&ndash; Nút mở Google Maps &ndash;&gt;-->
+    <!--                <a class="btn btn-outline-primary mt-3"-->
+    <!--                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}"-->
+    <!--                   target="_blank">-->
+    <!--                    Open in Google Maps-->
+    <!--                </a>-->
+    <!--            </div>-->
 
-<!--            &lt;!&ndash; Bên phải: Nội dung hướng dẫn &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">-->
-<!--                <p class="intro-desc">-->
-<!--                    Join us at-->
-<!--                    <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>-->
-<!--                    for an unforgettable experience!-->
-<!--                </p>-->
+    <!--            &lt;!&ndash; Bên phải: Nội dung hướng dẫn &ndash;&gt;-->
+    <!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">-->
+    <!--                <p class="intro-desc">-->
+    <!--                    Join us at-->
+    <!--                    <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>-->
+    <!--                    for an unforgettable experience!-->
+    <!--                </p>-->
 
-<!--                <h2 class="intro-title">Event Day Instructions</h2>-->
+    <!--                <h2 class="intro-title">Event Day Instructions</h2>-->
 
-<!--                &lt;!&ndash; Debug Info for Guidelines &ndash;&gt;-->
-<!--                <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">-->
-<!--                    <strong>Debug Guidelines:</strong><br>-->
-<!--                    Guidelines: <span th:text="${event.guidelines}">null</span><br>-->
-<!--                    Guidelines Empty: <span th:text="${#strings.isEmpty(event.guidelines)}">true</span><br>-->
-<!--                    Guidelines Null: <span th:text="${event.guidelines == null}">true</span>-->
-<!--                </div>-->
+    <!--                &lt;!&ndash; Debug Info for Guidelines &ndash;&gt;-->
+    <!--                <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px;">-->
+    <!--                    <strong>Debug Guidelines:</strong><br>-->
+    <!--                    Guidelines: <span th:text="${event.guidelines}">null</span><br>-->
+    <!--                    Guidelines Empty: <span th:text="${#strings.isEmpty(event.guidelines)}">true</span><br>-->
+    <!--                    Guidelines Null: <span th:text="${event.guidelines == null}">true</span>-->
+    <!--                </div>-->
 
-<!--                <ul class="list-specification">-->
-<!--                    &lt;!&ndash; Dynamic Guidelines from Database &ndash;&gt;-->
-<!--                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"-->
-<!--                        th:if="${event.guidelines != null and #strings.trim(line) != ''}">-->
-<!--                        <i class="lni-check-mark-circle"></i>-->
-<!--                        <span th:text="${#strings.trim(line) + '.'}">Instruction</span>-->
-<!--                    </li>-->
+    <!--                <ul class="list-specification">-->
+    <!--                    &lt;!&ndash; Dynamic Guidelines from Database &ndash;&gt;-->
+    <!--                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"-->
+    <!--                        th:if="${event.guidelines != null and #strings.trim(line) != ''}">-->
+    <!--                        <i class="lni-check-mark-circle"></i>-->
+    <!--                        <span th:text="${#strings.trim(line) + '.'}">Instruction</span>-->
+    <!--                    </li>-->
 
-<!--                    &lt;!&ndash; Fallback Guidelines when no data &ndash;&gt;-->
-<!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
-<!--                        <i class="lni-check-mark-circle"></i>-->
-<!--                        <span>Arrive at least 30 minutes before the event starts</span>-->
-<!--                    </li>-->
-<!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
-<!--                        <i class="lni-check-mark-circle"></i>-->
-<!--                        <span>Bring your ticket and valid ID for entry</span>-->
-<!--                    </li>-->
-<!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
-<!--                        <i class="lni-check-mark-circle"></i>-->
-<!--                        <span>Follow all safety protocols and venue rules</span>-->
-<!--                    </li>-->
-<!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
-<!--                        <i class="lni-check-mark-circle"></i>-->
-<!--                        <span>Enjoy the festival and have a great time!</span>-->
-<!--                    </li>-->
-<!--                </ul>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
+    <!--                    &lt;!&ndash; Fallback Guidelines when no data &ndash;&gt;-->
+    <!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
+    <!--                        <i class="lni-check-mark-circle"></i>-->
+    <!--                        <span>Arrive at least 30 minutes before the event starts</span>-->
+    <!--                    </li>-->
+    <!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
+    <!--                        <i class="lni-check-mark-circle"></i>-->
+    <!--                        <span>Bring your ticket and valid ID for entry</span>-->
+    <!--                    </li>-->
+    <!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
+    <!--                        <i class="lni-check-mark-circle"></i>-->
+    <!--                        <span>Follow all safety protocols and venue rules</span>-->
+    <!--                    </li>-->
+    <!--                    <li th:if="${event.guidelines == null or #strings.isEmpty(event.guidelines)}">-->
+    <!--                        <i class="lni-check-mark-circle"></i>-->
+    <!--                        <span>Enjoy the festival and have a great time!</span>-->
+    <!--                    </li>-->
+    <!--                </ul>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+    <!--</section>-->
 
     <!-- FAQ Section -->
     <section class="py-5" style="background: #f8f9fa;">
@@ -853,37 +898,46 @@
                     <div class="accordion" id="accordionExample">
                         <div class="card">
                             <div class="card-header" id="headingOne">
-                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionOne" aria-expanded="true" aria-controls="collapseOne">
+                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionOne"
+                                     aria-expanded="true" aria-controls="collapseOne">
                                     <i class="fas fa-question-circle"></i> How to register for the festival?
                                 </div>
                             </div>
-                            <div id="questionOne" class="collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                            <div id="questionOne" class="collapse show" aria-labelledby="headingOne"
+                                 data-bs-parent="#accordionExample">
                                 <div class="card-body">
-                                    You can register online through our website or contact the organizing committee directly for assistance.
+                                    You can register online through our website or contact the organizing committee
+                                    directly for assistance.
                                 </div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-header" id="headingTwo">
-                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionTwo" aria-expanded="false" aria-controls="questionTwo">
+                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionTwo"
+                                     aria-expanded="false" aria-controls="questionTwo">
                                     <i class="fas fa-question-circle"></i> Who can participate in FPT Festival?
                                 </div>
                             </div>
-                            <div id="questionTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                            <div id="questionTwo" class="collapse" aria-labelledby="headingTwo"
+                                 data-bs-parent="#accordionExample">
                                 <div class="card-body">
-                                    All FPT University students can participate. Some activities may require advance registration.
+                                    All FPT University students can participate. Some activities may require advance
+                                    registration.
                                 </div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-header" id="headingThree">
-                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionThree" aria-expanded="false" aria-controls="questionThree">
+                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionThree"
+                                     aria-expanded="false" aria-controls="questionThree">
                                     <i class="fas fa-question-circle"></i> What activities does the festival include?
                                 </div>
                             </div>
-                            <div id="questionThree" class="collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                            <div id="questionThree" class="collapse" aria-labelledby="headingThree"
+                                 data-bs-parent="#accordionExample">
                                 <div class="card-body">
-                                    The festival includes technology exhibitions, intensive workshops, cultural and artistic activities, networking and many other exciting activities.
+                                    The festival includes technology exhibitions, intensive workshops, cultural and
+                                    artistic activities, networking and many other exciting activities.
                                 </div>
                             </div>
                         </div>
@@ -893,23 +947,28 @@
                     <div class="accordion" id="accordionExample2">
                         <div class="card">
                             <div class="card-header" id="headingFour">
-                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionFour" aria-expanded="false" aria-controls="questionFour">
+                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionFour"
+                                     aria-expanded="false" aria-controls="questionFour">
                                     <i class="fas fa-question-circle"></i> Do I need to bring anything special?
                                 </div>
                             </div>
-                            <div id="questionFour" class="collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample2">
+                            <div id="questionFour" class="collapse" aria-labelledby="headingFour"
+                                 data-bs-parent="#accordionExample2">
                                 <div class="card-body">
-                                    Just bring your student ID and a ready-to-participate spirit. Some workshops may require a personal laptop.
+                                    Just bring your student ID and a ready-to-participate spirit. Some workshops may
+                                    require a personal laptop.
                                 </div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-header" id="headingFive">
-                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionFive" aria-expanded="false" aria-controls="questionFive">
+                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionFive"
+                                     aria-expanded="false" aria-controls="questionFive">
                                     <i class="fas fa-question-circle"></i> Is there a participation fee?
                                 </div>
                             </div>
-                            <div id="questionFive" class="collapse" aria-labelledby="headingFive" data-bs-parent="#accordionExample2">
+                            <div id="questionFive" class="collapse" aria-labelledby="headingFive"
+                                 data-bs-parent="#accordionExample2">
                                 <div class="card-body">
                                     Participation in the festival is completely free for all FPT University students.
                                 </div>
@@ -917,11 +976,13 @@
                         </div>
                         <div class="card">
                             <div class="card-header" id="headingSix">
-                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionSix" aria-expanded="false" aria-controls="questionSix">
+                                <div class="header-title" data-bs-toggle="collapse" data-bs-target="#questionSix"
+                                     aria-expanded="false" aria-controls="questionSix">
                                     <i class="fas fa-question-circle"></i> How to contact the organizing committee?
                                 </div>
                             </div>
-                            <div id="questionSix" class="collapse" aria-labelledby="headingSix" data-bs-parent="#accordionExample2">
+                            <div id="questionSix" class="collapse" aria-labelledby="headingSix"
+                                 data-bs-parent="#accordionExample2">
                                 <div class="card-body">
                                     You can contact us via email: festival@fpt.edu.vn or call hotline: 0123-456-789.
                                 </div>
@@ -933,7 +994,7 @@
         </div>
     </section>
 
-<!-- Footer -->
+    <!-- Footer -->
     <footer class="festival-gradient-bg text-white py-5">
         <div class="container">
             <div class="row">
@@ -942,8 +1003,8 @@
                     <p>Organized by FPT University</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-    <p>&copy; 2025 FPT University. All rights reserved.</p>
-</div>
+                    <p>&copy; 2025 FPT University. All rights reserved.</p>
+                </div>
             </div>
         </div>
     </footer>
@@ -956,24 +1017,24 @@
     <script th:src="@{/festival/assets/js/main.js}"></script>
 
     <script th:inline="javascript">
-    /*<![CDATA[*/
-    // Countdown Timer
-    function updateCountdown() {
-        // Get event date from backend
-        const eventStartDateStr = /*[[${festivalEvent != null and festivalEvent.startsAt != null ? #temporals.format(festivalEvent.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
-        const eventDate = eventStartDateStr ? new Date(eventStartDateStr).getTime() : new Date('2025-12-15T08:00:00').getTime();
-        const now = new Date().getTime();
+        /*<![CDATA[*/
+        // Countdown Timer
+        function updateCountdown() {
+            // Get event date from backend
+            const eventStartDateStr = /*[[${festivalEvent != null and festivalEvent.startsAt != null ? #temporals.format(festivalEvent.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
+            const eventDate = eventStartDateStr ? new Date(eventStartDateStr).getTime() : new Date('2025-12-15T08:00:00').getTime();
+            const now = new Date().getTime();
             const distance = eventDate - now;
 
-        if (distance < 0) {
+            if (distance < 0) {
                 document.getElementById('countdown').innerHTML = '<div class="festival-time-box"><span class="festival-time-number">00</span><span class="festival-time-label">Event Started</span></div>';
-            return;
-        }
+                return;
+            }
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
             document.getElementById('days').innerHTML = days.toString().padStart(2, '0');
             document.getElementById('hours').innerHTML = hours.toString().padStart(2, '0');
@@ -983,8 +1044,8 @@
 
         // Update countdown every second
         setInterval(updateCountdown, 1000);
-    updateCountdown();
-    /*]]>*/
+        updateCountdown();
+        /*]]>*/
 
         // Initialize WOW.js for animations
         new WOW().init();
@@ -1072,7 +1133,7 @@
                 sliderContainer.addEventListener('mouseleave', startAutoPlay);
             }
         }
-</script>
+    </script>
 
 </div> <!-- End of main content wrapper -->
 </body>

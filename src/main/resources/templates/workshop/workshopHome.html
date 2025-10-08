@@ -1,463 +1,424 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-      <!--Thymeleaf-->
-      <!-- Required meta tags -->
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title th:text="${event.title} + ' - Workshop Event'">Workshop Event - FPT University</title>
-      <!-- Bootstrap CSS -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
-      <!-- Icon -->
-      <link rel="stylesheet" th:href="@{/music/assets/fonts/line-icons.css}">
-      <!-- Slicknav -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/slicknav.css}">
-      <!-- Nivo Lightbox -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/nivo-lightbox.css}">
-      <!-- Animate -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/animate.css}">
-      <!-- Main Style -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
-      <!-- Responsive Style -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
-      <!-- Theme Colors -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/themeColors.css}">
-      
-      <!-- Custom Workshop Styles -->
-      <style>
-        /* Workshop specific styles */
-        .workshop-badge {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title th:text="${event.title} + ' - Workshop Details'"></title>
+
+    <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/music/assets/fonts/line-icons.css}">
+    <link rel="stylesheet" th:href="@{/music/assets/css/slicknav.css}">
+    <link rel="stylesheet" th:href="@{/music/assets/css/nivo-lightbox.css}">
+    <link rel="stylesheet" th:href="@{/music/assets/css/animate.css}">
+    <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
+    <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
+    <link rel="stylesheet" th:href="@{/css/music-theme.css}">
+
+</head>
+<body>
+<section class="hero hero--slider hero--compact">
+    <div class="hero-track" id="heroTrack">
+        <div th:each="img : ${eventImages}"
+             class="hero-slide"
+             th:style="|background-image: url('${img.url}')|">
+            <div class="container hero-content">
+                <div class="hero-actions text-right">
+                    <a class="btn btn-common" href="#pricing">Get Ticket</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
+    <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
+    <div class="hero-progress">
+        <div class="hero-progress-bar" th:each="img : ${eventImages}"></div>
+    </div>
+</section>
+
+<section class="countdown-timer section-padding-compact">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="heading-count">
+                    <h2 class="wow fadeInDown" data-wow-delay="0.2s">Workshop Will Start In</h2>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="row time-countdown justify-content-center wow fadeInUp" data-wow-delay="0.2s">
+                    <div id="clock" class="time-count"></div>
+                </div>
+                <div class="text-center mt-2">
+                    <a href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
+                        Add to My Calendar
+                    </a>
+                </div>
+                <div class="countdown-separator wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="separator-line"></div>
+                    <div class="separator-icon">
+                        <i class="lni-pencil-alt"></i>
+                    </div>
+                    <div class="separator-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        const eventStartDateStr = /*[[${event.startsAt != null ? #temporals.format(event.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
+        const eventStartDate = eventStartDateStr ? new Date(eventStartDateStr).getTime() : null;
+        const clockElement = document.getElementById("clock");
+
+        if (!eventStartDate || !clockElement) {
+            if (clockElement) clockElement.innerHTML = "<h3>No start date available</h3>";
+            return;
         }
-        
-        .skill-level {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .skill-beginner { background: #d4edda; color: #155724; }
-        .skill-intermediate { background: #fff3cd; color: #856404; }
-        .skill-advanced { background: #f8d7da; color: #721c24; }
-        
-        .materials-section {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            border-radius: 16px;
-            padding: 30px;
-            margin: 20px 0;
-            box-shadow: 0 8px 32px rgba(33, 150, 243, 0.2);
-        }
-        
-        .prerequisites-section {
-            background: #fff3e0;
-            border-left: 4px solid #ff9800;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        
-        .learning-outcomes-section {
-            background: #e8f5e8;
-            border-left: 4px solid #4caf50;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        
-        .certification-section {
-            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            margin: 20px 0;
-            box-shadow: 0 8px 32px rgba(156, 39, 176, 0.2);
-        }
-        
-        .instructor-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            margin-bottom: 30px;
-        }
-        
-        .instructor-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
-        }
-        
-        .instructor-image {
-            position: relative;
-            overflow: hidden;
-            height: 280px;
-        }
-        
-        .instructor-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        .instructor-card:hover .instructor-image img {
-            transform: scale(1.05);
-        }
-        
-        .instructor-info {
-            padding: 20px;
-            text-align: center;
-            background: white;
-        }
-        
-        .instructor-info h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
-        
-        .instructor-info p {
-            color: #28a745;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 0;
-        }
-        
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 15px;
-            position: relative;
-            text-align: center;
-        }
-        
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 80px;
-            height: 4px;
-            background: #28a745;
-            margin: 15px auto 0;
-            border-radius: 2px;
-        }
-        
-        /* Hero Slider CSS */
-        .hero--slider{ position:relative; overflow:hidden; }
-        .hero-track{
-            display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
-            -webkit-overflow-scrolling: touch; scrollbar-width: none;
-        }
-        .hero-track::-webkit-scrollbar{ display:none; }
-        .hero-slide{
-            position:relative; min-width:100vw; height:70vh;
-            background-position:center; background-size:cover; scroll-snap-align:start;
-        }
-        .hero-slide::before{
-            content:""; position:absolute; inset:0; z-index:0;
-            background: rgba(0,0,0,0.3);
-        }
-        .hero-content{
-            position:relative; z-index:1; height:100%;
-            display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; color:#fff;
-            padding-bottom: 60px; padding-right: 40px;
-        }
-        .hero-content h1{
-            font-size: clamp(32px, 6vw, 64px);
-            font-weight: 700; margin-bottom: 16px; text-shadow: 0 2px 8px rgba(0,0,0,.3);
-        }
-        .hero-actions{
-            display: flex; gap: 12px; margin-top: 20px;
-        }
-        .hero-nav{
-            position: absolute; top: 50%; transform: translateY(-50%);
-            width: 48px; height: 48px; border-radius: 50%;
-            background: rgba(255,255,255,.9); border: none;
-            font-size: 20px; color: #333; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s ease; z-index: 10;
-        }
-        .hero-nav:hover{ background: #fff; transform: translateY(-50%) scale(1.1); }
-        .hero-nav.prev{ left: 20px; }
-        .hero-nav.next{ right: 20px; }
-        .hero-progress{
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 8px; z-index: 10;
-        }
-        .hero-progress-bar{
-            width: 40px; height: 4px; background: rgba(255,255,255,.3);
-            border-radius: 2px; cursor: pointer; transition: all 0.3s ease;
-        }
-        .hero-progress-bar.active{ background: #28a745; }
-        .hero-progress-bar:hover{ background: rgba(255,255,255,.6); }
-        .hero--compact .hero-slide{ height: 50vh; }
-        
-        @media (max-width: 768px) {
-            .hero-slide{ height:60vh; }
-            .hero-nav{ width:36px; height:36px; font-size:16px; }
-            .hero-actions{ 
-                flex-direction: column; 
-                gap: 8px; 
-                width: 100%; 
-                max-width: 200px; 
-                position: absolute;
-                bottom: 16px;
-                right: 16px;
+
+        const countdown = setInterval(function () {
+            const now = new Date().getTime();
+            const distance = eventStartDate - now;
+
+            if (distance < 0) {
+                clearInterval(countdown);
+                clockElement.innerHTML = "<h3>Workshop is happening now!</h3>";
+                return;
             }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            clockElement.innerHTML = `
+            <div class="time-entry"><span>${days}</span><div class="label">DAYS</div></div>
+            <div class="time-entry"><span>${hours.toString().padStart(2, '0')}</span><div class="label">HOURS</div></div>
+            <div class="time-entry"><span>${minutes.toString().padStart(2, '0')}</span><div class="label">MINUTES</div></div>
+            <div class="time-entry"><span>${seconds.toString().padStart(2, '0')}</span><div class="label">SECONDS</div></div>`;
+        }, 1000);
+    });
+    /*]]>*/
+</script>
+
+<section id="descriptionm" class="section-padding-compact">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s" th:text="${event.title}">Workshop Title</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s" th:text="'Type: ' + ${event.eventType}">WORKSHOP</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
+                    <h2 th:text="${event.title}">Workshop Title</h2>
+                    <p class="lead"><i class="lni-agenda"></i> <span th:text="${event.description}">Event description</span></p>
+                    <p><i class="lni-timer"></i> Start: <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}"></span> - End: <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}"></span></p>
+                    <p><i class="lni-bookmark"></i> Topic: <span th:text="${event.topic}">Workshop Topic</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Workshop</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s" th:text="${event.title}">Workshop subtitle</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-md-6 col-lg-4">
+                <div class="about-item">
+                    <img class="img-fluid" th:src="@{/music/assets/img/about/img1.jpg}" alt="">
+                    <div class="about-text">
+                        <h3><a href="#">Skill Level & Prerequisites</a></h3>
+                        <p th:text="'Level: ' + ${event.skillLevel}">Skill level required.</p>
+                        <p th:text="'Requires: ' + ${event.prerequisites}">Prerequisites for joining.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 col-lg-4">
+                <div class="about-item">
+                    <img class="img-fluid" th:src="@{/music/assets/img/about/img2.jpg}" alt="">
+                    <div class="about-text">
+                        <h3><a href="#">Workshop Materials</a></h3>
+                        <p>All necessary materials and documents for the session will be provided.</p>
+                        <a class="btn btn-common btn-rm" th:href="${event.materialsLink}" target="_blank">View Materials</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 col-lg-4">
+                <div class="about-item">
+                    <img class="img-fluid" th:src="@{/music/assets/img/about/img3.jpg}" alt="">
+                    <div class="about-text">
+                        <h3><a href="#">Benefits of Joining</a></h3>
+                        <p th:text="${event.benefits}">Benefits of joining this workshop.</p>
+                        <a class="btn btn-common btn-rm" href="#pricing">Register Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="counter-section section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.3s">
+                    <div class="icon"><i class="lni-map"></i></div>
+                    <p th:text="${event.places != null and !event.places.isEmpty() ? event.places[0].placeName : 'FPT University'}"></p>
+                    <span th:text="${event.places != null and !event.places.isEmpty() ? event.places[0].building : 'Gamma Building'}"></span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.6s">
+                    <div class="icon"><i class="lni-timer"></i></div>
+                    <p th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy')}"></p>
+                    <span th:text="${#temporals.format(event.startsAt, 'HH:mm')} + ' – ' + ${#temporals.format(event.endsAt, 'HH:mm')}"></span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.9s">
+                    <div class="icon"><i class="lni-users"></i></div>
+                    <p th:text="${event.maxParticipants != null ? event.maxParticipants + ' Participants' : 'Unlimited'}"></p>
+                    <span>Register early to secure your spot</span>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="1.2s">
+                    <div class="icon"><i class="lni-certificate"></i></div>
+                    <p th:text="${event.skillLevel != null ? event.skillLevel : 'All Levels'}"></p>
+                    <span>Skill Level</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="schedules" class="schedule section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Workshop Agenda</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Discover the activities and sessions <br> throughout the day of [[${event.title}]]</p>
+                </div>
+            </div>
+        </div>
+        <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">
+            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
+                <div class="table-responsive">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" th:each="entry, iterStat : ${scheduleEntries}">
+                            <a class="nav-link" th:classappend="${iterStat.index == 0} ? 'active' : ''" th:id="'day-' + ${iterStat.index} + '-tab'" data-toggle="tab" th:href="'#day-' + ${iterStat.index}" role="tab" th:aria-controls="'day-' + ${iterStat.index}" th:aria-expanded="${iterStat.index == 0}">
+                                <div class="item-text">
+                                    <h4 th:text="'Day ' + (${iterStat.index + 1})"></h4>
+                                    <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}"></h5>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade" th:each="entry, iterStat : ${scheduleEntries}" th:id="'day-' + ${iterStat.index}" role="tabpanel" th:classappend="${iterStat.index == 0} ? 'show active' : ''" th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">
+                        <div th:id="'accordion-' + ${iterStat.index}">
+                            <div class="card" th:each="schedule : ${entry.value}">
+                                <div class="card-header">
+                                    <span class="time" th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}"></span>
+                                    <h4 th:text="${schedule.activity}">Activity Name</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="team" class="section-padding text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Our Speakers</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the experts and instructors of this workshop</p>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 col-sm-6" th:each="sp : ${event.speakers}">
+                <div class="simple-artist-card wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="artist-image">
+                        <img class="img-fluid" th:src="${sp.imageUrl}" th:alt="${sp.name}">
+                    </div>
+                    <div class="artist-info">
+                        <h3 th:text="${sp.name}">Speaker Name</h3>
+                        <p th:text="${sp.role}">Role</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="gallery" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Workshop Gallery</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Memorable moments from our previous workshops</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-sm-6 col-lg-4" th:each="img : ${event.imageUrls}">
+                <div class="gallery-box">
+                    <div class="img-thumb">
+                        <img class="img-fluid" th:src="${img}" alt="Workshop Gallery Image">
+                    </div>
+                    <div class="overlay-box text-center">
+                        <a class="lightbox" th:href="${img}"><i class="lni-plus"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="faq" class="section-padding">
+</section>
+
+<section id="sponsors" class="section-padding">
+</section>
+
+<section id="pricing" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Registration Packages</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Choose your package to join <span th:text="${event.title}">the workshop</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="row" th:if="${tickets == null or #lists.isEmpty(tickets)}">
+            <div class="col-12 text-center text-muted"><p>Tickets are not available yet.</p></div>
+        </div>
+        <div class="row" th:if="${!#lists.isEmpty(tickets)}">
+            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3" th:each="ticket, iter : ${tickets}" th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')" th:data-wow-delay="'0.' + ${iter.index + 2} + 's'">
+                <div class="price-block-wrapper" >
+                    <div class="icon"><i th:class="${iter.index == 0} ? 'lni-write' : (${iter.index == 1} ? 'lni-layers' : 'lni-leaf')"></i></div>
+                    <div class="colmun-title"><h5 th:text="${ticket.name}">Ticket Name</h5></div>
+                    <div class="price">
+                        <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Price</h2>
+                        <p><span th:text="${ticket.getAvailableQuantity()}"></span> / <span th:text="${ticket.totalQuantity}"></span> Tickets Available</p>
+                    </div>
+                    <div class="pricing-list">
+                        <ul><li><i class="lni-check-mark-circle"></i> <span class="text" th:text="${ticket.description}">Description</span></li></ul>
+                    </div>
+                    <a th:if="${ticket.isAvailable()}" th:href="@{'/ticket/buy/' + ${ticket.ticketTypeId}}" class="btn btn-common">Buy Ticket</a>
+                    <a th:if="${!ticket.isAvailable()}" href="#" class="btn btn-common disabled" style="background-color: #ccc;">Sold Out</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="event-slides" class="section-padding" th:if="${event != null}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Workshop Guidelines</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Information you need for the best experience at <span th:text="${event.title}">the workshop</span></p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
+                <div class="video" style="border-radius:10px; overflow:hidden;">
+                    <iframe th:src="@{|https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}" width="100%" height="350" style="border:0;" allowfullscreen=""></iframe>
+                </div>
+                <a class="btn btn-outline-primary mt-3" th:href="@{|https://www.google.com/maps/search/?api=1&query=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}" target="_blank">Open in Google Maps</a>
+            </div>
+            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
+                <p class="intro-desc">Join us at <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}"></span> for an unforgettable experience!</p>
+                <h2 class="intro-title">Workshop Day Instructions</h2>
+                <ul class="list-specification">
+                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}" th:if="${#strings.trim(line) != ''}">
+                        <i class="lni-check-mark-circle"></i>
+                        <span th:text="${#strings.trim(line) + '.'}">Instruction</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="blog" class="section-padding">
+</section>
+<div id="subscribe" class="section-padding">
+</div>
+
+
+<a href="#" class="back-to-top music-scroll-btn">
+    <div class="music-icon"><div class="note note-1">♪</div><div class="note note-2">♫</div><div class="note note-3">♪</div></div>
+    <div class="scroll-text">TOP</div>
+</a>
+
+<div id="preloader">
+    <div class="sk-circle">
+        <div class="sk-circle1 sk-child"></div><div class="sk-circle2 sk-child"></div><div class="sk-circle3 sk-child"></div><div class="sk-circle4 sk-child"></div><div class="sk-circle5 sk-child"></div><div class="sk-circle6 sk-child"></div><div class="sk-circle7 sk-child"></div><div class="sk-circle8 sk-child"></div><div class="sk-circle9 sk-child"></div><div class="sk-circle10 sk-child"></div><div class="sk-circle11 sk-child"></div><div class="sk-circle12 sk-child"></div>
+    </div>
+</div>
+
+<script th:src="@{/music/assets/js/jquery-min.js}"></script>
+<script th:src="@{/music/assets/js/popper.min.js}"></script>
+<script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
+<script th:src="@{/music/assets/js/jquery.countdown.min.js}"></script>
+<script th:src="@{/music/assets/js/jquery.nav.js}"></script>
+<script th:src="@{/music/assets/js/jquery.easing.min.js}"></script>
+<script th:src="@{/music/assets/js/wow.js}"></script>
+<script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
+<script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
+<script th:src="@{/music/assets/js/main.js}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const heroTrack = document.getElementById('heroTrack');
+        const heroSlides = document.querySelectorAll('.hero-slide');
+        const prevBtn = document.getElementById('heroPrev');
+        const nextBtn = document.getElementById('heroNext');
+        const progressBars = document.querySelectorAll('.hero-progress-bar');
+        if (!heroTrack) return;
+        let currentSlide = 0;
+        const totalSlides = heroSlides.length;
+        function updateSlider() {
+            const translateX = -currentSlide * 100;
+            heroTrack.style.transform = `translateX(${translateX}%)`;
+            progressBars.forEach((bar, index) => bar.classList.toggle('active', index === currentSlide));
         }
-      </style>
-  </head>
-  <body>
-  <!-- Banner -->
-  <section class="hero hero--slider hero--compact">
-      <div class="hero-track" id="heroTrack">
-          <!-- Lặp qua tất cả ảnh từ DB -->
-          <div th:each="img : ${eventImages}"
-               class="hero-slide"
-               th:style="|background-image: url('${img.url}')|">
-              <div class="container hero-content">
-                  <div class="hero-actions text-right">
-                      <a class="btn btn-common" href="#">Enroll Now</a>
-                  </div>
-              </div>
-          </div>
-      </div>
-
-      <!-- Nav buttons -->
-      <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
-      <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
-
-      <!-- Progress indicator -->
-      <div class="hero-progress">
-          <div class="hero-progress-bar" th:each="img : ${eventImages}"></div>
-      </div>
-  </section>
-
-  <!-- Event Info Section -->
-  <section class="section-padding">
-      <div class="container">
-          <div class="row">
-              <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
-                  <div class="event-description-box">
-                      <h2 th:text="${event.title}">Workshop Title</h2>
-                      <p class="lead" th:text="${event.description}">Workshop description...</p>
-                      
-                      <!-- Workshop Badge & Skill Level -->
-                      <div class="text-center mb-4">
-                          <span class="workshop-badge">Workshop Event</span>
-                          <span th:if="${event.skillLevel != null}" 
-                                th:class="'skill-level skill-' + ${#strings.toLowerCase(event.skillLevel)}"
-                                th:text="${event.skillLevel}">Beginner</span>
-                      </div>
-                      
-                      <!-- Event Details -->
-                      <div class="row">
-                          <div class="col-md-6">
-                              <p><i class="lni-calendar"></i> <strong>Start Date:</strong> <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 09:00</span></p>
-                              <p><i class="lni-calendar"></i> <strong>End Date:</strong> <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 17:00</span></p>
-                          </div>
-                          <div class="col-md-6">
-                              <p><i class="lni-users"></i> <strong>Capacity:</strong> <span th:text="${event.capacity}">30</span> participants</p>
-                              <p><i class="lni-map-marker"></i> <strong>Venue:</strong> <span th:if="${event.places != null and !event.places.empty}" th:text="${event.places[0].placeName}">FPT University</span></p>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              
-              <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-                  <!-- Certification Section -->
-                  <div class="certification-section" th:if="${event.certification != null}">
-                      <h3><i class="lni-certificate"></i> Certification</h3>
-                      <p th:text="${event.certification}">Workshop certificate...</p>
-                  </div>
-                  
-                  <!-- Equipment Needed -->
-                  <div class="prerequisites-section" th:if="${event.equipment != null}">
-                      <h4><i class="lni-laptop"></i> Equipment Needed</h4>
-                      <p th:text="${event.equipment}">Laptop, notebook...</p>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-
-  <!-- Materials Section -->
-  <section class="section-padding" th:if="${event.materials != null}">
-      <div class="container">
-          <h2 class="section-title">Learning Materials</h2>
-          <div class="materials-section">
-              <p th:text="${event.materials}">Workshop materials and resources...</p>
-          </div>
-      </div>
-  </section>
-
-  <!-- Prerequisites Section -->
-  <section class="section-padding" th:if="${event.prerequisites != null}">
-      <div class="container">
-          <h2 class="section-title">Prerequisites</h2>
-          <div class="prerequisites-section">
-              <p th:text="${event.prerequisites}">Required knowledge and skills...</p>
-          </div>
-      </div>
-  </section>
-
-  <!-- Learning Outcomes Section -->
-  <section class="section-padding" th:if="${event.learningOutcomes != null}">
-      <div class="container">
-          <h2 class="section-title">Learning Outcomes</h2>
-          <div class="learning-outcomes-section">
-              <p th:text="${event.learningOutcomes}">What you will learn...</p>
-          </div>
-      </div>
-  </section>
-
-  <!-- Instructors Section -->
-  <section id="team" class="section-padding" th:if="${event.speakers != null and !event.speakers.empty}">
-      <div class="container">
-          <h2 class="section-title">Instructors & Experts</h2>
-          <div class="row">
-              <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12" th:each="speaker : ${event.speakers}">
-                  <div class="instructor-card">
-                      <div class="instructor-image">
-                          <img th:src="${speaker.imageUrl}" th:alt="${speaker.name}" src="/music/assets/img/speaker/speaker1.jpg">
-                      </div>
-                      <div class="instructor-info">
-                          <h3 th:text="${speaker.name}">Instructor Name</h3>
-                          <p th:text="${speaker.role}">Instructor</p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-
-  <!-- Schedule Section -->
-  <section class="section-padding" th:if="${event.schedules != null and !event.schedules.empty}">
-      <div class="container">
-          <h2 class="section-title">Workshop Schedule</h2>
-          <div class="row">
-              <div class="col-md-12">
-                  <div class="table-responsive">
-                      <table class="table table-striped">
-                          <thead>
-                              <tr>
-                                  <th>Time</th>
-                                  <th>Session</th>
-                                  <th>Duration</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr th:each="schedule : ${event.schedules}">
-                                  <td th:text="${#temporals.format(schedule.startTime, 'HH:mm')}">09:00</td>
-                                  <td th:text="${schedule.activity}">Introduction</td>
-                                  <td th:text="${#temporals.format(schedule.endTime, 'HH:mm')}">10:00</td>
-                              </tr>
-                          </tbody>
-                      </table>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-
-  <!-- Gallery Section -->
-  <section class="section-padding" th:if="${eventImages != null and !eventImages.empty}">
-      <div class="container">
-          <h2 class="section-title">Workshop Gallery</h2>
-          <div class="row">
-              <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12" th:each="img : ${eventImages}">
-                  <div class="gallery-box">
-                      <div class="img-thumb">
-                          <img th:src="${img.url}" th:alt="Workshop Image" src="/music/assets/img/gallery/gallery1.jpg">
-                          <div class="overlay-box">
-                              <a th:href="${img.url}" class="lightbox" data-lightbox="gallery">
-                                  <i class="lni-plus"></i>
-                              </a>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-
-  <!-- Enrollment CTA -->
-  <section class="section-padding" style="background: #f8f9fa;">
-      <div class="container text-center">
-          <h2 class="section-title">Ready to Learn?</h2>
-          <p class="lead">Join this hands-on workshop and enhance your skills!</p>
-          <a href="#" class="btn btn-common btn-lg">Enroll Now</a>
-      </div>
-  </section>
-
-  <!-- Scripts -->
-  <script th:src="@{/music/assets/js/jquery-min.js}"></script>
-  <script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
-  <script th:src="@{/music/assets/js/popper.min.js}"></script>
-  <script th:src="@{/music/assets/js/waypoints.min.js}"></script>
-  <script th:src="@{/music/assets/js/jquery.counterup.min.js}"></script>
-  <script th:src="@{/music/assets/js/wow.js}"></script>
-  <script th:src="@{/music/assets/js/jquery.nav.js}"></script>
-  <script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
-  <script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
-  <script th:src="@{/music/assets/js/main.js}"></script>
-
-  <!-- Hero Slider Script -->
-  <script>
-      document.addEventListener('DOMContentLoaded', function() {
-          const track = document.getElementById('heroTrack');
-          const slides = track.querySelectorAll('.hero-slide');
-          const prevBtn = document.getElementById('heroPrev');
-          const nextBtn = document.getElementById('heroNext');
-          const progressBars = document.querySelectorAll('.hero-progress-bar');
-          
-          let currentSlide = 0;
-          
-          function updateSlider() {
-              track.style.transform = `translateX(-${currentSlide * 100}%)`;
-              progressBars.forEach((bar, index) => {
-                  bar.classList.toggle('active', index === currentSlide);
-              });
-          }
-          
-          function nextSlide() {
-              currentSlide = (currentSlide + 1) % slides.length;
-              updateSlider();
-          }
-          
-          function prevSlide() {
-              currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-              updateSlider();
-          }
-          
-          nextBtn.addEventListener('click', nextSlide);
-          prevBtn.addEventListener('click', prevSlide);
-          
-          // Auto-play
-          setInterval(nextSlide, 5000);
-          
-          // Progress bar click
-          progressBars.forEach((bar, index) => {
-              bar.addEventListener('click', () => {
-                  currentSlide = index;
-                  updateSlider();
-              });
-          });
-      });
-  </script>
-  </body>
+        function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); }
+        function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); }
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+        progressBars.forEach((bar, index) => {
+            bar.addEventListener('click', () => { currentSlide = index; updateSlider(); });
+        });
+        setInterval(nextSlide, 5000);
+        updateSlider();
+    });
+</script>
+</body>
 </html>

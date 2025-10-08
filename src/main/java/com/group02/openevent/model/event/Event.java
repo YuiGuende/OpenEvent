@@ -4,12 +4,15 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Host;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -34,7 +37,8 @@ import java.util.Set;
         @JsonSubTypes.Type(value = CompetitionEvent.class, name = "COMPETITION"),
         @JsonSubTypes.Type(value = OtherEvent.class, name = "OTHERS")
 })
-
+@Getter
+@Setter
 public class Event {
 
     @Id
@@ -128,6 +132,11 @@ public class Event {
     @JoinColumn(name = "org_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_org"))
     private Organization organization;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id", nullable = true,
+            foreignKey = @ForeignKey(name = "fk_event_department"))
+    private Department department;
 
     @ManyToOne
     @JoinColumn(name = "host_id", nullable = true,

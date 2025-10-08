@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Department Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 2px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .stat-card {
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #8B5CF6;
+        }
+
+        .stat-label {
+            color: #6B7280;
+            font-size: 0.875rem;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            color: #10B981;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{department/layout :: sidebar}"></div>
+
+<div class="main-content">
+    Header
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1" th:text="${department.departmentName}">Department Name</h2>
+            <p class="text-muted mb-0">Hiệu suất tổng hợp của tất cả sự kiện</p>
+        </div>
+        <div class="text-muted">
+            <small>Cập nhật lần cuối: <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss dd/MM/yyyy')}"></span></small>
+        </div>
+    </div>
+
+    Stats Cards
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Tổng số sự kiện</div>
+                <div class="stat-number" th:text="${totalEvents}">0</div>
+                <div class="stat-change">
+                    <i class="bi bi-arrow-up"></i> Tất cả sự kiện
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Yêu cầu chờ duyệt</div>
+                <div class="stat-number" th:text="${pendingRequests}">0</div>
+                <div class="stat-change text-warning">
+                    <i class="bi bi-clock"></i> Cần xử lý
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Sự kiện đang diễn ra</div>
+                <div class="stat-number" th:text="${ongoingEvents}">0</div>
+                <div class="stat-change text-info">
+                    <i class="bi bi-play-circle"></i> Đang hoạt động
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Tổng người tham gia</div>
+                <div class="stat-number" th:text="${totalParticipants}">0</div>
+                <div class="stat-change">
+                    <i class="bi bi-people"></i> Tổng số
+                </div>
+            </div>
+        </div>
+    </div>
+
+    Charts Row 1
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="chart-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="chart-title mb-0">Số lượng sự kiện theo thời gian</h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary">Tuần</button>
+                        <button type="button" class="btn btn-outline-secondary active">Tháng</button>
+                        <button type="button" class="btn btn-outline-secondary">Quý</button>
+                        <button type="button" class="btn btn-outline-secondary">Năm</button>
+                    </div>
+                </div>
+                <canvas id="eventsTimeChart" height="80"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h5 class="chart-title">Phân bố loại sự kiện</h5>
+                <canvas id="eventTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    Charts Row 2
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-container">
+                <h5 class="chart-title">Xu hướng người tham gia</h5>
+                <canvas id="participantsTrendChart" height="60"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Events by month chart
+    fetch('/department/api/stats/events-by-month')
+        .then(res => res.json())
+        .then(data => {
+            const ctx = document.getElementById('eventsTimeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Số sự kiện',
+                        data: data.values,
+                        backgroundColor: '#8B5CF6',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        });
+
+    // Event type distribution chart
+    fetch('/department/api/stats/events-by-type')
+        .then(res => res.json())
+        .then(data => {
+            const ctx = document.getElementById('eventTypeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#3B82F6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+
+    // Participants trend chart
+    fetch('/department/api/stats/participants-trend')
+        .then(res => res.json())
+        .then(data => {
+            const ctx = document.getElementById('participantsTrendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Người tham gia',
+                        data: data.values,
+                        borderColor: '#8B5CF6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        });
+</script>
+</body>
+</html>

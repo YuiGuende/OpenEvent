@@ -26,4 +26,8 @@ public interface IRequestRepo extends JpaRepository<Request, Long> {
     Page<Request> findByType(RequestType type, Pageable pageable);
     Page<Request> findByStatusAndType(RequestStatus status, RequestType type, Pageable pageable);
     Page<Request> findByReceiver_AccountId(Long receiverId, Pageable pageable);
+
+    long countByReceiverAccountIdAndStatus(Long accountId, RequestStatus requestStatus);
+
+    Page<Request> findByReceiver_AccountIdAndStatus(Long receiverAccountId, RequestStatus status, Pageable pageable);
 }

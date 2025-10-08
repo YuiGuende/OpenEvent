@@ -39,4 +39,9 @@ public interface RequestService {
     
     // Convert to DTO
     RequestDTO convertToDTO(Request request);
+
+    Request approveRequest(Long requestId, String responseMessage);
+
+    Request rejectRequest(Long requestId, String responseMessage);
+    Page<Request> getRequestsByReceiver(Long receiverAccountId, RequestStatus status, Pageable pageable);
 }

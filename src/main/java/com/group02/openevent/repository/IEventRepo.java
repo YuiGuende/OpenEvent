@@ -32,4 +32,12 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE e.status = :status ORDER BY e.createdAt DESC")
     List<Event> findRecommendedEvents(@Param("status") EventStatus status, Pageable pageable);
+
+    Page<Event> findByDepartment_AccountIdAndEventTypeAndStatus(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
+
+    Page<Event> findByDepartment_AccountIdAndEventType(Long departmentId, EventType eventType, Pageable pageable);
+
+    Page<Event> findByDepartment_AccountId(Long departmentId, Pageable pageable);
+
+    Page<Event> findByDepartment_AccountIdAndStatus(Long departmentId, EventStatus status, Pageable pageable);
 }

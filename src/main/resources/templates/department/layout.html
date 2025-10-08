@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="sidebar">
+<style>
+    .sidebar {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+    }
+
+    .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 12px 20px;
+        margin: 2px 0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+</style>
+<nav class="sidebar">
+    <div class="position-sticky pt-3">
+        <div class="text-center mb-4 px-3">
+            <h5 class="text-white mb-0">
+                <i class="bi bi-building"></i>
+                Department Panel
+            </h5>
+        </div>
+
+        <ul class="nav flex-column px-2">
+            <li class="nav-item">
+                <a class="nav-link"
+                   th:classappend="${#strings.contains(currentUri, '/dashboard')} ? 'active' : ''"
+                   th:href="@{/department/dashboard}">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   th:classappend="${#strings.contains(currentUri, '/events')} ? 'active' : ''"
+                   th:href="@{/department/events}">
+                    <i class="bi bi-calendar-event"></i>
+                    Sự kiện
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   th:classappend="${#strings.contains(currentUri, '/requests')} ? 'active' : ''"
+                   th:href="@{/department/requests}">
+                    <i class="bi bi-inbox"></i>
+                    Yêu cầu duyệt
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   th:classappend="${#strings.contains(currentUri, '/articles')} ? 'active' : ''"
+                   th:href="@{/department/articles}">
+                    <i class="bi bi-newspaper"></i>
+                    Bài viết
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+</html>

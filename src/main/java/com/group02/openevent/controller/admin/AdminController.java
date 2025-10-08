@@ -28,7 +28,6 @@ public class AdminController {
         model.addAttribute("draftEvents", eventService.countEventsByStatus(EventStatus.DRAFT));
         model.addAttribute("publicEvents", eventService.countEventsByStatus(EventStatus.PUBLIC));
         model.addAttribute("ongoingEvents", eventService.countEventsByStatus(EventStatus.ONGOING));
-
         return "admin/dashboard";
     }
 
@@ -56,7 +55,6 @@ public class AdminController {
         model.addAttribute("selectedStatus", status);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDir", sortDir);
-
         return "admin/events";
     }
 

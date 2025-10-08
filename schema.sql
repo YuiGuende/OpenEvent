@@ -7,7 +7,7 @@ CREATE TABLE account
     account_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role          ENUM('ADMIN','HOST','USER') NOT NULL
+    role          ENUM('ADMIN','HOST','CUSTOMER') NOT NULL
 );
 
 CREATE TABLE organization
@@ -389,9 +389,9 @@ INSERT INTO account (email, password_hash, role) VALUES
 ('admin@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN'),
 ('host1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
 ('host2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
-('user1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER'),
-('user2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER'),
-('user3@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'USER');
+('user1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER'),
+('user2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER'),
+('user3@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER');
 
 -- Sample organizations
 INSERT INTO organization (org_name, description, email, phone, address, created_at) VALUES

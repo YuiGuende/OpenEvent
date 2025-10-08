@@ -66,6 +66,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Page<Event> getEventsByDepartment(Long departmentId, EventType eventType, EventStatus status, Pageable pageable) {
+        if (eventType != null && status != null) {
+            return eventRepo.findByDepartment_AccountIdAndEventTypeAndStatus(departmentId, eventType, status, pageable);
+        } else if (eventType != null) {
+            return eventRepo.findByDepartment_AccountIdAndEventType(departmentId, eventType, pageable);
+        } else if (status != null) {
+            return eventRepo.findByDepartment_AccountIdAndStatus(departmentId, status, pageable);
+        } else {
+            return eventRepo.findByDepartment_AccountId(departmentId, pageable);
+        }
+    }
+
+    @Override
     @Transactional
     public EventResponse updateEvent(Long id, EventUpdateRequest request) {
         Event event;
@@ -152,17 +165,16 @@ public class EventServiceImpl implements EventService {
             musicEvent.setMusicType(musicReq.getMusicType());
             musicEvent.setGenre(musicReq.getGenre());
             musicEvent.setPerformerCount(musicReq.getPerformerCount());
-        }
-        else if (event instanceof FestivalEvent festivalEvent && request instanceof FestivalEventUpdateRequest festReq) {
+            musicEventRepo.save(musicEvent);
+
+        } else if (event instanceof FestivalEvent festivalEvent && request instanceof FestivalEventUpdateRequest festReq) {
             festivalEvent.setCulture(festReq.getCulture());
             festivalEvent.setHighlight(festReq.getHighlight());
-        }
-        else if (event instanceof CompetitionEvent competitionEvent && request instanceof CompetitionEventUpdateRequest comReq) {
+        } else if (event instanceof CompetitionEvent competitionEvent && request instanceof CompetitionEventUpdateRequest comReq) {
             competitionEvent.setCompetitionType(comReq.getCompetitionType());
             competitionEvent.setRules(comReq.getRules());
             competitionEvent.setPrizePool(comReq.getPrizePool());
-        }
-        else if (event instanceof WorkshopEvent workshopEvent && request instanceof WorkshopEventUpdateRequest workReq) {
+        } else if (event instanceof WorkshopEvent workshopEvent && request instanceof WorkshopEventUpdateRequest workReq) {
             workshopEvent.setMaterialsLink(workReq.getMaterialsLink());
             workshopEvent.setPrerequisites(workReq.getPrerequisites());
             workshopEvent.setMaxParticipants(workReq.getMaxParticipants());

@@ -40,4 +40,5 @@ public interface EventService {
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
     List<EventCardDTO> getCustomerEvents(Long customerId);
     List<EventCardDTO> getLiveEvents(int i);
+    Page<Event> getEventsByDepartment(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
 }

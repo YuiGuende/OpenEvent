@@ -17,9 +17,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-
-import jakarta.servlet.http.HttpSession;
-
 @Service
 public class AuthServiceImpl implements AuthService {
 	private final IAccountRepo accountRepo;
@@ -60,8 +57,8 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalArgumentException("Email này đã được đăng ký");
 		}
 
-		// Luôn set role là USER khi đăng ký, bỏ qua lựa chọn từ frontend
-		Role role = Role.USER;
+		// Luôn set role là CUSTOMER khi đăng ký, bỏ qua lựa chọn từ frontend
+		Role role = Role.CUSTOMER;
 
 		Account account = new Account();
 		account.setEmail(request.getEmail().trim());

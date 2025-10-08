@@ -177,6 +177,7 @@ hoặc
         @Transactional
         public String processUserInput(String userInput, int userId, HttpServletResponse response) throws Exception {
 //        String intenttoolEvent = classifier.classiftoolEvent(userInput);
+
             boolean shouldReload = false;
             StringBuilder systemResult = new StringBuilder();
             if (pendingEvents.containsKey(String.valueOf(userId))) {
@@ -225,23 +226,36 @@ hoặc
                     try {
                         switch (tool) {
                             case "ADD_EVENT" -> {
-                                if (!action.getArgs().containsKey("title")
-                                        || !action.getArgs().containsKey("start_time")
-                                        || !action.getArgs().containsKey("end_time")) {
+                                Map<String, Object> args = action.getArgs();
+//                                System.out.println("Action keys: " + args.keySet()+"Raw args: " + args);
+//                                System.out.println("📝 Thiếu thông tin sự kiện (tiêu đề hoặc thời gian).\n");
+//
+//
+//                                if (!action.getArgs().containsKey("title")
+//                                        || !action.getArgs().containsKey("start_time")
+//                                        || !action.getArgs().containsKey("end_time")) {
+//                                    systemResult.append("Action keys: " + args.keySet()+"Raw args: " + args);
+//                                    continue;
+//                                }
+
+                                String title = getStr(args, "title", "event_title", "name");
+                                LocalDateTime start = getTime(args, "start_time", "starts_at", "start", "from", "begin");
+                                LocalDateTime end   = getTime(args, "end_time", "ends_at", "end", "to", "finish");
+
+                                if (title == null || start == null || end == null) {
                                     systemResult.append("📝 Thiếu thông tin sự kiện (tiêu đề hoặc thời gian).\n");
                                     continue;
                                 }
 
-                                String title = (String) action.getArgs().get("title");
-                                String rawStart = (String) action.getArgs().get("start_time");
-                                String rawEnd = (String) action.getArgs().get("end_time");
-
-                                LocalDateTime start = tryParseDateTime(rawStart);
-                                LocalDateTime end = tryParseDateTime(rawEnd);
+// Validate thời gian
+                                if (!start.isBefore(end)) {
+                                    systemResult.append("⛔ Thời gian không hợp lệ: bắt đầu phải trước kết thúc.\n");
+                                    continue;
+                                }
 
                                 // 1. Check trùng thời gian & địa điểm
                                 String placeName = (String) action.getArgs().getOrDefault("place", "");
-                                Optional<Place> placeOpt = placeService.findPlaceByName(placeName);
+                                Optional<Place> placeOpt = placeService. findPlaceByName(placeName);
 
                                 if (placeOpt.isPresent()) {
                                     List<Place> placeList = List.of(placeOpt.get()); // tạo list 1 phần tử
@@ -345,6 +359,12 @@ hoặc
 
                             case "UPDATE_EVENT" -> {
                                 Event existing = null;
+                                Map<String,Object> args = action.getArgs();
+
+                                if (!args.containsKey("event_id") && !args.containsKey("original_title")) {
+                                    systemResult.append("❌ Thiếu định danh sự kiện. Hãy cung cấp `event_id` hoặc `original_title`.\n");
+                                    break;
+                                }
 
                                 // 1. Tìm sự kiện theo id hoặc title
                                 if (action.getArgs().containsKey("event_id")) {
@@ -365,11 +385,11 @@ hoặc
                                 if (action.getArgs().containsKey("title")) {
                                     existing.setTitle((String) action.getArgs().get("title"));
                                 }
-                                if (action.getArgs().containsKey("start_time")) {
-                                    existing.setStartsAt(tryParseDateTime((String) action.getArgs().get("start_time")));
+                                if (args.containsKey("start_time") || args.containsKey("starts_at")) {
+                                    existing.setStartsAt(getTime(args,"start_time","starts_at","start","from","begin"));
                                 }
-                                if (action.getArgs().containsKey("end_time")) {
-                                    existing.setEndsAt(tryParseDateTime((String) action.getArgs().get("end_time")));
+                                if (args.containsKey("end_time") || args.containsKey("ends_at")) {
+                                    existing.setEndsAt(getTime(args,"end_time","ends_at","end","to","finish"));
                                 }
                                 if (action.getArgs().containsKey("description")) {
                                     existing.setDescription((String) action.getArgs().get("description"));
@@ -584,30 +604,21 @@ hoặc
             return summary.toString();
         }
 
-//        public List<ScheduleItem> getCurrentSchedule(int userID) {
-//
-//            EventService eventService = new EventService();
-//            List<UserEvents> userEvents = eventService.getAllEventsByUserId(userID);
-//            List<ScheduleItem> schedules = new ArrayList<>();
-//
-//            for (UserEvents event : userEvents) {
-//                String name = event.getName();
-//                LocalDateTime start = event.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-//                LocalDateTime end = event.getDueDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-//
-//                ScheduleItem item = new ScheduleItem(name, start, end, null);
-//
-//                // Ưu tiên hoặc màu có thể xác định priority
-//                item.setPriority("Normal");
-//
-//                // Nếu bạn dùng Enum ScheduleType thì gán luôn:
-//                item.setScheduleType(ScheduleItem.ScheduleType.EVENT);
-//
-//                schedules.add(item);
-//            }
-//
-//            return schedules;
-//        }
+        public List<Event> getCurrentEvent(Long userId) {
+            // Lấy tất cả event của user (bạn đã có EventService.getEventByUserId)
+            List<Event> events = eventService.getEventByUserId(userId);
+            LocalDate today = LocalDate.now();
+
+            // Giữ các event mà hôm nay nằm trong khoảng start..end
+            return events.stream()
+                    .filter(e -> {
+                        LocalDate start = e.getStartsAt().toLocalDate();
+                        LocalDate end   = e.getEndsAt().toLocalDate();
+                        return !start.isAfter(today) && !end.isBefore(today);
+                    })
+                    .sorted(Comparator.comparing(Event::getStartsAt))
+                    .toList();
+        }
 
         private LocalDateTime tryParseDateTime(String input) {
             List<String> patterns = List.of(
@@ -735,4 +746,35 @@ hoặc
         }
         return sb.toString();
     }
+    private String getStr(Map<String, Object> m, String... keys) {
+        for (String k : keys) {
+            Object v = m.get(k);
+            if (v != null && !v.toString().isBlank()) return v.toString().trim();
+        }
+        return null;
+    }
+    private LocalDateTime getTime(Map<String, Object> m, String... keys) {
+        String s = getStr(m, keys);
+        return (s == null) ? null : tryParseDateTime(s);
+    }
+    private Long getLong(Map<String, Object> m, String... keys) {
+        for (String k : keys) {
+            Object v = m.get(k);
+            if (v == null) continue;
+
+            if (v instanceof Number) {
+                // Hỗ trợ Integer, Long, Double, BigDecimal...
+                return ((Number) v).longValue();
+            }
+            if (v instanceof String s) {
+                s = s.trim();
+                if (s.isEmpty()) continue;
+                try {
+                    return Long.parseLong(s);
+                } catch (NumberFormatException ignore) { /* thử key khác */ }
+            }
+        }
+        return null; // không tìm thấy/không parse được
+    }
+
 }

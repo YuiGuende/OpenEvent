@@ -176,9 +176,8 @@ public class AgentEventService {
      * @return Event đã được lưu
      */
     public Event createEventByCustomer(Long userId, Event draft, @Nullable Long organizationId) {
-        // 1) Load customer
-        Customer c = customerService.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy customer từ userId=" + userId));
+        // 1) Load or create customer
+        Customer c = customerService.getOrCreateByUserId(userId);
         
         // 2) Find or create Host (idempotent)
         Host h = c.getHost();

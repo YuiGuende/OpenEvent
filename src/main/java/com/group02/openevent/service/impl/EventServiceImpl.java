@@ -174,6 +174,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Optional<Event> getEventByEventId(Long eventId) {
+        if (eventId == null) return Optional.empty();
         return eventRepo.findById(eventId);
     }
 

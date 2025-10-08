@@ -1,4 +1,4 @@
-package com.group02.openevent.model.dto.music;
+package com.group02.openevent.model.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.group02.openevent.model.dto.PlaceDTO;
@@ -10,7 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class MusicEventDetailDTO {
+public class ConferenceEventDetailDTO {
+    // Các trường chung từ Event
     private String description;
     private String title;
     private Integer capacity;
@@ -23,38 +24,33 @@ public class MusicEventDetailDTO {
     private LocalDateTime endsAt;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private EventType eventType;
     private String benefits;
 
-    // 🔹 mở rộng thêm
-    private List<String> imageUrls;        // gallery, banner
-    private List<SpeakerDTO> speakers;     // danh sách nghệ sĩ
-    private List<ScheduleDTO> schedules;   // lịch biểu
-    private List<PlaceDTO> places;         // địa điểm
-    private String venueAddress;           // địa chỉ venue
-    private String guidelines;             // hướng dẫn sự kiện
+    // Các trường mở rộng
+    private List<String> imageUrls;
+    private List<SpeakerDTO> speakers;
+    private List<ScheduleDTO> schedules;
+    private List<PlaceDTO> places;
+    private String venueAddress;
+    private String guidelines;
 
-    public MusicEventDetailDTO(String description, String title, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, LocalDateTime updatedAt, EventType eventType, String benefits) {
-        this.description = description;
-        this.title = title;
-        this.startsAt = startsAt;
-        this.endsAt = endsAt;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.eventType = eventType;
-        this.benefits = benefits;
+    // Các trường đặc thù của ConferenceEvent
+    private String conferenceType;
+    private Integer maxAttendees;
+    private String agenda;
+
+    public ConferenceEventDetailDTO() {
     }
 
-
-    public MusicEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, LocalDateTime updatedAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines) {
+    // Constructor đầy đủ
+    public ConferenceEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines, String conferenceType, Integer maxAttendees, String agenda) {
         this.description = description;
         this.title = title;
         this.capacity = capacity;
         this.startsAt = startsAt;
         this.endsAt = endsAt;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.eventType = eventType;
         this.benefits = benefits;
         this.imageUrls = imageUrls;
@@ -63,29 +59,13 @@ public class MusicEventDetailDTO {
         this.places = places;
         this.venueAddress = venueAddress;
         this.guidelines = guidelines;
+        this.conferenceType = conferenceType;
+        this.maxAttendees = maxAttendees;
+        this.agenda = agenda;
     }
 
-    // Getter & Setter cho tất cả fields
 
-    public List<String> getImageUrls() { return imageUrls; }
-    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
-
-    public List<SpeakerDTO> getSpeakers() { return speakers; }
-    public void setSpeakers(List<SpeakerDTO> speakers) { this.speakers = speakers; }
-
-    public List<ScheduleDTO> getSchedules() { return schedules; }
-    public void setSchedules(List<ScheduleDTO> schedules) { this.schedules = schedules; }
-
-    public List<PlaceDTO> getPlaces() { return places; }
-    public void setPlaces(List<PlaceDTO> places) { this.places = places; }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
-    }
+    // Getters and Setters cho tất cả các trường
 
     public String getDescription() {
         return description;
@@ -101,6 +81,14 @@ public class MusicEventDetailDTO {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
     }
 
     public LocalDateTime getStartsAt() {
@@ -127,14 +115,6 @@ public class MusicEventDetailDTO {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public EventType getEventType() {
         return eventType;
     }
@@ -149,6 +129,38 @@ public class MusicEventDetailDTO {
 
     public void setBenefits(String benefits) {
         this.benefits = benefits;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
+    public List<SpeakerDTO> getSpeakers() {
+        return speakers;
+    }
+
+    public void setSpeakers(List<SpeakerDTO> speakers) {
+        this.speakers = speakers;
+    }
+
+    public List<ScheduleDTO> getSchedules() {
+        return schedules;
+    }
+
+    public void setSchedules(List<ScheduleDTO> schedules) {
+        this.schedules = schedules;
+    }
+
+    public List<PlaceDTO> getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(List<PlaceDTO> places) {
+        this.places = places;
     }
 
     public String getVenueAddress() {
@@ -167,5 +179,27 @@ public class MusicEventDetailDTO {
         this.guidelines = guidelines;
     }
 
+    public String getConferenceType() {
+        return conferenceType;
+    }
 
+    public void setConferenceType(String conferenceType) {
+        this.conferenceType = conferenceType;
+    }
+
+    public Integer getMaxAttendees() {
+        return maxAttendees;
+    }
+
+    public void setMaxAttendees(Integer maxAttendees) {
+        this.maxAttendees = maxAttendees;
+    }
+
+    public String getAgenda() {
+        return agenda;
+    }
+
+    public void setAgenda(String agenda) {
+        this.agenda = agenda;
+    }
 }

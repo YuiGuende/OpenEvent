@@ -3,7 +3,7 @@ package com.group02.openevent.service.impl;
 import com.group02.openevent.model.dto.PlaceDTO;
 import com.group02.openevent.model.dto.ScheduleDTO;
 import com.group02.openevent.model.dto.SpeakerDTO;
-import com.group02.openevent.model.dto.competition.CompetitionEventDetailDTO;
+import com.group02.openevent.model.dto.event.CompetitionEventDetailDTO;
 import com.group02.openevent.model.event.CompetitionEvent;
 import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.repository.ICompetitionEventRepo;
@@ -21,7 +21,6 @@ public class CompetitionServiceImpl implements ICompetitionService {
     public CompetitionServiceImpl(ICompetitionEventRepo competitionEventRepo) {
         this.competitionEventRepo = competitionEventRepo;
     }
-
 
     @Override
     public List<CompetitionEventDetailDTO> getAllCompetitionEvents() {

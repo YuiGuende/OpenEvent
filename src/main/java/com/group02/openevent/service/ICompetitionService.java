@@ -1,6 +1,6 @@
 package com.group02.openevent.service;
 
-import com.group02.openevent.model.dto.competition.CompetitionEventDetailDTO;
+import com.group02.openevent.model.dto.event.CompetitionEventDetailDTO;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.group02.openevent.controller.event;
 
 import com.group02.openevent.model.dto.ScheduleDTO;
-import com.group02.openevent.model.dto.competition.CompetitionEventDetailDTO;
+import com.group02.openevent.model.dto.event.CompetitionEventDetailDTO;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.ICompetitionService;
 import com.group02.openevent.service.TicketTypeService;

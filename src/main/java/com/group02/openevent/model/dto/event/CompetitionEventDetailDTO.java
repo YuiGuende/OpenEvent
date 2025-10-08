@@ -1,4 +1,4 @@
-package com.group02.openevent.model.dto.competition;
+package com.group02.openevent.model.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.group02.openevent.model.dto.PlaceDTO;

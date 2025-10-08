@@ -47,96 +47,99 @@
             pointer-events: none;
             z-index: -1;
         }
-        /* Competition Countdown Timer Styling */
-        .time-countdown {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 30px 0;
+        /* Competition Countdown Timer Styling - Copied from Music Theme */
+        .countdown-timer .heading-count {
+            padding: 10px 68px;
+        }
+
+        .countdown-timer .heading-count h2 {
+            font-size: 40px;
+            color: #212121;
+            text-transform: uppercase;
+            line-height: 48px;
+        }
+
+        .countdown-timer .heading-count h4 {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-top: 30px;
+        }
+
+        .countdown-timer .heading-count h4 span {
+            background: #212121;
+            padding: 7px 15px;
+            border-radius: 4px;
+        }
+
+        .countdown-timer .heading-count p {
+            font-size: 14px;
+            color: #212121;
+            line-height: 30px;
+        }
+
+        .time-count div {
+            text-align: center;
         }
 
         .time-entry {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border-radius: 20px;
-            padding: 35px 25px;
+            display: inline-block;
+            min-width: 120px;
+            margin: 15px;
+            height: 110px;
+            padding: 20px;
+            box-shadow: 1px 10px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            background: #fff;
             text-align: center;
-            min-width: 150px;
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            position: relative;
-            overflow: visible;
+            font-weight: 400;
             transition: all 0.3s ease;
-        }
-        
-        .time-entry::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #ff6b35, #f7931e);
-            border-radius: 20px;
-            padding: 2px;
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-            -webkit-mask-composite: xor;
         }
         
         .time-entry:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(255, 107, 53, 0.25);
-        }
-
-        .time-entry::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, rgba(255, 107, 53, 0.05), transparent);
-            pointer-events: none;
+            box-shadow: 1px 15px 30px rgba(0, 0, 0, 0.3);
         }
 
         .time-entry span {
             display: block;
-            font-size: 3rem;
-            font-weight: 900;
-            color: #2c3e50;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #000000 !important;
             line-height: 1;
             margin-bottom: 10px;
-            font-family: 'Arial Black', Arial, sans-serif;
-            animation: numberGlow 2s ease-in-out infinite alternate;
-        }
-        
-        @keyframes numberGlow {
-            0% {
-                filter: drop-shadow(0 0 5px rgba(255, 107, 53, 0.3));
-            }
-            100% {
-                filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.6));
-            }
         }
 
         .time-entry .label {
             font-size: 0.9rem;
             font-weight: 700;
-            color: #495057 !important;
+            color: #000000 !important;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-            line-height: 1.2;
-            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+        
+        /* Force countdown numbers to be black - Override any external CSS */
+        .countdown-timer .time-entry span {
+            color: #000000 !important;
+        }
+        
+        .countdown-timer .time-entry .label {
+            color: #000000 !important;
+        }
+        
+        .time-count .time-entry span {
+            color: #000000 !important;
+        }
+        
+        .time-count .time-entry .label {
+            color: #000000 !important;
         }
 
         /* Competition Header Styling */
         .heading-count h2 {
             font-size: 3rem;
             font-weight: 900;
-            color: #2c3e50;
+            color: #212121;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 25px;
             text-transform: uppercase;
@@ -210,10 +213,10 @@
         
         @keyframes lineGlow {
             0% {
-                box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
             }
             100% {
-                box-shadow: 0 0 15px rgba(255, 107, 53, 0.6);
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
             }
         }
 
@@ -221,12 +224,12 @@
             margin: 0 25px;
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
             animation: iconRotate 4s linear infinite;
             position: relative;
         }
@@ -241,7 +244,7 @@
         }
 
         .separator-icon i {
-            color: #fff;
+            color: #ff6b35;
             font-size: 1.5rem;
         }
         
@@ -291,14 +294,15 @@
         }
         
         .event-description-box .lead {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             line-height: 1.8;
             color: #2c3e50;
             margin-bottom: 25px;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             text-align: left;
             font-weight: 500;
+            min-height: 120px;
         }
         
         .event-description-box .trophy-icon {
@@ -325,6 +329,7 @@
             display: flex;
             align-items: center;
             font-weight: 500;
+            min-height: 50px;
         }
         
         .event-description-box i {
@@ -531,7 +536,7 @@
         }
 
         .separator-icon span {
-            color: #fff;
+            color: #ff6b35;
             font-size: 1.5rem;
         }
 
@@ -581,7 +586,7 @@
 
         /* Competition Section Background */
         .countdown-timer {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            background: #f8f9fa;
             position: relative;
             overflow: hidden;
         }
@@ -836,13 +841,367 @@
                 font-size: 2.2rem;
             }
         }
+        
+        /* Schedule Section Styling - Orange Theme */
+        .schedule-area {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.15);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .schedule-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            border-radius: 20px;
+            padding: 3px;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            z-index: -1;
+        }
+        
+        .schedule-tab-title .nav-tabs {
+            border: none;
+        }
+        
+        .schedule-tab-title .nav-link {
+            background: #ffffff;
+            border: 2px solid #ff6b35;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+            color: #ff6b35;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .schedule-tab-title .nav-link:hover {
+            border-color: #ff6b35;
+            color: #ff6b35;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2);
+        }
+        
+        .schedule-tab-title .nav-link.active {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border-color: #ff6b35;
+            color: #ffffff;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+        }
+        
+        .schedule-tab-title .nav-link.active h4,
+        .schedule-tab-title .nav-link.active h5 {
+            color: #ffffff;
+        }
+        
+        /* Force schedule left column to be orange - Override any external CSS */
+        .schedule-area .schedule-tab-title .nav-link {
+            border-color: #ff6b35 !important;
+            color: #ff6b35 !important;
+        }
+        
+        .schedule-area .schedule-tab-title .nav-link.active {
+            background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
+            border-color: #ff6b35 !important;
+            color: #ffffff !important;
+        }
+        
+        .schedule-area .schedule-tab-title .nav-link.active h4,
+        .schedule-area .schedule-tab-title .nav-link.active h5 {
+            color: #ffffff !important;
+        }
+        
+        .schedule-tab-content .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .schedule-tab-content .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
+        }
+        
+        .schedule-tab-content .card-header {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border: none;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+        }
+        
+        .schedule-tab-content .card-header .time {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .schedule-tab-content .card-header h4 {
+            color: #ffffff;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        /* Ticket Cards - Equal Height */
+        .price-block-wrapper {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .price-block-wrapper .pricing-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .price-block-wrapper .pricing-list ul {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .price-block-wrapper .btn {
+            margin-top: auto;
+            width: 100%;
+        }
+        
+        /* Guidelines Section Styling */
+        .list-specification {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .list-specification li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .list-specification li:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            border-left-color: #ff6b35;
+        }
+        
+        .list-specification li i {
+            color: #ff6b35;
+            margin-right: 1.5rem;
+            margin-top: 0.3rem;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            background: rgba(255, 107, 53, 0.1);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .list-specification li span {
+            color: #495057;
+            line-height: 1.6;
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        /* Show on Maps Button Styling */
+        .btn-outline-primary {
+            border: 2px solid #ff6b35 !important;
+            color: #ff6b35 !important;
+            background: transparent !important;
+            padding: 12px 24px !important;
+            border-radius: 25px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            display: inline-block !important;
+            transition: all 0.3s ease !important;
+            font-size: 1rem !important;
+        }
+        
+        .btn-outline-primary:hover {
+            background: #ff6b35 !important;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3) !important;
+        }
+        
+        .btn-outline-primary:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+        }
+        
+        /* Judges & Organizers Section Styling */
+        .judge-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.15);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .judge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
+            border-radius: 20px;
+            padding: 3px;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            z-index: -1;
+        }
+        
+        .judge-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.25);
+        }
+        
+        .judge-image {
+            margin-bottom: 1.5rem;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .judge-image img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ff6b35;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .judge-card:hover .judge-image img {
+            border-color: #f7931e;
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+        
+        .judge-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .judge-info h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            line-height: 1.3;
+        }
+        
+        .judge-info p {
+            font-size: 1rem;
+            color: #ff6b35;
+            font-weight: 600;
+            margin: 0;
+            text-align: center;
+        }
+        
+        /* FINAL OVERRIDE - Highest Priority CSS */
+        /* Force countdown numbers to be black */
+        .countdown-timer .time-count .time-entry span,
+        .countdown-timer .time-countdown .time-entry span,
+        .time-countdown .time-entry span,
+        .time-count .time-entry span {
+            color: #000000 !important;
+        }
+        
+        .countdown-timer .time-count .time-entry .label,
+        .countdown-timer .time-countdown .time-entry .label,
+        .time-countdown .time-entry .label,
+        .time-count .time-entry .label {
+            color: #000000 !important;
+        }
+        
+        /* Force schedule left column to be orange - Override ALL external CSS */
+        .schedule-area .schedule-tab-title .nav-link,
+        .schedule-tab-title .nav-link,
+        .nav-tabs .nav-link {
+            border-color: #ff6b35 !important;
+            color: #ff6b35 !important;
+            background: #ffffff !important;
+        }
+        
+        .schedule-area .schedule-tab-title .nav-link:hover,
+        .schedule-tab-title .nav-link:hover,
+        .nav-tabs .nav-link:hover {
+            border-color: #ff6b35 !important;
+            color: #ff6b35 !important;
+            background: #ffffff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2) !important;
+        }
+        
+        .schedule-area .schedule-tab-title .nav-link.active,
+        .schedule-tab-title .nav-link.active,
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
+            border-color: #ff6b35 !important;
+            color: #ffffff !important;
+        }
+        
+        .schedule-area .schedule-tab-title .nav-link.active:hover,
+        .schedule-tab-title .nav-link.active:hover,
+        .nav-tabs .nav-link.active:hover {
+            background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
+            border-color: #ff6b35 !important;
+            color: #ffffff !important;
+        }
     </style>
 
 `     <!-- Clean CSS - Simple and maintainable -->
   </head>
   <body>
 <!-- Banner, in ra ảnh -->
-  <section class="hero hero--slider hero--compact">
+  <section class="hero hero--slider hero--compact" style="margin-top: 0; padding-top: 0;">
       <div class="hero-track" id="heroTrack">
           <!-- Lặp qua tất cả ảnh từ DB -->
           <div th:each="img : ${eventImages}"
@@ -969,11 +1328,6 @@
                         th:text="${event.title}">
                         Competition Title
                     </h1>
-                    <!-- Subtitle / EventType -->
-                    <p class="wow fadeInDown" data-wow-delay="0.2s"
-                       th:text="'Type: ' + ${event.eventType}">
-                        The biggest competition event
-                    </p>
                 </div>
             </div>
         </div>
@@ -989,21 +1343,6 @@
                         <span th:text="${event.description}">Competition description</span>
                     </p>
 
-                    <!-- Time -->
-                    <p>
-                        <i class="lni-timer"></i>
-                        Start:
-                        <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}"></span>
-                        -
-                        End:
-                        <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}"></span>
-                    </p>
-
-                      <!-- Competition Badge -->
-                      <div class="text-center mb-4">
-                          <span class="competition-badge">Competition Event</span>
-                      </div>
-
                     <!-- Benefits -->
                     <p>
                         <span class="trophy-icon">🏆</span>
@@ -1015,72 +1354,6 @@
     </div>
 </section>
 
-<!-- Competition Event Description Section End -->
-
-<!-- Counter Area Start-->
-<!--<section class="counter-section section-padding">-->
-<!--    <div class="container">-->
-<!--        <div class="row">-->
-
-<!--            &lt;!&ndash; Location &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
-<!--                <div class="counter wow fadeInRight" data-wow-delay="0.3s">-->
-<!--                    <div class="icon"><i class="lni-map"></i></div>-->
-<!--                    <p th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">-->
-<!--                        FPT University Da Nang-->
-<!--                    </p>-->
-<!--                    <span>Gamma Building, FPT City</span>-->
-<!--                </div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Time &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
-<!--                <div class="counter wow fadeInRight" data-wow-delay="0.6s">-->
-<!--                    <div class="icon"><div class="clock-icon"></div></div>-->
-<!--                    <p th:text="${event.startsAt != null and event.endsAt != null-->
-<!--                        ? #temporals.format(event.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(event.endsAt, 'dd/MM/yyyy')-->
-<!--                        : '15/10/2025 - 13/10/2025'}">-->
-<!--                        15/10/2025 - 13/10/2025-->
-<!--                    </p>-->
-<!--                    <span th:text="${event.startsAt != null and event.endsAt != null-->
-<!--                        ? #temporals.format(event.startsAt, 'HH:mm') + ' – ' + #temporals.format(event.endsAt, 'HH:mm')-->
-<!--                        : '23:54 – 02:54'}">-->
-<!--                        23:54 – 02:54-->
-<!--                    </span>-->
-<!--                </div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Capacity &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
-<!--                <div class="counter wow fadeInRight" data-wow-delay="0.9s">-->
-<!--                    <div class="icon"><i class="lni-users"></i></div>-->
-<!--                    <p th:text="${event.capacity != null-->
-<!--                        ? event.capacity + ' PARTICIPANTS'-->
-<!--                        : '100 PARTICIPANTS'}">-->
-<!--                        100 PARTICIPANTS-->
-<!--                    </p>-->
-<!--                    <span>REGISTER EARLY TO SECURE YOUR SPOT</span>-->
-<!--                </div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Competition Format &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">-->
-<!--                <div class="counter wow fadeInRight" data-wow-delay="1.2s">-->
-<!--                    <div class="icon"><i class="lni-target"></i></div>-->
-<!--                    <p th:text="${event.format != null-->
-<!--                        ? event.format + ' COMPETITION'-->
-<!--                        : 'TEAM COMPETITION'}">-->
-<!--                        TEAM COMPETITION-->
-<!--                    </p>-->
-<!--                    <span>JOIN THE CHALLENGE</span>-->
-<!--                </div>-->
-<!--            </div>-->
-
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
-<!-- Counter Area End-->
-
 <!-- About Section Start -->
 <section id="about" class="section-padding">
     <div class="container">
@@ -1088,7 +1361,7 @@
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Competition</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">FPT Competition 2025 - The Biggest Competition Event at FPT University</p>
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">FPT Competition 2025 - The Biggest Competition Event at FPT University</p>-->
                 </div>
             </div>
         </div>
@@ -1135,7 +1408,7 @@
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Details</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Everything you need to know about participating in this competition</p>
+
                 </div>
             </div>
         </div>
@@ -1260,10 +1533,6 @@
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Schedule</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">
-                        Discover activities and rounds <br>
-                        throughout the days of [[${event.title}]]
-                    </p>
                 </div>
             </div>
         </div>
@@ -1639,16 +1908,69 @@
 <!-- Ticket Pricing Area End -->
 
 <!-- Event Slides Section Start -->
+<!--<section id="event-slides" class="section-padding" th:if="${event != null}">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            &lt;!&ndash; Tiêu đề &ndash;&gt;-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Guidelines</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">-->
+<!--                        All the information you need for the best experience at-->
+<!--                        <span th:text="${event.title}">[[${event.title}]]</span>-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Bên trái: Google Map &ndash;&gt;-->
+<!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">-->
+<!--                <div class="video" style="border-radius:10px; overflow:hidden;">-->
+<!--                    <iframe-->
+<!--                            th:src="@{|https://www.google.com/maps?q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}&output=embed|}"-->
+<!--                            width="100%" height="350" style="border:0;" allowfullscreen="">-->
+<!--                    </iframe>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Nút mở Google Maps &ndash;&gt;-->
+<!--                <a class="btn btn-outline-primary mt-3"-->
+<!--                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}"-->
+<!--                   target="_blank">-->
+<!--                    Open in Google Maps-->
+<!--                </a>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Bên phải: Nội dung hướng dẫn &ndash;&gt;-->
+<!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">-->
+<!--                <p class="intro-desc">-->
+<!--                    Join us at-->
+<!--                    <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>-->
+<!--                    for an unforgettable competitive experience!-->
+<!--                </p>-->
+
+<!--                <h2 class="intro-title">Competition Day Instructions</h2>-->
+
+<!--                <ul class="list-specification">-->
+<!--                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"-->
+<!--                        th:if="${#strings.trim(line) != ''}">-->
+<!--                        <i class="lni-check-mark-circle"></i>-->
+<!--                        <span th:text="${#strings.trim(line) + '.'}">Instruction</span>-->
+<!--                    </li>-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
+<!-- Event Slides Section Start -->
 <section id="event-slides" class="section-padding" th:if="${event != null}">
     <div class="container">
         <div class="row">
             <!-- Tiêu đề -->
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Guidelines</h1>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">
                         All the information you need for the best experience at
-                        <span th:text="${event.title}">[[${event.title}]]</span>
+                        <span th:text="${event.title}">FPT Music Festival</span>
                     </p>
                 </div>
             </div>
@@ -1675,10 +1997,10 @@
                 <p class="intro-desc">
                     Join us at
                     <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>
-                    for an unforgettable competitive experience!
+                    for an unforgettable experience!
                 </p>
 
-                <h2 class="intro-title">Competition Day Instructions</h2>
+                <h2 class="intro-title">Event Day Instructions</h2>
 
                 <ul class="list-specification">
                     <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"

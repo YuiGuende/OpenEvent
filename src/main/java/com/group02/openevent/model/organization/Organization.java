@@ -40,12 +40,13 @@ public class Organization {
 	private LocalDateTime updatedAt;
 
     @OneToOne
-    @JoinColumn(name = "representative_id", referencedColumnName = "user_id",
-            foreignKey = @ForeignKey(name = "fk_org_user"))
+    @JoinColumn(name = "representative_id", referencedColumnName = "user_id")
     private User representative;
 
     @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Event> events = new ArrayList<>();
+
+
 
 	public Long getOrgId() {
 		return orgId;
@@ -134,4 +135,6 @@ public class Organization {
     public void setEvents(List<Event> events) {
         this.events = events;
     }
+
+
 }

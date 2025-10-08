@@ -44,7 +44,7 @@ public class Organization {
             foreignKey = @ForeignKey(name = "fk_org_customer"))
     private Customer representative;
 
-    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
     private List<Event> events = new ArrayList<>();
 
 	public Long getOrgId() {

@@ -2,8 +2,13 @@ package com.group02.openevent.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.account.Account;
+import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "customer")
 public class Customer {
@@ -17,6 +22,16 @@ public class Customer {
             foreignKey = @ForeignKey(name = "fk_user_account"))
     @JsonIgnoreProperties({"passwordHash"})
     private Account account;
+
+    @Column(name = "email", length = 100)
+    private String email;
+
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id", 
+            foreignKey = @ForeignKey(name = "fk_user_org"))
+    private Organization organization;
 
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
@@ -68,5 +83,21 @@ public class Customer {
 
     public void setPoints(Integer points) {
         this.points = points;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 } 

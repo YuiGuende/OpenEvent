@@ -57,19 +57,19 @@ public interface PaymentService {
     void updatePaymentStatus(Payment payment, PaymentStatus status, Long payosPaymentId);
     
     /**
-     * Lấy danh sách payments theo user ID
-     * @param userId ID của user
+     * Lấy danh sách payments theo customer ID
+     * @param customerId ID của customer
      * @return List Payment
      */
-    List<Payment> getPaymentsByUserId(Long userId);
+    List<Payment> getPaymentsByCustomerId(Long customerId);
     
     /**
-     * Lấy danh sách payments theo user ID và status
-     * @param userId ID của user
+     * Lấy danh sách payments theo customer ID và status
+     * @param customerId ID của customer
      * @param status Trạng thái payment
      * @return List Payment
      */
-    List<Payment> getPaymentsByUserIdAndStatus(Long userId, PaymentStatus status);
+    List<Payment> getPaymentsByCustomerIdAndStatus(Long customerId, PaymentStatus status);
     
     /**
      * Hủy payment (nếu chưa thanh toán)

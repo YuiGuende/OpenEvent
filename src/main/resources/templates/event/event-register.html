@@ -298,7 +298,7 @@
             const locations = {
                 'MusicEvent': 'Outdoor Stage, HCMC',
                 'WorkshopEvent': 'Workshop Room 1, Hanoi',
-                'CompetitionEvent': 'Main Auditorium, Da Nang',
+                'COMPETITION': 'Main Auditorium, Da Nang',
                 'ConferenceEvent': 'Conference Hall, HCMC'
             };
             return locations[eventType] || 'TBA';
@@ -309,7 +309,7 @@
             const basePrices = {
                 'MusicEvent': 250000,
                 'WorkshopEvent': 150000,
-                'CompetitionEvent': 500000,
+                'COMPETITION': 500000,
                 'FestivalEvent': 200000,
                 'ConferenceEvent': 300000
             };
@@ -327,7 +327,7 @@
 
         // Load current customer info
         function loadUserInfo() {
-            fetch('/api/current-customer')
+            fetch('/api/current-user')
                 .then(response => response.json())
                 .then(data => {
                     if (data.authenticated) {
@@ -335,13 +335,15 @@
                         // Pre-fill form with customer data
                         document.getElementById('email').value = data.email;
                     } else {
-                        // User not authenticated, redirect to login
-                        window.location.href = '/login';
+                        // User not authenticated, redirect to login with current URL
+                        const currentUrl = window.location.pathname;
+                        window.location.href = '/login?redirect=' + encodeURIComponent(currentUrl);
                     }
                 })
                 .catch(error => {
                     console.error('Error loading customer info:', error);
-                    window.location.href = '/login';
+                    const currentUrl = window.location.pathname;
+                    window.location.href = '/login?redirect=' + encodeURIComponent(currentUrl);
                 });
         }
 
@@ -403,6 +405,13 @@
                             '<div style="color: #0066cc; margin: 20px 0; padding: 15px; border: 1px solid #0066cc; background-color: #e6f2ff; border-radius: 4px;">' +
                             '<strong>📌 You have an unpaid order for this event!</strong><br>' +
                             '<span style="font-size: 14px;">Redirecting you to payment page...</span>' +
+                            '</div>';
+                    } else {
+                        // New order created successfully
+                        document.getElementById('result').innerHTML = 
+                            '<div style="color: #28a745; margin: 20px 0; padding: 15px; border: 1px solid #28a745; background-color: #d4edda; border-radius: 4px;">' +
+                            '<strong>✅ Order created successfully!</strong><br>' +
+                            '<span style="font-size: 14px;">Creating payment link...</span>' +
                             '</div>';
                     }
                     

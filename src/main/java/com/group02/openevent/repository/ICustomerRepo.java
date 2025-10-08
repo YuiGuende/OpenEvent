@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface IUserRepo extends JpaRepository<Customer, Long> {
+public interface ICustomerRepo extends JpaRepository<Customer, Long> {
     boolean existsByPhoneNumber(String phoneNumber);
     Optional<Customer> findByAccount(Account account);
     Optional<Customer> findByAccount_AccountId(Long accountId);

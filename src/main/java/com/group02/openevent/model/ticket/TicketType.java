@@ -13,7 +13,8 @@ public class TicketType {
     private Long ticketTypeId;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
+    @JoinColumn(name = "event_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_tickettype_event"))
     private Event event;
 
     @Column(name = "name", length = 100, nullable = false)
@@ -61,6 +62,9 @@ public class TicketType {
 
     // Helper method to get final price after discount
     public BigDecimal getFinalPrice() {
+        if (sale == null) {
+            return price;
+        }
         return price.subtract(sale);
     }
     // Business Logic Methods

@@ -88,7 +88,7 @@
 <div th:replace="~{department/layout :: sidebar}"></div>
 
 <div class="main-content">
-    Header
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-1" th:text="${department.departmentName}">Department Name</h2>
@@ -99,12 +99,12 @@
         </div>
     </div>
 
-    Stats Cards
+    <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="stat-card">
                 <div class="stat-label">Tổng số sự kiện</div>
-                <div class="stat-number" th:text="${totalEvents}">0</div>
+                <div class="stat-number" th:text="${stats.totalEvents}">0</div>
                 <div class="stat-change">
                     <i class="bi bi-arrow-up"></i> Tất cả sự kiện
                 </div>
@@ -113,7 +113,7 @@
         <div class="col-md-3 mb-3">
             <div class="stat-card">
                 <div class="stat-label">Yêu cầu chờ duyệt</div>
-                <div class="stat-number" th:text="${pendingRequests}">0</div>
+                <div class="stat-number" th:text="${stats.pendingRequests}">0</div>
                 <div class="stat-change text-warning">
                     <i class="bi bi-clock"></i> Cần xử lý
                 </div>
@@ -122,7 +122,7 @@
         <div class="col-md-3 mb-3">
             <div class="stat-card">
                 <div class="stat-label">Sự kiện đang diễn ra</div>
-                <div class="stat-number" th:text="${ongoingEvents}">0</div>
+                <div class="stat-number" th:text="${stats.ongoingEvents}">0</div>
                 <div class="stat-change text-info">
                     <i class="bi bi-play-circle"></i> Đang hoạt động
                 </div>
@@ -131,28 +131,98 @@
         <div class="col-md-3 mb-3">
             <div class="stat-card">
                 <div class="stat-label">Tổng người tham gia</div>
-                <div class="stat-number" th:text="${totalParticipants}">0</div>
+                <div class="stat-number" th:text="${stats.totalParticipants}">0</div>
                 <div class="stat-change">
-                    <i class="bi bi-people"></i> Tổng số
+                    <i class="bi bi-people"></i> Đã xác nhận
                 </div>
             </div>
         </div>
     </div>
 
-    Charts Row 1
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Tổng doanh thu</div>
+                <div class="stat-number" th:text="${#numbers.formatDecimal(stats.totalRevenue, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</div>
+                <div class="stat-change">
+                    <i class="bi bi-currency-dollar"></i> Từ đơn đã xác nhận
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Tổng đơn hàng</div>
+                <div class="stat-number" th:text="${stats.totalOrders}">0</div>
+                <div class="stat-change">
+                    <i class="bi bi-receipt"></i> Tất cả đơn
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Người tham gia</div>
+                <div class="stat-number" th:text="${stats.totalParticipants}">0</div>
+                <div class="stat-change">
+                    <i class="bi bi-people"></i> Đã xác nhận
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Khách hàng</div>
+                <div class="stat-number" th:text="${stats.uniqueCustomers}">0</div>
+                <div class="stat-change">
+                    <i class="bi bi-person-check"></i> Unique
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Giá trị TB/đơn</div>
+                <div class="stat-number" th:text="${#numbers.formatDecimal(stats.avgOrderValue, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</div>
+                <div class="stat-change">
+                    <i class="bi bi-graph-up"></i> Trung bình
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Tỷ lệ hủy</div>
+                <div class="stat-number" th:text="${#numbers.formatDecimal(stats.cancellationRate, 1, 'COMMA', 1, 'POINT')} + '%'">0%</div>
+                <div class="stat-change text-danger">
+                    <i class="bi bi-x-circle"></i> Đơn bị hủy
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Sự kiện đang diễn ra</div>
+                <div class="stat-number" th:text="${stats.ongoingEvents}">0</div>
+                <div class="stat-change text-info">
+                    <i class="bi bi-play-circle"></i> Đang hoạt động
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card">
+                <div class="stat-label">Yêu cầu chờ duyệt</div>
+                <div class="stat-number" th:text="${stats.pendingRequests}">0</div>
+                <div class="stat-change text-warning">
+                    <i class="bi bi-clock"></i> Cần xử lý
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="chart-container">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="chart-title mb-0">Số lượng sự kiện theo thời gian</h5>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-outline-secondary">Tuần</button>
-                        <button type="button" class="btn btn-outline-secondary active">Tháng</button>
-                        <button type="button" class="btn btn-outline-secondary">Quý</button>
-                        <button type="button" class="btn btn-outline-secondary">Năm</button>
-                    </div>
-                </div>
-                <canvas id="eventsTimeChart" height="80"></canvas>
+                <h5 class="chart-title">Doanh thu theo thời gian</h5>
+                <canvas id="revenueChart" height="80"></canvas>
             </div>
         </div>
         <div class="col-md-4">
@@ -163,7 +233,19 @@
         </div>
     </div>
 
-    Charts Row 2
+    <!-- Featured Events -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="chart-title">Sự kiện tiêu biểu</h5>
+                <div id="featuredEventsContainer" class="row">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
     <div class="row">
         <div class="col-md-12">
             <div class="chart-container">
@@ -258,6 +340,83 @@
                     }
                 }
             });
+        });
+
+    // Revenue trend chart
+    fetch('/department/api/stats/revenue-trend')
+        .then(res => res.json())
+        .then(data => {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Doanh thu (₫)',
+                        data: data.values,
+                        borderColor: '#8B5CF6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1_000_000_000) {
+                                        return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B ₫';
+                                    } else if (value >= 1_000_000) {
+                                        return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M ₫';
+                                    } else if (value >= 1_000) {
+                                        return (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'k ₫';
+                                    } else {
+                                        return value.toLocaleString('vi-VN') + ' ₫';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+
+    fetch('/department/api/stats/featured-events')
+        .then(res => res.json())
+        .then(events => {
+            const container = document.getElementById('featuredEventsContainer');
+            if (events.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">Chưa có dữ liệu</p>';
+                return;
+            }
+
+            container.innerHTML = events.map(event => `
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <img src="${event.imageUrl}" class="card-img-top" alt="${event.title}" style="height: 150px; object-fit: cover;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">${event.title}</h6>
+                                    <span class="badge bg-primary">#${event.rank}</span>
+                                </div>
+                                <p class="card-text small mb-1">
+                                    <i class="bi bi-ticket"></i> ${event.ticketsSold} vé đã bán
+                                </p>
+                                <p class="card-text small text-primary fw-bold">
+                                    <i class="bi bi-currency-dollar"></i> ${event.formattedRevenue}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
         });
 </script>
 </body>

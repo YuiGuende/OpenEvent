@@ -18,9 +18,14 @@ public class TicketTypeController {
 
     @GetMapping("/event/{eventId}")
     public ResponseEntity<List<TicketTypeDTO>> getTicketTypesByEvent(@PathVariable Long eventId) {
-        List<TicketTypeDTO> ticketTypes = ticketTypeService.getTicketTypeDTOsByEventId(eventId);
-        System.out.println("ticketTypes =369 " + ticketTypes.size());
-        return ResponseEntity.ok(ticketTypes);
+        try {
+            List<TicketTypeDTO> ticketTypes = ticketTypeService.getTicketTypeDTOsByEventId(eventId);
+            return ResponseEntity.ok(ticketTypes);
+        } catch (Exception e) {
+            System.err.println("Error getting ticket types: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @GetMapping("/event/{eventId}/available")

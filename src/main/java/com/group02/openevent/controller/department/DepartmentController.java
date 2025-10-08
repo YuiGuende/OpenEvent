@@ -3,11 +3,14 @@ package com.group02.openevent.controller.department;
 import com.group02.openevent.dto.*;
 import com.group02.openevent.dto.department.ArticleDTO;
 import com.group02.openevent.dto.department.DepartmentStatsDTO;
+import com.group02.openevent.dto.department.FeaturedEventDTO;
+import com.group02.openevent.dto.department.OrderDTO;
 import com.group02.openevent.model.department.ArticleStatus;
 import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.request.Request;
 import com.group02.openevent.model.request.RequestStatus;
 import com.group02.openevent.service.*;
@@ -272,5 +275,47 @@ public class DepartmentController {
 
         Map<String, Object> data = departmentService.getParticipantsTrend(department.getAccountId());
         return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/orders")
+    public String orders(
+            HttpSession session,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) OrderStatus status,
+            Model model) {
+
+        Long accountId = getDepartmentAccountId(session);
+        Department department = departmentService.getDepartmentByAccountId(accountId);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<OrderDTO> orders = departmentService.getOrdersByDepartment(department.getAccountId(), status, pageable);
+
+        model.addAttribute("orders", orders);
+        model.addAttribute("orderStatuses", OrderStatus.values());
+        model.addAttribute("selectedStatus", status);
+
+        return "department/orders";
+    }
+
+    @GetMapping("/api/stats/revenue-trend")
+    @ResponseBody
+    public ResponseEntity<?> getRevenueTrend(HttpSession session) {
+        Long accountId = getDepartmentAccountId(session);
+        Department department = departmentService.getDepartmentByAccountId(accountId);
+
+        Map<String, Object> data = departmentService.getRevenueTrend(department.getAccountId());
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/api/stats/featured-events")
+    @ResponseBody
+    public ResponseEntity<?> getFeaturedEvents(HttpSession session) {
+        Long accountId = getDepartmentAccountId(session);
+        Department department = departmentService.getDepartmentByAccountId(accountId);
+
+        List<FeaturedEventDTO> featuredEvents = departmentService.getFeaturedEvents(department.getAccountId(), 5);
+        return ResponseEntity.ok(featuredEvents);
     }
 }

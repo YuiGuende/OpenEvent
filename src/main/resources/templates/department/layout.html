@@ -51,6 +51,13 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" th:classappend="${#strings.contains(currentUri, '/orders')} ? 'active' : ''"
+                   th:href="@{/department/orders}">
+                    <i class="bi bi-receipt"></i>
+                    Đơn hàng
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link"
                    th:classappend="${#strings.contains(currentUri, '/requests')} ? 'active' : ''"
                    th:href="@{/department/requests}">

@@ -132,18 +132,17 @@ public class Event {
     @JoinColumn(name = "org_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_org"))
     private Organization organization;
-
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_department"))
     private Department department;
-
     @ManyToOne
     @JoinColumn(name = "host_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_host"))
     private Host host;
 
-    @OneToMany( mappedBy = "event",cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id")
     private List<TicketType> ticketTypes = new ArrayList<>();
 
 
@@ -413,13 +412,5 @@ public class Event {
 
     public void setOrganization(Organization organization) {
         this.organization = organization;
-    }
-
-    public List<TicketType> getTicketTypes() {
-        return ticketTypes;
-    }
-
-    public void setTicketTypes(List<TicketType> ticketTypes) {
-        this.ticketTypes = ticketTypes;
     }
 }

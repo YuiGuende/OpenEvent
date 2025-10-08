@@ -157,7 +157,6 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Transactional(readOnly = true)
     public List<TicketTypeDTO> getTicketTypeDTOsByEventId(Long eventId) {
         List<TicketType> ticketTypeList = ticketTypeRepo.findByEventId(eventId);
-        System.out.println("ticketTypeList=================369==========: " + ticketTypeList.size());
         return ticketTypeRepo.findByEventId(eventId)
                 .stream()
                 .map(this::convertToDTO)
@@ -194,31 +193,35 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
     @Override
     public TicketTypeDTO convertToDTO(TicketType ticketType) {
-        System.out.println("ticketType===>" + ticketType);
-        LocalDateTime now = LocalDateTime.now();
-        boolean isAvailable = ticketType.getAvailableQuantity() > 0
-                && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
-                && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
-        System.out.println("isAvailable===>" + isAvailable);
-        TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
-                .ticketTypeId(ticketType.getTicketTypeId())
-                .eventId(ticketType.getEvent().getId())
-                .eventTitle(ticketType.getEvent().getTitle())
-                .eventImageUrl(ticketType.getEvent().getImageUrl())
-                .name(ticketType.getName())
-                .description(ticketType.getDescription())
-                .price(ticketType.getPrice())
-                .sale(ticketType.getSale())
-                .finalPrice(ticketType.getFinalPrice())
-                .totalQuantity(ticketType.getTotalQuantity())
-                .soldQuantity(ticketType.getSoldQuantity())
-                .availableQuantity(ticketType.getAvailableQuantity())
-                .startSaleDate(ticketType.getStartSaleDate())
-                .endSaleDate(ticketType.getEndSaleDate())
-                .isAvailable(isAvailable)
-                .build();
-        System.out.println("ticketTypeDTO==>" + ticketTypeDTO);
-        return ticketTypeDTO;
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            boolean isAvailable = ticketType.getAvailableQuantity() > 0
+                    && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
+                    && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
+            
+            TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
+                    .ticketTypeId(ticketType.getTicketTypeId())
+                    .eventId(ticketType.getEvent().getId())
+                    .eventTitle(ticketType.getEvent().getTitle())
+                    .eventImageUrl(ticketType.getEvent().getImageUrl())
+                    .name(ticketType.getName())
+                    .description(ticketType.getDescription())
+                    .price(ticketType.getPrice())
+                    .sale(ticketType.getSale() != null ? ticketType.getSale() : BigDecimal.ZERO)
+                    .finalPrice(ticketType.getFinalPrice())
+                    .totalQuantity(ticketType.getTotalQuantity())
+                    .soldQuantity(ticketType.getSoldQuantity())
+                    .availableQuantity(ticketType.getAvailableQuantity())
+                    .startSaleDate(ticketType.getStartSaleDate())
+                    .endSaleDate(ticketType.getEndSaleDate())
+                    .isAvailable(isAvailable)
+                    .build();
+            return ticketTypeDTO;
+        } catch (Exception e) {
+            System.err.println("Error converting TicketType to DTO: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override

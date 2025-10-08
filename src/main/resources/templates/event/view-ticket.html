@@ -326,11 +326,11 @@
 <!--            <h3 th:text="${ticket.name}">Gold Entry - Saturday 15th November</h3>-->
 
 <!--            <div th:if="${ticket.hasSale}">-->
-<!--                <span class="original-price" th:text="'$' + ${ticket.formattedPrice}">$29.00</span>-->
-<!--                <span class="price" th:text="'$' + ${ticket.formattedFinalPrice}">$23.00</span>-->
+<!--                <span class="original-price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</span>-->
+<!--                <span class="price" th:text="${ticket.formattedFinalPrice} + ' VNĐ'">23.00 VNĐ</span>-->
 <!--                <span class="sale-badge" th:text="'-' + ${ticket.salePercentage} + '%'">-20%</span>-->
 <!--            </div>-->
-<!--            <p th:unless="${ticket.hasSale}" class="price" th:text="'$' + ${ticket.formattedPrice}">$29.00</p>-->
+<!--            <p th:unless="${ticket.hasSale}" class="price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</p>-->
 
 <!--            <p class="desc" th:text="${ticket.description}">-->
 <!--                Full-day access for adults (18+), including all main halls, workshops...-->
@@ -361,9 +361,9 @@
 
 <!--            <h3>Order Summary</h3>-->
 <!--            <ul id="order-list">-->
-<!--                <li><span>No tickets selected</span><span>$0.00</span></li>-->
+<!--                <li><span>No tickets selected</span><span>0 VNĐ</span></li>-->
 <!--            </ul>-->
-<!--            <h3 id="total">Total $0.00</h3>-->
+<!--            <h3 id="total">Total 0 VNĐ</h3>-->
 
 <!--            <div class="payment-methods">-->
 <!--                <label class="payment-option">-->
@@ -410,24 +410,24 @@
 <!--            const total = subtotal + vat;-->
 
 <!--            const li1 = document.createElement("li");-->
-<!--            li1.innerHTML = `<span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>$${subtotal.toFixed(2)}</span>`;-->
+<!--            li1.innerHTML = `<span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>${subtotal.toFixed(2)} VNĐ</span>`;-->
 
 <!--            const li2 = document.createElement("li");-->
-<!--            li2.innerHTML = `<span>Subtotal</span><span>$${subtotal.toFixed(2)}</span>`;-->
+<!--            li2.innerHTML = `<span>Subtotal</span><span>${subtotal.toFixed(2)} VNĐ</span>`;-->
 
 <!--            const li3 = document.createElement("li");-->
-<!--            li3.innerHTML = `<span>VAT (10%)</span><span>$${vat.toFixed(2)}</span>`;-->
+<!--            li3.innerHTML = `<span>VAT (10%)</span><span>${vat.toFixed(2)} VNĐ</span>`;-->
 
 <!--            orderList.appendChild(li1);-->
 <!--            orderList.appendChild(li2);-->
 <!--            orderList.appendChild(li3);-->
 
-<!--            totalDisplay.textContent = `Total $${total.toFixed(2)}`;-->
+<!--            totalDisplay.textContent = `Total ${total.toFixed(2)} VNĐ`;-->
 <!--        } else {-->
 <!--            const li = document.createElement("li");-->
-<!--            li.innerHTML = `<span>No tickets selected</span><span>$0.00</span>`;-->
+<!--            li.innerHTML = `<span>No tickets selected</span><span>0 VNĐ</span>`;-->
 <!--            orderList.appendChild(li);-->
-<!--            totalDisplay.textContent = "Total $0.00";-->
+<!--            totalDisplay.textContent = "Total 0 VNĐ";-->
 <!--        }-->
 <!--    }-->
 
@@ -563,6 +563,58 @@
             font-weight: 600;
         }
 
+        .promo button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .discount-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .discount-icon {
+            font-size: 18px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Voucher Status Styles */
+        .voucher-status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .voucher-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .voucher-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
         .ticket {
             border: 1px solid #e0e0e0;
             border-radius: 12px;
@@ -688,10 +740,14 @@
         #total {
             font-size: 24px;
             font-weight: 700;
-            color: #1a1a1a;
+            color: #2c3e50;
             padding-top: 15px;
             border-top: 2px solid #e0e0e0;
             margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .payment-methods {
@@ -774,9 +830,11 @@
             </p>
         </div>
 
+        <!-- Voucher Section -->
         <div class="promo">
-            <input type="text" placeholder="OpenEvent Voucher">
-            <button>Apply</button>
+            <input type="text" id="voucherCode" placeholder="Nhập mã voucher">
+            <button id="applyVoucherBtn">Apply</button>
+            <div id="voucherStatus" class="voucher-status"></div>
         </div>
 
         <!-- Ticket list -->
@@ -789,11 +847,11 @@
             <h3 th:text="${ticket.name}">Gold Entry - Saturday 15th November</h3>
 
             <div th:if="${ticket.hasSale}">
-                <span class="original-price" th:text="'$' + ${ticket.formattedPrice}">$29.00</span>
-                <span class="price" th:text="'$' + ${ticket.formattedFinalPrice}">$23.00</span>
+                <span class="original-price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</span>
+                <span class="price" th:text="${ticket.formattedFinalPrice} + ' VNĐ'">23.00 VNĐ</span>
                 <span class="sale-badge" th:text="'-' + ${ticket.salePercentage} + '%'">-20%</span>
             </div>
-            <p th:unless="${ticket.hasSale}" class="price" th:text="'$' + ${ticket.formattedPrice}">$29.00</p>
+            <p th:unless="${ticket.hasSale}" class="price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</p>
 
             <p class="desc" th:text="${ticket.description}">
                 Full-day access for adults (18+), including all main halls, workshops...
@@ -819,9 +877,9 @@
 
             <h3>Order Summary</h3>
             <ul id="order-list">
-                <li><span>No tickets selected</span><span>$0.00</span></li>
+                <li><span>No tickets selected</span><span>0 VNĐ</span></li>
             </ul>
-            <h3 id="total">Total $0.00</h3>
+            <h3 id="total">Total 0 VNĐ</h3>
 
             <div class="payment-methods">
                 <label class="payment-option">
@@ -842,6 +900,13 @@
     const tickets = document.querySelectorAll(".ticket");
     const orderList = document.getElementById("order-list");
     const totalDisplay = document.getElementById("total");
+    
+    // Load host discount from server
+    const hostDiscountElement = document.querySelector('.host-discount-info');
+    if (hostDiscountElement) {
+        const discountText = hostDiscountElement.querySelector('.discount-text strong').textContent;
+        hostDiscountPercent = parseInt(discountText.replace('%', ''));
+    }
 
     // chọn ticket
     tickets.forEach(ticket => {
@@ -856,21 +921,93 @@
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
+    // Global variables for discounts
+    let appliedVoucher = null;
+    let hostDiscountPercent = 0;
+
     function updateSummary(selectedTicket) {
         orderList.innerHTML = "";
         if (selectedTicket) {
-            const price = parseFloat(selectedTicket.dataset.price);
-            const subtotal = price;
-            const vat = subtotal * 0.10;
-            const total = subtotal + vat;
+            const originalPrice = parseFloat(selectedTicket.dataset.price);
+            
+            // Calculate host discount
+            const hostDiscountAmount = originalPrice * (hostDiscountPercent / 100);
+            const priceAfterHostDiscount = originalPrice - hostDiscountAmount;
+            
+            // Calculate voucher discount
+            const voucherDiscountAmount = appliedVoucher ? parseFloat(appliedVoucher.discountAmount) : 0;
+            const priceAfterVoucherDiscount = Math.max(0, priceAfterHostDiscount - voucherDiscountAmount);
+            
+            // Calculate VAT on final price (after discounts)
+            const vat = priceAfterVoucherDiscount * 0.10;
+            const finalPrice = priceAfterVoucherDiscount + vat;
 
-            orderList.innerHTML += `<li><span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>$${subtotal.toFixed(2)}</span></li>`;
-            orderList.innerHTML += `<li><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></li>`;
-            orderList.innerHTML += `<li><span>VAT (10%)</span><span>$${vat.toFixed(2)}</span></li>`;
-            totalDisplay.textContent = `Total $${total.toFixed(2)}`;
+            // Build order summary
+            orderList.innerHTML += `<li><span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>${originalPrice} VNĐ</span></li>`;
+            
+            if (hostDiscountPercent > 0) {
+                orderList.innerHTML += `<li><span>Host Discount (${hostDiscountPercent}%)</span><span>-${hostDiscountAmount} VNĐ</span></li>`;
+            }
+            
+            if (appliedVoucher) {
+                orderList.innerHTML += `<li><span>Voucher Discount (${appliedVoucher.code})</span><span>-${voucherDiscountAmount} VNĐ</span></li>`;
+            }
+            
+            orderList.innerHTML += `<li><span>Subtotal</span><span>${priceAfterVoucherDiscount} VNĐ</span></li>`;
+            orderList.innerHTML += `<li><span>VAT (10%)</span><span>${vat} VNĐ</span></li>`;
+            totalDisplay.textContent = `Total ${finalPrice} VNĐ`;
         } else {
-            orderList.innerHTML = `<li><span>No tickets selected</span><span>$0.00</span></li>`;
-            totalDisplay.textContent = "Total $0.00";
+            orderList.innerHTML = `<li><span>No tickets selected</span><span>0 VNĐ</span></li>`;
+            totalDisplay.textContent = "Total 0 VNĐ";
+        }
+    }
+
+    // Voucher handling
+    document.getElementById("applyVoucherBtn").addEventListener("click", async () => {
+        const voucherCode = document.getElementById("voucherCode").value.trim();
+        const statusDiv = document.getElementById("voucherStatus");
+        
+        if (!voucherCode) {
+            showVoucherStatus("Vui lòng nhập mã voucher", "error");
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/vouchers/validate/${voucherCode}`, {
+                method: "GET",
+                credentials: "include"
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                appliedVoucher = result.voucher;
+                showVoucherStatus(`Voucher "${voucherCode}" đã được áp dụng! Giảm ${result.voucher.discountAmount} VNĐ`, "success");
+                
+                // Update summary if ticket is selected
+                const selectedTicket = document.querySelector(".ticket.selected");
+                if (selectedTicket) {
+                    updateSummary(selectedTicket);
+                }
+            } else {
+                showVoucherStatus(result.message || "Mã voucher không hợp lệ", "error");
+            }
+        } catch (error) {
+            console.error("Error applying voucher:", error);
+            showVoucherStatus("Lỗi khi áp dụng voucher", "error");
+        }
+    });
+    
+    function showVoucherStatus(message, type) {
+        const statusDiv = document.getElementById("voucherStatus");
+        statusDiv.textContent = message;
+        statusDiv.className = `voucher-status ${type}`;
+        
+        // Auto hide success messages after 3 seconds
+        if (type === "success") {
+            setTimeout(() => {
+                statusDiv.style.display = "none";
+            }, 3000);
         }
     }
 
@@ -889,7 +1026,11 @@
 
         try {
             const ticketData = {ticketTypeId: parseInt(selectedTicket.dataset.ticketId), quantity: 1};
-            const orderData = {eventId: eventId, orderItems: [ticketData]};
+            const orderData = {
+                eventId: eventId, 
+                orderItems: [ticketData],
+                voucherCode: appliedVoucher ? appliedVoucher.code : null
+            };
 
             const orderResponse = await fetch("/api/orders/create-with-ticket-types", {
                 method: "POST",

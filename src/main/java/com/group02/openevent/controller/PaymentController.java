@@ -78,7 +78,7 @@ public class PaymentController {
                 ));
             }
 
-            var payments = paymentService.getPaymentsByUserId(accountId);
+            var payments = paymentService.getPaymentsByCustomerId(accountId);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -142,8 +142,8 @@ public class PaymentController {
                 ));
             }
 
-            // Check if order belongs to current user
-            if (!order.getUser().getAccount().getAccountId().equals(accountId)) {
+            // Check if order belongs to current customer
+            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "Order does not belong to current user"

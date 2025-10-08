@@ -2,22 +2,25 @@ package com.group02.openevent.service.impl;
 
 
 import com.group02.openevent.dto.department.DepartmentStatsDTO;
+import com.group02.openevent.dto.department.FeaturedEventDTO;
+import com.group02.openevent.dto.department.OrderDTO;
 import com.group02.openevent.model.department.ArticleStatus;
 import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.request.RequestStatus;
-import com.group02.openevent.repository.IArticleRepo;
-import com.group02.openevent.repository.IDepartmentRepo;
-import com.group02.openevent.repository.IEventRepo;
-import com.group02.openevent.repository.IRequestRepo;
+import com.group02.openevent.repository.*;
 import com.group02.openevent.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,7 +32,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final IEventRepo eventRepo;
     private final IRequestRepo requestRepo;
     private final IArticleRepo articleRepo;
-
+    private final IOrderRepo  orderRepo;
     @Override
     public Department getDepartmentByAccountId(Long accountId) {
         return departmentRepo.findByAccountId(accountId)
@@ -48,18 +51,44 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // Get all events managed by this department
         List<Event> departmentEvents = department.getEvents();
+        List<Order> departmentOrders = orderRepo.findByDepartmentId(departmentId);
 
-        // Calculate overview statistics
         long totalEvents = departmentEvents.size();
         long pendingRequests = requestRepo.countByReceiverAccountIdAndStatus(departmentId, RequestStatus.PENDING);
         long ongoingEvents = departmentEvents.stream()
                 .filter(e -> e.getStatus() == EventStatus.ONGOING)
                 .count();
 
-        // Calculate total participants across all events
-        long totalParticipants = departmentEvents.stream()
-                .mapToLong(Event::getCapacity)
-                .sum();
+        // Calculate total participants from confirmed orders
+        long totalParticipants = departmentOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                .count();
+
+        // Calculate total revenue from confirmed orders
+        BigDecimal totalRevenue = departmentOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Calculate average order value
+        BigDecimal avgOrderValue = totalParticipants > 0
+                ? totalRevenue.divide(BigDecimal.valueOf(totalParticipants), 2, BigDecimal.ROUND_HALF_UP)
+                : BigDecimal.ZERO;
+
+        // Calculate cancellation rate
+        long totalOrders = departmentOrders.size();
+        long cancelledOrders = departmentOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CANCELLED)
+                .count();
+        double cancellationRate = totalOrders > 0
+                ? (cancelledOrders * 100.0 / totalOrders)
+                : 0.0;
+
+        // Count unique customers
+        long uniqueCustomers = departmentOrders.stream()
+                .map(o -> o.getCustomer().getCustomerId())
+                .distinct()
+                .count();
 
         // Event statistics by status
         long publicEvents = departmentEvents.stream()
@@ -104,6 +133,11 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .pendingRequests(pendingRequests)
                 .ongoingEvents(ongoingEvents)
                 .totalParticipants(totalParticipants)
+                .totalRevenue(totalRevenue)
+                .avgOrderValue(avgOrderValue)
+                .cancellationRate(cancellationRate)
+                .uniqueCustomers(uniqueCustomers)
+                .totalOrders(totalOrders)
                 .publicEvents(publicEvents)
                 .draftEvents(draftEvents)
                 .finishedEvents(finishedEvents)
@@ -194,16 +228,13 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         Map<String, Object> result = new HashMap<>();
         result.put("labels", labels);
-        result.put("data", data);
+        result.put("values", data);
         return result;
     }
 
     @Override
     public Map<String, Object> getParticipantsTrend(Long departmentId) {
-        Department department = departmentRepo.findById(departmentId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
-
-        List<Event> events = department.getEvents();
+        List<Order> orders = orderRepo.findByDepartmentId(departmentId);
         LocalDateTime now = LocalDateTime.now();
         List<String> labels = new ArrayList<>();
         List<Long> data = new ArrayList<>();
@@ -212,11 +243,11 @@ public class DepartmentServiceImpl implements DepartmentService {
             LocalDateTime monthStart = now.minusMonths(i).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
             LocalDateTime monthEnd = monthStart.plusMonths(1);
 
-            long participantCount = events.stream()
-                    .filter(e -> e.getCreatedAt() != null)
-                    .filter(e -> !e.getCreatedAt().isBefore(monthStart) && e.getCreatedAt().isBefore(monthEnd))
-                    .mapToLong(Event::getCapacity)
-                    .sum();
+            long participantCount = orders.stream()
+                    .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                    .filter(o -> o.getCreatedAt() != null)
+                    .filter(o -> !o.getCreatedAt().isBefore(monthStart) && o.getCreatedAt().isBefore(monthEnd))
+                    .count();
 
             labels.add("T" + monthStart.getMonthValue());
             data.add(participantCount);
@@ -224,7 +255,108 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         Map<String, Object> result = new HashMap<>();
         result.put("labels", labels);
-        result.put("data", data);
+        result.put("values", data);
         return result;
+    }
+
+    @Override
+    public Map<String, Object> getRevenueTrend(Long departmentId) {
+        List<Order> orders = orderRepo.findByDepartmentId(departmentId);
+        LocalDateTime now = LocalDateTime.now();
+        List<String> labels = new ArrayList<>();
+        List<BigDecimal> data = new ArrayList<>();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDateTime monthStart = now.minusMonths(i).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime monthEnd = monthStart.plusMonths(1);
+
+            BigDecimal monthRevenue = orders.stream()
+                    .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                    .filter(o -> o.getCreatedAt() != null)
+                    .filter(o -> !o.getCreatedAt().isBefore(monthStart) && o.getCreatedAt().isBefore(monthEnd))
+                    .map(Order::getTotalAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            labels.add("T" + monthStart.getMonthValue());
+            data.add(monthRevenue);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("labels", labels);
+        result.put("values", data);
+        return result;
+    }
+
+    @Override
+    public List<FeaturedEventDTO> getFeaturedEvents(Long departmentId, int limit) {
+        List<Order> orders = orderRepo.findByDepartmentId(departmentId);
+
+        // Group orders by event and calculate statistics
+        Map<Event, List<Order>> ordersByEvent = orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                .collect(Collectors.groupingBy(Order::getEvent));
+
+        // Calculate revenue and ticket count for each event
+        List<FeaturedEventDTO> featuredEvents = ordersByEvent.entrySet().stream()
+                .map(entry -> {
+                    Event event = entry.getKey();
+                    List<Order> eventOrders = entry.getValue();
+
+                    long ticketsSold = eventOrders.size();
+                    BigDecimal totalRevenue = eventOrders.stream()
+                            .map(Order::getTotalAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    return FeaturedEventDTO.builder()
+                            .eventId(event.getId())
+                            .title(event.getTitle())
+                            .imageUrl(event.getImageUrl())
+                            .ticketsSold(ticketsSold)
+                            .totalRevenue(totalRevenue)
+                            .build();
+                })
+                .sorted((a, b) -> {
+                    // Sort by revenue first, then by tickets sold
+                    int revenueCompare = b.getTotalRevenue().compareTo(a.getTotalRevenue());
+                    if (revenueCompare != 0) return revenueCompare;
+                    return b.getTicketsSold().compareTo(a.getTicketsSold());
+                })
+                .limit(limit)
+                .collect(Collectors.toList());
+
+        // Add rank
+        for (int i = 0; i < featuredEvents.size(); i++) {
+            featuredEvents.get(i).setRank(i + 1);
+        }
+
+        return featuredEvents;
+    }
+
+    @Override
+    public Page<OrderDTO> getOrdersByDepartment(Long departmentId, OrderStatus status, Pageable pageable) {
+        Page<Order> orders;
+        if (status != null) {
+            orders = orderRepo.findByDepartmentIdAndStatus(departmentId, status, pageable);
+        } else {
+            orders = orderRepo.findByDepartmentId(departmentId, pageable);
+        }
+
+        return orders.map(this::convertToOrderDTO);
+    }
+
+    private OrderDTO convertToOrderDTO(Order order) {
+        return OrderDTO.builder()
+                .orderId(order.getOrderId())
+                .eventId(order.getEvent().getId())
+                .eventTitle(order.getEvent().getTitle())
+                .eventImageUrl(order.getEvent().getImageUrl())
+                .customerName(order.getCustomer().getName())
+                .customerEmail(order.getCustomer().getEmail())
+                .participantName(order.getParticipantName())
+                .status(order.getStatus())
+                .totalAmount(order.getTotalAmount())
+                .ticketTypeName(order.getTicketType().getName())
+                .createdAt(order.getCreatedAt())
+                .build();
     }
 }

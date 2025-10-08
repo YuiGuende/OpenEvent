@@ -28,25 +28,40 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        System.out.println("home page");
-        // Get poster events for hero slider
-        List<EventCardDTO> posterEvents = eventService.getPosterEvents();
-        model.addAttribute("posterEvents", posterEvents);
-        System.out.println("home page 1");
-        System.out.println("PosterEvents size: " + posterEvents.size());
+        try {
+            
+            // Get poster events for hero slider
+            List<EventCardDTO> posterEvents = eventService.getPosterEvents();
+            model.addAttribute("posterEvents", posterEvents != null ? posterEvents : List.of());
 
-        // Get live events
-        List<EventCardDTO> liveEvents = eventService.getLiveEvents(6);
-        model.addAttribute("liveEvents", liveEvents);
+            // Get live events
+            List<EventCardDTO> liveEvents = eventService.getLiveEvents(6);
+            model.addAttribute("liveEvents", liveEvents != null ? liveEvents : List.of());
 
-        // Get your events (for now, using recommended events - TODO: implement user-specific events)
-        List<EventCardDTO> myEvents = eventService.getCustomerEvents(2L);//id ví dụ
-        model.addAttribute("myEvents", myEvents);
-        // Get recommended events
-        List<EventCardDTO> recommendedEvents = eventService.getRecommendedEvents(6);
-        model.addAttribute("recommendedEvents", recommendedEvents);
+            // Get your events (for now, using recommended events - TODO: implement customer-specific events)
+            try {
+                List<EventCardDTO> myEvents = eventService.getCustomerEvents((long) 2);//id ví dụ
+                model.addAttribute("myEvents", myEvents != null ? myEvents : List.of());
+            } catch (Exception e) {
+                System.err.println("Error loading customer events: " + e.getMessage());
+                model.addAttribute("myEvents", List.of());
+            }
+            
+            // Get recommended events
+            List<EventCardDTO> recommendedEvents = eventService.getRecommendedEvents(6);
+            model.addAttribute("recommendedEvents", recommendedEvents != null ? recommendedEvents : List.of());
 
-        return "index";
+            return "index";
+        } catch (Exception e) {
+            System.err.println("Error in home controller: " + e.getMessage());
+            e.printStackTrace();
+            // Return simple home page with empty data
+            model.addAttribute("posterEvents", List.of());
+            model.addAttribute("liveEvents", List.of());
+            model.addAttribute("myEvents", List.of());
+            model.addAttribute("recommendedEvents", List.of());
+            return "index";
+        }
     }
 
     @GetMapping("/api/current-user")

@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title th:text="${event.title} + ' - Workshop Details'"></title>
 
-    <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/music/assets/fonts/line-icons.css}">
-    <link rel="stylesheet" th:href="@{/music/assets/css/slicknav.css}">
-    <link rel="stylesheet" th:href="@{/music/assets/css/nivo-lightbox.css}">
-    <link rel="stylesheet" th:href="@{/music/assets/css/animate.css}">
-    <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
-    <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/workshop/assets/fonts/line-icons.css}">
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/slicknav.css}">
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/nivo-lightbox.css}">
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/animate.css}">
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/main.css}">
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/responsive.css}">
     <link rel="stylesheet" th:href="@{/css/music-theme.css}">
 
 </head>
@@ -137,7 +137,7 @@
         <div class="row">
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="about-item">
-                    <img class="img-fluid" th:src="@{/music/assets/img/about/img1.jpg}" alt="">
+                    <img class="img-fluid" th:src="@{/workshop/assets/img/about/img1.jpg}" alt="">
                     <div class="about-text">
                         <h3><a href="#">Skill Level & Prerequisites</a></h3>
                         <p th:text="'Level: ' + ${event.skillLevel}">Skill level required.</p>
@@ -147,7 +147,7 @@
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="about-item">
-                    <img class="img-fluid" th:src="@{/music/assets/img/about/img2.jpg}" alt="">
+                    <img class="img-fluid" th:src="@{/workshop/assets/img/about/img2.jpg}" alt="">
                     <div class="about-text">
                         <h3><a href="#">Workshop Materials</a></h3>
                         <p>All necessary materials and documents for the session will be provided.</p>
@@ -157,7 +157,7 @@
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="about-item">
-                    <img class="img-fluid" th:src="@{/music/assets/img/about/img3.jpg}" alt="">
+                    <img class="img-fluid" th:src="@{/workshop/assets/img/about/img3.jpg}" alt="">
                     <div class="about-text">
                         <h3><a href="#">Benefits of Joining</a></h3>
                         <p th:text="${event.benefits}">Benefits of joining this workshop.</p>
@@ -169,6 +169,7 @@
     </div>
 </section>
 
+<!--counter section còn icon của phần skill level chưa xử lý được-->
 <section class="counter-section section-padding">
     <div class="container">
         <div class="row">
@@ -340,23 +341,47 @@
 <section id="event-slides" class="section-padding" th:if="${event != null}">
     <div class="container">
         <div class="row">
+            <!-- Tiêu đề -->
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Workshop Guidelines</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Information you need for the best experience at <span th:text="${event.title}">the workshop</span></p>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        All the information you need for the best experience at
+                        <span th:text="${event.title}">FPT Music Festival</span>
+                    </p>
                 </div>
             </div>
+
+            <!-- Bên trái: Google Map -->
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
                 <div class="video" style="border-radius:10px; overflow:hidden;">
-                    <iframe th:src="@{|https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}" width="100%" height="350" style="border:0;" allowfullscreen=""></iframe>
+                    <iframe
+                            th:src="@{|https://www.google.com/maps?q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}&output=embed|}"
+                            width="100%" height="350" style="border:0;" allowfullscreen="">
+                    </iframe>
                 </div>
-                <a class="btn btn-outline-primary mt-3" th:href="@{|https://www.google.com/maps/search/?api=1&query=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}" target="_blank">Open in Google Maps</a>
+
+                <!-- Nút mở Google Maps -->
+                <a class="btn btn-outline-primary mt-3"
+                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}"
+                   target="_blank">
+                    Open in Google Maps
+                </a>
             </div>
+
+            <!-- Bên phải: Nội dung hướng dẫn -->
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
-                <p class="intro-desc">Join us at <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}"></span> for an unforgettable experience!</p>
-                <h2 class="intro-title">Workshop Day Instructions</h2>
+                <p class="intro-desc">
+                    Join us at
+                    <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>
+                    for an unforgettable experience!
+                </p>
+
+                <h2 class="intro-title">Event Day Instructions</h2>
+
                 <ul class="list-specification">
-                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}" th:if="${#strings.trim(line) != ''}">
+                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"
+                        th:if="${#strings.trim(line) != ''}">
                         <i class="lni-check-mark-circle"></i>
                         <span th:text="${#strings.trim(line) + '.'}">Instruction</span>
                     </li>
@@ -366,10 +391,109 @@
     </div>
 </section>
 
+
+<!-- Blog Section Start -->
 <section id="blog" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Latest News & Articles</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Stay updated with the latest information about FPT Music Festival 2025</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12">
+                <div class="blog-item">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-1.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Design</div>
+                        <h3 class="title">
+                            <a href="single-blog.html">
+                                The 9 Design Trends You Need to Know
+                            </a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Jan 20, 2018</span>
+                            <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12">
+                <div class="blog-item">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-2.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Design</div>
+                        <h3 class="title">
+                            <a href="single-blog.html">
+                                The 9 Design Trends You Need to Know
+                            </a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Jan 20, 2018 </span>
+                            <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12">
+                <div class="blog-item">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-3.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Design</div>
+                        <h3 class="title">
+                            <a href="single-blog.html">
+                                The 9 Design Trends You Need to Know
+                            </a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Jan 20, 2018</span>
+                            <span class="comments">| <a href="#"> by Cindy Jefferson</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 text-center">
+                <a href="#" class="btn btn-common">Read More News</a>
+            </div>
+        </div>
+    </div>
 </section>
+
+
+<!-- Subscribe Area Start -->
 <div id="subscribe" class="section-padding">
+    <div class="container">
+        <div class="row justify-content-md-center">
+            <div class="col-md-10 col-lg-7">
+                <div class="subscribe-inner wow fadeInDown" data-wow-delay="0.3s">
+                    <h2 class="subscribe-title">Stay Updated with FPT Workshop</h2>
+                    <form class="text-center form-inline">
+                        <input class="mb-20 form-control" name="email" placeholder="Enter Your Email to Get Latest Updates">
+                        <button type="submit" class="btn btn-common sub-btn" data-style="zoom-in" data-spinner-size="30" name="submit" id="submit">
+                            <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<!-- Subscribe Area End -->
+
+
 
 
 <a href="#" class="back-to-top music-scroll-btn">
@@ -383,16 +507,16 @@
     </div>
 </div>
 
-<script th:src="@{/music/assets/js/jquery-min.js}"></script>
-<script th:src="@{/music/assets/js/popper.min.js}"></script>
-<script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
-<script th:src="@{/music/assets/js/jquery.countdown.min.js}"></script>
-<script th:src="@{/music/assets/js/jquery.nav.js}"></script>
-<script th:src="@{/music/assets/js/jquery.easing.min.js}"></script>
-<script th:src="@{/music/assets/js/wow.js}"></script>
-<script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
-<script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
-<script th:src="@{/music/assets/js/main.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery-min.js}"></script>
+<script th:src="@{/workshop/assets/js/popper.min.js}"></script>
+<script th:src="@{/workshop/assets/js/bootstrap.min.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.countdown.min.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.nav.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.easing.min.js}"></script>
+<script th:src="@{/workshop/assets/js/wow.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.slicknav.js}"></script>
+<script th:src="@{/workshop/assets/js/nivo-lightbox.js}"></script>
+<script th:src="@{/workshop/assets/js/main.js}"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

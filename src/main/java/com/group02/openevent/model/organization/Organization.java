@@ -27,6 +27,8 @@ public class Organization {
 	@Column(name = "email", length = 100)
 	private String email;
 
+    private String imageUrl;
+
 	@Column(name = "phone", length = 20)
 	private String phone;
 

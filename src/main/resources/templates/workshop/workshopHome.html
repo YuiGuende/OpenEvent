@@ -274,6 +274,30 @@
     </div>
 </section>
 
+<!--<section id="gallery" class="section-padding">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Workshop Gallery</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Memorable moments from our previous workshops</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="row">-->
+<!--            <div class="col-md-6 col-sm-6 col-lg-4" th:each="img : ${event.imageUrls}">-->
+<!--                <div class="gallery-box">-->
+<!--                    <div class="img-thumb">-->
+<!--                        <img class="img-fluid" th:src="${img}" alt="Workshop Gallery Image">-->
+<!--                    </div>-->
+<!--                    <div class="overlay-box text-center">-->
+<!--                        <a class="lightbox" th:href="${img}"><i class="lni-plus"></i></a>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
 <section id="gallery" class="section-padding">
     <div class="container">
         <div class="row">
@@ -285,13 +309,13 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6 col-sm-6 col-lg-4" th:each="img : ${event.imageUrls}">
+            <div class="col-md-6 col-sm-6 col-lg-4" th:each="imgUrl : ${eventDetail.galleryUrls}">
                 <div class="gallery-box">
                     <div class="img-thumb">
-                        <img class="img-fluid" th:src="${img}" alt="Workshop Gallery Image">
+                        <img class="img-fluid" th:src="${imgUrl}" alt="Workshop Gallery Image">
                     </div>
                     <div class="overlay-box text-center">
-                        <a class="lightbox" th:href="${img}"><i class="lni-plus"></i></a>
+                        <a class="lightbox" th:href="${imgUrl}"><i class="lni-plus"></i></a>
                     </div>
                 </div>
             </div>

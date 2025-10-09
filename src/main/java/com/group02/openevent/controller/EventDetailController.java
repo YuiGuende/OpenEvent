@@ -76,11 +76,11 @@ public class EventDetailController {
 				eventData.put("prizePool", competitionEvent.getPrizePool());
 				eventData.put("competitionType", competitionEvent.getCompetitionType());
 				eventData.put("rules", competitionEvent.getRules());
-			} else if ("ConferenceEvent".equals(eventType)) {
-				com.group02.openevent.model.event.ConferenceEvent conferenceEvent = (com.group02.openevent.model.event.ConferenceEvent) event;
-				eventData.put("conferenceType", conferenceEvent.getConferenceType());
-				eventData.put("maxAttendees", conferenceEvent.getMaxAttendees());
-				eventData.put("agenda", conferenceEvent.getAgenda());
+//			} else if ("ConferenceEvent".equals(eventType)) {
+//				com.group02.openevent.model.event.ConferenceEvent conferenceEvent = (com.group02.openevent.model.event.ConferenceEvent) event;
+//				eventData.put("conferenceType", conferenceEvent.getConferenceType());
+//				eventData.put("maxAttendees", conferenceEvent.getMaxAttendees());
+//				eventData.put("agenda", conferenceEvent.getAgenda());
 			}
 
 			return ResponseEntity.ok(eventData);

@@ -2911,9 +2911,11 @@ a.back-to-top:hover, a.back-to-top:focus {
 
 /* Hero Slider CSS */
 .hero--slider{ position:relative; overflow:hidden; }
-.hero-track{
-    display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+.hero-track {
+    display: flex; /* Giữ lại flex để các slide nằm ngang */
+    height: 100%;
+    width: 100%;
+    /* Xóa bỏ hoàn toàn các thuộc tính overflow và scroll-snap */
 }
 .hero-track::-webkit-scrollbar{ display:none; }
 .hero-slide{

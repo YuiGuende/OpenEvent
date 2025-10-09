@@ -73,4 +73,11 @@ public class Speaker {
     public void setDefaultRole(SpeakerRole defaultRole) {
         this.defaultRole = defaultRole;
     }
+
+    // Sửa lại thành
+    public String getRole() {
+        // Trả về tên của enum, ví dụ "SINGER", "DJ"
+        // Thêm kiểm tra null để an toàn
+        return this.defaultRole != null ? this.defaultRole.name() : null;
+    }
 }

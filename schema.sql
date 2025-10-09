@@ -444,14 +444,25 @@ INSERT INTO event_speaker (event_id, speaker_id, role) VALUES
 (3, 2, 'SPEAKER'),
 (5, 3, 'PERFORMER');
 
--- Sample event images
+-- Sample event images (Multiple images for slider)
 INSERT INTO event_image (event_id, url, order_index, main_poster) VALUES
-(1, 'https://via.placeholder.com/800x600/FF6B6B/FFFFFF?text=Spring+Music+Festival', 1, TRUE),
-(1, 'https://via.placeholder.com/800x600/4ECDC4/FFFFFF?text=Stage+Setup', 2, FALSE),
-(2, 'https://via.placeholder.com/800x600/45B7D1/FFFFFF?text=AI+Workshop', 1, TRUE),
-(3, 'https://via.placeholder.com/800x600/96CEB4/FFFFFF?text=Marketing+Summit', 1, TRUE),
-(4, 'https://via.placeholder.com/800x600/FFEAA7/000000?text=Coding+Challenge', 1, TRUE),
-(5, 'https://via.placeholder.com/800x600/DDA0DD/000000?text=Jazz+Night', 1, TRUE);
+-- Spring Music Festival (Event 1) - 3 gallery images
+(1, 'https://via.placeholder.com/800x600/4ECDC4/FFFFFF?text=Stage+Setup', 1, FALSE),
+(1, 'https://via.placeholder.com/800x600/FFE66D/000000?text=Festival+Crowd', 2, FALSE),
+(1, 'https://via.placeholder.com/800x600/A8E6CF/000000?text=Night+Performance', 3, FALSE),
+-- AI Workshop (Event 2) - 2 gallery images  
+(2, 'https://via.placeholder.com/800x600/B4E7CE/000000?text=Workshop+Room', 1, FALSE),
+(2, 'https://via.placeholder.com/800x600/95E1D3/000000?text=Hands+On', 2, FALSE),
+-- Marketing Summit (Event 3) - 2 gallery images
+(3, 'https://via.placeholder.com/800x600/F38181/FFFFFF?text=Conference+Hall', 1, FALSE),
+(3, 'https://via.placeholder.com/800x600/AA96DA/FFFFFF?text=Networking', 2, FALSE),
+-- Coding Challenge (Event 4) - 2 gallery images
+(4, 'https://via.placeholder.com/800x600/FCBAD3/000000?text=Competition', 1, FALSE),
+(4, 'https://via.placeholder.com/800x600/A8D8EA/000000?text=Winners', 2, FALSE),
+-- Jazz Night (Event 5) - 3 gallery images
+(5, 'https://via.placeholder.com/800x600/9370DB/FFFFFF?text=Jazz+Stage', 1, FALSE),
+(5, 'https://via.placeholder.com/800x600/8A2BE2/FFFFFF?text=Evening+Performance', 2, FALSE),
+(5, 'https://via.placeholder.com/800x600/BA55D3/FFFFFF?text=Outdoor+Setting', 3, FALSE);
 
 -- Sample ticket types (Updated with current dates for testing)
 INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sold_quantity, start_sale_date, end_sale_date) VALUES

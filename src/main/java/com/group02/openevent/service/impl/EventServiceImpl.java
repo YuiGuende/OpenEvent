@@ -1,7 +1,7 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.model.dto.home.EventCardDTO;
-import com.group02.openevent.mapper.EventMapper;
+// import com.group02.openevent.mapper.EventMapper; // Temporarily disabled
 import com.group02.openevent.model.dto.request.EventCreationRequest;
 import com.group02.openevent.model.dto.response.EventResponse;
 import com.group02.openevent.model.enums.EventType;
@@ -33,19 +33,22 @@ public class EventServiceImpl implements EventService {
 
     IMusicEventRepo musicEventRepo;
     IEventRepo eventRepo;
-    EventMapper eventMapper;
+    // EventMapper eventMapper; // Temporarily disabled due to MapStruct compilation issues
 
     @Override
     public EventResponse saveEvent(EventCreationRequest request) {
+        // TODO: Fix MapStruct compilation issue and restore this method
+        throw new UnsupportedOperationException("EventMapper temporarily disabled - need to fix MapStruct compilation");
+        
         // đảm bảo schedule biết event cha
-        Event event = eventMapper.toEvent(request);
+        // Event event = eventMapper.toEvent(request);
 
-        if (event.getSchedules() != null) {
-            event.getSchedules().forEach(s -> s.setEvent(event));
-        }
-        event.setSpeakers(request.getSpeakers());
-        event.setPlaces(request.getPlaces());
-        return eventMapper.toEventResponse(eventRepo.save(event));
+        // if (event.getSchedules() != null) {
+        //     event.getSchedules().forEach(s -> s.setEvent(event));
+        // }
+        // event.setSpeakers(request.getSpeakers());
+        // event.setPlaces(request.getPlaces());
+        // return eventMapper.toEventResponse(eventRepo.save(event));
     }
 
     @Override
@@ -174,7 +177,7 @@ public class EventServiceImpl implements EventService {
                 .enrollDeadline(event.getEnrollDeadline())
                 .capacity(event.getCapacity())
                 .registered(0) // TODO: Get actual registration count from Order/Registration table
-                .city(event.getPlaces().getFirst().getPlaceName()) // TODO: Extract from Places
+                .city(event.getPlaces().isEmpty() ? "Unknown" : event.getPlaces().get(0).getPlaceName()) // TODO: Extract from Places
                 .organizer(event.getOrganization().getOrgName()) // TODO: Get from Host/Organizer
                 .price(0.0) // TODO: Get from ticket pricing
                 .poster(event.isPoster())

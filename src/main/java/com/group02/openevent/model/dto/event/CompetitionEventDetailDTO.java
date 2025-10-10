@@ -1,237 +1,105 @@
 package com.group02.openevent.model.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.group02.openevent.model.dto.PlaceDTO;
-import com.group02.openevent.model.dto.ScheduleDTO;
-import com.group02.openevent.model.dto.SpeakerDTO;
-import com.group02.openevent.model.enums.CompetitionFormat;
+import com.group02.openevent.model.dto.*;
+import com.group02.openevent.model.enums.CompetitionFormat; // Cần import
+import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
 public class CompetitionEventDetailDTO {
-    private String description;
+    // ... (các trường chung)
     private String title;
+    private String description;
     private Integer capacity;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime startsAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime endsAt;
-
-    private LocalDateTime createdAt;
-    private EventType eventType;
     private String benefits;
+    private String guidelines;
+    private String venueAddress;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime startsAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime endsAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime enrollDeadline;
+    private String bannerUrl;
+    private List<String> galleryUrls;
 
-    // 🔹 mở rộng thêm
-    private List<String> imageUrls;        // gallery, banner
-    private List<SpeakerDTO> speakers;     // danh sách nghệ sĩ
-    private List<ScheduleDTO> schedules;   // lịch biểu
-    private List<PlaceDTO> places;         // địa điểm
-    private String venueAddress;           // địa chỉ venue
-    private String guidelines;             // hướng dẫn sự kiện
+    // Các trường đặc thù của Competition
+    private String competitionType;
+    private String rules;
+    private String prizePool;
+    private String eligibility;
+    // ⭐ CẶP GETTER/SETTER BỊ THIẾU
+    private CompetitionFormat format; // ⭐ TRƯỜNG BỊ THIẾU
+    private String judgingCriteria;
 
+    // Các danh sách liên quan
+    private List<SpeakerDTO> speakers;
+    private List<ScheduleDTO> schedules;
+    private List<PlaceDTO> places;
+    private List<TicketTypeDTO> ticketTypes;
 
-    //mở rộng thêm của competition
-    private String eligibility;               // điều kiện tham gia
-    private CompetitionFormat format;         // SOLO hoặc TEAM
-    private String judgingCriteria;           // tiêu chí chấm điểm
+    // Các trường khác
+    private OrganizationDTO organization;
+    private EventStatus status;
+    private EventType eventType;
+    private LocalDateTime createdAt;
 
+    public CompetitionEventDetailDTO() {}
 
-    public String getEligibility() {
-        return eligibility;
-    }
+    // GETTERS AND SETTERS CHO TẤT CẢ CÁC TRƯỜNG
 
-    public void setEligibility(String eligibility) {
-        this.eligibility = eligibility;
-    }
+    public void setTitle(String title) { this.title = title; }
 
-    public CompetitionFormat getFormat() {
-        return format;
-    }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setFormat(CompetitionFormat format) {
-        this.format = format;
-    }
+    public void setCapacity(Integer capacity) { this.capacity = capacity; }
 
-    public String getJudgingCriteria() {
-        return judgingCriteria;
-    }
+    public void setBenefits(String benefits) { this.benefits = benefits; }
 
-    public void setJudgingCriteria(String judgingCriteria) {
-        this.judgingCriteria = judgingCriteria;
-    }
+    public void setGuidelines(String guidelines) { this.guidelines = guidelines; }
 
-    public CompetitionEventDetailDTO() {
-    }
+    public void setVenueAddress(String venueAddress) { this.venueAddress = venueAddress; }
 
+    public void setStartsAt(LocalDateTime startsAt) { this.startsAt = startsAt; }
 
-    //full constructure
-    public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines, String eligibility, CompetitionFormat format, String judgingCriteria) {
-        this.description = description;
-        this.title = title;
-        this.capacity = capacity;
-        this.startsAt = startsAt;
-        this.endsAt = endsAt;
-        this.createdAt = createdAt;
-        this.eventType = eventType;
-        this.benefits = benefits;
-        this.imageUrls = imageUrls;
-        this.speakers = speakers;
-        this.schedules = schedules;
-        this.places = places;
-        this.venueAddress = venueAddress;
-        this.guidelines = guidelines;
-        this.eligibility = eligibility;
-        this.format = format;
-        this.judgingCriteria = judgingCriteria;
-    }
+    public void setEndsAt(LocalDateTime endsAt) { this.endsAt = endsAt; }
 
-    public List<String> getImageUrls() {
-        return imageUrls;
-    }
+    public void setEnrollDeadline(LocalDateTime enrollDeadline) { this.enrollDeadline = enrollDeadline; }
 
-    public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
-    }
+    public void setBannerUrl(String bannerUrl) { this.bannerUrl = bannerUrl; }
 
-    public List<SpeakerDTO> getSpeakers() {
-        return speakers;
-    }
+    public void setGalleryUrls(List<String> galleryUrls) { this.galleryUrls = galleryUrls; }
 
-    public void setSpeakers(List<SpeakerDTO> speakers) {
-        this.speakers = speakers;
-    }
+    public void setCompetitionType(String competitionType) { this.competitionType = competitionType; }
 
-    public List<ScheduleDTO> getSchedules() {
-        return schedules;
-    }
+    public void setRules(String rules) { this.rules = rules; }
 
-    public void setSchedules(List<ScheduleDTO> schedules) {
-        this.schedules = schedules;
-    }
+    public void setPrizePool(String prizePool) { this.prizePool = prizePool; }
 
-    public List<PlaceDTO> getPlaces() {
-        return places;
-    }
+    public void setEligibility(String eligibility) { this.eligibility = eligibility; }
 
-    public void setPlaces(List<PlaceDTO> places) {
-        this.places = places;
-    }
+    public void setJudgingCriteria(String judgingCriteria) { this.judgingCriteria = judgingCriteria; }
 
-    public String getVenueAddress() {
-        return venueAddress;
-    }
+    public void setSpeakers(List<SpeakerDTO> speakers) { this.speakers = speakers; }
 
-    public void setVenueAddress(String venueAddress) {
-        this.venueAddress = venueAddress;
-    }
+    public void setSchedules(List<ScheduleDTO> schedules) { this.schedules = schedules; }
 
-    public String getGuidelines() {
-        return guidelines;
-    }
+    public void setPlaces(List<PlaceDTO> places) { this.places = places; }
 
-    public void setGuidelines(String guidelines) {
-        this.guidelines = guidelines;
-    }
+    public void setTicketTypes(List<TicketTypeDTO> ticketTypes) { this.ticketTypes = ticketTypes; }
 
-    // Default constructor
-    public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, Object o, EventType eventType, String benefits, Object object, Object o1, Object object1, Object o2, String venueAddress, String guidelines) {
-        this.description = description;
-        this.title = title;
-        this.capacity = capacity;
-        this.startsAt = startsAt;
-        this.endsAt = endsAt;
-        this.createdAt = createdAt;
-        this.eventType = eventType;
-        this.benefits = benefits;
-        this.venueAddress = venueAddress;
-        this.guidelines = guidelines;
-    }
+    public void setOrganization(OrganizationDTO organization) { this.organization = organization; }
 
-    public CompetitionEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines) {
-        this.description = description;
-        this.title = title;
-        this.capacity = capacity;
-        this.startsAt = startsAt;
-        this.endsAt = endsAt;
-        this.createdAt = createdAt;
-        this.eventType = eventType;
-        this.benefits = benefits;
-        this.imageUrls = imageUrls;
-        this.speakers = speakers;
-        this.schedules = schedules;
-        this.places = places;
-        this.venueAddress = venueAddress;
-        this.guidelines = guidelines;
-    }
+    public void setStatus(EventStatus status) { this.status = status; }
 
-    public String getDescription() {
-        return description;
-    }
+    public void setEventType(EventType eventType) { this.eventType = eventType; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
-    }
-
-    public LocalDateTime getStartsAt() {
-        return startsAt;
-    }
-
-    public void setStartsAt(LocalDateTime startsAt) {
-        this.startsAt = startsAt;
-    }
-
-    public LocalDateTime getEndsAt() {
-        return endsAt;
-    }
-
-    public void setEndsAt(LocalDateTime endsAt) {
-        this.endsAt = endsAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public String getBenefits() {
-        return benefits;
-    }
-
-    public void setBenefits(String benefits) {
-        this.benefits = benefits;
-    }
+    public void setFormat(CompetitionFormat format) { this.format = format; }
 }

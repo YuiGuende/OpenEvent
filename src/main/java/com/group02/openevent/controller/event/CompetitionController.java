@@ -1,58 +1,51 @@
 package com.group02.openevent.controller.event;
 
-import com.group02.openevent.model.dto.ScheduleDTO;
 import com.group02.openevent.model.dto.event.CompetitionEventDetailDTO;
-import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.ICompetitionService;
-import com.group02.openevent.service.TicketTypeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Controller
 public class CompetitionController {
 
     private final ICompetitionService competitionService;
-    private final TicketTypeService ticketTypeService;
 
-    public CompetitionController(ICompetitionService competitionService, TicketTypeService ticketTypeService) {
+    public CompetitionController(ICompetitionService competitionService) {
         this.competitionService = competitionService;
-        this.ticketTypeService = ticketTypeService;
     }
 
     @GetMapping("/competition/{id}")
-    public String showCompetitionEventDetail(@PathVariable Long id, Model model) {
-        System.out.println("DEBUG: Getting CompetitionEvent with id: " + id);
+    public String getCompetitionEventDetail(@PathVariable("id") Long id, Model model) {
+        try {
+            CompetitionEventDetailDTO eventDetail = competitionService.getCompetitionEventById(id);
 
-        CompetitionEventDetailDTO event = competitionService.getCompetitionEventById(id);
-        if (event == null) {
-            System.out.println("DEBUG: No competition event found for id " + id);
-            return "error/404"; // Hoặc redirect tới trang lỗi
+            // DEBUG: Print competition info
+            System.out.println("=== COMPETITION EVENT DEBUG ===");
+            System.out.println("Event ID: " + id);
+            System.out.println("Title: " + eventDetail.getTitle());
+            System.out.println("Description: " + eventDetail.getDescription());
+            System.out.println("Banner URL: " + eventDetail.getBannerUrl());
+            System.out.println("Gallery URLs count: " + (eventDetail.getGalleryUrls() != null ? eventDetail.getGalleryUrls().size() : 0));
+            System.out.println("Competition Type: " + eventDetail.getCompetitionType());
+            System.out.println("Format: " + eventDetail.getFormat());
+            System.out.println("Prize Pool: " + eventDetail.getPrizePool());
+            System.out.println("Rules: " + eventDetail.getRules());
+            System.out.println("Eligibility: " + eventDetail.getEligibility());
+            System.out.println("Judging Criteria: " + eventDetail.getJudgingCriteria());
+            System.out.println("Starts At: " + eventDetail.getStartsAt());
+            System.out.println("Organization: " + (eventDetail.getOrganization() != null ? eventDetail.getOrganization().getOrgName() : "NULL"));
+            System.out.println("Schedules count: " + (eventDetail.getSchedules() != null ? eventDetail.getSchedules().size() : 0));
+            System.out.println("==============================");
+
+            model.addAttribute("eventDetail", eventDetail);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tải chi tiết cuộc thi ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Không thể tìm thấy cuộc thi bạn yêu cầu.");
         }
 
-        Map<LocalDate, List<ScheduleDTO>> schedulesByDay = event.getSchedules().stream()
-                .collect(Collectors.groupingBy(sc -> sc.getStartTime().toLocalDate()));
-
-        // Convert to List for Thymeleaf iteration
-        List<Map.Entry<LocalDate, List<ScheduleDTO>>> scheduleEntries = schedulesByDay.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByKey()) // Sort by date
-                .collect(Collectors.toList());
-        List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEventId(id);
-
-        model.addAttribute("schedulesByDay", schedulesByDay);
-        model.addAttribute("scheduleEntries", scheduleEntries);
-        model.addAttribute("tickets", ticketTypes);
-
-        model.addAttribute("event", event);
-        model.addAttribute("eventImages", event.getImageUrls() != null ? event.getImageUrls() : List.of());
-
-        return "competition/competitionHome"; // Đường dẫn tới templates/competition/competitionHome.html
+        return "competition/competitionHome";
     }
 }

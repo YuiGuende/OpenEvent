@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-      <!--Thymeleaf-->
-      <!-- Required meta tags -->
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title th:text="${event.title} + ' - Competition Event'">Competition Event - FPT University</title>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title th:text="${eventDetail != null ? eventDetail.title : 'Music Event'} + ' - OpenEvent'">Music Event - OpenEvent</title>
+    
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" th:href="@{/competition/assets/css/bootstrap.min.css}">
-    <!-- Icon -->
+    <!-- Icons -->
     <link rel="stylesheet" th:href="@{/competition/assets/fonts/line-icons.css}">
     <!-- Slicknav -->
     <link rel="stylesheet" th:href="@{/competition/assets/css/slicknav.css}">
@@ -22,1227 +21,143 @@
     <link rel="stylesheet" th:href="@{/competition/assets/css/responsive.css}">
     <!-- Theme Colors -->
     <link rel="stylesheet" th:href="@{/competition/assets/css/themeColors.css}">
-    <!-- Competition Main CSS -->
-    <link rel="stylesheet" th:href="@{/competition/assets/css/competition-main.css}">
-
-    <!-- Competition Theme CSS với màu cam đẹp -->
-    <link rel="stylesheet" th:href="@{/css/competition-theme.css}">
-
-    <!-- Custom Competition Styling -->
+    <!-- Music Theme CSS -->
+    <link rel="stylesheet" th:href="@{/competition/assets/css/music-theme.css}">
     <style>
-        /* Global Background Pattern */
-        body {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            background-attachment: fixed;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ff6b35" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23f7931e" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ff6b35" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="%23f7931e" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="%23ff6b35" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            pointer-events: none;
-            z-index: -1;
-        }
-        /* Competition Countdown Timer Styling - Copied from Music Theme */
-        .countdown-timer .heading-count {
-            padding: 10px 68px;
+        /* ==========================================================================
+   Organizer Details Section CSS
+   ========================================================================== */
+        #organizer-details {
+            background-color: #f8f9fa; /* Màu nền nhẹ để tách biệt section */
         }
 
-        .countdown-timer .heading-count h2 {
-            font-size: 40px;
-            color: #212121;
-            text-transform: uppercase;
-            line-height: 48px;
-        }
-
-        .countdown-timer .heading-count h4 {
-            font-size: 24px;
-            font-weight: 300;
-            color: #fff;
-            margin-top: 30px;
-        }
-
-        .countdown-timer .heading-count h4 span {
-            background: #212121;
-            padding: 7px 15px;
-            border-radius: 4px;
-        }
-
-        .countdown-timer .heading-count p {
-            font-size: 14px;
-            color: #212121;
-            line-height: 30px;
-        }
-
-        .time-count div {
-            text-align: center;
-        }
-
-        .time-entry {
-            display: inline-block;
-            min-width: 120px;
-            margin: 15px;
-            height: 110px;
-            padding: 20px;
-            box-shadow: 1px 10px 20px rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-            background: #fff;
-            text-align: center;
-            font-weight: 400;
-            transition: all 0.3s ease;
-        }
-        
-        .time-entry:hover {
-            transform: translateY(-5px);
-            box-shadow: 1px 15px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .time-entry span {
-            display: block;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #000000 !important;
-            line-height: 1;
-            margin-bottom: 10px;
-        }
-
-        .time-entry .label {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #000000 !important;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        /* Force countdown numbers to be black - Override any external CSS */
-        .countdown-timer .time-entry span {
-            color: #000000 !important;
-        }
-        
-        .countdown-timer .time-entry .label {
-            color: #000000 !important;
-        }
-        
-        .time-count .time-entry span {
-            color: #000000 !important;
-        }
-        
-        .time-count .time-entry .label {
-            color: #000000 !important;
-        }
-
-        /* Competition Header Styling */
-        .heading-count h2 {
-            font-size: 3rem;
-            font-weight: 900;
-            color: #212121;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            animation: titlePulse 3s ease-in-out infinite;
-        }
-        
-        @keyframes titlePulse {
-            0%, 100% {
-                filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.3));
-            }
-            50% {
-                filter: drop-shadow(0 0 20px rgba(255, 107, 53, 0.6));
-            }
-        }
-
-        /* Competition Button Styling */
-        .btn-common {
-            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
-            border: none;
-            border-radius: 50px;
-            padding: 18px 45px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
-            transition: all 0.4s ease;
-            color: #fff;
-            text-decoration: none;
-            display: inline-block;
-            position: relative;
+        .organizer-details-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
             overflow: hidden;
-        }
-        
-        .btn-common::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.6s;
-        }
-        
-        .btn-common:hover::before {
-            left: 100%;
-        }
-
-        .btn-common:hover {
-            transform: translateY(-4px) scale(1.05);
-            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6);
-            color: #fff;
-        }
-
-        /* Competition Separator */
-        .countdown-separator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 40px 0;
-        }
-
-        .separator-line {
-            height: 4px;
-            width: 100px;
-            background: linear-gradient(90deg, transparent, #ff6b35, #f7931e, #ff6b35, transparent);
-            border-radius: 2px;
-            animation: lineGlow 2s ease-in-out infinite alternate;
-        }
-        
-        @keyframes lineGlow {
-            0% {
-                box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-            }
-            100% {
-                box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-            }
-        }
-
-        .separator-icon {
-            margin: 0 25px;
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            animation: iconRotate 4s linear infinite;
-            position: relative;
-        }
-        
-        @keyframes iconRotate {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .separator-icon i {
-            color: #ff6b35;
-            font-size: 1.5rem;
-        }
-        
-        /* Competition Event Description Styling */
-        .event-description-box {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border-radius: 25px;
+            margin-top: 20px;
             padding: 40px;
-            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.15);
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s ease;
-        }
-        
-        .event-description-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
-            border-radius: 25px;
-            padding: 3px;
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-            -webkit-mask-composite: xor;
-            z-index: -1;
-        }
-        
-        .event-description-box:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 60px rgba(255, 107, 53, 0.25);
-        }
-        
-        .event-description-box h2 {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: #2c3e50;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        
-        .event-description-box .lead {
-            font-size: 1.4rem;
-            line-height: 1.8;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            text-align: left;
-            font-weight: 500;
-            min-height: 120px;
-        }
-        
-        .event-description-box .trophy-icon {
-            font-size: 1.5em;
-            margin-right: 15px;
-            margin-top: 3px;
-            flex-shrink: 0;
-            animation: trophyBounce 2s ease-in-out infinite;
-        }
-        
-        @keyframes trophyBounce {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-3px);
-            }
-        }
-        
-        .event-description-box p {
-            font-size: 1.1rem;
-            color: #495057;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-            min-height: 50px;
-        }
-        
-        .event-description-box i {
-            color: #ff6b35;
-            margin-right: 12px;
-            font-size: 1.3em;
-            flex-shrink: 0;
-        }
-        
-        .competition-badge {
-            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 0.9rem;
-            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
-            animation: badgeGlow 3s ease-in-out infinite;
-        }
-        
-        @keyframes badgeGlow {
-            0%, 100% {
-                box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
-            }
-            50% {
-                box-shadow: 0 6px 25px rgba(255, 107, 53, 0.5);
-            }
-        }
-        
-        /* Counter Section Styling */
-        .counter-section {
-            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .counter-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="counterGrain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ffffff" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="%23ffffff" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="%23ffffff" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23counterGrain)"/></svg>');
-            pointer-events: none;
-        }
-        
-        .work-counter-widget {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .counter {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.4s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 30px; /* Khoảng cách giữa các phần tử bên trong card */
         }
-        
-        .counter:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            background: rgba(255, 255, 255, 1);
+
+        .organizer-header {
+            display: flex;
+            align-items: center;
+            gap: 30px; /* Khoảng cách giữa logo và text */
         }
-        
-        .counter .icon {
-            margin-bottom: 20px;
-            flex-shrink: 0;
+
+        .organizer-logo-wrapper {
+            flex-shrink: 0; /* Đảm bảo logo không bị co lại */
         }
-        
-        .counter .icon i {
-            font-size: 3rem;
-            color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            animation: iconPulse 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-        }
-        
-        .timer-icon {
-            font-size: 3rem;
-            color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            animation: iconPulse 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-            display: inline-block;
-            line-height: 1;
-        }
-        
-        .timer-svg {
-            width: 3rem;
-            height: 3rem;
-            color: #ffffff;
-            filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-            animation: iconPulse 2s ease-in-out infinite;
-        }
-        
-        .time-text {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            animation: iconPulse 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-            display: inline-block;
-            line-height: 1;
-            letter-spacing: 2px;
-        }
-        
-        .time-icon {
-            font-size: 3rem;
-            color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            animation: iconPulse 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-            display: inline-block;
-            line-height: 1;
-        }
-        
-        .time-fa-icon {
-            font-size: 3rem;
-            color: #ffffff !important;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            animation: iconPulse 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-        }
-        
-        .clock-icon {
-            width: 3rem;
-            height: 3rem;
-            border: 3px solid #ffffff;
+
+        .organizer-logo {
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
-            position: relative;
-            margin: 0 auto;
-            animation: iconPulse 2s ease-in-out infinite;
-            filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            object-fit: cover;
+            border: 5px solid #ff6e40; /* Màu cam chủ đạo của theme */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .clock-icon::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 2px;
-            height: 1rem;
-            background: #ffffff;
-            transform-origin: bottom center;
-            transform: translate(-50%, -100%) rotate(0deg);
-        }
-        
-        .clock-icon::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 1px;
-            height: 0.8rem;
-            background: #ffffff;
-            transform-origin: bottom center;
-            transform: translate(-50%, -100%) rotate(90deg);
-        }
-        
-        @keyframes iconPulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-        }
-        
-        .counter p {
-            font-size: 1.1rem;
+
+        .organizer-info h2 {
+            font-size: 32px;
             font-weight: 700;
-            color: #ffffff;
+            margin-top: 0;
             margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            line-height: 1.3;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .counter span {
-            font-size: 0.9rem;
-            color: #ffffff;
-            font-weight: 500;
-            line-height: 1.4;
-            flex-shrink: 0;
-            text-align: center;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .separator-icon span {
-            color: #ff6b35;
-            font-size: 1.5rem;
-        }
-
-        /* Competition Title Styling */
-        .section-title {
-            color: #2c3e50;
-            font-weight: 900;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Competition Animation Effects */
-        .time-entry {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .time-entry:hover {
-            animation: none;
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        /* Competition Badge Styling */
-        .competition-badge {
-            background: linear-gradient(135deg, #ff6b35, #f7931e);
-            color: #fff;
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
-            display: inline-block;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3); }
-            to { box-shadow: 0 4px 25px rgba(255, 107, 53, 0.6); }
-        }
-
-        /* Competition Section Background */
-        .countdown-timer {
-            background: #f8f9fa;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .countdown-timer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ff6b35" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23f7931e" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ff6b35" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="%23f7931e" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="%23ff6b35" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            pointer-events: none;
-        }
-
-        /* Competition Icon Styling */
-        .trophy-icon {
-            font-size: 1.3em;
-            display: inline-block;
-            margin-right: 10px;
-            animation: trophyBounce 2s ease-in-out infinite;
-            filter: drop-shadow(2px 2px 4px rgba(255, 107, 53, 0.3));
-            line-height: 1;
-            vertical-align: middle;
-            text-align: center;
-        }
-
-        /* Separator icon specific styling */
-        .separator-icon .trophy-icon {
-            font-size: 1.6em;
-            margin-right: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            line-height: 1;
-        }
-
-        /* Text alignment for paragraphs with trophy icons */
-        .lead, p {
-            display: flex;
-            align-items: center;
-            text-align: left;
-        }
-
-        .lead .trophy-icon, p .trophy-icon {
-            flex-shrink: 0;
-            margin-right: 12px;
-        }
-
-        @keyframes trophyBounce {
-            0%, 100% {
-                transform: translateY(0px);
-                filter: drop-shadow(2px 2px 4px rgba(255, 107, 53, 0.3));
-            }
-            50% {
-                transform: translateY(-3px);
-                filter: drop-shadow(2px 2px 8px rgba(255, 107, 53, 0.6));
-            }
-        }
-
-        .lni-timer {
-            color: #ff6b35 !important;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .lni-medall {
-            color: #ff6b35 !important;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Competition Details Section Styling - Music Theme */
-        .competition-detail-card {
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 40px 30px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-            border: 1px solid #f0f0f0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .competition-detail-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #ff6b35, #f7931e, #ffd700);
-        }
-        
-        .competition-detail-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-        }
-        
-        .detail-icon {
-            margin-bottom: 25px;
-            flex-shrink: 0;
-        }
-        
-        .detail-icon i {
-            font-size: 2.5rem;
-            color: #ff6b35;
-            transition: all 0.3s ease;
-        }
-        
-        .competition-detail-card:hover .detail-icon i {
-            transform: scale(1.1);
-            color: #f7931e;
-        }
-        
-        .detail-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .detail-content h3 {
-            font-size: 1.4rem;
-            font-weight: 600;
             color: #333;
-            margin-bottom: 15px;
-            text-transform: capitalize;
-            letter-spacing: 0.5px;
         }
-        
-        .detail-content p {
-            font-size: 0.95rem;
-            color: #666;
-            line-height: 1.6;
+
+        .organizer-info p.description {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #555;
             margin-bottom: 0;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
         }
 
-        /* About Section - Equal Height Cards */
-        .about-item {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .about-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-        }
-        
-        .about-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        
-        .about-text {
-            padding: 25px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .about-text h3 {
-            color: #2c3e50;
-            font-weight: 700;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-        
-        .about-text h3 a {
-            color: #2c3e50;
-            text-decoration: none;
-        }
-        
-        .about-text h3 a:hover {
-            color: #ff6b35;
-        }
-        
-        .about-text p {
-            color: #495057;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            flex: 1;
-        }
-        
-        .about-text .btn {
-            margin-top: auto;
-            align-self: flex-start;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .time-countdown {
-                flex-wrap: wrap;
-                gap: 15px;
-            }
-
-            .time-entry {
-                min-width: 130px;
-                padding: 25px 20px;
-            }
-
-            .time-entry span {
-                font-size: 2.4rem;
-            }
-
-            .heading-count h2 {
-                font-size: 2rem;
-            }
-            
-            .about-item img {
-                height: 180px;
-            }
-            
-            .competition-detail-card {
-                margin-bottom: 20px;
-                padding: 25px 20px;
-            }
-            
-            .detail-icon i {
-                font-size: 2.5rem;
-            }
-            
-            .detail-content h3 {
-                font-size: 1.3rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .time-entry {
-                min-width: 120px;
-                padding: 20px 15px;
-            }
-
-            .time-entry span {
-                font-size: 2.2rem;
-            }
-        }
-        
-        /* Schedule Section Styling - Orange Theme */
-        .schedule-area {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.15);
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .schedule-area::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
-            border-radius: 20px;
-            padding: 3px;
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-            -webkit-mask-composite: xor;
-            z-index: -1;
-        }
-        
-        .schedule-tab-title .nav-tabs {
-            border: none;
-        }
-        
-        .schedule-tab-title .nav-link {
-            background: #ffffff;
-            border: 2px solid #ff6b35;
-            border-radius: 15px;
-            margin-bottom: 1rem;
-            padding: 1.5rem;
-            color: #ff6b35;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .schedule-tab-title .nav-link:hover {
-            border-color: #ff6b35;
-            color: #ff6b35;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2);
-        }
-        
-        .schedule-tab-title .nav-link.active {
-            background: linear-gradient(135deg, #ff6b35, #f7931e);
-            border-color: #ff6b35;
-            color: #ffffff;
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
-        }
-        
-        .schedule-tab-title .nav-link.active h4,
-        .schedule-tab-title .nav-link.active h5 {
-            color: #ffffff;
-        }
-        
-        /* Force schedule left column to be orange - Override any external CSS */
-        .schedule-area .schedule-tab-title .nav-link {
-            border-color: #ff6b35 !important;
-            color: #ff6b35 !important;
-        }
-        
-        .schedule-area .schedule-tab-title .nav-link.active {
-            background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
-            border-color: #ff6b35 !important;
-            color: #ffffff !important;
-        }
-        
-        .schedule-area .schedule-tab-title .nav-link.active h4,
-        .schedule-area .schedule-tab-title .nav-link.active h5 {
-            color: #ffffff !important;
-        }
-        
-        .schedule-tab-content .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .schedule-tab-content .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
-        }
-        
-        .schedule-tab-content .card-header {
-            background: linear-gradient(135deg, #ff6b35, #f7931e);
-            border: none;
-            border-radius: 15px 15px 0 0;
-            padding: 1.5rem;
-        }
-        
-        .schedule-tab-content .card-header .time {
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .schedule-tab-content .card-header h4 {
-            color: #ffffff;
-            font-weight: 700;
-            margin: 0;
-        }
-        
-        /* Ticket Cards - Equal Height */
-        .price-block-wrapper {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .price-block-wrapper .pricing-list {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .price-block-wrapper .pricing-list ul {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        .price-block-wrapper .btn {
-            margin-top: auto;
-            width: 100%;
-        }
-        
-        /* Guidelines Section Styling */
-        .list-specification {
+        .organizer-contact-details {
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef; /* Đường kẻ ngang phân cách */
             list-style: none;
-            padding: 0;
+            padding-left: 0;
             margin: 0;
         }
-        
-        .list-specification li {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            padding: 1.5rem;
-            background: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        
-        .list-specification li:hover {
-            transform: translateX(8px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-            border-left-color: #ff6b35;
-        }
-        
-        .list-specification li i {
-            color: #ff6b35;
-            margin-right: 1.5rem;
-            margin-top: 0.3rem;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-            background: rgba(255, 107, 53, 0.1);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+
+        .organizer-contact-details li {
             display: flex;
             align-items: center;
-            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 16px;
         }
-        
-        .list-specification li span {
-            color: #495057;
-            line-height: 1.6;
-            font-weight: 500;
-            flex: 1;
-        }
-        
-        /* Show on Maps Button Styling */
-        .btn-outline-primary {
-            border: 2px solid #ff6b35 !important;
-            color: #ff6b35 !important;
-            background: transparent !important;
-            padding: 12px 24px !important;
-            border-radius: 25px !important;
-            font-weight: 600 !important;
-            text-decoration: none !important;
-            display: inline-block !important;
-            transition: all 0.3s ease !important;
-            font-size: 1rem !important;
-        }
-        
-        .btn-outline-primary:hover {
-            background: #ff6b35 !important;
-            color: #ffffff !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3) !important;
-        }
-        
-        .btn-outline-primary:focus {
-            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
-        }
-        
-        /* Judges & Organizers Section Styling */
-        .judge-card {
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.15);
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 2rem;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .judge-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700);
-            border-radius: 20px;
-            padding: 3px;
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-            -webkit-mask-composite: xor;
-            z-index: -1;
-        }
-        
-        .judge-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.25);
-        }
-        
-        .judge-image {
-            margin-bottom: 1.5rem;
-            flex-shrink: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .judge-image img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #ff6b35;
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
-            transition: all 0.3s ease;
-            display: block;
-            margin: 0 auto;
-        }
-        
-        .judge-card:hover .judge-image img {
-            border-color: #f7931e;
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
-        }
-        
-        .judge-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+
+        .organizer-contact-details i {
+            font-size: 20px;
+            color: #ff6e40;
+            margin-right: 15px;
+            width: 25px; /* Căn chỉnh icon cho thẳng hàng */
             text-align: center;
         }
-        
-        .judge-info h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-            text-align: center;
-            line-height: 1.3;
+
+        .organizer-contact-details a {
+            color: #ff6e40;
+            text-decoration: none;
+            transition: color 0.3s;
         }
-        
-        .judge-info p {
-            font-size: 1rem;
-            color: #ff6b35;
-            font-weight: 600;
-            margin: 0;
-            text-align: center;
-        }
-        
-        /* FINAL OVERRIDE - Highest Priority CSS */
-        /* Force countdown numbers to be black */
-        .countdown-timer .time-count .time-entry span,
-        .countdown-timer .time-countdown .time-entry span,
-        .time-countdown .time-entry span,
-        .time-count .time-entry span {
-            color: #000000 !important;
-        }
-        
-        .countdown-timer .time-count .time-entry .label,
-        .countdown-timer .time-countdown .time-entry .label,
-        .time-countdown .time-entry .label,
-        .time-count .time-entry .label {
-            color: #000000 !important;
-        }
-        
-        /* Force schedule left column to be orange - Override ALL external CSS */
-        .schedule-area .schedule-tab-title .nav-link,
-        .schedule-tab-title .nav-link,
-        .nav-tabs .nav-link {
-            border-color: #ff6b35 !important;
-            color: #ff6b35 !important;
-            background: #ffffff !important;
-        }
-        
-        .schedule-area .schedule-tab-title .nav-link:hover,
-        .schedule-tab-title .nav-link:hover,
-        .nav-tabs .nav-link:hover {
-            border-color: #ff6b35 !important;
-            color: #ff6b35 !important;
-            background: #ffffff !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2) !important;
-        }
-        
-        .schedule-area .schedule-tab-title .nav-link.active,
-        .schedule-tab-title .nav-link.active,
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
-            border-color: #ff6b35 !important;
-            color: #ffffff !important;
-        }
-        
-        .schedule-area .schedule-tab-title .nav-link.active:hover,
-        .schedule-tab-title .nav-link.active:hover,
-        .nav-tabs .nav-link.active:hover {
-            background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
-            border-color: #ff6b35 !important;
-            color: #ffffff !important;
+
+        .organizer-contact-details a:hover {
+            color: #333;
         }
     </style>
+</head>
+<body>
 
-`     <!-- Clean CSS - Simple and maintainable -->
-  </head>
-  <body>
-<!-- Banner, in ra ảnh -->
-  <section class="hero hero--slider hero--compact" style="margin-top: 0; padding-top: 0;">
-      <div class="hero-track" id="heroTrack">
-          <!-- Lặp qua tất cả ảnh từ DB -->
-          <div th:each="img : ${eventImages}"
-               class="hero-slide"
-               th:style="|background-image: url('${img}')|">
-              <div class="container hero-content">
-                  <div class="hero-actions text-right">
-                      <a class="btn btn-common" href="#">Register Now</a>
-                  </div>
-              </div>
-          </div>
-      </div>
+<section class="hero hero--slider hero--compact">
+    <div class="hero-track" id="heroTrack">
 
-      <!-- Nav buttons -->
-      <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
-      <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
+        <div class="hero-slide"
+             th:with="imageUrl=${!#strings.isEmpty(eventDetail.bannerUrl) ? eventDetail.bannerUrl : '/music/assets/img/background/banner.jpg'}"
+             th:style="|background-image: url('${imageUrl}')|">
 
-      <!-- Progress indicator -->
-      <div class="hero-progress">
-          <div class="hero-progress-bar" th:each="img : ${eventImages}"></div>
-      </div>
-  </section>
+            <div class="container hero-content">
+                <div class="hero-actions text-right">
+                    <a class="btn btn-common" href="#pricing" th:if="${!#lists.isEmpty(eventDetail.ticketTypes)}">Get Ticket</a>
+                </div>
+            </div>
+        </div>
 
+        <th:block th:if="${eventDetail?.galleryUrls != null}">
+            <div class="hero-slide"
+                 th:each="url : ${eventDetail.galleryUrls}"
+                 th:if="${url != null and url != ''}"
+                 th:style="|background-image: url('${url}')|">
+            </div>
+        </th:block>
+
+    </div> <button class="hero-nav prev" id="heroPrev" aria-label="Previous" style="display: none;">‹</button>
+    <button class="hero-nav next" id="heroNext" aria-label="Next" style="display: none;">›</button>
+    <div class="hero-progress" id="heroProgress" style="display: none;"></div>
+</section>
+<!-- Banner Section End -->
 
 <!-- Countdown Section Start -->
-<section class="countdown-timer section-padding-compact">
+<section class="countdown-timer section-padding-compact" th:if="${eventDetail != null and eventDetail.startsAt != null}">
     <div class="container">
         <div class="row text-center">
             <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="heading-count">
-                    <h2 class="wow fadeInDown" data-wow-delay="0.2s">Competition Starts In</h2>
+                    <h2 class="wow fadeInDown" data-wow-delay="0.2s">Event Will Start In</h2>
                 </div>
             </div>
             <div class="col-md-12 col-sm-12 col-xs-12">
-                <div class="row time-countdown justify-content-center wow fadeInUp" data-wow-delay="0.2s">
+                <div class="time-countdown wow fadeInUp" data-wow-delay="0.2s">
                     <div id="clock" class="time-count"></div>
                 </div>
 
-                <!-- Nút Add ngay dưới đồng hồ -->
+                <!-- Add to Calendar Button -->
                 <div class="text-center mt-2">
-                    <a href="pricing.html" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
+                    <a href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
                         Add to My Calendar
                     </a>
                 </div>
@@ -1251,7 +166,7 @@
                 <div class="countdown-separator wow fadeInUp" data-wow-delay="0.4s">
                     <div class="separator-line"></div>
                     <div class="separator-icon">
-                        <span class="trophy-icon">🏆</span>
+                        <i class="lni-music"></i>
                     </div>
                     <div class="separator-line"></div>
                 </div>
@@ -1265,8 +180,7 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
     document.addEventListener('DOMContentLoaded', function() {
-        // Lấy startDate từ backend (format chuẩn ISO yyyy-MM-dd'T'HH:mm:ss)
-        const eventStartDateStr = /*[[${event.startsAt != null ? #temporals.format(event.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
+        const eventStartDateStr = /*[[${eventDetail != null and eventDetail.startsAt != null ? #temporals.format(eventDetail.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
         const eventStartDate = eventStartDateStr ? new Date(eventStartDateStr).getTime() : null;
         const clockElement = document.getElementById("clock");
 
@@ -1283,7 +197,7 @@
 
             if (distance < 0) {
                 clearInterval(countdown);
-                clockElement.innerHTML = "<h3>Competition is happening now!</h3>";
+                clockElement.innerHTML = "<h3>Event is happening now!</h3>";
                 return;
             }
 
@@ -1293,41 +207,39 @@
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
             clockElement.innerHTML = `
-            <div class="time-entry">
-              <span>${days}</span>
-              <div class="label">DAYS</div>
+            <div class="countdown-item">
+              <span class="number">${days.toString().padStart(2, '0')}</span>
+              <span class="label">Days</span>
             </div>
-            <div class="time-entry">
-              <span>${hours.toString().padStart(2, '0')}</span>
-              <div class="label">HOURS</div>
+            <div class="countdown-item">
+              <span class="number">${hours.toString().padStart(2, '0')}</span>
+              <span class="label">Hours</span>
             </div>
-            <div class="time-entry">
-              <span>${minutes.toString().padStart(2, '0')}</span>
-              <div class="label">MINUTES</div>
+            <div class="countdown-item">
+              <span class="number">${minutes.toString().padStart(2, '0')}</span>
+              <span class="label">Minutes</span>
             </div>
-            <div class="time-entry">
-              <span>${seconds.toString().padStart(2, '0')}</span>
-              <div class="label">SECONDS</div>
+            <div class="countdown-item">
+              <span class="number">${seconds.toString().padStart(2, '0')}</span>
+              <span class="label">Seconds</span>
             </div>`;
         }, 1000);
     });
     /*]]>*/
 </script>
 
-
-
-
-<!-- Competition Event Description Section Start -->
-<section id="descriptionc" class="section-padding-compact">
-      <div class="container">
-          <div class="row">
+<!-- Music Event Description Section Start -->
+<section id="descriptionm" class="section-padding-compact" th:if="${eventDetail != null}">
+    <div class="container">
+        <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <!-- Title -->
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s"
-                        th:text="${event.title}">
-                        Competition Title
-                    </h1>
+                        th:text="${eventDetail.title}">Event Title</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+<!--                        <span th:if="${eventDetail.musicType != null}" th:text="'Type: ' + ${eventDetail.musicType}"></span>-->
+<!--                        <span th:if="${eventDetail.genre != null}" th:text="' | Genre: ' + ${eventDetail.genre}"></span>-->
+                    </p>
                 </div>
             </div>
         </div>
@@ -1335,24 +247,32 @@
             <div class="col-lg-8 mx-auto">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
                     <!-- Event Title -->
-                      <h2 th:text="${event.title}">Competition Title</h2>
+                    <h2 th:text="${eventDetail.title}">Event Title</h2>
 
                     <!-- Description -->
-                    <p class="lead">
-                        <span class="trophy-icon">🏆</span>
-                        <span th:text="${event.description}">Competition description</span>
+                    <p class="lead" th:if="${eventDetail.description != null}">
+                        <i class="lni-music"></i>
+                        <span th:text="${eventDetail.description}">Event description</span>
+                    </p>
+
+                    <!-- Time -->
+                    <p th:if="${eventDetail.startsAt != null and eventDetail.endsAt != null}">
+                        <i class="lni-timer"></i>
+                        Start: <span th:text="${#temporals.format(eventDetail.startsAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        - End: <span th:text="${#temporals.format(eventDetail.endsAt, 'dd/MM/yyyy HH:mm')}"></span>
                     </p>
 
                     <!-- Benefits -->
-                    <p>
-                        <span class="trophy-icon">🏆</span>
-                        <span th:text="'Benefits: ' + ${event.benefits}">Benefits...</span>
+                    <p th:if="${eventDetail.benefits != null}">
+                        <i class="lni-microphone"></i>
+                        <span th:text="'Benefits: ' + ${eventDetail.benefits}">Benefits...</span>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 </section>
+<!-- Music Event Description Section End -->
 
 <!-- About Section Start -->
 <section id="about" class="section-padding">
@@ -1360,38 +280,39 @@
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Competition</h1>
-<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">FPT Competition 2025 - The Biggest Competition Event at FPT University</p>-->
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Music Event</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s" 
+                       th:text="${eventDetail != null ? eventDetail.title : 'Music Festival'}">Music Festival</p>
                 </div>
             </div>
         </div>
-        <div class="row">
+        <div class="row align-items-stretch">
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="about-item">
-                    <img class="img-fluid" th:src="@{/competition/assets/img/about/img1.jpg}" alt="">
+                    <img th:src="@{/music/assets/img/about/img1.jpg}" alt="Our Mission">
                     <div class="about-text">
                         <h3><a href="#">Our Mission</a></h3>
-                        <p>Connecting the FPT student community through competition, creating a challenging space and inspiring the young generation to excel.</p>
+                        <p>Connecting the music community, creating a creative space and inspiring the young generation.</p>
                         <a class="btn btn-common btn-rm" href="#">Learn More</a>
                     </div>
                 </div>
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="about-item">
-                    <img class="img-fluid" th:src="@{/competition/assets/img/about/img2.jpg}" alt="">
+                    <img th:src="@{/music/assets/img/about/img2.jpg}" alt="What You Will Experience">
                     <div class="about-text">
                         <h3><a href="#">What You Will Experience?</a></h3>
-                        <p>Over 20 challenging rounds, expert judges, prizes and many other exciting competitive activities.</p>
+                        <p>Amazing artists and bands, music workshops, food areas and many other exciting activities.</p>
                         <a class="btn btn-common btn-rm" href="#">Explore Now</a>
                     </div>
                 </div>
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="about-item">
-                    <img class="img-fluid" th:src="@{/competition/assets/img/about/img3.jpg}" alt="">
+                    <img th:src="@{/music/assets/img/about/img3.jpg}" alt="Benefits of Joining">
                     <div class="about-text">
                         <h3><a href="#">Benefits of Joining</a></h3>
-                        <p>Free participation, opportunity to win prizes, networking with competitors and experience unique competitive spaces.</p>
+                        <p th:text="${eventDetail != null and eventDetail.benefits != null ? eventDetail.benefits : 'Amazing benefits and experiences'}">Amazing benefits</p>
                         <a class="btn btn-common btn-rm" href="#">Register Now</a>
                     </div>
                 </div>
@@ -1401,98 +322,33 @@
 </section>
 <!-- About Section End -->
 
-<!-- Competition Details Section Start -->
-<section id="competition-details" class="section-padding">
+<!-- Counter Area Start -->
+<section class="counter-section section-padding" th:if="${eventDetail != null}">
     <div class="container">
         <div class="row">
-            <div class="col-12">
-                <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Details</h1>
-
-                </div>
-            </div>
-        </div>
-        
-        <div class="row">
-            <!-- Eligibility Card -->
-            <div class="col-lg-4 col-md-6 col-xs-12 mb-4" th:if="${event.eligibility != null}">
-                <div class="competition-detail-card wow fadeInLeft" data-wow-delay="0.3s">
-                    <div class="detail-icon">
-                        <i class="lni-users"></i>
-                    </div>
-                    <div class="detail-content">
-                        <h3>Eligibility</h3>
-                        <p th:text="${event.eligibility}">Who can participate in this competition...</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Format Card -->
-            <div class="col-lg-4 col-md-6 col-xs-12 mb-4" th:if="${event.format != null}">
-                <div class="competition-detail-card wow fadeInUp" data-wow-delay="0.4s">
-                    <div class="detail-icon">
-                        <i class="lni-target"></i>
-                    </div>
-                    <div class="detail-content">
-                        <h3>Competition Format</h3>
-                        <p th:text="${event.format}">How the competition will be structured...</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Judging Criteria Card -->
-            <div class="col-lg-4 col-md-6 col-xs-12 mb-4" th:if="${event.judgingCriteria != null}">
-                <div class="competition-detail-card wow fadeInRight" data-wow-delay="0.5s">
-                    <div class="detail-icon">
-                        <i class="lni-medall"></i>
-                    </div>
-                    <div class="detail-content">
-                        <h3>Judging Criteria</h3>
-                        <p th:text="${event.judgingCriteria}">How participants will be evaluated...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- Competition Details Section End -->
-
-<!-- Counter Area Start-->
-<section class="counter-section section-padding">
-    <div class="container">
-        <div class="row">
-
             <!-- Location -->
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.3s">
                     <div class="icon"><i class="lni-map"></i></div>
-                    <p th:text="${event.places != null and !event.places.isEmpty()
-                        ? event.places[0].placeName
-                        : 'FPT University Da Nang'}">
-                        FPT University Da Nang
-                    </p>
-                    <span th:text="${event.places != null and !event.places.isEmpty()
-                        ? event.places[0].building
-                        : 'Gamma Building, FPT City'}">
-                          Gamma Building, FPT City
-                      </span>
+                    <p th:text="${eventDetail.places != null and !eventDetail.places.isEmpty() 
+                        ? eventDetail.places[0].placeName 
+                        : 'Venue'}">Venue</p>
+                    <span th:text="${eventDetail.places != null and !eventDetail.places.isEmpty() 
+                        ? eventDetail.places[0].building 
+                        : 'Building'}">Building</span>
                 </div>
             </div>
 
             <!-- Time -->
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.6s">
-                    <div class="icon"><div class="clock-icon"></div></div>
-                    <p th:text="${event.startsAt != null and event.endsAt != null
-                        ? #temporals.format(event.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(event.endsAt, 'dd/MM/yyyy')
-                        : '15 - 17 Tháng 3, 2025'}">
-                        15 - 17 Tháng 3, 2025
-                    </p>
-                    <span th:text="${event.startsAt != null and event.endsAt != null
-                        ? #temporals.format(event.startsAt, 'HH:mm') + ' – ' + #temporals.format(event.endsAt, 'HH:mm')
-                        : '09:00 – 17:00'}">
-                          09:00 – 17:00
-                      </span>
+                    <div class="icon"><i class="lni-timer"></i></div>
+                    <p th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null 
+                        ? #temporals.format(eventDetail.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(eventDetail.endsAt, 'dd/MM/yyyy') 
+                        : 'Date TBA'}">Date</p>
+                    <span th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null 
+                        ? #temporals.format(eventDetail.startsAt, 'HH:mm') + ' – ' + #temporals.format(eventDetail.endsAt, 'HH:mm') 
+                        : 'Time TBA'}">Time</span>
                 </div>
             </div>
 
@@ -1500,12 +356,10 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.9s">
                     <div class="icon"><i class="lni-users"></i></div>
-                    <p th:text="${event.capacity != null
-                        ? event.capacity + ' Participants'
-                        : '100 Participants'}">
-                        100 Participants
-                    </p>
-                    <span>Register early to secure your spot</span>
+                    <p th:text="${eventDetail.capacity != null 
+                        ? eventDetail.capacity + ' Seats' 
+                        : 'Limited Seats'}">Capacity</p>
+                    <span>Book early to secure your spot</span>
                 </div>
             </div>
 
@@ -1513,227 +367,210 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="1.2s">
                     <div class="icon"><i class="lni-coffee-cup"></i></div>
-                    <p th:text="${event.benefits != null
-                        ? event.benefits
-                        : 'Đồ ăn & Nước uống miễn phí'}">
-                        Đồ ăn & Nước uống miễn phí
-                    </p>
+                    <p th:text="${eventDetail.benefits != null 
+                        ? eventDetail.benefits 
+                        : 'Great Benefits'}">Benefits</p>
+                    <span>Don't miss out</span>
                 </div>
             </div>
-
         </div>
     </div>
 </section>
-<!-- Counter Area End-->
+<!-- Counter Area End -->
 
 <!-- Schedule Section Start -->
-<section id="schedules" class="schedule section-padding">
+<!--<section id="schedules" class="schedule section-padding" -->
+<!--         th:if="${eventDetail != null and eventDetail.schedulesByDay != null and !eventDetail.schedulesByDay.isEmpty()}">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">-->
+<!--                        Discover activities and performances throughout the event-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">-->
+<!--            &lt;!&ndash; Tabs left: Days &ndash;&gt;-->
+<!--            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">-->
+<!--                <div class="table-responsive">-->
+<!--                    <ul class="nav nav-tabs" id="myTab" role="tablist">-->
+<!--                        <li class="nav-item" th:each="entry, iterStat : ${eventDetail.schedulesByDay}">-->
+<!--                            <a class="nav-link"-->
+<!--                               th:classappend="${iterStat.index == 0} ? 'active' : ''"-->
+<!--                               th:id="'day-' + ${iterStat.index} + '-tab'"-->
+<!--                               data-toggle="tab"-->
+<!--                               th:href="'#day-' + ${iterStat.index}"-->
+<!--                               role="tab"-->
+<!--                               th:aria-controls="'day-' + ${iterStat.index}"-->
+<!--                               th:aria-expanded="${iterStat.index == 0}">-->
+<!--                                <div class="item-text">-->
+<!--                                    <h4 th:text="'Day ' + (${iterStat.index + 1})">Day 1</h4>-->
+<!--                                    <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}">Date</h5>-->
+<!--                                </div>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Content right: Activities &ndash;&gt;-->
+<!--            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">-->
+<!--                <div class="tab-content" id="myTabContent">-->
+<!--                    <div class="tab-pane fade"-->
+<!--                         th:each="entry, iterStat : ${eventDetail.schedulesByDay}"-->
+<!--                         th:id="'day-' + ${iterStat.index}"-->
+<!--                         role="tabpanel"-->
+<!--                         th:classappend="${iterStat.index == 0} ? 'show active' : ''"-->
+<!--                         th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">-->
+
+<!--                        <div th:id="'accordion-' + ${iterStat.index}">-->
+<!--                            <div class="card" th:each="schedule : ${entry.value}">-->
+<!--                                <div class="card-header">-->
+<!--                                    <span class="time"-->
+<!--                                          th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">-->
+<!--                                        Time-->
+<!--                                    </span>-->
+<!--                                    <h4 th:text="${schedule.activity}">Activity Name</h4>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
+<!-- Schedule Section End -->
+
+<!-- Team/Singers Section Start -->
+<section id="team" class="section-padding text-center" 
+         th:if="${eventDetail != null and eventDetail.speakers != null and !eventDetail.speakers.isEmpty()}">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Schedule</h1>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Artists</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing artists performing at this event</p>
                 </div>
             </div>
         </div>
 
-        <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">
-            <!-- Tabs left: Ngày -->
-            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
-                <div class="table-responsive">
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item" th:each="entry, iterStat : ${scheduleEntries}">
-                            <a class="nav-link"
-                               th:classappend="${iterStat.index == 0} ? 'active' : ''"
-                               th:id="'day-' + ${iterStat.index} + '-tab'"
-                               th:data-toggle="'tab'"
-                               th:href="'#day-' + ${iterStat.index}"
-                               role="tab"
-                               th:aria-controls="'day-' + ${iterStat.index}"
-                               th:aria-expanded="${iterStat.index == 0}">
-                                <div class="item-text">
-                                    <h4 th:text="'Day ' + (${iterStat.index + 1})"></h4>
-                                    <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}"></h5>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Nội dung phải: Các activity -->
-            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
-                <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade"
-                         th:each="entry, iterStat : ${scheduleEntries}"
-                         th:id="'day-' + ${iterStat.index}"
-                         role="tabpanel"
-                         th:classappend="${iterStat.index == 0} ? 'show active' : ''"
-                         th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">
-
-                        <div id="accordion" th:id="'accordion-' + ${iterStat.index}">
-                            <div class="card" th:each="schedule, scheduleStat : ${entry.value}">
-                                <div class="card-header">
-                                    <span class="time"
-                                          th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}"></span>
-                                    <h4 th:text="${schedule.activity}">Activity Name</h4>
-                                </div>
-                            </div>
-                        </div>
-
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 col-sm-6" th:each="speaker : ${eventDetail.speakers}">
+                <div class="simple-artist-card wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="artist-image">
+                        <img class="img-fluid" 
+                             th:src="${speaker.imageUrl != null ? speaker.imageUrl : '/music/assets/img/team/img1.jpg'}" 
+                             th:alt="${speaker.name}">
+                    </div>
+                    <div class="artist-info">
+                        <h3 th:text="${speaker.name}">Artist Name</h3>
+                        <p th:text="${speaker.role}">Role</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-<!-- Schedule Section End -->
-
-<!-- Team Section Start - Judges -->
-<section id="team" class="section-padding text-center">
-    <div class="container">
-                      <div class="row">
-            <div class="col-12">
-                <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Judges & Organizers</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the expert judges and organizers at [[${event.title}]]</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Render judges/speakers -->
-        <div class="row justify-content-center">
-            <div class="col-lg-4 col-md-6 col-sm-6"
-                 th:each="sp : ${event.speakers}">
-                <div class="judge-card wow fadeInUp" data-wow-delay="0.2s">
-                    <div class="judge-image">
-                        <img class="img-fluid" th:src="${sp.imageUrl}" th:alt="${sp.name}">
-                          </div>
-                    <div class="judge-info">
-                        <h3 th:text="${sp.name}">Judge Name</h3>
-                        <p th:text="${sp.role}">Judge</p>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-                  </div>
-</section>
 <!-- Team Section End -->
 
-
 <!-- Gallery Section Start -->
-<section id="gallery" class="section-padding">
+<section id="gallery" class="section-padding" 
+         th:if="${eventDetail != null and eventDetail.galleryUrls != null and !eventDetail.galleryUrls.isEmpty()}">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Gallery</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">
-                        The most exciting moments from previous competition events
+                        Beautiful moments from the event
                     </p>
                 </div>
             </div>
-                  </div>
+        </div>
 
         <div class="row">
-            <!-- Loop qua tất cả ảnh của event -->
-            <div class="col-md-6 col-sm-6 col-lg-4" th:each="img : ${event.imageUrls}">
+            <div class="col-md-6 col-sm-6 col-lg-4" th:each="imageUrl : ${eventDetail.galleryUrls}">
                 <div class="gallery-box">
                     <div class="img-thumb">
-                        <img class="img-fluid" th:src="${img}" alt="Competition Gallery Image">
+                        <img class="img-fluid" th:src="${imageUrl}" alt="Event Gallery Image">
                     </div>
                     <div class="overlay-box text-center">
-                        <a class="lightbox" th:href="${img}">
+                        <a class="lightbox" th:href="${imageUrl}">
                             <i class="lni-plus"></i>
                         </a>
                     </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-<!-- Gallery Section End -->
-
-<!-- Rules Section -->
-  <!-- <section class="section-padding" th:if="${event.rules != null}">
-      <div class="container">
-          <h2 class="section-title">Competition Rules</h2>
-          <div class="rules-section">
-              <p th:text="${event.rules}">Competition rules and regulations...</p>
-          </div>
-      </div>
-  </section> -->
-
-  <!-- Requirements Section -->
-  <!-- <section class="section-padding" th:if="${event.requirements != null}">
-      <div class="container">
-          <h2 class="section-title">Requirements</h2>
-          <div class="requirements-section">
-              <p th:text="${event.requirements}">Participation requirements...</p>
-          </div>
-      </div>
-  </section> -->
-
-<!-- Ask Question Section Start -->
-<section id="faq" class="section-padding">
-      <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Contact Us</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Have questions about [[${event.title}]]? We're here to help you!</p>
                 </div>
             </div>
         </div>
-          <div class="row">
+    </div>
+</section>
+<!-- Gallery Section End -->
+
+<!-- FAQ Section Start -->
+<section id="faq" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Frequently Asked Questions</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Have questions? We're here to help!</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
                 <div class="accordion">
                     <div class="card">
                         <div class="card-header" id="headingOne">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionOne" aria-expanded="true" aria-controls="collapseOne">
-                                <i class="lni-pencil"></i> How to register for competition?
+                            <div class="header-title" data-toggle="collapse" data-target="#questionOne" aria-expanded="true">
+                                <i class="lni-pencil"></i> How to register for the event?
                             </div>
                         </div>
-                        <div id="questionOne" class="collapse" aria-labelledby="headingOne" data-parent="#question">
+                        <div id="questionOne" class="collapse" aria-labelledby="headingOne">
                             <div class="card-body">
-                                You can register online through our website or contact us directly for assistance with the registration process.
+                                Simply click on "Buy Ticket" button, select your preferred ticket type, and complete the payment process.
                             </div>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header" id="headingTwo">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionTwo" aria-expanded="false" aria-controls="questionTwo">
-                                <i class="lni-pencil"></i> What are the participation requirements?
+                            <div class="header-title" data-toggle="collapse" data-target="#questionTwo" aria-expanded="false">
+                                <i class="lni-pencil"></i> Which payment methods do you accept?
                             </div>
                         </div>
-                        <div id="questionTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#question">
+                        <div id="questionTwo" class="collapse" aria-labelledby="headingTwo">
                             <div class="card-body">
-                                All FPT University students are eligible to participate. Please check the specific requirements for each competition category.
+                                We accept various payment methods including credit cards, debit cards, and online banking.
                             </div>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header" id="headingThree">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionThree" aria-expanded="false" aria-controls="questionThree">
-                                <i class="lni-pencil"></i> What prizes can I win?
+                            <div class="header-title" data-toggle="collapse" data-target="#questionThree" aria-expanded="false">
+                                <i class="lni-pencil"></i> What should I bring to the event?
                             </div>
                         </div>
-                        <div id="questionThree" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                        <div id="questionThree" class="collapse" aria-labelledby="headingThree">
                             <div class="card-body">
-                                We offer various prizes including cash awards, certificates, and opportunities for further development and recognition.
+                                Bring your ticket (digital or printed), valid ID, and comfortable clothing suitable for the event.
                             </div>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="card-header" id="headingThree">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionFour" aria-expanded="false" aria-controls="questionFour">
-                                <i class="lni-pencil"></i> Who can join at the competition venue?
+                        <div class="card-header" id="headingFour">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionFour" aria-expanded="false">
+                                <i class="lni-pencil"></i> Is there parking available?
                             </div>
                         </div>
-                        <div id="questionFour" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                        <div id="questionFour" class="collapse" aria-labelledby="headingFour">
                             <div class="card-body">
-                                Registered participants and invited guests can attend the competition venue. Please bring your registration confirmation.
+                                Yes, parking is available at the venue. Details will be provided in your confirmation email.
                             </div>
                         </div>
                     </div>
@@ -1742,59 +579,59 @@
             <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
                 <div class="accordion">
                     <div class="card">
-                        <div class="card-header" id="headingOne2">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionOne2" aria-expanded="true" aria-controls="collapseOne">
-                                <i class="lni-pencil"></i> How to prepare for competition?
+                        <div class="card-header" id="headingFive">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionFive" aria-expanded="true">
+                                <i class="lni-pencil"></i> Can I get a refund?
                             </div>
                         </div>
-                        <div id="questionOne2" class="collapse" aria-labelledby="headingOne" data-parent="#question">
+                        <div id="questionFive" class="collapse" aria-labelledby="headingFive">
                             <div class="card-body">
-                                Review the competition rules, practice your skills, and ensure you meet all technical requirements before the event.
+                                Refund policies vary by event. Please check the specific terms and conditions for your ticket.
                             </div>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="card-header" id="headingTwo2">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionTwo2" aria-expanded="false" aria-controls="questionTwo">
-                                <i class="lni-pencil"></i> What equipment do I need?
+                        <div class="card-header" id="headingSix">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionSix" aria-expanded="false">
+                                <i class="lni-pencil"></i> Are food and drinks provided?
                             </div>
                         </div>
-                        <div id="questionTwo2" class="collapse" aria-labelledby="headingTwo" data-parent="#question">
+                        <div id="questionSix" class="collapse" aria-labelledby="headingSix">
                             <div class="card-body">
-                                Equipment requirements vary by competition category. Check the specific requirements in the competition details.
+                                <span th:text="${eventDetail != null and eventDetail.benefits != null ? eventDetail.benefits : 'Food and beverage options will be available at the venue.'}"></span>
                             </div>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="card-header" id="headingThree">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionFive" aria-expanded="false" aria-controls="questionFive">
-                                <i class="lni-pencil"></i>How are winners selected?
+                        <div class="card-header" id="headingSeven">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionSeven" aria-expanded="false">
+                                <i class="lni-pencil"></i> What time should I arrive?
                             </div>
                         </div>
-                        <div id="questionFive" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                        <div id="questionSeven" class="collapse" aria-labelledby="headingSeven">
                             <div class="card-body">
-                                Winners are selected by our expert panel of judges based on predefined criteria and scoring rubrics.
+                                We recommend arriving at least 30 minutes before the event start time for check-in and seating.
                             </div>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="card-header" id="headingThree">
-                            <div class="header-title" data-toggle="collapse" data-target="#questionSix" aria-expanded="false" aria-controls="questionSix">
-                                <i class="lni-pencil"></i>  What is the registration deadline?
+                        <div class="card-header" id="headingEight">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionEight" aria-expanded="false">
+                                <i class="lni-pencil"></i> Is the event suitable for all ages?
                             </div>
                         </div>
-                        <div id="questionSix" class="collapse" aria-labelledby="headingThree" data-parent="#question">
+                        <div id="questionEight" class="collapse" aria-labelledby="headingEight">
                             <div class="card-body">
-                                Registration deadlines vary by competition. Please check the specific deadline for your chosen category.
+                                Age requirements may vary. Please check the event details or contact us for specific information.
                             </div>
-                      </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
-<!-- Ask Question Section End -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- FAQ Section End -->
 
 <!-- Sponsors Section Start -->
 <section id="sponsors" class="section-padding">
@@ -1803,33 +640,33 @@
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Our Sponsors</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Thank you to our partners who have joined [[${event.title}]]</p>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Thank you to our partners</p>
                 </div>
             </div>
         </div>
         <div class="row mb-30 text-center wow fadeInDown" data-wow-delay="0.3s">
             <div class="col-md-3 col-sm-3 col-xs-12">
                 <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/competition/assets/img/sponsors/logo-01.png}" alt="Sponsor 1"></a>
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-01.png}" alt="Sponsor 1"></a>
                 </div>
             </div>
             <div class="col-md-3 col-sm-3 col-xs-12">
                 <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/competition/assets/img/sponsors/logo-02.png}" alt="Sponsor 2"></a>
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-02.png}" alt="Sponsor 2"></a>
                 </div>
             </div>
             <div class="col-md-3 col-sm-3 col-xs-12">
                 <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/competition/assets/img/sponsors/logo-03.jpg}" alt="Sponsor 3"></a>
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-03.jpg}" alt="Sponsor 3"></a>
                 </div>
             </div>
             <div class="col-md-3 col-sm-3 col-xs-12">
                 <div class="spnsors-logo">
-                    <a href="#"><img class="img-fluid" th:src="@{/competition/assets/img/sponsors/logo-04.png}" alt="Sponsor 4"></a>
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-04.png}" alt="Sponsor 4"></a>
                 </div>
             </div>
             <div class="col-12 text-center">
-                <a href="#" class="btn btn-common">become a sponsor</a>
+                <a href="#" class="btn btn-common">Become a Sponsor</a>
             </div>
         </div>
     </div>
@@ -1837,261 +674,312 @@
 <!-- Sponsors Section End -->
 
 <!-- Ticket Pricing Area Start -->
-<section id="pricing" class="section-padding">
-      <div class="container">
-          <div class="row">
+<section id="pricing" class="section-padding" 
+         th:if="${eventDetail != null and eventDetail.ticketTypes != null and !eventDetail.ticketTypes.isEmpty()}">
+    <div class="container">
+        <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Registration Packages</h1>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">
-                        Choose the right package to fully participate in
-                        <span th:text="${event.title}">[[${event.title}]]</span>
+                        Choose the right package for you
                     </p>
                 </div>
             </div>
         </div>
 
-         <!-- Nếu không có vé -->
-         <div class="row" th:if="${tickets == null or #lists.isEmpty(tickets)}">
-             <div class="col-12 text-center text-muted">
-                 <p>Registration is not available yet.</p>
-                 <p>Debug: tickets = <span th:text="${tickets}">null</span></p>
-                 <p>Debug: tickets size = <span th:text="${tickets != null ? #lists.size(tickets) : 'null'}">0</span></p>
-             </div>
-         </div>
-
-        <!-- Nếu có vé -->
-        <div class="row" th:if="${!#lists.isEmpty(tickets)}">
+        <div class="row">
             <div class="col-lg-4 col-sm-6 col-xa-12 mb-3"
-                 th:each="ticket, iter : ${tickets}"
+                 th:each="ticket, iter : ${eventDetail.ticketTypes}"
                  th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')"
                  th:data-wow-delay="'0.' + ${iter.index + 2} + 's'">
-                <div class="price-block-wrapper" >
+                <div class="price-block-wrapper">
                     <div class="icon">
-                        <!-- đổi icon theo index cho vui -->
                         <i th:class="${iter.index == 0} ? 'lni-write' : (${iter.index == 1} ? 'lni-layers' : 'lni-leaf')"></i>
                     </div>
                     <div class="colmun-title">
-                        <h5 th:text="${ticket.name}">Standard Registration</h5>
+                        <h5 th:text="${ticket.name}">Ticket Name</h5>
                     </div>
                     <div class="price">
-                        <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Free</h2>
+                        <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Price</h2>
                         <p>
-                            <span th:text="${ticket.getAvailableQuantity()}"></span> /
-                            <span th:text="${ticket.totalQuantity}"></span> Slots Available
+                            <span th:text="${ticket.availableQuantity}"></span> Tickets Available
                         </p>
                     </div>
 
-                    <!-- Nếu mô tả là plain text -->
                     <div class="pricing-list">
                         <ul>
                             <li>
                                 <i class="lni-check-mark-circle"></i>
-                                <span class="text" th:text="${ticket.description}">Registration description here</span>
+                                <span class="text" th:text="${ticket.description}">Ticket description</span>
                             </li>
                         </ul>
                     </div>
 
-                    <a th:if="${ticket.isAvailable()}"
+                    <!-- Buy button based on ticket availability and sale status -->
+                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut()}"
                        th:href="@{'/ticket/buy/' + ${ticket.ticketTypeId}}"
-                       class="btn btn-common">Register Now</a>
+                       class="btn btn-common">Buy Ticket</a>
 
-                    <a th:if="${!ticket.isAvailable()}" href="#" class="btn btn-common disabled" style="background-color: #ccc;">
-                        Registration Full
+                    <a th:if="${ticket.isSoldOut()}" 
+                       href="#" 
+                       class="btn btn-common disabled" 
+                       style="background-color: #ccc; cursor: not-allowed;">
+                        Sold Out
                     </a>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
 
+                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}" 
+                       href="#" 
+                       class="btn btn-common disabled" 
+                       style="background-color: #999; cursor: not-allowed;">
+                        Sale Not Active
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 <!-- Ticket Pricing Area End -->
 
-<!-- Event Slides Section Start -->
-<!--<section id="event-slides" class="section-padding" th:if="${event != null}">-->
-<!--    <div class="container">-->
-<!--        <div class="row">-->
-<!--            &lt;!&ndash; Tiêu đề &ndash;&gt;-->
-<!--            <div class="col-12">-->
-<!--                <div class="section-title-header text-center">-->
-<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Guidelines</h1>-->
-<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">-->
-<!--                        All the information you need for the best experience at-->
-<!--                        <span th:text="${event.title}">[[${event.title}]]</span>-->
-<!--                    </p>-->
-<!--                </div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Bên trái: Google Map &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">-->
-<!--                <div class="video" style="border-radius:10px; overflow:hidden;">-->
-<!--                    <iframe-->
-<!--                            th:src="@{|https://www.google.com/maps?q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}&output=embed|}"-->
-<!--                            width="100%" height="350" style="border:0;" allowfullscreen="">-->
-<!--                    </iframe>-->
-<!--                </div>-->
-
-<!--                &lt;!&ndash; Nút mở Google Maps &ndash;&gt;-->
-<!--                <a class="btn btn-outline-primary mt-3"-->
-<!--                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}"-->
-<!--                   target="_blank">-->
-<!--                    Open in Google Maps-->
-<!--                </a>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Bên phải: Nội dung hướng dẫn &ndash;&gt;-->
-<!--            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">-->
-<!--                <p class="intro-desc">-->
-<!--                    Join us at-->
-<!--                    <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>-->
-<!--                    for an unforgettable competitive experience!-->
-<!--                </p>-->
-
-<!--                <h2 class="intro-title">Competition Day Instructions</h2>-->
-
-<!--                <ul class="list-specification">-->
-<!--                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"-->
-<!--                        th:if="${#strings.trim(line) != ''}">-->
-<!--                        <i class="lni-check-mark-circle"></i>-->
-<!--                        <span th:text="${#strings.trim(line) + '.'}">Instruction</span>-->
-<!--                    </li>-->
-<!--                </ul>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
-<!-- Event Slides Section Start -->
-<section id="event-slides" class="section-padding" th:if="${event != null}">
+<!-- Event Guidelines Section Start -->
+<section id="event-slides" class="section-padding" th:if="${eventDetail != null}">
     <div class="container">
         <div class="row">
-            <!-- Tiêu đề -->
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">
-                        All the information you need for the best experience at
-                        <span th:text="${event.title}">FPT Music Festival</span>
+                        All the information you need for the best experience
                     </p>
                 </div>
             </div>
 
-            <!-- Bên trái: Google Map -->
+            <!-- Google Map -->
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
                 <div class="video" style="border-radius:10px; overflow:hidden;">
                     <iframe
-                            th:src="@{|https://www.google.com/maps?q=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}&output=embed|}"
+                        th:src="@{|https://www.google.com/maps?q=${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Da Nang'}&output=embed|}"
                             width="100%" height="350" style="border:0;" allowfullscreen="">
                     </iframe>
                 </div>
 
-                <!-- Nút mở Google Maps -->
+                <!-- Open in Google Maps button -->
                 <a class="btn btn-outline-primary mt-3"
-                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}|}"
+                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Da Nang'}|}"
                    target="_blank">
                     Open in Google Maps
                 </a>
             </div>
 
-            <!-- Bên phải: Nội dung hướng dẫn -->
+            <!-- Guidelines -->
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
                 <p class="intro-desc">
                     Join us at
-                    <span th:text="${event.venueAddress != null ? event.venueAddress : 'FPT University Da Nang'}">FPT University Da Nang</span>
+                    <span th:text="${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'the venue'}">the venue</span>
                     for an unforgettable experience!
                 </p>
 
                 <h2 class="intro-title">Event Day Instructions</h2>
 
-                <ul class="list-specification">
-                    <li th:each="line : ${#strings.arraySplit(event.guidelines, '\\.')}"
+                <ul class="list-specification" th:if="${eventDetail.guidelines != null}">
+                    <li th:each="line : ${#strings.arraySplit(eventDetail.guidelines, '\\.')}"
                         th:if="${#strings.trim(line) != ''}">
                         <i class="lni-check-mark-circle"></i>
                         <span th:text="${#strings.trim(line) + '.'}">Instruction</span>
+                    </li>
+                </ul>
+
+                <ul class="list-specification" th:if="${eventDetail.guidelines == null}">
+                    <li>
+                        <i class="lni-check-mark-circle"></i>
+                        <span>Please arrive at least 30 minutes before the event starts.</span>
+                    </li>
+                    <li>
+                        <i class="lni-check-mark-circle"></i>
+                        <span>Bring your ticket (digital or printed) and valid ID.</span>
+                    </li>
+                    <li>
+                        <i class="lni-check-mark-circle"></i>
+                        <span>Follow the event staff instructions for a smooth experience.</span>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 </section>
+<!-- Event Guidelines Section End -->
 
+<!-- Organizer Section Start -->
+<section id="organizer-details" class="section-padding"
+         th:if="${eventDetail != null and eventDetail.organization != null}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Organizer</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the team behind this amazing event</p>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-12">
+                <div class="organizer-details-card wow fadeInUp" data-wow-delay="0.3s">
 
-<!-- Event Slides Section End -->
+                    <div class="organizer-header">
+                        <div class="organizer-logo-wrapper" th:if="${eventDetail.organization.imageUrl != null}">
+                            <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo" class="organizer-logo">
+                        </div>
+                        <div class="organizer-info">
+                            <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>
+                            <p class="description" th:if="${eventDetail.organization.description != null}"
+                               th:text="${eventDetail.organization.description}">
+                                Organization description goes here. This text provides more details about the organizer's mission and vision.
+                            </p>
+                        </div>
+                    </div>
+
+                    <ul class="organizer-contact-details">
+                        <li th:if="${eventDetail.organization.website != null}">
+                            <i class="lni-world"></i>
+                            <a th:href="${eventDetail.organization.website}" target="_blank"
+                               th:text="${eventDetail.organization.website}">www.organizer-website.com</a>
+                        </li>
+                        <li th:if="${eventDetail.organization.email != null}">
+                            <i class="lni-envelope"></i>
+                            <a th:href="'mailto:' + ${eventDetail.organization.email}"
+                               th:text="${eventDetail.organization.email}">contact@organizer.com</a>
+                        </li>
+                        <li th:if="${eventDetail.organization.phone != null}">
+                            <i class="lni-phone-handset"></i>
+                            <span th:text="${eventDetail.organization.phone}">+123 456 7890</span>
+                        </li>
+                        <li th:if="${eventDetail.organization.address != null}">
+                            <i class="lni-map-marker"></i>
+                            <span th:text="${eventDetail.organization.address}">123 Event Street, City, Country</span>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--<section id="organizer" class="section-padding" -->
+<!--         th:if="${eventDetail != null and eventDetail.organization != null}">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Organizer</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the team behind this amazing event</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="row justify-content-center">-->
+<!--            <div class="col-lg-8 col-md-10">-->
+<!--                <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">-->
+<!--                    <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>-->
+<!--                    <p th:if="${eventDetail.organization.description != null}" -->
+<!--                       th:text="${eventDetail.organization.description}">Organization description</p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.email != null}">-->
+<!--                        <i class="lni-envelope"></i>-->
+<!--                        <span th:text="${eventDetail.organization.email}">Email</span>-->
+<!--                    </p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.phone != null}">-->
+<!--                        <i class="lni-phone"></i>-->
+<!--                        <span th:text="${eventDetail.organization.phone}">Phone</span>-->
+<!--                    </p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.website != null}">-->
+<!--                        <i class="lni-world"></i>-->
+<!--                        <a th:href="${eventDetail.organization.website}" -->
+<!--                           th:text="${eventDetail.organization.website}" -->
+<!--                           target="_blank">Website</a>-->
+<!--                    </p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.address != null}">-->
+<!--                        <i class="lni-map-marker"></i>-->
+<!--                        <span th:text="${eventDetail.organization.address}">Address</span>-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
+<!-- Organizer Section End -->
 
 <!-- Blog Section Start -->
 <section id="blog" class="section-padding">
-      <div class="container">
-          <div class="row">
+    <div class="container">
+        <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Latest News & Updates</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Stay updated with the latest information about [[${event.title}]]</p>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Latest News</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Stay updated with the latest information</p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 col-xs-12">
-                <div class="blog-item">
+        </div>
+        <div class="row align-items-stretch">
+            <div class="col-lg-4 col-md-6 col-xs-12 d-flex">
+                <div class="blog-item w-100">
                     <div class="blog-image">
                         <a href="#">
-                            <img class="img-fluid" th:src="@{/competition/assets/img/blog/img-1.jpg}" alt="">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-1.jpg}" alt="">
                         </a>
                     </div>
                     <div class="descr">
-                        <div class="tag">Competition</div>
+                        <div class="tag">Music</div>
                         <h3 class="title">
-                            <a href="single-blog.html">
-                                The 9 Competition Tips You Need to Know
-                            </a>
+                            <a href="#">Event Highlights & Updates</a>
                         </h3>
                         <div class="meta-tags">
-                            <span class="date">Jan 20, 2025</span>
-                            <span class="comments">| <a href="#"> by Competition Team</a></span>
+                            <span class="date">Latest Update</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 col-xs-12">
-                <div class="blog-item">
+            <div class="col-lg-4 col-md-6 col-xs-12 d-flex">
+                <div class="blog-item w-100">
                     <div class="blog-image">
                         <a href="#">
-                            <img class="img-fluid" th:src="@{/competition/assets/img/blog/img-2.jpg}" alt="">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-2.jpg}" alt="">
                         </a>
                     </div>
                     <div class="descr">
-                        <div class="tag">Preparation</div>
+                        <div class="tag">Artists</div>
                         <h3 class="title">
-                            <a href="single-blog.html">
-                                How to Prepare for Competition
-                            </a>
+                            <a href="#">Meet The Performers</a>
                         </h3>
                         <div class="meta-tags">
-                            <span class="date">Jan 18, 2025 </span>
-                            <span class="comments">| <a href="#"> by Expert Judges</a></span>
+                            <span class="date">Featured</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 col-xs-12">
-                <div class="blog-item">
+            <div class="col-lg-4 col-md-6 col-xs-12 d-flex">
+                <div class="blog-item w-100">
                     <div class="blog-image">
                         <a href="#">
-                            <img class="img-fluid" th:src="@{/competition/assets/img/blog/img-3.jpg}" alt="">
-                              </a>
-                          </div>
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-3.jpg}" alt="">
+                        </a>
+                    </div>
                     <div class="descr">
-                        <div class="tag">Winners</div>
+                        <div class="tag">Tips</div>
                         <h3 class="title">
-                            <a href="single-blog.html">
-                                Previous Competition Winners
-                            </a>
+                            <a href="#">Event Preparation Guide</a>
                         </h3>
                         <div class="meta-tags">
-                            <span class="date">Jan 15, 2025</span>
-                            <span class="comments">| <a href="#"> by Organizing Team</a></span>
+                            <span class="date">Helpful</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 text-center">
-                <a href="#" class="btn btn-common">Read More News</a>
+        </div>
+        <div class="row">
+            <div class="col-12 text-center mt-4">
+                <a href="#" class="btn btn-common">Read More</a>
             </div>
         </div>
     </div>
@@ -2104,42 +992,31 @@
         <div class="row justify-content-md-center">
             <div class="col-md-10 col-lg-7">
                 <div class="subscribe-inner wow fadeInDown" data-wow-delay="0.3s">
-                    <h2 class="subscribe-title">Stay Updated with [[${event.title}]]</h2>
+                    <h2 class="subscribe-title">Stay Updated</h2>
                     <form class="text-center form-inline">
                         <input class="mb-20 form-control" name="email" placeholder="Enter Your Email to Get Latest Updates">
-                        <button type="submit" class="btn btn-common sub-btn" data-style="zoom-in" data-spinner-size="30" name="submit" id="submit">
-                            <span class="ladda-label"><i class="lni-trophy"></i> Subscribe</span>
+                        <button type="submit" class="btn btn-common sub-btn">
+                            <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>
                         </button>
                     </form>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Subscribe Area End -->
 
-<!-- Map Section Start -->
-<section id="google-map-area">
-    <div class="container-fluid">
-        <div class="row">
-        </div>
-      </div>
-  </section>
-<!-- Map Section End -->
-
-
-
-
-<!-- Competition-themed Go to Top Link -->
-<a href="#" class="back-to-top competition-scroll-btn">
-    <div class="competition-icon">
-        <div class="note note-1">🏆</div>
-        <div class="note note-2">🥇</div>
-        <div class="note note-3">🏆</div>
+<!-- Go to Top Link -->
+<a href="#" class="back-to-top music-scroll-btn">
+    <div class="music-icon">
+        <div class="note note-1">♪</div>
+        <div class="note note-2">♫</div>
+        <div class="note note-3">♪</div>
     </div>
     <div class="scroll-text">TOP</div>
 </a>
 
+<!-- Preloader -->
 <div id="preloader">
     <div class="sk-circle">
         <div class="sk-circle1 sk-child"></div>
@@ -2157,70 +1034,79 @@
     </div>
 </div>
 
-<script th:src="@{/competition/assets/js/jquery-min.js}"></script>
-<script th:src="@{/competition/assets/js/popper.min.js}"></script>
-<script th:src="@{/competition/assets/js/bootstrap.min.js}"></script>
-<script th:src="@{/competition/assets/js/jquery.countdown.min.js}"></script>
-<script th:src="@{/competition/assets/js/jquery.nav.js}"></script>
-<script th:src="@{/competition/assets/js/jquery.easing.min.js}"></script>
-<script th:src="@{/competition/assets/js/wow.js}"></script>
-<script th:src="@{/competition/assets/js/jquery.slicknav.js}"></script>
-<script th:src="@{/competition/assets/js/nivo-lightbox.js}"></script>
-<script th:src="@{/competition/assets/js/main.js}"></script>
-<script th:src="@{/competition/assets/js/competition-main.js}"></script>
-
-
-
-
-  <script>
-      document.addEventListener('DOMContentLoaded', function() {
+<!-- JavaScript -->
+<script th:src="@{/music/assets/js/jquery-min.js}"></script>
+<script th:src="@{/music/assets/js/popper.min.js}"></script>
+<script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
+<script th:src="@{/music/assets/js/jquery.countdown.min.js}"></script>
+<script th:src="@{/music/assets/js/jquery.nav.js}"></script>
+<script th:src="@{/music/assets/js/jquery.easing.min.js}"></script>
+<script th:src="@{/music/assets/js/wow.js}"></script>
+<script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
+<script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
+<script th:src="@{/music/assets/js/main.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         const heroTrack = document.getElementById('heroTrack');
-        const heroSlides = document.querySelectorAll('.hero-slide');
-          const prevBtn = document.getElementById('heroPrev');
-          const nextBtn = document.getElementById('heroNext');
-          const progressBars = document.querySelectorAll('.hero-progress-bar');
+        const prevBtn = document.getElementById('heroPrev');
+        const nextBtn = document.getElementById('heroNext');
+        const heroProgress = document.getElementById('heroProgress');
+        const heroSlides = document.querySelectorAll('#heroTrack .hero-slide');
 
-          let currentSlide = 0;
+        if (!heroTrack || heroSlides.length <= 1) {
+            // Nếu chỉ có 1 ảnh hoặc không có ảnh nào, không cần làm gì cả
+            return;
+        }
+
+        let currentSlide = 0;
         const totalSlides = heroSlides.length;
 
-          function updateSlider() {
+        // Khi có nhiều hơn 1 ảnh, hiển thị các nút điều khiển
+        prevBtn.style.display = 'flex';
+        nextBtn.style.display = 'flex';
+        heroProgress.style.display = 'flex';
+
+        // Tự động tạo các thanh progress bar
+        heroProgress.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'hero-progress-bar';
+            bar.addEventListener('click', () => goToSlide(i));
+            heroProgress.appendChild(bar);
+        }
+
+        const progressBars = heroProgress.querySelectorAll('.hero-progress-bar');
+
+        function updateSlider() {
             const translateX = -currentSlide * 100;
             heroTrack.style.transform = `translateX(${translateX}%)`;
+            heroTrack.style.transition = 'transform 0.5s ease-in-out';
+            progressBars.forEach((bar, index) => {
+                bar.classList.toggle('active', index === currentSlide);
+            });
+        }
 
-            // Update progress bars
-              progressBars.forEach((bar, index) => {
-                  bar.classList.toggle('active', index === currentSlide);
-              });
-          }
+        function goToSlide(slideIndex) {
+            currentSlide = slideIndex;
+            updateSlider();
+        }
 
-          function nextSlide() {
+        function nextSlide() {
             currentSlide = (currentSlide + 1) % totalSlides;
-              updateSlider();
-          }
+            updateSlider();
+        }
 
-          function prevSlide() {
+        function prevSlide() {
             currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-              updateSlider();
-          }
+            updateSlider();
+        }
 
-        // Event listeners
-          nextBtn.addEventListener('click', nextSlide);
-          prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+        setInterval(nextSlide, 5000); // Tự động chuyển slide mỗi 5 giây
+        updateSlider(); // Khởi tạo vị trí đầu tiên
+    });
+</script>
 
-        // Progress bar click handlers
-          progressBars.forEach((bar, index) => {
-              bar.addEventListener('click', () => {
-                  currentSlide = index;
-                  updateSlider();
-              });
-          });
-
-        // Auto-slide functionality
-        setInterval(nextSlide, 5000);
-
-        // Initialize
-        updateSlider();
-      });
-  </script>
-  </body>
+</body>
 </html>

@@ -38,7 +38,7 @@ body {
 .hero {
     position: relative;
     width: 100%;
-    height: 100vh;
+    height: auto;
     overflow: hidden;
     margin: 0;
     padding: 0;
@@ -162,23 +162,23 @@ body {
         height: 40px;
         font-size: 20px;
     }
-    
+
     .hero-nav.prev {
         left: 15px;
     }
-    
+
     .hero-nav.next {
         right: 15px;
     }
-    
+
     .hero-progress {
         bottom: 20px;
     }
-    
+
     .hero-progress-bar {
         width: 30px;
     }
-    
+
     .hero-progress-bar.active {
         width: 45px;
     }
@@ -284,11 +284,11 @@ body {
     #pricing .col-lg-4 {
         flex-direction: column;
     }
-    
+
     .price-block-wrapper {
         margin-bottom: 30px;
     }
-    
+
     #pricing {
         padding-top: 30px !important;
         padding-bottom: 40px !important;
@@ -449,27 +449,27 @@ body {
     #event-slides {
         padding: 40px 0;
     }
-    
+
     #event-slides .video {
         margin-bottom: 30px;
     }
-    
+
     #event-slides .intro-title {
         font-size: 20px;
     }
-    
+
     #event-slides .list-specification li {
         padding: 15px 18px;
         margin-bottom: 10px;
     }
-    
+
     #event-slides .list-specification li i {
         width: 28px;
         height: 28px;
         font-size: 16px;
         margin-right: 15px;
     }
-    
+
     #event-slides .list-specification li span {
         font-size: 15px;
         line-height: 1.5;
@@ -554,12 +554,12 @@ body {
     }
 }
 
-/* Countdown Section - Normal Style */
+/* Countdown Section - Beautiful Purple Gradient */
 .countdown-timer {
     padding: 60px 0 !important;
     margin: 0 !important;
     margin-top: 0 !important;
-    background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+    background:  #7a7f94;
     position: relative;
 }
 
@@ -570,7 +570,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: transparent; /* Remove extra overlay */
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .countdown-timer .container {
@@ -600,28 +600,26 @@ body {
 }
 
 .time-countdown .countdown-item {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 20px 15px;
     min-width: 80px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .time-countdown .countdown-item:hover {
     transform: translateY(-5px);
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .time-countdown .countdown-item .number {
     display: block;
     font-size: 32px;
     font-weight: bold;
-    color: #333;
+    color: white;
     line-height: 1;
     margin-bottom: 5px;
 }
@@ -629,7 +627,7 @@ body {
 .time-countdown .countdown-item .label {
     display: block;
     font-size: 12px;
-    color: #666;
+    color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 500;
@@ -679,21 +677,21 @@ body {
     .countdown-timer {
         padding: 40px 0 !important;
     }
-    
+
     .countdown-timer .heading-count h2 {
         font-size: 24px;
         margin-bottom: 30px;
     }
-    
+
     .time-countdown .countdown-item {
         min-width: 70px;
         padding: 15px 10px;
     }
-    
+
     .time-countdown .countdown-item .number {
         font-size: 24px;
     }
-    
+
     .time-countdown #clock {
         gap: 15px;
     }

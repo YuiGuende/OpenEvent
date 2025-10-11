@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title th:text="${eventDetail != null ? eventDetail.title : 'Music Event'} + ' - OpenEvent'">Music Event - OpenEvent</title>
-    
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" th:href="@{/competition/assets/css/bootstrap.min.css}">
     <!-- Icons -->
@@ -25,23 +25,82 @@
     <link rel="stylesheet" th:href="@{/competition/assets/css/music-theme.css}">
     <style>
         /* ==========================================================================
-           COMPETITION THEME - Professional Blue & Victorious Gold
+           COMPETITION THEME - "Đam Mê & Quyền Lực" (Nền Tối)
            ========================================================================== */
 
-        /* ----- 1. KHU VỰC THÔNG TIN NHÀ TỔ CHỨC ----- */
-        #organizer-details {
-            background-color: #f8f9fa;
+        /* Color Variables - Unified Dark Theme */
+        :root {
+            --primary-bg: #0F0F23;        /* Nền chính - Xám đen sâu */
+            --secondary-bg: #1A1A2E;      /* Nền phụ - Xám đen nhạt hơn */
+            --card-bg: #16213E;           /* Nền card - Xanh đen tối */
+            --accent-primary: #FF6B35;    /* Cam năng lượng - Màu nhấn chính */
+            --accent-secondary: #F7931E;  /* Cam nhạt - Màu nhấn phụ */
+            --text-primary: #FFFFFF;      /* Trắng - Chữ chính */
+            --text-secondary: #E0E6ED;    /* Xám sáng - Chữ phụ */
+            --text-muted: #A0AEC0;        /* Xám nhạt - Chữ mờ */
+            --border-light: #2D3748;      /* Viền sáng */
+            --border-dark: #1A202C;       /* Viền tối */
+            --shadow-glow: rgba(255, 107, 53, 0.3);
+            --shadow-dark: rgba(0, 0, 0, 0.4);
         }
+
+        /* Global Dark Theme */
+        body {
+            background-color: var(--primary-bg) !important;
+            color: var(--text-primary) !important;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Sections Background */
+        .section, #organizer-details, #competition-details {
+            background-color: var(--primary-bg) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Section Titles */
+        .section-title {
+            color: var(--text-primary) !important;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--accent-primary) !important;
+            margin: 20px auto 0;
+            border-radius: 2px;
+        }
+
+        .section-sub-title {
+            color: var(--text-secondary) !important;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        /* ----- 1. KHU VỰC THÔNG TIN NHÀ TỔ CHỨC ----- */
         .organizer-details-card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            background: var(--card-bg) !important;
+            border: 2px solid var(--accent-primary) !important;
+            border-radius: 15px;
+            box-shadow: 0 12px 40px var(--shadow-dark);
             overflow: hidden;
             margin-top: 20px;
             padding: 40px;
             display: flex;
             flex-direction: column;
             gap: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .organizer-details-card:hover {
+            border-color: var(--accent-secondary) !important;
+            box-shadow: 0 15px 50px var(--shadow-glow);
+            transform: translateY(-5px);
         }
         .organizer-header {
             display: flex;
@@ -56,26 +115,25 @@
             height: 150px;
             border-radius: 50%;
             object-fit: cover;
-            /* MÀU MỚI: Border logo màu xanh */
-            border: 5px solid #0D47A1;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 5px solid var(--accent-primary) !important;
+            box-shadow: 0 8px 32px var(--shadow-glow);
         }
         .organizer-info h2 {
             font-size: 32px;
             font-weight: 700;
             margin-top: 0;
             margin-bottom: 10px;
-            color: #333;
+            color: var(--text-primary) !important;
         }
         .organizer-info p.description {
             font-size: 16px;
             line-height: 1.7;
-            color: #555;
+            color: var(--text-secondary) !important;
             margin-bottom: 0;
         }
         .organizer-contact-details {
             padding-top: 30px;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid var(--border-light) !important;
             list-style: none;
             padding-left: 0;
             margin: 0;
@@ -88,46 +146,42 @@
         }
         .organizer-contact-details i {
             font-size: 20px;
-            /* MÀU MỚI: Icon màu xanh */
-            color: #0D47A1;
+            color: var(--accent-primary) !important;
             margin-right: 15px;
             width: 25px;
             text-align: center;
         }
         .organizer-contact-details a {
-            /* MÀU MỚI: Link màu xanh */
-            color: #0D47A1;
+            color: var(--accent-primary) !important;
             text-decoration: none;
             transition: color 0.3s;
         }
         .organizer-contact-details a:hover {
-            color: #333;
+            color: var(--accent-secondary) !important;
         }
 
         /* ----- 2. KHU VỰC CHI TIẾT CUỘC THI ----- */
-        #competition-details {
-            background: #f4f7fa;
-        }
         .details-card {
-            background: #ffffff;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border-light) !important;
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 30px;
             display: flex;
             align-items: flex-start;
             gap: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 32px var(--shadow-dark);
+            transition: all 0.3s ease;
             height: calc(100% - 30px);
         }
         .details-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 40px var(--shadow-glow);
+            border-color: var(--accent-primary) !important;
         }
         .details-card .card-icon {
             font-size: 40px;
-            /* MÀU MỚI: Icon màu xanh */
-            color: #0D47A1;
+            color: var(--accent-primary) !important;
             line-height: 1;
         }
         .details-card .card-content h3 {
@@ -135,36 +189,37 @@
             margin-bottom: 10px;
             font-size: 22px;
             font-weight: 700;
+            color: var(--text-primary) !important;
         }
         .details-card .card-content p {
             margin-bottom: 0;
             line-height: 1.7;
-            color: #555;
+            color: var(--text-secondary) !important;
         }
 
-        /* THIẾT KẾ ĐẶC BIỆT CHO CARD GIẢI THƯỞNG (VÀNG GOLD) */
+        /* THIẾT KẾ ĐẶC BIỆT CHO CARD GIẢI THƯỞNG (CAM NĂNG LƯỢNG) */
         .prize-card {
-            /* MÀU MỚI: Nền vàng gold */
-            background: linear-gradient(45deg, #FFC107, #FFD54F);
-            color: #333; /* Chữ màu tối để dễ đọc trên nền vàng */
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+            color: var(--text-primary) !important;
             text-align: center;
             flex-direction: column;
             align-items: center;
+            border: 2px solid var(--accent-primary) !important;
+            box-shadow: 0 15px 50px var(--shadow-glow) !important;
         }
         .prize-card .card-icon {
-            /* MÀU MỚI: Icon màu tối */
-            color: #5d4037;
+            color: var(--text-primary) !important;
             font-size: 50px;
             margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
         .prize-card h3 {
-            /* MÀU MỚI: Tiêu đề màu tối */
-            color: #5d4037;
+            color: var(--text-primary) !important;
             font-size: 28px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
         .prize-card p {
-            /* MÀU MỚI: Chữ màu tối */
-            color: #5d4037;
+            color: var(--text-primary) !important;
             font-size: 18px;
             max-width: 800px;
             margin-left: auto;
@@ -177,59 +232,931 @@
             flex-wrap: wrap;
         }
         .info-tag {
-            background-color: #E3F2FD; /* Nền xanh nhạt */
-            color: #0D47A1; /* Chữ xanh đậm */
+            background: rgba(255, 107, 53, 0.2) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--accent-primary) !important;
             padding: 5px 15px;
             border-radius: 20px;
             font-size: 14px;
+            transition: all 0.3s ease;
         }
 
-        /* ----- 3. GHI ĐÈ CÁC STYLE CŨ (TỪ ORANGE SANG BLUE/GOLD) ----- */
+        .info-tag:hover {
+            background: var(--accent-primary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* ----- 3. GHI ĐÈ CÁC STYLE CŨ (TỪ BLUE SANG RED DARK THEME) ----- */
 
         /* Nút bấm toàn trang */
         .btn-common {
-            background-color: #0D47A1 !important;
-            border-color: #0D47A1 !important;
+            background: var(--accent-primary) !important;
+            border: 2px solid var(--accent-primary) !important;
+            color: var(--text-primary) !important;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .btn-common:hover {
-            background-color: #1565C0 !important;
-            border-color: #1565C0 !important;
-        }
-
-        /* Đường gạch dưới của các tiêu đề Section */
-        .section-title::after {
-            background: #0D47A1 !important;
+            background: transparent !important;
+            color: var(--accent-primary) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow-glow);
+            border-color: var(--accent-secondary) !important;
         }
 
         /* Section Countdown */
         .countdown-timer {
-            background: #0d47a1; /* Nền xanh đậm */
+            background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--primary-bg) 100%) !important;
+            border-top: 2px solid var(--accent-primary) !important;
+            border-bottom: 2px solid var(--accent-primary) !important;
+        }
+        .countdown-timer .heading-count h2 {
+            color: var(--text-primary) !important;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
         .countdown-separator .separator-icon {
-            /* Icon ở giữa đổi sang màu Vàng Gold */
-            background: #FFC107;
+            background: var(--accent-primary) !important;
+        }
+
+        /* Countdown Items */
+        .countdown-item {
+            background: rgba(255, 107, 53, 0.1) !important;
+            border: 2px solid var(--accent-primary) !important;
+            box-shadow: 0 8px 32px var(--shadow-dark) !important;
+            backdrop-filter: blur(10px);
+        }
+        .countdown-item:hover {
+            background: rgba(255, 107, 53, 0.2) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow-glow) !important;
+        }
+        .countdown-item .number {
+            color: var(--accent-primary) !important;
+            text-shadow: 0 2px 8px var(--shadow-glow) !important;
+        }
+        .countdown-item .label {
+            color: var(--text-primary) !important;
         }
 
         /* Section Team/Artists - Chữ mô tả vai trò */
         .artist-info p {
-            color: #0D47A1;
+            color: var(--accent-primary) !important;
         }
 
         /* Section Ticket Pricing - Icon trên thẻ vé */
         #pricing .price-block-wrapper .icon i {
-            color: #0D47A1;
+            color: var(--accent-primary) !important;
         }
 
         /* Section FAQ - Icon câu hỏi */
         .accordion .card-header .header-title i {
-            color: #0D47A1 !important;
+            color: var(--accent-primary) !important;
+        }
+
+        /* About Section Cards */
+        .about-item {
+            background: #FFFFFF !important;
+            border: 1px solid #E5E7EB !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .about-item:hover {
+            border-color: var(--accent-primary) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow-glow) !important;
+        }
+        .about-item h3 a {
+            color: var(--accent-primary) !important;
+            font-weight: 700;
+        }
+        .about-item p {
+            color: #6B7280 !important;
+            line-height: 1.6;
+        }
+        .about-item .btn-common {
+            background: var(--accent-primary) !important;
+            color: #FFFFFF !important;
+        }
+
+        /* Blog Section Cards */
+        .blog-item {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border-light) !important;
+            transition: all 0.3s ease;
+        }
+        .blog-item:hover {
+            border-color: var(--accent-primary) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow-glow) !important;
+        }
+
+        /* Counter Section - Cam năng lượng đặc trưng */
+        .counter-section {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .counter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .counter-section .work-counter-widget {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .work-counter-widget .counter .icon i {
+            color: #FFFFFF !important;
+            font-size: 48px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .work-counter-widget .counter p {
+            color: #FFFFFF !important;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .work-counter-widget .counter span {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Event Description */
+        .music-event-description p {
+            color: var(--text-secondary) !important;
+            font-family: 'Poppins', sans-serif;
+        }
+        .music-event-description p i {
+            color: var(--accent-primary) !important;
+        }
+        .music-event-description p span {
+            color: var(--text-primary) !important;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Schedule Section - Xanh đậm theme */
+        #schedules {
+            background: var(--secondary-bg) !important;
+        }
+        
+        .schedule .schedule-tab-title {
+            background: var(--card-bg) !important;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .schedule .schedule-tab-title .nav-tabs {
+            background: transparent !important;
+            border: none;
+            padding: 0;
+        }
+        
+        .schedule .schedule-tab-title .nav-tabs .nav-link {
+            background: var(--primary-bg) !important;
+            border: 2px solid var(--border-light) !important;
+            color: var(--text-secondary) !important;
+            border-radius: 10px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .schedule .schedule-tab-title .nav-tabs .nav-link.active,
+        .schedule .schedule-tab-title .nav-tabs .nav-item .nav-link:hover {
+            background: var(--accent-primary) !important;
+            border-color: var(--accent-primary) !important;
+            color: #FFFFFF !important;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px var(--shadow-glow);
+        }
+        
+        .schedule .schedule-tab-title .nav-tabs .nav-link.active h4,
+        .schedule .schedule-tab-title .nav-tabs .nav-link.active h5,
+        .schedule .schedule-tab-title .nav-tabs .nav-item .nav-link:hover h4,
+        .schedule .schedule-tab-title .nav-tabs .nav-item .nav-link:hover h5 {
+            color: #FFFFFF !important;
+        }
+        
+        .schedule .schedule-tab-content .tab-content {
+            background: var(--card-bg) !important;
+            border-radius: 15px;
+            border: 2px solid var(--border-light) !important;
+            overflow: hidden;
+        }
+        
+        .schedule .card {
+            background: var(--primary-bg) !important;
+            border: none;
+            border-bottom: 1px solid var(--border-light) !important;
+        }
+        
+        .schedule .card:last-child {
+            border-bottom: none !important;
+        }
+        
+        .schedule .card-header {
+            background: var(--card-bg) !important;
+            border: none;
+            padding: 20px 25px;
+        }
+        
+        .schedule .card-header .time {
+            color: var(--accent-primary) !important;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .schedule .card-header h4 {
+            color: var(--text-primary) !important;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .schedule .card-body {
+            background: var(--primary-bg) !important;
+            padding: 20px 25px;
+        }
+        
+        .schedule .card-body .location span {
+            color: var(--accent-primary) !important;
+            font-weight: 600;
+        }
+
+        /* Gallery Section - Xanh đậm theme */
+        #gallery {
+            background: var(--secondary-bg) !important;
+        }
+        
+        .gallery-box {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--border-light) !important;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-box:hover {
+            border-color: var(--accent-primary) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow-glow) !important;
+        }
+        
+        .gallery-box .img-thumb {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gallery-box .img-thumb img {
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-box:hover .img-thumb img {
+            transform: scale(1.1);
+        }
+        
+        .gallery-box .overlay-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 107, 53, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .gallery-box:hover .overlay-box {
+            opacity: 1;
+        }
+        
+        .gallery-box .overlay-box .lightbox {
+            color: #FFFFFF;
+            font-size: 24px;
+            text-decoration: none;
+        }
+        
+        .gallery-box .overlay-box .lightbox:hover {
+            color: #FFFFFF;
+            transform: scale(1.2);
+        }
+
+        /* Sponsors Section - Xanh đậm theme */
+        #sponsors {
+            background: var(--secondary-bg) !important;
+        }
+        
+        .spnsors-logo {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--border-light) !important;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .spnsors-logo:hover {
+            border-color: var(--accent-primary) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow-glow) !important;
+        }
+        
+        .spnsors-logo img {
+            max-width: 100%;
+            height: auto;
+            filter: brightness(1.1);
+            transition: filter 0.3s ease;
+        }
+        
+        .spnsors-logo:hover img {
+            filter: brightness(1.3);
+        }
+        
+        #sponsors .btn-common {
+            background: var(--accent-primary) !important;
+            border: 2px solid var(--accent-primary) !important;
+            color: #FFFFFF !important;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        #sponsors .btn-common:hover {
+            background: transparent !important;
+            color: var(--accent-primary) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow-glow);
+        }
+
+        /* Event Guidelines Section - Xanh đậm theme */
+        #event-slides {
+            background: var(--secondary-bg) !important;
+        }
+        
+        .intro-desc {
+            color: var(--text-secondary) !important;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .intro-title {
+            color: var(--text-primary) !important;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .list-specification {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .list-specification li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--text-secondary) !important;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .list-specification li i {
+            color: var(--accent-primary) !important;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        .video {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--border-light) !important;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        /* Latest News Section - Xanh đậm theme */
+        #blog {
+            background: var(--secondary-bg) !important;
+        }
+        
+        .blog-item {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--border-light) !important;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .blog-item:hover {
+            border-color: var(--accent-primary) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow-glow) !important;
+        }
+        
+        .blog-item .blog-image {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .blog-item .blog-image img {
+            transition: transform 0.3s ease;
+        }
+        
+        .blog-item:hover .blog-image img {
+            transform: scale(1.05);
+        }
+        
+        .blog-item .tag {
+            background: var(--accent-primary) !important;
+            color: #FFFFFF !important;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .blog-item .descr {
+            padding: 20px;
+        }
+        
+        .blog-item .descr .title a {
+            color: var(--text-primary) !important;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .blog-item .descr .title a:hover {
+            color: var(--accent-primary) !important;
+        }
+        
+        .blog-item .descr .meta-tags .date {
+            color: var(--text-secondary) !important;
+            font-size: 14px;
+        }
+        
+        #blog .btn-common {
+            background: var(--accent-primary) !important;
+            border: 2px solid var(--accent-primary) !important;
+            color: #FFFFFF !important;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        #blog .btn-common:hover {
+            background: transparent !important;
+            color: var(--accent-primary) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow-glow);
+        }
+
+        /* FAQ Section - Fix chữ bị mất */
+        #faq {
+            background: var(--secondary-bg) !important;
+        }
+        
+        .accordion .card {
+            background: #FFFFFF !important;
+            border: 2px solid #E5E7EB !important;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .accordion .card:hover {
+            border-color: var(--accent-primary) !important;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.1);
+        }
+        
+        .accordion .card-header {
+            background: #FFFFFF !important;
+            border: none !important;
+            padding: 20px;
+        }
+        
+        .accordion .card-header .header-title {
+            color: #374151 !important;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .accordion .card-header .header-title:hover {
+            color: var(--accent-primary) !important;
+        }
+        
+        .accordion .card-header .header-title i {
+            color: var(--accent-primary) !important;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .accordion .card-body {
+            background: #FFFFFF !important;
+            color: #6B7280 !important;
+            padding: 20px;
+            border-top: 1px solid #E5E7EB;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Footer Section - Thiết kế đẹp hơn */
+        .site-footer {
+            background: linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%) !important;
+            color: var(--text-primary) !important;
+            position: relative;
+            overflow: hidden;
+            padding: 60px 0 0 0;
+        }
+        
+        .site-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%);
+            z-index: 1;
+        }
+        
+        .site-footer > * {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .site-footer .footer-main {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px 20px 0 0;
+            padding: 40px 0;
+            margin: 0 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+        }
+        
+        .site-footer .footer-widget h3 {
+            color: var(--accent-primary) !important;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .site-footer .footer-widget h3::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent-primary);
+            border-radius: 2px;
+        }
+        
+        .site-footer a {
+            color: var(--text-secondary) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .site-footer a:hover {
+            color: var(--accent-primary) !important;
+            transform: translateX(5px);
+        }
+        
+        .site-footer .footer-bottom {
+            border-top: 1px solid rgba(255, 107, 53, 0.2) !important;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(255, 107, 53, 0.05) 50%, rgba(0, 0, 0, 0.3) 100%) !important;
+            padding: 25px 0;
+            margin-top: 20px;
+        }
+        
+        .site-footer .footer-bottom .copyright {
+            color: var(--text-muted) !important;
+            font-weight: 500;
+        }
+        
+        .site-footer .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .site-footer .social-links a:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Footer - Fix chữ bị chìm */
+        .site-footer {
+            background: linear-gradient(135deg, #0A0A1A 0%, #1A1A2E 50%, #16213E 100%) !important;
+            color: #FFFFFF !important;
+            position: relative;
+            overflow: hidden;
+            padding: 60px 0 0 0;
+        }
+        
+        .site-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.02);
+            z-index: 1;
+        }
+        
+        .site-footer > * {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .site-footer .footer-main {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px 20px 0 0;
+            padding: 40px 0;
+            margin: 0 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+        
+        .site-footer .footer-widget h3 {
+            color: var(--accent-primary) !important;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            font-size: 20px;
+        }
+        
+        .site-footer .footer-widget h3::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent-primary);
+            border-radius: 2px;
+        }
+        
+        .site-footer .footer-widget p,
+        .site-footer .footer-widget li,
+        .site-footer .footer-widget span {
+            color: #E0E6ED !important;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .site-footer a {
+            color: #E0E6ED !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .site-footer a:hover {
+            color: var(--accent-primary) !important;
+            transform: translateX(5px);
+        }
+        
+        .site-footer .footer-bottom {
+            border-top: 1px solid rgba(255, 107, 53, 0.3) !important;
+            background: rgba(0, 0, 0, 0.4) !important;
+            padding: 25px 0;
+            margin-top: 20px;
+        }
+        
+        .site-footer .footer-bottom .copyright {
+            color: #C0C6CD !important;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Newsletter Section - Competition style */
+        #subscribe {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #subscribe::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        #subscribe .subscribe-inner {
+            position: relative;
+            z-index: 2;
+        }
+        
+        #subscribe .subscribe-title {
+            color: #FFFFFF !important;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        #subscribe input {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            color: #374151 !important;
+            border-radius: 25px;
+            padding: 15px 20px;
+            font-size: 16px;
+        }
+        
+        #subscribe input:focus {
+            border-color: #FFFFFF !important;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        #subscribe input::placeholder {
+            color: #6B7280 !important;
+        }
+        
+        #subscribe .btn-common {
+            background: #FFFFFF !important;
+            color: var(--accent-primary) !important;
+            border: 2px solid #FFFFFF !important;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        #subscribe .btn-common:hover {
+            background: transparent !important;
+            color: #FFFFFF !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Back to Top Button - Trophy icon căn giữa */
+        .back-to-top {
+            background: var(--accent-primary) !important;
+            border: 2px solid var(--accent-primary) !important;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #FFFFFF;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px var(--shadow-glow);
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            z-index: 999;
+            text-decoration: none;
+        }
+        
+        .back-to-top:hover {
+            background: transparent !important;
+            color: var(--accent-primary) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px var(--shadow-glow);
+            text-decoration: none;
+        }
+        
+        /* Change music icons to trophy icons */
+        .back-to-top .music-icon,
+        .back-to-top i,
+        .back-to-top .fa {
+            display: none !important;
+        }
+        
+        .back-to-top::before {
+            content: '🏆';
+            font-size: 24px;
+            line-height: 1;
+        }
+        
+        .back-to-top .scroll-text {
+            display: none !important;
+        }
+        
+        /* Đảm bảo trophy căn giữa hoàn hảo */
+        .back-to-top * {
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+        }
+
+        /* Countdown separator icon - Trophy */
+        .countdown-separator .separator-icon i {
+            display: none !important;
+        }
+        
+        .countdown-separator .separator-icon::before {
+            content: '🏆';
+            font-size: 20px;
+        }
+
+        /* Newsletter button icon - Trophy */
+        #subscribe .btn-common .ladda-label i {
+            display: none !important;
+        }
+        
+        #subscribe .btn-common .ladda-label::before {
+            content: '🏆 ';
+            margin-right: 5px;
+        }
+
+        /* Status Tags */
+        .event-status-upcoming {
+            background: linear-gradient(45deg, #10B981, #059669) !important;
+            color: white !important;
+        }
+        .event-status-ongoing {
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary)) !important;
+            color: white !important;
+        }
+        .event-status-ended {
+            background: linear-gradient(45deg, #6B7280, #4B5563) !important;
+            color: white !important;
+        }
+        .event-status-cancelled {
+            background: linear-gradient(45deg, #DC2626, #B91C1C) !important;
+            color: white !important;
+        }
+        .event-status-draft {
+            background: linear-gradient(45deg, #6B7280, #4B5563) !important;
+            color: white !important;
+        }
+        .registration-deadline-tag {
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary)) !important;
+            color: white !important;
+        }
+        .registration-deadline-expired {
+            background: linear-gradient(45deg, #DC2626, #B91C1C) !important;
+            color: white !important;
+        }
+        .registration-deadline-urgent {
+            background: linear-gradient(45deg, #F59E0B, #D97706) !important;
+            color: white !important;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-<section class="hero hero--slider hero--compact">
-    <div class="hero-track" id="heroTrack">
+    <section class="hero hero--slider hero--compact">
+        <div class="hero-track" id="heroTrack">
 
         <div class="hero-slide"
              th:with="imageUrl=${!#strings.isEmpty(eventDetail.bannerUrl) ? eventDetail.bannerUrl : '/music/assets/img/background/banner.jpg'}"
@@ -238,8 +1165,8 @@
             <div class="container hero-content">
                 <div class="hero-actions text-right">
                     <a class="btn btn-common" href="#pricing" th:if="${!#lists.isEmpty(eventDetail.ticketTypes)}">Get Ticket</a>
-                </div>
             </div>
+        </div>
         </div>
 
         <th:block th:if="${eventDetail?.galleryUrls != null}">
@@ -251,15 +1178,15 @@
         </th:block>
 
     </div> <button class="hero-nav prev" id="heroPrev" aria-label="Previous" style="display: none;">‹</button>
-    <button class="hero-nav next" id="heroNext" aria-label="Next" style="display: none;">›</button>
-    <div class="hero-progress" id="heroProgress" style="display: none;"></div>
-</section>
+        <button class="hero-nav next" id="heroNext" aria-label="Next" style="display: none;">›</button>
+        <div class="hero-progress" id="heroProgress" style="display: none;"></div>
+    </section>
 <!-- Banner Section End -->
 
 <!-- Countdown Section Start -->
 <section class="countdown-timer section-padding-compact" th:if="${eventDetail != null and eventDetail.startsAt != null}">
-    <div class="container">
-        <div class="row text-center">
+        <div class="container">
+            <div class="row text-center">
             <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="heading-count">
                     <h2 class="wow fadeInDown" data-wow-delay="0.2s">Event Will Start In</h2>
@@ -285,10 +1212,10 @@
                     </div>
                     <div class="separator-line"></div>
                 </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 <!-- Countdown Section End -->
 
 <!-- Countdown Script -->
@@ -345,7 +1272,7 @@
 
 <!-- Music Event Description Section Start -->
 <section id="descriptionm" class="section-padding-compact" th:if="${eventDetail != null}">
-    <div class="container">
+        <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
@@ -355,9 +1282,9 @@
 <!--                        <span th:if="${eventDetail.musicType != null}" th:text="'Type: ' + ${eventDetail.musicType}"></span>-->
 <!--                        <span th:if="${eventDetail.genre != null}" th:text="' | Genre: ' + ${eventDetail.genre}"></span>-->
                     </p>
+                    </div>
                 </div>
-            </div>
-        </div>
+                            </div>
         <div class="row">
             <div class="col-lg-8 mx-auto">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
@@ -429,27 +1356,27 @@
                         <h3><a href="#">Benefits of Joining</a></h3>
                         <p th:text="${eventDetail != null and eventDetail.benefits != null ? eventDetail.benefits : 'Amazing benefits and experiences'}">Amazing benefits</p>
                         <a class="btn btn-common btn-rm" href="#">Register Now</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 <!-- About Section End -->
 
 <!-- differences -->
 <section id="competition-details" class="section-padding">
-    <div class="container">
-        <div class="row">
+        <div class="container">
+            <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Breakdown</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">Everything you need to know to compete and win!</p>
-                </div>
+            </div>
             </div>
         </div>
 
-        <div class="row">
+            <div class="row">
             <div class="col-lg-12" th:if="${eventDetail.prizePool != null}">
                 <div class="details-card prize-card wow fadeInUp" data-wow-delay="0.3s">
                     <div class="card-icon"><i class="lni-gift"></i></div>
@@ -506,14 +1433,14 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
 <!-- Counter Area Start -->
 <section class="counter-section section-padding" th:if="${eventDetail != null}">
-    <div class="container">
-        <div class="row">
+        <div class="container">
+            <div class="row">
             <!-- Location -->
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.3s">
@@ -524,7 +1451,7 @@
                     <span th:text="${eventDetail.places != null and !eventDetail.places.isEmpty() 
                         ? eventDetail.places[0].building 
                         : 'Building'}">Building</span>
-                </div>
+            </div>
             </div>
 
             <!-- Time -->
@@ -600,10 +1527,10 @@
                                     <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}">Date</h5>
                                 </div>
                             </a>
-                        </li>
-                    </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
             <!-- Content right: Activities -->
             <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
@@ -628,17 +1555,16 @@
                         </div>
 
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
- Schedule Section End
+    </section>
 
 <!-- Team/Singers Section Start -->
 <section id="team" class="section-padding text-center" 
          th:if="${eventDetail != null and eventDetail.speakers != null and !eventDetail.speakers.isEmpty()}">
-    <div class="container">
+        <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
@@ -648,8 +1574,8 @@
             </div>
         </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-4 col-md-6 col-sm-6" th:each="speaker : ${eventDetail.speakers}">
+            <div class="row justify-content-center">
+                <div class="col-lg-4 col-md-6 col-sm-6" th:each="speaker : ${eventDetail.speakers}">
                 <div class="simple-artist-card wow fadeInUp" data-wow-delay="0.2s">
                     <div class="artist-image">
                         <img class="img-fluid" 
@@ -659,18 +1585,18 @@
                     <div class="artist-info">
                         <h3 th:text="${speaker.name}">Artist Name</h3>
                         <p th:text="${speaker.role}">Role</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 <!-- Team Section End -->
 
 <!-- Gallery Section Start -->
 <section id="gallery" class="section-padding" 
          th:if="${eventDetail != null and eventDetail.galleryUrls != null and !eventDetail.galleryUrls.isEmpty()}">
-    <div class="container">
+        <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
@@ -678,8 +1604,8 @@
                     <p class="wow fadeInDown" data-wow-delay="0.2s">
                         Beautiful moments from the event
                     </p>
+                    </div>
                 </div>
-            </div>
         </div>
 
         <div class="row">
@@ -696,13 +1622,13 @@
                 </div>
             </div>
         </div>
-    </div>
-</section>
+        </div>
+    </section>
 <!-- Gallery Section End -->
 
 <!-- FAQ Section Start -->
 <section id="faq" class="section-padding">
-    <div class="container">
+        <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
@@ -1009,14 +1935,14 @@
                 </div>
             </div>
         </div>
-        <div class="row justify-content-center">
+            <div class="row justify-content-center">
             <div class="col-lg-10 col-md-12">
                 <div class="organizer-details-card wow fadeInUp" data-wow-delay="0.3s">
 
                     <div class="organizer-header">
                         <div class="organizer-logo-wrapper" th:if="${eventDetail.organization.imageUrl != null}">
-                            <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo" class="organizer-logo">
-                        </div>
+                        <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo" class="organizer-logo">
+                    </div>
                         <div class="organizer-info">
                             <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>
                             <p class="description" th:if="${eventDetail.organization.description != null}"
@@ -1048,10 +1974,10 @@
                     </ul>
 
                 </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 <!--<section id="organizer" class="section-padding" -->
 <!--         th:if="${eventDetail != null and eventDetail.organization != null}">-->
 <!--    <div class="container">-->
@@ -1100,13 +2026,13 @@
 
 <!-- Blog Section Start -->
 <section id="blog" class="section-padding">
-    <div class="container">
-        <div class="row">
+        <div class="container">
+            <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Latest News</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">Stay updated with the latest information</p>
-                </div>
+                    </div>
             </div>
         </div>
         <div class="row align-items-stretch">
@@ -1169,9 +2095,9 @@
             <div class="col-12 text-center mt-4">
                 <a href="#" class="btn btn-common">Read More</a>
             </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 <!-- Blog Section End -->
 
 <!-- Subscribe Area Start -->
@@ -1187,7 +2113,7 @@
                             <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>
                         </button>
                     </form>
-                </div>
+</div>
             </div>
         </div>
     </div>
@@ -1200,7 +2126,7 @@
         <div class="note note-1">♪</div>
         <div class="note note-2">♫</div>
         <div class="note note-3">♪</div>
-    </div>
+</div>
     <div class="scroll-text">TOP</div>
 </a>
 

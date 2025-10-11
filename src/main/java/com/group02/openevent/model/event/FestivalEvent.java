@@ -31,6 +31,7 @@ public class FestivalEvent extends Event {
 
     @Column(name = "expected_attendees")
     private Integer expectedAttendees;
+    
 
     public FestivalEvent() {
     }

@@ -1,105 +1,102 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.dto.PlaceDTO;
-import com.group02.openevent.model.dto.ScheduleDTO;
-import com.group02.openevent.model.dto.SpeakerDTO;
+import com.group02.openevent.model.dto.*;
 import com.group02.openevent.model.dto.event.WorkshopEventDetailDTO;
 import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.repository.IWorkshopEventRepo;
+import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.IWorkshopService;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class WorkshopServiceImpl implements IWorkshopService {
 
     private final IWorkshopEventRepo workshopEventRepo;
+    private final ITicketTypeRepo ticketTypeRepo;
 
-    public WorkshopServiceImpl(IWorkshopEventRepo workshopEventRepo) {
+    public WorkshopServiceImpl(IWorkshopEventRepo workshopEventRepo, ITicketTypeRepo ticketTypeRepo) {
         this.workshopEventRepo = workshopEventRepo;
+        this.ticketTypeRepo = ticketTypeRepo;
     }
 
     @Override
     public WorkshopEventDetailDTO getWorkshopEventById(Long id) {
         return workshopEventRepo.findById(id)
-                .map(e -> {
-                    // Tạo DTO cơ bản với các trường chung và trường riêng của Workshop
-                    WorkshopEventDetailDTO dto = new WorkshopEventDetailDTO(
-                            e.getDescription(),
-                            e.getTitle(),
-                            e.getCapacity(),
-                            e.getStartsAt(),
-                            e.getEndsAt(),
-                            e.getCreatedAt(),
-                            null, // updatedAt chưa có trường dữ liệu
-                            e.getEventType(),
-                            e.getBenefits(),
-                            null, // imageUrls sẽ set sau
-                            null, // speakers sẽ set sau
-                            null, // schedules sẽ set sau
-                            null, // places sẽ set sau
-                            e.getVenueAddress(),
-                            e.getGuidelines(),
-                            // Các trường của Workshop
-                            e.getTopic(),
-                            e.getMaterialsLink(),
-                            e.getMaxParticipants(),
-                            e.getSkillLevel(),
-                            e.getPrerequisites()
-                    );
+                .map(workshopEvent -> {
+                    WorkshopEventDetailDTO dto = new WorkshopEventDetailDTO();
 
-                    // 🔹 Images
-                    if (e.getEventImages() != null) {
-                        dto.setImageUrls(
-                                e.getEventImages().stream()
-                                        .sorted(Comparator.comparing(EventImage::getOrderIndex))
-                                        .map(EventImage::getUrl)
-                                        .collect(Collectors.toList())
-                        );
+                    // === 1. Mapping các trường chung từ Event (lớp cha) ===
+                    dto.setTitle(workshopEvent.getTitle());
+                    dto.setDescription(workshopEvent.getDescription());
+                    dto.setCapacity(workshopEvent.getCapacity());
+                    dto.setStartsAt(workshopEvent.getStartsAt());
+                    dto.setEndsAt(workshopEvent.getEndsAt());
+                    dto.setCreatedAt(workshopEvent.getCreatedAt());
+                    dto.setEventType(workshopEvent.getEventType());
+                    dto.setBenefits(workshopEvent.getBenefits());
+                    dto.setVenueAddress(workshopEvent.getVenueAddress());
+                    dto.setGuidelines(workshopEvent.getGuidelines());
+                    dto.setEnrollDeadline(workshopEvent.getEnrollDeadline());
+                    dto.setStatus(workshopEvent.getStatus());
+
+                    // === 2. Mapping các trường hình ảnh (Banner và Gallery) ===
+                    dto.setBannerUrl(workshopEvent.getImageUrl());
+                    if (workshopEvent.getEventImages() != null && !workshopEvent.getEventImages().isEmpty()) {
+                        dto.setGalleryUrls(workshopEvent.getEventImages().stream()
+                                .map(EventImage::getUrl).collect(Collectors.toList()));
+                    } else {
+                        dto.setGalleryUrls(Collections.emptyList());
                     }
 
+                    // ⭐ === 3. Mapping các trường đặc thù của WorkshopEvent (lớp con) ===
+                    dto.setTopic(workshopEvent.getTopic());
+                    dto.setMaterialsLink(workshopEvent.getMaterialsLink());
+                    dto.setMaxParticipants(workshopEvent.getMaxParticipants());
+                    dto.setSkillLevel(workshopEvent.getSkillLevel());
+                    dto.setPrerequisites(workshopEvent.getPrerequisites());
+
+                    // === 4. Mapping các đối tượng và danh sách liên quan ===
                     // 🔹 Speakers
-                    if (e.getSpeakers() != null) {
-                        dto.setSpeakers(
-                                e.getSpeakers().stream()
-                                        .distinct()
-                                        .map(sp -> new SpeakerDTO(
-                                                sp.getName(),
-                                                sp.getDefaultRole().name(),
-                                                sp.getImageUrl(),
-                                                sp.getProfile()
-                                        ))
-                                        .collect(Collectors.toList())
-                        );
+                    if (workshopEvent.getSpeakers() != null) {
+                        dto.setSpeakers(workshopEvent.getSpeakers().stream().distinct()
+                                .map(sp -> new SpeakerDTO(sp.getName(), sp.getRole(), sp.getImageUrl(), sp.getProfile()))
+                                .collect(Collectors.toList()));
                     }
 
                     // 🔹 Schedules
-                    if (e.getSchedules() != null) {
-                        dto.setSchedules(
-                                e.getSchedules().stream()
-                                        .map(sc -> new ScheduleDTO(
-                                                sc.getActivity(),
-                                                sc.getStartTime(),
-                                                sc.getEndTime()
-                                        ))
-                                        .collect(Collectors.toList())
-                        );
+                    if (workshopEvent.getSchedules() != null) {
+                        List<ScheduleDTO> scheduleList = workshopEvent.getSchedules().stream()
+                                .map(sc -> new ScheduleDTO(sc.getActivity(), sc.getStartTime(), sc.getEndTime()))
+                                .collect(Collectors.toList());
+                        dto.setSchedules(scheduleList);
+                        dto.setSchedulesByDay(scheduleList.stream()
+                                .collect(Collectors.groupingBy(schedule -> schedule.getStartTime().toLocalDate())));
                     }
 
                     // 🔹 Places
-                    if (e.getPlaces() != null) {
-                        dto.setPlaces(
-                                e.getPlaces().stream()
-                                        .map(p -> new PlaceDTO(
-                                                p.getPlaceName(),
-                                                p.getBuilding().name()
-                                        ))
-                                        .collect(Collectors.toList())
-                        );
+                    if (workshopEvent.getPlaces() != null) {
+                        dto.setPlaces(workshopEvent.getPlaces().stream()
+                                .map(p -> new PlaceDTO(p.getPlaceName(), p.getBuilding().name()))
+                                .collect(Collectors.toList()));
                     }
+
+                    // 🔹 Organization
+                    if (workshopEvent.getOrganization() != null) {
+                        var org = workshopEvent.getOrganization();
+                        dto.setOrganization(new OrganizationDTO(org.getOrgId(), org.getOrgName(), org.getDescription(), org.getWebsite(), org.getEmail(), org.getPhone(), org.getAddress(), org.getImageUrl()));
+                    }
+
+                    // 🔹 TicketTypes
+                    List<TicketTypeDTO> ticketDTOs = ticketTypeRepo.findByEventId(workshopEvent.getId()).stream()
+                            .map(ticket -> new TicketTypeDTO(ticket.getTicketTypeId(), ticket.getName(), ticket.getDescription(), ticket.getPrice(), ticket.getAvailableQuantity(), !ticket.isAvailable(), ticket.getStartSaleDate(), ticket.getEndSaleDate(), ticket.isSalePeriodActive()))
+                            .collect(Collectors.toList());
+                    dto.setTicketTypes(ticketDTOs);
 
                     return dto;
                 })
@@ -108,18 +105,9 @@ public class WorkshopServiceImpl implements IWorkshopService {
 
     @Override
     public List<WorkshopEventDetailDTO> getAllWorkshopEvents() {
-        return workshopEventRepo.findAll()
-                .stream()
-                .map(e -> getWorkshopEventById(e.getId())) // Tái sử dụng logic mapping
+        return workshopEventRepo.findAll().stream()
+                // 👇 SỬA LỖI TẠI ĐÂY: Dùng lambda expression thay vì method reference
+                .map(event -> this.getWorkshopEventById(event.getId()))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<EventImage> getEventImages(Long eventId) {
-        return workshopEventRepo.findById(eventId)
-                .map(event -> event.getEventImages().stream()
-                        .sorted(Comparator.comparing(EventImage::getOrderIndex))
-                        .collect(Collectors.toList()))
-                .orElse(List.of()); // Trả về danh sách rỗng nếu không tìm thấy
     }
 }

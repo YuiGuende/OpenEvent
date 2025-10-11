@@ -1,10 +1,17 @@
 /* Custom FPT Theme Colors */
 
+/*:root {*/
+/*    --fpt-primary: #ff6a00;    !* Cam FPT *!*/
+/*    --fpt-primary-hover: #ff7f24;*/
+/*    --fpt-accent: #0e1a4f;     !* Navy FPT *!*/
+/*    --fpt-accent-hover: #1e2a5f;*/
+/*}*/
 :root {
-    --fpt-primary: #ff6a00;    /* Cam FPT */
-    --fpt-primary-hover: #ff7f24;
-    --fpt-accent: #0e1a4f;     /* Navy FPT */
-    --fpt-accent-hover: #1e2a5f;
+    /* Đổi màu cam FPT thành màu Xanh Đậm của Competition */
+    --fpt-primary: #0D47A1;
+    --fpt-primary-hover: #1565C0;
+    --fpt-accent: #FFC107;     /* Màu Vàng Gold cho các điểm nhấn */
+    --fpt-accent-hover: #FFD54F;
 }
 
 /* Compact section padding */

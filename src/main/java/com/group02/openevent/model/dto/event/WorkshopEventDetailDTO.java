@@ -1,83 +1,89 @@
 package com.group02.openevent.model.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.group02.openevent.model.dto.PlaceDTO;
-import com.group02.openevent.model.dto.ScheduleDTO;
-import com.group02.openevent.model.dto.SpeakerDTO;
+import com.group02.openevent.model.dto.*;
+import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
+@Getter
+@Setter
 public class WorkshopEventDetailDTO {
-    // Các trường chung kế thừa từ Event
-    private String description;
+    // Thông tin cơ bản kế thừa từ Event
     private String title;
+    private String description;
     private Integer capacity;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime startsAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime endsAt;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private EventType eventType;
     private String benefits;
-
-    // Các trường mở rộng
-    private List<String> imageUrls;
-    private List<SpeakerDTO> speakers;
-    private List<ScheduleDTO> schedules;
-    private List<PlaceDTO> places;
-    private String venueAddress;
     private String guidelines;
+    private String venueAddress;
 
-    // Các trường đặc thù của WorkshopEvent
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime startsAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime endsAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime enrollDeadline;
+
+    private String bannerUrl;
+    private List<String> galleryUrls;
+
+    // ⭐ CÁC TRƯỜNG ĐẶC THÙ CỦA WORKSHOP EVENT
     private String topic;
     private String materialsLink;
     private Integer maxParticipants;
     private String skillLevel;
     private String prerequisites;
 
+    // Các danh sách liên quan
+    private List<SpeakerDTO> speakers;
+    private List<ScheduleDTO> schedules;
+    private Map<LocalDate, List<ScheduleDTO>> schedulesByDay;
+    private List<PlaceDTO> places;
+    private List<TicketTypeDTO> ticketTypes;
 
-    public WorkshopEventDetailDTO() {
-    }
+    // Thông tin nhà tổ chức và trạng thái
+    private OrganizationDTO organization;
+    private EventStatus status;
 
-    public WorkshopEventDetailDTO(String description, String title, Integer capacity, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, LocalDateTime updatedAt, EventType eventType, String benefits, List<String> imageUrls, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, List<PlaceDTO> places, String venueAddress, String guidelines, String topic, String materialsLink, Integer maxParticipants, String skillLevel, String prerequisites) {
-        this.description = description;
+    // Metadata
+    private EventType eventType;
+    private LocalDateTime createdAt;
+
+    // Constructor rỗng
+    public WorkshopEventDetailDTO() {}
+
+    public WorkshopEventDetailDTO(String title, String description, Integer capacity, String benefits, String guidelines, String venueAddress, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime enrollDeadline, String bannerUrl, List<String> galleryUrls, String topic, String materialsLink, Integer maxParticipants, String skillLevel, String prerequisites, List<SpeakerDTO> speakers, List<ScheduleDTO> schedules, Map<LocalDate, List<ScheduleDTO>> schedulesByDay, List<PlaceDTO> places, List<TicketTypeDTO> ticketTypes, OrganizationDTO organization, EventStatus status, EventType eventType, LocalDateTime createdAt) {
         this.title = title;
+        this.description = description;
         this.capacity = capacity;
+        this.benefits = benefits;
+        this.guidelines = guidelines;
+        this.venueAddress = venueAddress;
         this.startsAt = startsAt;
         this.endsAt = endsAt;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.eventType = eventType;
-        this.benefits = benefits;
-        this.imageUrls = imageUrls;
-        this.speakers = speakers;
-        this.schedules = schedules;
-        this.places = places;
-        this.venueAddress = venueAddress;
-        this.guidelines = guidelines;
+        this.enrollDeadline = enrollDeadline;
+        this.bannerUrl = bannerUrl;
+        this.galleryUrls = galleryUrls;
         this.topic = topic;
         this.materialsLink = materialsLink;
         this.maxParticipants = maxParticipants;
         this.skillLevel = skillLevel;
         this.prerequisites = prerequisites;
-    }
-
-    // Getters and Setters cho tất cả các trường
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+        this.speakers = speakers;
+        this.schedules = schedules;
+        this.schedulesByDay = schedulesByDay;
+        this.places = places;
+        this.ticketTypes = ticketTypes;
+        this.organization = organization;
+        this.status = status;
+        this.eventType = eventType;
+        this.createdAt = createdAt;
     }
 
     public String getTitle() {
@@ -88,12 +94,44 @@ public class WorkshopEventDetailDTO {
         this.title = title;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Integer getCapacity() {
         return capacity;
     }
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public String getBenefits() {
+        return benefits;
+    }
+
+    public void setBenefits(String benefits) {
+        this.benefits = benefits;
+    }
+
+    public String getGuidelines() {
+        return guidelines;
+    }
+
+    public void setGuidelines(String guidelines) {
+        this.guidelines = guidelines;
+    }
+
+    public String getVenueAddress() {
+        return venueAddress;
+    }
+
+    public void setVenueAddress(String venueAddress) {
+        this.venueAddress = venueAddress;
     }
 
     public LocalDateTime getStartsAt() {
@@ -112,84 +150,28 @@ public class WorkshopEventDetailDTO {
         this.endsAt = endsAt;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getEnrollDeadline() {
+        return enrollDeadline;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setEnrollDeadline(LocalDateTime enrollDeadline) {
+        this.enrollDeadline = enrollDeadline;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public String getBannerUrl() {
+        return bannerUrl;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setBannerUrl(String bannerUrl) {
+        this.bannerUrl = bannerUrl;
     }
 
-    public EventType getEventType() {
-        return eventType;
+    public List<String> getGalleryUrls() {
+        return galleryUrls;
     }
 
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public String getBenefits() {
-        return benefits;
-    }
-
-    public void setBenefits(String benefits) {
-        this.benefits = benefits;
-    }
-
-    public List<String> getImageUrls() {
-        return imageUrls;
-    }
-
-    public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
-    }
-
-    public List<SpeakerDTO> getSpeakers() {
-        return speakers;
-    }
-
-    public void setSpeakers(List<SpeakerDTO> speakers) {
-        this.speakers = speakers;
-    }
-
-    public List<ScheduleDTO> getSchedules() {
-        return schedules;
-    }
-
-    public void setSchedules(List<ScheduleDTO> schedules) {
-        this.schedules = schedules;
-    }
-
-    public List<PlaceDTO> getPlaces() {
-        return places;
-    }
-
-    public void setPlaces(List<PlaceDTO> places) {
-        this.places = places;
-    }
-
-    public String getVenueAddress() {
-        return venueAddress;
-    }
-
-    public void setVenueAddress(String venueAddress) {
-        this.venueAddress = venueAddress;
-    }
-
-    public String getGuidelines() {
-        return guidelines;
-    }
-
-    public void setGuidelines(String guidelines) {
-        this.guidelines = guidelines;
+    public void setGalleryUrls(List<String> galleryUrls) {
+        this.galleryUrls = galleryUrls;
     }
 
     public String getTopic() {
@@ -230,5 +212,77 @@ public class WorkshopEventDetailDTO {
 
     public void setPrerequisites(String prerequisites) {
         this.prerequisites = prerequisites;
+    }
+
+    public List<SpeakerDTO> getSpeakers() {
+        return speakers;
+    }
+
+    public void setSpeakers(List<SpeakerDTO> speakers) {
+        this.speakers = speakers;
+    }
+
+    public List<ScheduleDTO> getSchedules() {
+        return schedules;
+    }
+
+    public void setSchedules(List<ScheduleDTO> schedules) {
+        this.schedules = schedules;
+    }
+
+    public Map<LocalDate, List<ScheduleDTO>> getSchedulesByDay() {
+        return schedulesByDay;
+    }
+
+    public void setSchedulesByDay(Map<LocalDate, List<ScheduleDTO>> schedulesByDay) {
+        this.schedulesByDay = schedulesByDay;
+    }
+
+    public List<PlaceDTO> getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(List<PlaceDTO> places) {
+        this.places = places;
+    }
+
+    public List<TicketTypeDTO> getTicketTypes() {
+        return ticketTypes;
+    }
+
+    public void setTicketTypes(List<TicketTypeDTO> ticketTypes) {
+        this.ticketTypes = ticketTypes;
+    }
+
+    public OrganizationDTO getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(OrganizationDTO organization) {
+        this.organization = organization;
+    }
+
+    public EventStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EventStatus status) {
+        this.status = status;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

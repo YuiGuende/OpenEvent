@@ -1,11 +1,11 @@
 /* Custom FPT Theme Colors */
 
- :root {
-     --fpt-primary: #ff6a00;    /* Cam FPT */
-     --fpt-primary-hover: #ff7f24;
-     --fpt-accent: #0e1a4f;     /* Navy FPT */
-     --fpt-accent-hover: #1e2a5f;
- }
+:root {
+    --fpt-primary: #ff6a00;    /* Cam FPT */
+    --fpt-primary-hover: #ff7f24;
+    --fpt-accent: #0e1a4f;     /* Navy FPT */
+    --fpt-accent-hover: #1e2a5f;
+}
 
 /* Compact section padding */
 .section-padding-compact {
@@ -102,7 +102,7 @@ button.btn-common:hover {
         right: 16px !important;
         gap: 4px !important;
     }
-    
+
     .hero-actions.text-right {
         align-items: flex-end !important;
         justify-content: flex-end !important;

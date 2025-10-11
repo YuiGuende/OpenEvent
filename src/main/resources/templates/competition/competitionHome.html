@@ -25,12 +25,13 @@
     <link rel="stylesheet" th:href="@{/competition/assets/css/music-theme.css}">
     <style>
         /* ==========================================================================
-   Organizer Details Section CSS
-   ========================================================================== */
-        #organizer-details {
-            background-color: #f8f9fa; /* Màu nền nhẹ để tách biệt section */
-        }
+           COMPETITION THEME - Professional Blue & Victorious Gold
+           ========================================================================== */
 
+        /* ----- 1. KHU VỰC THÔNG TIN NHÀ TỔ CHỨC ----- */
+        #organizer-details {
+            background-color: #f8f9fa;
+        }
         .organizer-details-card {
             background-color: #ffffff;
             border-radius: 12px;
@@ -40,28 +41,25 @@
             padding: 40px;
             display: flex;
             flex-direction: column;
-            gap: 30px; /* Khoảng cách giữa các phần tử bên trong card */
+            gap: 30px;
         }
-
         .organizer-header {
             display: flex;
             align-items: center;
-            gap: 30px; /* Khoảng cách giữa logo và text */
+            gap: 30px;
         }
-
         .organizer-logo-wrapper {
-            flex-shrink: 0; /* Đảm bảo logo không bị co lại */
+            flex-shrink: 0;
         }
-
         .organizer-logo {
             width: 150px;
             height: 150px;
             border-radius: 50%;
             object-fit: cover;
-            border: 5px solid #ff6e40; /* Màu cam chủ đạo của theme */
+            /* MÀU MỚI: Border logo màu xanh */
+            border: 5px solid #0D47A1;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-
         .organizer-info h2 {
             font-size: 32px;
             font-weight: 700;
@@ -69,45 +67,162 @@
             margin-bottom: 10px;
             color: #333;
         }
-
         .organizer-info p.description {
             font-size: 16px;
             line-height: 1.7;
             color: #555;
             margin-bottom: 0;
         }
-
         .organizer-contact-details {
             padding-top: 30px;
-            border-top: 1px solid #e9ecef; /* Đường kẻ ngang phân cách */
+            border-top: 1px solid #e9ecef;
             list-style: none;
             padding-left: 0;
             margin: 0;
         }
-
         .organizer-contact-details li {
             display: flex;
             align-items: center;
             margin-bottom: 15px;
             font-size: 16px;
         }
-
         .organizer-contact-details i {
             font-size: 20px;
-            color: #ff6e40;
+            /* MÀU MỚI: Icon màu xanh */
+            color: #0D47A1;
             margin-right: 15px;
-            width: 25px; /* Căn chỉnh icon cho thẳng hàng */
+            width: 25px;
             text-align: center;
         }
-
         .organizer-contact-details a {
-            color: #ff6e40;
+            /* MÀU MỚI: Link màu xanh */
+            color: #0D47A1;
             text-decoration: none;
             transition: color 0.3s;
         }
-
         .organizer-contact-details a:hover {
             color: #333;
+        }
+
+        /* ----- 2. KHU VỰC CHI TIẾT CUỘC THI ----- */
+        #competition-details {
+            background: #f4f7fa;
+        }
+        .details-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: calc(100% - 30px);
+        }
+        .details-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+        }
+        .details-card .card-icon {
+            font-size: 40px;
+            /* MÀU MỚI: Icon màu xanh */
+            color: #0D47A1;
+            line-height: 1;
+        }
+        .details-card .card-content h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .details-card .card-content p {
+            margin-bottom: 0;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        /* THIẾT KẾ ĐẶC BIỆT CHO CARD GIẢI THƯỞNG (VÀNG GOLD) */
+        .prize-card {
+            /* MÀU MỚI: Nền vàng gold */
+            background: linear-gradient(45deg, #FFC107, #FFD54F);
+            color: #333; /* Chữ màu tối để dễ đọc trên nền vàng */
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+        }
+        .prize-card .card-icon {
+            /* MÀU MỚI: Icon màu tối */
+            color: #5d4037;
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        .prize-card h3 {
+            /* MÀU MỚI: Tiêu đề màu tối */
+            color: #5d4037;
+            font-size: 28px;
+        }
+        .prize-card p {
+            /* MÀU MỚI: Chữ màu tối */
+            color: #5d4037;
+            font-size: 18px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .quick-info-tags {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .info-tag {
+            background-color: #E3F2FD; /* Nền xanh nhạt */
+            color: #0D47A1; /* Chữ xanh đậm */
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* ----- 3. GHI ĐÈ CÁC STYLE CŨ (TỪ ORANGE SANG BLUE/GOLD) ----- */
+
+        /* Nút bấm toàn trang */
+        .btn-common {
+            background-color: #0D47A1 !important;
+            border-color: #0D47A1 !important;
+        }
+        .btn-common:hover {
+            background-color: #1565C0 !important;
+            border-color: #1565C0 !important;
+        }
+
+        /* Đường gạch dưới của các tiêu đề Section */
+        .section-title::after {
+            background: #0D47A1 !important;
+        }
+
+        /* Section Countdown */
+        .countdown-timer {
+            background: #0d47a1; /* Nền xanh đậm */
+        }
+        .countdown-separator .separator-icon {
+            /* Icon ở giữa đổi sang màu Vàng Gold */
+            background: #FFC107;
+        }
+
+        /* Section Team/Artists - Chữ mô tả vai trò */
+        .artist-info p {
+            color: #0D47A1;
+        }
+
+        /* Section Ticket Pricing - Icon trên thẻ vé */
+        #pricing .price-block-wrapper .icon i {
+            color: #0D47A1;
+        }
+
+        /* Section FAQ - Icon câu hỏi */
+        .accordion .card-header .header-title i {
+            color: #0D47A1 !important;
         }
     </style>
 </head>
@@ -280,7 +395,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Music Event</h1>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Competition Event</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s" 
                        th:text="${eventDetail != null ? eventDetail.title : 'Music Festival'}">Music Festival</p>
                 </div>
@@ -321,6 +436,79 @@
     </div>
 </section>
 <!-- About Section End -->
+
+<!-- differences -->
+<section id="competition-details" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Competition Breakdown</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Everything you need to know to compete and win!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12" th:if="${eventDetail.prizePool != null}">
+                <div class="details-card prize-card wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="card-icon"><i class="lni-gift"></i></div>
+                    <div class="card-content">
+                        <h3>Prize Pool</h3>
+                        <p th:text="${eventDetail.prizePool}">Details about the grand prizes and awards for winners.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-12" th:if="${eventDetail.rules != null}">
+                <div class="details-card wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="card-icon"><i class="lni-paperclip"></i></div>
+                    <div class="card-content">
+                        <h3>Rules & Regulations</h3>
+                        <p th:text="${eventDetail.rules}">The official rules that all participants must follow.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-12" th:if="${eventDetail.judgingCriteria != null}">
+                <div class="details-card wow fadeInUp" data-wow-delay="0.5s">
+                    <div class="card-icon"><i class="lni-stamp"></i></div>
+                    <div class="card-content">
+                        <h3>Judging Criteria</h3>
+                        <p th:text="${eventDetail.judgingCriteria}">How submissions will be evaluated and scored by the judges.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-12" th:if="${eventDetail.eligibility != null}">
+                <div class="details-card wow fadeInUp" data-wow-delay="0.6s">
+                    <div class="card-icon"><i class="lni-users"></i></div>
+                    <div class="card-content">
+                        <h3>Eligibility</h3>
+                        <p th:text="${eventDetail.eligibility}">Requirements and conditions for who can participate in the competition.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-12" th:if="${eventDetail.competitionType != null or eventDetail.format != null}">
+                <div class="details-card wow fadeInUp" data-wow-delay="0.7s">
+                    <div class="card-icon"><i class="lni-information"></i></div>
+                    <div class="card-content">
+                        <h3>Quick Info</h3>
+                        <div class="quick-info-tags">
+                             <span class="info-tag" th:if="${eventDetail.competitionType != null}">
+                                 <strong>Type:</strong> <span th:text="${eventDetail.competitionType}">Team-based</span>
+                             </span>
+                            <span class="info-tag" th:if="${eventDetail.format != null}">
+                                 <strong>Format:</strong> <span th:text="${eventDetail.format}">Single Elimination</span>
+                             </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Counter Area Start -->
 <section class="counter-section section-padding" th:if="${eventDetail != null}">
@@ -376,76 +564,76 @@
         </div>
     </div>
 </section>
-<!-- Counter Area End -->
+ Counter Area End
 
-<!-- Schedule Section Start -->
-<!--<section id="schedules" class="schedule section-padding" -->
-<!--         th:if="${eventDetail != null and eventDetail.schedulesByDay != null and !eventDetail.schedulesByDay.isEmpty()}">-->
-<!--    <div class="container">-->
-<!--        <div class="row">-->
-<!--            <div class="col-12">-->
-<!--                <div class="section-title-header text-center">-->
-<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>-->
-<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">-->
-<!--                        Discover activities and performances throughout the event-->
-<!--                    </p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
+ Schedule Section Start
+<section id="schedules" class="schedule section-padding"
+         th:if="${eventDetail != null and eventDetail.schedulesByDay != null and !eventDetail.schedulesByDay.isEmpty()}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Discover activities and performances throughout the event
+                    </p>
+                </div>
+            </div>
+        </div>
 
-<!--        <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">-->
-<!--            &lt;!&ndash; Tabs left: Days &ndash;&gt;-->
-<!--            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">-->
-<!--                <div class="table-responsive">-->
-<!--                    <ul class="nav nav-tabs" id="myTab" role="tablist">-->
-<!--                        <li class="nav-item" th:each="entry, iterStat : ${eventDetail.schedulesByDay}">-->
-<!--                            <a class="nav-link"-->
-<!--                               th:classappend="${iterStat.index == 0} ? 'active' : ''"-->
-<!--                               th:id="'day-' + ${iterStat.index} + '-tab'"-->
-<!--                               data-toggle="tab"-->
-<!--                               th:href="'#day-' + ${iterStat.index}"-->
-<!--                               role="tab"-->
-<!--                               th:aria-controls="'day-' + ${iterStat.index}"-->
-<!--                               th:aria-expanded="${iterStat.index == 0}">-->
-<!--                                <div class="item-text">-->
-<!--                                    <h4 th:text="'Day ' + (${iterStat.index + 1})">Day 1</h4>-->
-<!--                                    <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}">Date</h5>-->
-<!--                                </div>-->
-<!--                            </a>-->
-<!--                        </li>-->
-<!--                    </ul>-->
-<!--                </div>-->
-<!--            </div>-->
+        <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">
+            <!-- Tabs left: Days -->
+            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
+                <div class="table-responsive">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" th:each="entry, iterStat : ${eventDetail.schedulesByDay}">
+                            <a class="nav-link"
+                               th:classappend="${iterStat.index == 0} ? 'active' : ''"
+                               th:id="'day-' + ${iterStat.index} + '-tab'"
+                               data-toggle="tab"
+                               th:href="'#day-' + ${iterStat.index}"
+                               role="tab"
+                               th:aria-controls="'day-' + ${iterStat.index}"
+                               th:aria-expanded="${iterStat.index == 0}">
+                                <div class="item-text">
+                                    <h4 th:text="'Day ' + (${iterStat.index + 1})">Day 1</h4>
+                                    <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}">Date</h5>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
-<!--            &lt;!&ndash; Content right: Activities &ndash;&gt;-->
-<!--            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">-->
-<!--                <div class="tab-content" id="myTabContent">-->
-<!--                    <div class="tab-pane fade"-->
-<!--                         th:each="entry, iterStat : ${eventDetail.schedulesByDay}"-->
-<!--                         th:id="'day-' + ${iterStat.index}"-->
-<!--                         role="tabpanel"-->
-<!--                         th:classappend="${iterStat.index == 0} ? 'show active' : ''"-->
-<!--                         th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">-->
+            <!-- Content right: Activities -->
+            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade"
+                         th:each="entry, iterStat : ${eventDetail.schedulesByDay}"
+                         th:id="'day-' + ${iterStat.index}"
+                         role="tabpanel"
+                         th:classappend="${iterStat.index == 0} ? 'show active' : ''"
+                         th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">
 
-<!--                        <div th:id="'accordion-' + ${iterStat.index}">-->
-<!--                            <div class="card" th:each="schedule : ${entry.value}">-->
-<!--                                <div class="card-header">-->
-<!--                                    <span class="time"-->
-<!--                                          th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">-->
-<!--                                        Time-->
-<!--                                    </span>-->
-<!--                                    <h4 th:text="${schedule.activity}">Activity Name</h4>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
+                        <div th:id="'accordion-' + ${iterStat.index}">
+                            <div class="card" th:each="schedule : ${entry.value}">
+                                <div class="card-header">
+                                    <span class="time"
+                                          th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">
+                                        Time
+                                    </span>
+                                    <h4 th:text="${schedule.activity}">Activity Name</h4>
+                                </div>
+                            </div>
+                        </div>
 
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
-<!-- Schedule Section End -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+ Schedule Section End
 
 <!-- Team/Singers Section Start -->
 <section id="team" class="section-padding text-center" 
@@ -1035,16 +1223,16 @@
 </div>
 
 <!-- JavaScript -->
-<script th:src="@{/music/assets/js/jquery-min.js}"></script>
-<script th:src="@{/music/assets/js/popper.min.js}"></script>
-<script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
-<script th:src="@{/music/assets/js/jquery.countdown.min.js}"></script>
-<script th:src="@{/music/assets/js/jquery.nav.js}"></script>
-<script th:src="@{/music/assets/js/jquery.easing.min.js}"></script>
-<script th:src="@{/music/assets/js/wow.js}"></script>
-<script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
-<script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
-<script th:src="@{/music/assets/js/main.js}"></script>
+<script th:src="@{/competition/assets/js/jquery-min.js}"></script>
+<script th:src="@{/competition/assets/js/popper.min.js}"></script>
+<script th:src="@{/competition/assets/js/bootstrap.min.js}"></script>
+<script th:src="@{/competition/assets/js/jquery.countdown.min.js}"></script>
+<script th:src="@{/competition/assets/js/jquery.nav.js}"></script>
+<script th:src="@{/competition/assets/js/jquery.easing.min.js}"></script>
+<script th:src="@{/competition/assets/js/wow.js}"></script>
+<script th:src="@{/competition/assets/js/jquery.slicknav.js}"></script>
+<script th:src="@{/competition/assets/js/nivo-lightbox.js}"></script>
+<script th:src="@{/competition/assets/js/main.js}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const heroTrack = document.getElementById('heroTrack');

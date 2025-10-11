@@ -154,14 +154,4 @@ public class MusicServiceImpl implements IMusicService {
                 .map(e -> getMusicEventById(e.getId())) // tái sử dụng mapping trên
                 .collect(Collectors.toList());
     }
-
-    // Phương thức này giờ có thể không cần thiết vì gallery đã được gộp vào DTO chính
-    @Override
-    public List<EventImage> getEventImages(Long eventId) {
-        return musicEventRepo.findById(eventId)
-                .map(event -> event.getEventImages().stream()
-                        .sorted(Comparator.comparing(EventImage::getOrderIndex))
-                        .collect(Collectors.toList()))
-                .orElse(List.of());
-    }
 }

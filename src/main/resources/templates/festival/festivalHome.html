@@ -23,6 +23,215 @@
     <link rel="stylesheet" th:href="@{/festival/assets/css/themeColors.css}">
     <!-- Music Theme CSS -->
     <link rel="stylesheet" th:href="@{/festival/assets/css/music-theme.css}">
+
+    <style>
+        /* ==========================================================================
+   Modern Ticket Pricing Section CSS (Updated for Alignment & Height)
+   ========================================================================== */
+
+        /* --- Section Styling --- */
+        #pricing {
+            background-color: #1a1a1a; /* Dark background for the whole section */
+            padding: 80px 0 !important;
+            margin: 0 !important;
+        }
+
+        #pricing .section-title-header {
+            margin-bottom: 50px !important;
+            padding: 0 !important; /* Reset padding */
+        }
+
+        #pricing .section-title-header .section-title {
+            color: #ffffff !important; /* White title on dark background */
+        }
+
+        #pricing .section-title-header p {
+            color: #cccccc !important; /* Light grey subtitle */
+        }
+
+        /* --- General Resets (from original code) --- */
+        #pricing, #pricing .container, #pricing .row, #pricing .col-12, #pricing .col-lg-4, #pricing .section-title-header, #pricing .section-title, #pricing .price-block-wrapper {
+            min-height: auto !important;
+            height: auto !important;
+            border: none !important;
+        }
+
+        #pricing .container {
+            padding: 0 !important;
+            margin: 0 auto !important; /* Center the container */
+            max-width: 1140px !important; /* Standard container width */
+            width: 100% !important;
+        }
+
+        #pricing .row {
+            padding: 0 15px !important;
+            margin: 0 -15px !important;
+            justify-content: center;
+        }
+
+        /* --- KEY CHANGE: Ensure columns are flex containers for equal height cards --- */
+        #pricing .col-lg-4 {
+            margin-bottom: 30px !important;
+            padding: 0 15px !important;
+            display: flex; /* Make column a flex container */
+        }
+
+        /* --- Modern Ticket Card Design (Modified) --- */
+        /* --- KEY CHANGE: Make card a vertical flex container --- */
+        #pricing .price-block-wrapper {
+            background: #ffffff !important;
+            border-radius: 16px !important;
+            padding: 35px 30px !important; /* Reduced top/bottom padding */
+            margin: 0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+            position: relative !important;
+            overflow: hidden !important;
+            text-align: center !important;
+            width: 100%; /* Ensure card takes full width of column */
+            display: flex; /* Make card a flex container */
+            flex-direction: column; /* Arrange items vertically */
+        }
+
+        /* Remove old gradient/shimmer effects */
+        #pricing .price-block-wrapper::before,
+        #pricing .price-block-wrapper::after {
+            display: none !important;
+        }
+
+        #pricing .price-block-wrapper:hover {
+            transform: translateY(-10px) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        #pricing .price-block-wrapper > * {
+            position: relative;
+            z-index: 3;
+        }
+
+        /* --- Icon Styling --- */
+        #pricing .price-block-wrapper .icon {
+            margin-bottom: 20px !important; /* Reduced margin */
+            text-align: center !important;
+        }
+
+        #pricing .price-block-wrapper .icon i {
+            font-size: 48px !important;
+            color: #ff6e40 !important;
+            text-shadow: none !important;
+            filter: none !important;
+        }
+
+        #pricing .price-block-wrapper:hover .icon i {
+            transform: scale(1.1) !important;
+        }
+
+        /* --- Title Styling --- */
+        #pricing .price-block-wrapper .colmun-title h5 {
+            color: #333333 !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            margin-bottom: 10px !important; /* Reduced margin */
+            text-align: center !important;
+            text-shadow: none !important;
+        }
+
+        /* --- Price Styling --- */
+        #pricing .price-block-wrapper .price h2 {
+            color: #1a1a1a !important;
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            margin-bottom: 5px !important; /* Reduced margin */
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+        }
+
+        #pricing .price-block-wrapper .price p {
+            color: #888888 !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            text-align: center !important;
+            margin-bottom: 20px !important; /* Reduced margin */
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+
+        /* --- Features List Styling --- */
+        #pricing .price-block-wrapper .pricing-list ul {
+            list-style: none !important;
+            padding: 0 !important;
+            margin-bottom: 25px !important; /* Reduced margin */
+            display: inline-block;
+            text-align: left;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li {
+            font-size: 15px !important;
+            color: #555555 !important;
+            margin-bottom: 8px !important; /* Reduced margin */
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 !important;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li:hover {
+            color: #1a1a1a !important;
+            transform: none !important;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li i {
+            color: #ff6e40 !important;
+            margin-right: 10px !important;
+            font-size: 18px !important;
+            background: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        /* --- Button Styling --- */
+        /* --- KEY CHANGE: Auto margin pushes button to the bottom --- */
+        #pricing .price-block-wrapper .btn-common {
+            background: #ff6e40 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 15px 30px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            font-size: 14px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 8px 15px rgba(255, 110, 64, 0.25) !important;
+            margin-top: auto; /* This is the magic property for alignment! */
+        }
+
+        #pricing .price-block-wrapper .btn-common:hover {
+            background: #e65a2d !important;
+            color: #ffffff !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 12px 25px rgba(255, 110, 64, 0.35) !important;
+        }
+
+        #pricing .price-block-wrapper .btn-common.disabled {
+            background: #cccccc !important;
+            color: #888888 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+        }
+
+        /* --- Remove old card-specific backgrounds --- */
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper,
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper,
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper {
+            background: #ffffff !important;
+        }
+    </style>
     <style>
         /* ==========================================================================
    Organizer Details Section CSS

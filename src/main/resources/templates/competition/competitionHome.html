@@ -972,11 +972,482 @@
             font-size: 14px;
         }
 
+        /* Fix khoảng cách quá xa ở Ticket Packages - Giảm mạnh hơn */
+        #pricing {
+            padding: 20px 0 !important; /* Giảm xuống còn 20px */
+        }
+        
+        #pricing .section-header {
+            margin-bottom: 15px !important; /* Giảm margin bottom */
+        }
+        
+        #pricing .section-title {
+            margin-bottom: 8px !important; /* Giảm margin bottom của title */
+        }
+        
+        #pricing .section-sub-title {
+            margin-bottom: 10px !important; /* Giảm margin bottom của subtitle */
+        }
+        
+        .pricing-table {
+            margin-bottom: 15px !important; /* Giảm margin bottom giữa các cards */
+            padding: 20px 15px !important; /* Giảm padding trong cards */
+        }
+        
+        /* Fix khoảng cách ở các sections khác - Giảm mạnh */
+        .section {
+            padding: 25px 0 !important; /* Giảm padding chung của sections */
+        }
+        
+        .section-padding {
+            padding: 25px 0 !important; /* Giảm padding section-padding */
+        }
+        
+        .section-padding-compact {
+            padding: 15px 0 !important; /* Giảm padding compact */
+        }
+        
+        /* Fix khoảng cách ở counter section */
+        .counter-section {
+            padding: 20px 0 !important; /* Giảm padding counter */
+        }
+        
+        /* Fix khoảng cách ở newsletter */
+        #subscribe {
+            padding: 20px 0 !important; /* Giảm padding newsletter */
+        }
+        
+        /* Fix khoảng cách ở tất cả các sections khác */
+        #about, #schedules, #gallery, #sponsors, #event-slides, #blog, #faq {
+            padding: 20px 0 !important;
+        }
+        
+        /* Fix khoảng cách ở section headers */
+        .section-header {
+            margin-bottom: 15px !important;
+        }
+        
+        /* Fix khoảng cách ở các rows */
+        .row {
+            margin-bottom: 10px !important;
+        }
+        
+        /* OVERRIDE CSS CONFLICTS - Fix khoảng cách mạnh hơn */
+        section#pricing.section-padding,
+        section#pricing,
+        #pricing.section-padding,
+        #pricing {
+            padding: 10px 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Override tất cả section padding conflicts */
+        .section-padding {
+            padding: 10px 0 !important;
+        }
+        
+        /* Override container padding */
+        #pricing .container {
+            padding: 0 15px !important;
+        }
+        
+        /* Override section title margins */
+        #pricing .section-title-header {
+            margin-bottom: 10px !important;
+        }
+        
+        #pricing .section-title {
+            margin: 5px 0 !important;
+        }
+        
+        #pricing .section-title-header p {
+            margin: 5px 0 !important;
+        }
+        
+        /* Override price block margins */
+        .price-block-wrapper {
+            margin-bottom: 10px !important;
+        }
+        
+        /* Override all margins and paddings in pricing section */
+        #pricing * {
+            margin-top: 0 !important;
+            margin-bottom: 5px !important;
+        }
+        
+        #pricing .container * {
+            margin-top: 0 !important;
+            margin-bottom: 5px !important;
+        }
+        
+        /* BALANCED SPACING - Không quá xa, không quá gần */
+        section#pricing,
+        section#pricing.section-padding,
+        #pricing,
+        #pricing.section-padding {
+            padding: 20px 0 !important;
+            margin: 0 !important;
+        }
+        
+        #pricing .container {
+            padding: 0 15px !important;
+            margin: 0 auto !important;
+        }
+        
+        #pricing .row {
+            margin: 0 !important;
+        }
+        
+        #pricing .col-12 {
+            padding: 0 15px !important;
+        }
+        
+        #pricing .col-lg-4 {
+            padding: 0 10px !important;
+            margin-bottom: 20px !important;
+        }
+        
+        #pricing .section-title-header {
+            padding: 15px 0 !important;
+            margin-bottom: 15px !important;
+            text-align: center;
+        }
+        
+        #pricing .section-title,
+        #pricing .section-title-header h1 {
+            margin: 0 0 10px 0 !important;
+            padding: 0 !important;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        #pricing .section-title-header p {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        #pricing .row:last-child {
+            margin-top: 0 !important;
+        }
+        
+        /* Pricing cards spacing */
+        .price-block-wrapper {
+            margin-bottom: 0 !important;
+            height: 100%;
+        }
+        
+        /* Force override với spacing hợp lý */
+        body section#pricing.section-padding {
+            padding: 20px 0 !important;
+            margin: 0 !important;
+        }
+        
+        html body section#pricing.section-padding .container {
+            padding: 0 15px !important;
+            margin: 0 auto !important;
+        }
+        
+        html body section#pricing.section-padding .section-title-header {
+            margin-bottom: 15px !important;
+            padding: 15px 0 !important;
+        }
+        
+        /* ULTIMATE OVERRIDE - Target chính xác pricing section */
+        html body section#pricing.section-padding {
+            padding: 10px 0 !important;
+            margin: 0 !important;
+        }
+        
+        html body section#pricing.section-padding .container {
+            padding: 0 15px !important;
+            margin: 0 auto !important;
+        }
+        
+        html body section#pricing.section-padding .row {
+            margin: 0 !important;
+        }
+        
+        html body section#pricing.section-padding .section-title-header {
+            padding: 10px 0 !important;
+            margin-bottom: 10px !important;
+        }
+        
+        html body section#pricing.section-padding .section-title {
+            margin: 0 0 5px 0 !important;
+        }
+        
+        html body section#pricing.section-padding .section-title-header p {
+            margin: 0 !important;
+        }
+        
+        html body section#pricing.section-padding .row:last-child {
+            margin-top: 5px !important;
+        }
+        
+        html body section#pricing.section-padding .col-lg-4 {
+            margin-bottom: 15px !important;
+        }
+        
+        /* ==========================================================================
+    Modern Ticket Pricing Section CSS (Competition Page)
+    ========================================================================== */
+
+        /* --- Section Styling --- */
+        #pricing {
+            background-color: var(--primary-bg) !important; /* Dark background for the whole section */
+            padding: 80px 0 !important;
+            margin: 0 !important;
+            position: relative;
+        }
+
+        #pricing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #pricing > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        #pricing .section-title-header {
+            margin-bottom: 50px !important;
+            padding: 0 !important; /* Reset padding */
+        }
+
+        #pricing .section-title-header .section-title {
+            color: var(--text-primary) !important; /* White title on dark background */
+        }
+
+        #pricing .section-title-header p {
+            color: var(--text-secondary) !important; /* Light grey subtitle */
+        }
+
+        /* --- General Resets --- */
+        #pricing .container, #pricing .row, #pricing .col-12, #pricing .col-lg-4, #pricing .section-title-header, #pricing .section-title, #pricing .price-block-wrapper {
+            min-height: auto !important;
+            height: auto !important;
+            border: none !important;
+        }
+
+        #pricing .container {
+            padding: 0 !important;
+            margin: 0 auto !important; /* Center the container */
+            max-width: 1140px !important; /* Standard container width */
+            width: 100% !important;
+        }
+
+        #pricing .row {
+            padding: 0 15px !important;
+            margin: 0 -15px !important;
+            justify-content: center;
+        }
+
+        /* --- KEY CHANGE: Ensure columns are flex containers for equal height cards --- */
+        #pricing .col-lg-4 {
+            margin-bottom: 30px !important;
+            padding: 0 15px !important;
+            display: flex; /* Make column a flex container */
+        }
+
+        /* --- Modern Ticket Card Design (Competition Theme) --- */
+        /* --- KEY CHANGE: Make card a vertical flex container --- */
+        #pricing .price-block-wrapper {
+            background: var(--card-bg) !important; /* Dark card background */
+            border: 2px solid var(--border-light) !important;
+            border-radius: 16px !important;
+            padding: 35px 30px !important; /* Reduced top/bottom padding */
+            margin: 0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+            position: relative !important;
+            overflow: hidden !important;
+            text-align: center !important;
+            width: 100%; /* Ensure card takes full width of column */
+            display: flex; /* Make card a flex container */
+            flex-direction: column; /* Arrange items vertically */
+        }
+
+        #pricing .price-block-wrapper:hover {
+            transform: translateY(-10px) !important;
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3) !important;
+            border-color: var(--accent-primary) !important;
+        }
+
+        #pricing .price-block-wrapper > * {
+            position: relative;
+            z-index: 3;
+        }
+
+        /* --- Icon Styling --- */
+        #pricing .price-block-wrapper .icon {
+            margin-bottom: 20px !important; /* Reduced margin */
+            text-align: center !important;
+        }
+
+        #pricing .price-block-wrapper .icon i {
+            font-size: 48px !important;
+            color: var(--accent-primary) !important;
+            text-shadow: none !important;
+            filter: none !important;
+        }
+
+        #pricing .price-block-wrapper:hover .icon i {
+            transform: scale(1.1) !important;
+        }
+
+        /* --- Title Styling --- */
+        #pricing .price-block-wrapper .colmun-title h5,
+        #pricing .price-block-wrapper h5 {
+            color: #FFFFFF !important; /* Force white text */
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            margin-bottom: 10px !important;
+            text-align: center !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important; /* Add shadow for visibility */
+        }
+
+        /* --- Price Styling --- */
+        #pricing .price-block-wrapper .price h2,
+        #pricing .price-block-wrapper h2 {
+            color: #FFFFFF !important; /* Force white text */
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            margin-bottom: 5px !important;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important; /* Add shadow for visibility */
+        }
+
+        #pricing .price-block-wrapper .price p,
+        #pricing .price-block-wrapper p {
+            color: #FFFFFF !important; /* Force white text */
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            text-align: center !important;
+            margin-bottom: 20px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important; /* Add shadow for visibility */
+        }
+
+        /* --- Features List Styling --- */
+        #pricing .price-block-wrapper .pricing-list ul,
+        #pricing .price-block-wrapper ul {
+            list-style: none !important;
+            padding: 0 !important;
+            margin-bottom: 25px !important;
+            display: inline-block;
+            text-align: left;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li,
+        #pricing .price-block-wrapper ul li {
+            font-size: 15px !important;
+            color: #FFFFFF !important; /* Force white text */
+            margin-bottom: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important; /* Add shadow for visibility */
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li:hover,
+        #pricing .price-block-wrapper ul li:hover {
+            color: #FFFFFF !important; /* Keep white on hover */
+            transform: none !important;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li i,
+        #pricing .price-block-wrapper ul li i {
+            color: #FF6B35 !important; /* Force orange icons */
+            margin-right: 10px !important;
+            font-size: 18px !important;
+            background: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        /* --- Force all text elements to be visible --- */
+        #pricing .price-block-wrapper * {
+            color: inherit !important;
+        }
+
+        #pricing .price-block-wrapper h1,
+        #pricing .price-block-wrapper h2,
+        #pricing .price-block-wrapper h3,
+        #pricing .price-block-wrapper h4,
+        #pricing .price-block-wrapper h5,
+        #pricing .price-block-wrapper h6,
+        #pricing .price-block-wrapper p,
+        #pricing .price-block-wrapper span,
+        #pricing .price-block-wrapper div,
+        #pricing .price-block-wrapper li {
+            color: #FFFFFF !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7) !important;
+        }
+
+        /* --- Button Styling --- */
+        /* --- KEY CHANGE: Auto margin pushes button to the bottom --- */
+        #pricing .price-block-wrapper .btn-common {
+            background: var(--accent-primary) !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 15px 30px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            font-size: 14px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 8px 15px rgba(255, 110, 64, 0.25) !important;
+            margin-top: auto; /* This is the magic property for alignment! */
+        }
+
+        #pricing .price-block-wrapper .btn-common:hover {
+            background: var(--accent-secondary) !important;
+            color: #ffffff !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 12px 25px rgba(255, 110, 64, 0.35) !important;
+        }
+
+        #pricing .price-block-wrapper .btn-common.disabled {
+            background: #cccccc !important;
+            color: #888888 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+        }
+
+        /* --- All cards use same dark theme --- */
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper,
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper,
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper {
+            background: var(--card-bg) !important;
+        }
+
         /* Newsletter Section - Competition style */
         #subscribe {
             background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
             position: relative;
             overflow: hidden;
+            padding: 80px 0 !important;
         }
         
         #subscribe::before {
@@ -993,49 +1464,104 @@
         #subscribe .subscribe-inner {
             position: relative;
             z-index: 2;
+            background: #FFFFFF !important;
+            border-radius: 20px !important;
+            padding: 50px 40px !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2) !important;
+            margin: 0 auto !important;
+            max-width: 600px !important;
         }
         
         #subscribe .subscribe-title {
-            color: #FFFFFF !important;
-            font-weight: 700;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            color: #1a1a1a !important; /* Dark text on white background */
+            font-weight: 700 !important;
+            font-size: 32px !important;
+            text-align: center !important;
+            margin-bottom: 20px !important;
+            text-shadow: none !important;
+        }
+        
+        #subscribe .subscribe-title h2 {
+            color: #1a1a1a !important;
+            font-weight: 700 !important;
+            font-size: 32px !important;
+            margin-bottom: 10px !important;
+            text-shadow: none !important;
+        }
+        
+        #subscribe p {
+            color: #666666 !important;
+            font-size: 16px !important;
+            text-align: center !important;
+            margin-bottom: 30px !important;
+        }
+        
+        #subscribe .subscribe-form {
+            display: flex !important;
+            gap: 15px !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-wrap: wrap !important;
         }
         
         #subscribe input {
-            background: rgba(255, 255, 255, 0.9) !important;
-            border: 2px solid rgba(255, 255, 255, 0.3) !important;
-            color: #374151 !important;
-            border-radius: 25px;
-            padding: 15px 20px;
-            font-size: 16px;
+            background: #f8f9fa !important;
+            border: 2px solid #e9ecef !important;
+            color: #1a1a1a !important;
+            border-radius: 8px !important;
+            padding: 15px 20px !important;
+            font-size: 16px !important;
+            min-width: 300px !important;
+            transition: all 0.3s ease !important;
         }
         
         #subscribe input:focus {
-            border-color: #FFFFFF !important;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            border-color: var(--accent-primary) !important;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1) !important;
+            outline: none !important;
         }
         
         #subscribe input::placeholder {
-            color: #6B7280 !important;
+            color: #999999 !important;
         }
         
         #subscribe .btn-common {
-            background: #FFFFFF !important;
-            color: var(--accent-primary) !important;
-            border: 2px solid #FFFFFF !important;
-            border-radius: 25px;
-            padding: 15px 30px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
+            background: var(--accent-primary) !important;
+            color: #FFFFFF !important;
+            border: 2px solid var(--accent-primary) !important;
+            border-radius: 8px !important;
+            padding: 15px 30px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            font-size: 14px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3) !important;
         }
         
         #subscribe .btn-common:hover {
-            background: transparent !important;
+            background: var(--accent-secondary) !important;
+            border-color: var(--accent-secondary) !important;
             color: #FFFFFF !important;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4) !important;
+        }
+        
+        #subscribe .btn-common .ladda-label::before {
+            content: '🏆 ' !important;
+            margin-right: 5px !important;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            #subscribe .subscribe-form {
+                flex-direction: column !important;
+            }
+            
+            #subscribe input {
+                min-width: 100% !important;
+                margin-bottom: 15px !important;
+            }
         }
 
         /* Back to Top Button - Trophy icon căn giữa */
@@ -1491,9 +2017,7 @@
         </div>
     </div>
 </section>
- Counter Area End
 
- Schedule Section Start
 <section id="schedules" class="schedule section-padding"
          th:if="${eventDetail != null and eventDetail.schedulesByDay != null and !eventDetail.schedulesByDay.isEmpty()}">
     <div class="container">
@@ -1788,12 +2312,13 @@
 <!-- Sponsors Section End -->
 
 <!-- Ticket Pricing Area Start -->
-<section id="pricing" class="section-padding" 
+<section id="pricing" 
+         style="padding: 5px 0 !important; margin: 0 !important; min-height: auto !important;"
          th:if="${eventDetail != null and eventDetail.ticketTypes != null and !eventDetail.ticketTypes.isEmpty()}">
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="section-title-header text-center">
+                <div class="section-title-header text-center" style="padding: 5px 0 !important; margin-bottom: 5px !important;">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">
                         Choose the right package for you
@@ -1802,7 +2327,7 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row" style="margin-top: 5px !important;">
             <div class="col-lg-4 col-sm-6 col-xa-12 mb-3"
                  th:each="ticket, iter : ${eventDetail.ticketTypes}"
                  th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')"

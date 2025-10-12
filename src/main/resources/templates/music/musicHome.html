@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title th:text="${eventDetail != null ? eventDetail.title : 'Music Event'} + ' - OpenEvent'">Music Event - OpenEvent</title>
-    
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
     <!-- Icons -->
@@ -19,8 +19,1200 @@
     <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
     <!-- Responsive Style -->
     <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
-    
+
     <style>
+        /* ==========================================================================
+   NEON DARK THEME - Modern Music Festival Style
+   ========================================================================== */
+
+        /* Global Dark Background */
+        body {
+            background: #1a1a1a !important; /* Almost black background */
+            color: #FFFFFF !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            min-height: 100vh !important;
+            position: relative !important;
+        }
+
+        /* Neon Color Variables */
+        :root {
+            --neon-orange: #ff6e40;
+            --neon-orange-glow: #ff8a65;
+            --neon-pink: #ff4081;
+            --neon-cyan: #00e5ff;
+            --neon-magenta: #e91e63;
+            --neon-blue: #2196f3;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0d0d0d;
+            --text-white: #ffffff;
+            --text-muted: #b0b0b0;
+        }
+
+        /* Enhanced sections with neon glow */
+        section {
+            background: var(--darker-bg) !important;
+            border: 1px solid rgba(255, 110, 64, 0.2) !important;
+            margin: 20px 0 !important;
+            border-radius: 20px !important;
+            box-shadow: 0 0 30px rgba(255, 110, 64, 0.1) !important;
+            position: relative !important;
+        }
+
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+            rgba(255, 110, 64, 0.05) 0%,
+            rgba(255, 64, 129, 0.05) 50%,
+            rgba(0, 229, 255, 0.05) 100%);
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        /* Hero Section Neon */
+        .hero {
+            background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg)) !important;
+            border: 2px solid var(--neon-orange) !important;
+            box-shadow:
+                    0 0 40px rgba(255, 110, 64, 0.4),
+                    inset 0 0 40px rgba(255, 110, 64, 0.1) !important;
+        }
+
+        /* Countdown Timer Neon Styling */
+        .countdown-timer {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-orange) !important;
+            box-shadow:
+                    0 0 50px rgba(255, 110, 64, 0.6),
+                    inset 0 0 30px rgba(255, 110, 64, 0.1) !important;
+        }
+
+        .countdown-timer h2,
+        .countdown-timer .heading-count {
+            color: var(--text-white) !important;
+            text-shadow: 0 0 20px rgba(255, 110, 64, 0.8) !important;
+        }
+
+        /* Countdown Items Neon Glow */
+        .countdown-item {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-orange) !important;
+            border-radius: 15px !important;
+            box-shadow:
+                    0 0 25px rgba(255, 110, 64, 0.5),
+                    inset 0 0 15px rgba(255, 110, 64, 0.1) !important;
+            transition: all 0.3s ease !important;
+            animation: neon-pulse 2s ease-in-out infinite alternate !important;
+        }
+
+        .countdown-item:hover {
+            border-color: var(--neon-pink) !important;
+            box-shadow:
+                    0 0 35px rgba(255, 64, 129, 0.7),
+                    inset 0 0 20px rgba(255, 64, 129, 0.2) !important;
+            transform: scale(1.05) !important;
+        }
+
+        @keyframes neon-pulse {
+            0% {
+                box-shadow:
+                        0 0 25px rgba(255, 110, 64, 0.5),
+                        inset 0 0 15px rgba(255, 110, 64, 0.1);
+            }
+            100% {
+                box-shadow:
+                        0 0 35px rgba(255, 110, 64, 0.8),
+                        inset 0 0 20px rgba(255, 110, 64, 0.2);
+            }
+        }
+
+        .countdown-item .number {
+            color: var(--neon-orange) !important;
+            font-weight: 700 !important;
+            text-shadow:
+                    0 0 10px var(--neon-orange),
+                    0 0 20px var(--neon-orange),
+                    0 0 30px var(--neon-orange) !important;
+            animation: number-glow 1.5s ease-in-out infinite alternate !important;
+        }
+
+        @keyframes number-glow {
+            0% {
+                text-shadow:
+                        0 0 10px var(--neon-orange),
+                        0 0 20px var(--neon-orange),
+                        0 0 30px var(--neon-orange);
+            }
+            100% {
+                text-shadow:
+                        0 0 15px var(--neon-orange),
+                        0 0 25px var(--neon-orange),
+                        0 0 35px var(--neon-orange),
+                        0 0 45px var(--neon-orange);
+            }
+        }
+
+        .countdown-item .label {
+            color: var(--text-muted) !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Description Box Neon - Extra Wide Size */
+        .event-description-box {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-cyan) !important;
+            border-radius: 25px !important;
+            box-shadow:
+                    0 0 50px rgba(0, 229, 255, 0.5),
+                    inset 0 0 40px rgba(0, 229, 255, 0.1) !important;
+            width: 100% !important;
+            max-width: none !important;
+            padding: 60px 80px !important;
+            margin: 50px 0 !important;
+        }
+
+        /* Ensure description section container uses full width */
+        #descriptionm .container {
+            max-width: 100% !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+
+        .event-description-box h2 {
+            color: var(--neon-cyan) !important;
+            text-shadow:
+                    0 0 20px var(--neon-cyan),
+                    0 0 40px var(--neon-cyan) !important;
+            font-size: 36px !important;
+            margin-bottom: 35px !important;
+        }
+
+        .event-description-box p.lead {
+            color: var(--text-white) !important;
+            font-size: 18px !important;
+            line-height: 1.8 !important;
+            margin-bottom: 25px !important;
+        }
+
+        .event-description-box p.lead i {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 15px var(--neon-orange) !important;
+            font-size: 28px !important;
+            margin-right: 15px !important;
+            vertical-align: middle !important;
+        }
+
+        /* About Section Neon - Enhanced */
+        #about {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-magenta) !important;
+            box-shadow:
+                    0 0 40px rgba(233, 30, 99, 0.3),
+                    inset 0 0 30px rgba(233, 30, 99, 0.1) !important;
+        }
+
+        #about .about-item {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-magenta) !important;
+            border-radius: 20px !important;
+            box-shadow:
+                    0 0 25px rgba(233, 30, 99, 0.2),
+                    inset 0 0 20px rgba(233, 30, 99, 0.05) !important;
+            transition: all 0.3s ease !important;
+            overflow: hidden !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        #about .about-item:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 35px rgba(255, 110, 64, 0.4),
+                    inset 0 0 25px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-8px) scale(1.02) !important;
+        }
+
+        #about .about-item img {
+            width: 100% !important;
+            height: 250px !important;
+            object-fit: cover !important;
+            transition: transform 0.3s ease !important;
+        }
+
+        #about .about-item:hover img {
+            transform: scale(1.1) !important;
+        }
+
+        #about .about-text {
+            background: var(--darker-bg) !important;
+            padding: 25px 20px !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
+
+        #about .about-text h3 {
+            color: var(--text-white) !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            margin-bottom: 15px !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        #about .about-text h3 a {
+            color: var(--text-white) !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #about .about-text h3 a:hover {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 15px rgba(255, 110, 64, 0.8) !important;
+        }
+
+        #about .about-text p {
+            color: var(--text-muted) !important;
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+            margin-bottom: 20px !important;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
+            flex: 1 !important;
+        }
+
+        #about .about-text .btn-common {
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink)) !important;
+            border: 2px solid var(--neon-orange) !important;
+            color: var(--text-white) !important;
+            border-radius: 10px !important;
+            padding: 12px 25px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            transition: all 0.3s ease !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+            box-shadow:
+                    0 0 20px rgba(255, 110, 64, 0.4),
+                    inset 0 0 15px rgba(255, 110, 64, 0.1) !important;
+            margin-top: auto !important;
+        }
+
+        #about .about-text .btn-common:hover {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)) !important;
+            border-color: var(--neon-pink) !important;
+            box-shadow:
+                    0 0 30px rgba(255, 64, 129, 0.6),
+                    inset 0 0 20px rgba(255, 64, 129, 0.2) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        #about .about-item i {
+            color: var(--neon-magenta) !important;
+            text-shadow: 0 0 15px var(--neon-magenta) !important;
+        }
+
+        /* Counter Section Neon - Equal Height Cards */
+        .counter-section {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-blue) !important;
+            box-shadow:
+                    0 0 40px rgba(33, 150, 243, 0.3),
+                    inset 0 0 30px rgba(33, 150, 243, 0.1) !important;
+        }
+
+        .counter-section .row {
+            display: flex !important;
+            align-items: stretch !important;
+        }
+
+        .counter-section .work-counter-widget {
+            display: flex !important;
+            flex: 1 !important;
+            margin-bottom: 20px !important;
+        }
+
+        .counter-section .counter {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-blue) !important;
+            border-radius: 15px !important;
+            box-shadow:
+                    0 0 20px rgba(33, 150, 243, 0.2),
+                    inset 0 0 15px rgba(33, 150, 243, 0.05) !important;
+            padding: 30px 20px !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            transition: all 0.3s ease !important;
+            min-height: 200px !important;
+        }
+
+        .counter-section .counter:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 30px rgba(255, 110, 64, 0.4),
+                    inset 0 0 20px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .counter-section .icon {
+            margin-bottom: 20px !important;
+            width: 60px !important;
+            height: 60px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(33, 150, 243, 0.1) !important;
+            border-radius: 50% !important;
+            border: 2px solid var(--neon-blue) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .counter-section .icon i {
+            color: var(--neon-blue) !important;
+            text-shadow: 0 0 15px var(--neon-blue) !important;
+            font-size: 24px !important;
+        }
+
+        .counter-section .counter:hover .icon {
+            border-color: var(--neon-orange) !important;
+            background: rgba(255, 110, 64, 0.1) !important;
+            transform: scale(1.1) !important;
+        }
+
+        .counter-section .counter:hover .icon i {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 15px var(--neon-orange) !important;
+        }
+
+        .counter-section p {
+            color: var(--text-white) !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            margin-bottom: 10px !important;
+            line-height: 1.3 !important;
+            min-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+
+        .counter-section span {
+            color: var(--text-muted) !important;
+            font-size: 14px !important;
+            line-height: 1.4 !important;
+            min-height: 35px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+
+        /* Schedule Section Neon - Enhanced */
+        #schedules {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-pink) !important;
+            box-shadow:
+                    0 0 40px rgba(255, 64, 129, 0.3),
+                    inset 0 0 30px rgba(255, 64, 129, 0.1) !important;
+        }
+
+        .schedule-area {
+            display: flex !important;
+            align-items: stretch !important;
+            gap: 30px !important;
+        }
+
+        .schedule-tab-title {
+            flex: 0 0 300px !important;
+            max-width: 300px !important;
+        }
+
+        .schedule-tab-content {
+            flex: 1 !important;
+        }
+
+        .nav-tabs {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
+            border: none !important;
+        }
+
+        .nav-tabs .nav-item {
+            width: 100% !important;
+        }
+
+        .nav-tabs .nav-link {
+            background: var(--dark-bg) !important;
+            border: 2px solid var(--neon-pink) !important;
+            color: var(--text-muted) !important;
+            border-radius: 15px !important;
+            padding: 20px 25px !important;
+            margin: 0 !important;
+            transition: all 0.3s ease !important;
+            width: 100% !important;
+            text-align: center !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .nav-tabs .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-orange));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: transparent !important;
+            border-color: var(--neon-orange) !important;
+            color: var(--text-white) !important;
+            box-shadow:
+                    0 0 30px rgba(255, 110, 64, 0.6),
+                    inset 0 0 20px rgba(255, 110, 64, 0.2) !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .nav-tabs .nav-link.active::before {
+            opacity: 1 !important;
+        }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            border-color: var(--neon-orange) !important;
+            color: var(--neon-orange) !important;
+            box-shadow: 0 0 20px rgba(255, 110, 64, 0.4) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .nav-tabs .nav-link .item-text h4 {
+            color: inherit !important;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            margin-bottom: 5px !important;
+            text-shadow: inherit !important;
+        }
+
+        .nav-tabs .nav-link .item-text h5 {
+            color: inherit !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            margin: 0 !important;
+            opacity: 0.8 !important;
+        }
+
+        .tab-content {
+            background: var(--dark-bg) !important;
+            border-radius: 20px !important;
+            padding: 30px !important;
+            border: 2px solid var(--neon-pink) !important;
+            box-shadow:
+                    0 0 25px rgba(255, 64, 129, 0.2),
+                    inset 0 0 20px rgba(255, 64, 129, 0.05) !important;
+            min-height: 400px !important;
+        }
+
+        .tab-content .card {
+            background: var(--darker-bg) !important;
+            border: 1px solid var(--neon-cyan) !important;
+            border-radius: 15px !important;
+            box-shadow:
+                    0 0 20px rgba(0, 229, 255, 0.2),
+                    inset 0 0 15px rgba(0, 229, 255, 0.05) !important;
+            margin-bottom: 15px !important;
+            padding: 20px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .tab-content .card:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 25px rgba(255, 110, 64, 0.3),
+                    inset 0 0 20px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .tab-content .card .time {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 10px var(--neon-orange) !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            display: block !important;
+            margin-bottom: 10px !important;
+        }
+
+        .tab-content .card h4 {
+            color: var(--text-white) !important;
+            font-size: 20px !important;
+            font-weight: 600 !important;
+            margin: 0 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Team Section Neon - Enhanced */
+        #team {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-cyan) !important;
+            box-shadow:
+                    0 0 40px rgba(0, 229, 255, 0.3),
+                    inset 0 0 30px rgba(0, 229, 255, 0.1) !important;
+        }
+
+        .simple-artist-card {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-cyan) !important;
+            border-radius: 20px !important;
+            box-shadow:
+                    0 0 25px rgba(0, 229, 255, 0.2),
+                    inset 0 0 20px rgba(0, 229, 255, 0.05) !important;
+            transition: all 0.3s ease !important;
+            overflow: hidden !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .simple-artist-card:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 35px rgba(255, 110, 64, 0.4),
+                    inset 0 0 25px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-8px) scale(1.02) !important;
+        }
+
+        .artist-image {
+            position: relative !important;
+            overflow: hidden !important;
+            height: 250px !important;
+        }
+
+        .artist-image img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            transition: transform 0.3s ease !important;
+        }
+
+        .simple-artist-card:hover .artist-image img {
+            transform: scale(1.1) !important;
+        }
+
+        .artist-info {
+            padding: 25px 20px !important;
+            background: var(--dark-bg) !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            text-align: center !important;
+            min-height: 120px !important;
+        }
+
+        .artist-info h3 {
+            color: var(--text-white) !important;
+            font-size: 22px !important;
+            font-weight: 700 !important;
+            margin-bottom: 10px !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+            line-height: 1.3 !important;
+        }
+
+        .artist-info p {
+            color: var(--neon-cyan) !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            margin: 0 !important;
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.6) !important;
+            line-height: 1.4 !important;
+        }
+
+        .simple-artist-card:hover .artist-info h3 {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 15px rgba(255, 110, 64, 0.8) !important;
+        }
+
+        .simple-artist-card:hover .artist-info p {
+            color: var(--neon-pink) !important;
+            text-shadow: 0 0 10px rgba(255, 64, 129, 0.7) !important;
+        }
+
+        /* Gallery Section Neon */
+        #gallery {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-magenta) !important;
+            box-shadow:
+                    0 0 40px rgba(233, 30, 99, 0.3),
+                    inset 0 0 30px rgba(233, 30, 99, 0.1) !important;
+        }
+
+        .gallery-box {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-magenta) !important;
+            border-radius: 15px !important;
+            box-shadow:
+                    0 0 20px rgba(233, 30, 99, 0.2),
+                    inset 0 0 15px rgba(233, 30, 99, 0.05) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .gallery-box:hover {
+            border-color: var(--neon-cyan) !important;
+            box-shadow:
+                    0 0 30px rgba(0, 229, 255, 0.4),
+                    inset 0 0 20px rgba(0, 229, 255, 0.1) !important;
+            transform: scale(1.05) !important;
+        }
+
+        /* Buttons Neon */
+        .btn-common {
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink)) !important;
+            border: 2px solid var(--neon-orange) !important;
+            color: var(--text-white) !important;
+            border-radius: 10px !important;
+            box-shadow:
+                    0 0 20px rgba(255, 110, 64, 0.4),
+                    inset 0 0 15px rgba(255, 110, 64, 0.1) !important;
+            transition: all 0.3s ease !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .btn-common:hover {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)) !important;
+            border-color: var(--neon-pink) !important;
+            box-shadow:
+                    0 0 30px rgba(255, 64, 129, 0.6),
+                    inset 0 0 20px rgba(255, 64, 129, 0.2) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-white) !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        p, span, div {
+            color: var(--text-white) !important;
+        }
+
+        /* Floating Bubbles Canvas */
+        #bubbles-canvas {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 10 !important;
+            pointer-events: none !important;
+            opacity: 0.8 !important;
+        }
+
+        /* FAQ Section Neon - Enhanced */
+        #faq {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-magenta) !important;
+            box-shadow:
+                    0 0 40px rgba(233, 30, 99, 0.3),
+                    inset 0 0 30px rgba(233, 30, 99, 0.1) !important;
+        }
+
+        .accordion .card {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-magenta) !important;
+            border-radius: 15px !important;
+            margin-bottom: 15px !important;
+            box-shadow:
+                    0 0 20px rgba(233, 30, 99, 0.2),
+                    inset 0 0 15px rgba(233, 30, 99, 0.05) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .accordion .card:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 25px rgba(255, 110, 64, 0.3),
+                    inset 0 0 20px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .accordion .card-header {
+            background: var(--darker-bg) !important;
+            border: none !important;
+            padding: 0 !important;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .accordion .header-title {
+            background: var(--dark-bg) !important;
+            color: var(--text-white) !important;
+            padding: 20px 25px !important;
+            margin: 0 !important;
+            border-radius: 15px !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .accordion .header-title:hover {
+            background: rgba(255, 110, 64, 0.1) !important;
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 10px rgba(255, 110, 64, 0.6) !important;
+        }
+
+        .accordion .header-title i {
+            color: var(--neon-orange) !important;
+            margin-right: 10px !important;
+            font-size: 18px !important;
+            text-shadow: 0 0 8px rgba(255, 110, 64, 0.6) !important;
+        }
+
+        .accordion .card-body {
+            background: var(--darker-bg) !important;
+            color: var(--text-white) !important;
+            padding: 20px 25px !important;
+            border-radius: 0 0 15px 15px !important;
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
+            border-top: 1px solid rgba(233, 30, 99, 0.3) !important;
+        }
+
+        /* Ticket Section Neon */
+        #pricing {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-cyan) !important;
+            box-shadow:
+                    0 0 40px rgba(0, 229, 255, 0.3),
+                    inset 0 0 30px rgba(0, 229, 255, 0.1) !important;
+        }
+
+        .price-block-wrapper {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-cyan) !important;
+            border-radius: 20px !important;
+            box-shadow:
+                    0 0 25px rgba(0, 229, 255, 0.2),
+                    inset 0 0 20px rgba(0, 229, 255, 0.05) !important;
+            transition: all 0.3s ease !important;
+            overflow: hidden !important;
+        }
+
+        .price-block-wrapper:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 35px rgba(255, 110, 64, 0.4),
+                    inset 0 0 25px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .colmun-title {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)) !important;
+            padding: 20px !important;
+            text-align: center !important;
+            position: relative !important;
+        }
+
+        .colmun-title::before {
+            content: '♪' !important;
+            position: absolute !important;
+            top: 10px !important;
+            right: 15px !important;
+            font-size: 24px !important;
+            color: var(--text-white) !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .colmun-title h5 {
+            color: var(--text-white) !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            margin: 0 !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .price-block-wrapper .price {
+            background: var(--darker-bg) !important;
+            color: var(--neon-orange) !important;
+            padding: 30px 20px !important;
+            text-align: center !important;
+            font-size: 48px !important;
+            font-weight: 700 !important;
+            text-shadow:
+                    0 0 15px var(--neon-orange),
+                    0 0 30px var(--neon-orange) !important;
+        }
+
+        .price-block-wrapper .price .currency {
+            font-size: 24px !important;
+            vertical-align: top !important;
+        }
+
+        .price-block-wrapper .price .duration {
+            font-size: 16px !important;
+            color: var(--text-muted) !important;
+            text-shadow: none !important;
+        }
+
+        .price-block-wrapper .pricing-list {
+            background: var(--dark-bg) !important;
+            padding: 25px 20px !important;
+        }
+
+        .price-block-wrapper .pricing-list li {
+            color: var(--text-white) !important;
+            padding: 8px 0 !important;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.1) !important;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .price-block-wrapper .pricing-list li:last-child {
+            border-bottom: none !important;
+        }
+
+        .price-block-wrapper .pricing-list li i {
+            color: var(--neon-cyan) !important;
+            margin-right: 10px !important;
+            text-shadow: 0 0 5px rgba(0, 229, 255, 0.6) !important;
+        }
+
+        .price-block-wrapper .btn-common {
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink)) !important;
+            border: 2px solid var(--neon-orange) !important;
+            color: var(--text-white) !important;
+            border-radius: 10px !important;
+            padding: 12px 30px !important;
+            margin: 20px !important;
+            box-shadow:
+                    0 0 20px rgba(255, 110, 64, 0.4),
+                    inset 0 0 15px rgba(255, 110, 64, 0.1) !important;
+            transition: all 0.3s ease !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .price-block-wrapper .btn-common:hover {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)) !important;
+            border-color: var(--neon-pink) !important;
+            box-shadow:
+                    0 0 30px rgba(255, 64, 129, 0.6),
+                    inset 0 0 20px rgba(255, 64, 129, 0.2) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        /* Event Guidelines Section Neon */
+        #event-slides {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-blue) !important;
+            box-shadow:
+                    0 0 40px rgba(33, 150, 243, 0.3),
+                    inset 0 0 30px rgba(33, 150, 243, 0.1) !important;
+        }
+
+        #event-slides .video {
+            background: var(--dark-bg) !important;
+            border: 2px solid var(--neon-blue) !important;
+            border-radius: 15px !important;
+            box-shadow:
+                    0 0 25px rgba(33, 150, 243, 0.2),
+                    inset 0 0 20px rgba(33, 150, 243, 0.05) !important;
+        }
+
+        #event-slides .intro-desc {
+            color: var(--text-white) !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        #event-slides .intro-title {
+            color: var(--neon-blue) !important;
+            font-size: 24px !important;
+            font-weight: 700 !important;
+            text-shadow: 0 0 15px rgba(33, 150, 243, 0.8) !important;
+        }
+
+        #event-slides .list-specification {
+            background: var(--dark-bg) !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            border: 1px solid var(--neon-blue) !important;
+            box-shadow:
+                    0 0 20px rgba(33, 150, 243, 0.2),
+                    inset 0 0 15px rgba(33, 150, 243, 0.05) !important;
+        }
+
+        #event-slides .list-specification li {
+            color: var(--text-white) !important;
+            padding: 10px 0 !important;
+            border-bottom: 1px solid rgba(33, 150, 243, 0.1) !important;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        #event-slides .list-specification li:last-child {
+            border-bottom: none !important;
+        }
+
+        #event-slides .list-specification li i {
+            color: var(--neon-orange) !important;
+            margin-right: 10px !important;
+            text-shadow: 0 0 8px rgba(255, 110, 64, 0.6) !important;
+        }
+
+        #event-slides .btn-outline-primary {
+            background: transparent !important;
+            border: 2px solid var(--neon-blue) !important;
+            color: var(--neon-blue) !important;
+            border-radius: 10px !important;
+            padding: 10px 20px !important;
+            transition: all 0.3s ease !important;
+            text-shadow: 0 0 5px rgba(33, 150, 243, 0.6) !important;
+        }
+
+        #event-slides .btn-outline-primary:hover {
+            background: var(--neon-blue) !important;
+            color: var(--text-white) !important;
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.4) !important;
+        }
+
+        /* Event Organizer Section Neon */
+        #organizer-details {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-magenta) !important;
+            box-shadow:
+                    0 0 40px rgba(233, 30, 99, 0.3),
+                    inset 0 0 30px rgba(233, 30, 99, 0.1) !important;
+        }
+
+        .organizer-card {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-magenta) !important;
+            border-radius: 20px !important;
+            box-shadow:
+                    0 0 25px rgba(233, 30, 99, 0.2),
+                    inset 0 0 20px rgba(233, 30, 99, 0.05) !important;
+            padding: 30px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .organizer-card:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 35px rgba(255, 110, 64, 0.4),
+                    inset 0 0 25px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .organizer-logo {
+            background: var(--darker-bg) !important;
+            border: 3px solid var(--neon-magenta) !important;
+            border-radius: 50% !important;
+            box-shadow:
+                    0 0 20px rgba(233, 30, 99, 0.3),
+                    inset 0 0 15px rgba(233, 30, 99, 0.1) !important;
+        }
+
+        .organizer-contact-details {
+            background: var(--darker-bg) !important;
+            border: 1px solid var(--neon-cyan) !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            margin-top: 20px !important;
+            box-shadow:
+                    0 0 20px rgba(0, 229, 255, 0.2),
+                    inset 0 0 15px rgba(0, 229, 255, 0.05) !important;
+        }
+
+        .organizer-contact-details h4 {
+            color: var(--neon-cyan) !important;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.6) !important;
+        }
+
+        .organizer-contact-details p {
+            color: var(--text-white) !important;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .organizer-contact-details a {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 5px rgba(255, 110, 64, 0.6) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .organizer-contact-details a:hover {
+            color: var(--neon-pink) !important;
+            text-shadow: 0 0 10px rgba(255, 64, 129, 0.8) !important;
+        }
+
+        /* Latest News Section Neon */
+        #news {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-blue) !important;
+            box-shadow:
+                    0 0 40px rgba(33, 150, 243, 0.3),
+                    inset 0 0 30px rgba(33, 150, 243, 0.1) !important;
+        }
+
+        .news-card {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-blue) !important;
+            border-radius: 20px !important;
+            box-shadow:
+                    0 0 25px rgba(33, 150, 243, 0.2),
+                    inset 0 0 20px rgba(33, 150, 243, 0.05) !important;
+            transition: all 0.3s ease !important;
+            overflow: hidden !important;
+            height: 100% !important;
+        }
+
+        .news-card:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow:
+                    0 0 35px rgba(255, 110, 64, 0.4),
+                    inset 0 0 25px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .news-card .news-image {
+            position: relative !important;
+            overflow: hidden !important;
+            height: 200px !important;
+        }
+
+        .news-card .news-image img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            transition: transform 0.3s ease !important;
+        }
+
+        .news-card:hover .news-image img {
+            transform: scale(1.1) !important;
+        }
+
+        .news-card .news-content {
+            background: var(--darker-bg) !important;
+            padding: 20px !important;
+            min-height: 120px !important;
+        }
+
+        .news-card .news-content h4 {
+            color: var(--text-white) !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            margin-bottom: 10px !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+            line-height: 1.4 !important;
+        }
+
+        .news-card .news-content p {
+            color: var(--text-muted) !important;
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            margin: 0 !important;
+        }
+
+        /* Footer Section Neon */
+        .footer {
+            background: var(--darker-bg) !important;
+            border-top: 2px solid var(--neon-orange) !important;
+            box-shadow:
+                    0 0 40px rgba(255, 110, 64, 0.3),
+                    inset 0 0 30px rgba(255, 110, 64, 0.1) !important;
+        }
+
+        .footer h4, .footer h5, .footer h6 {
+            color: var(--text-white) !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .footer p, .footer span {
+            color: var(--text-muted) !important;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .footer a {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 5px rgba(255, 110, 64, 0.6) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .footer a:hover {
+            color: var(--neon-pink) !important;
+            text-shadow: 0 0 10px rgba(255, 64, 129, 0.8) !important;
+        }
+
+        .footer .social-icons a {
+            background: var(--dark-bg) !important;
+            border: 1px solid var(--neon-orange) !important;
+            border-radius: 50% !important;
+            width: 40px !important;
+            height: 40px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 5px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 0 10px rgba(255, 110, 64, 0.2) !important;
+        }
+
+        .footer .social-icons a:hover {
+            background: var(--neon-orange) !important;
+            color: var(--text-white) !important;
+            box-shadow: 0 0 20px rgba(255, 110, 64, 0.6) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .countdown-item {
+                margin: 5px !important;
+            }
+
+            .countdown-item .number {
+                font-size: 24px !important;
+            }
+
+            section {
+                margin: 10px 0 !important;
+            }
+
+            #bubbles-canvas {
+                opacity: 0.6 !important;
+            }
+
+            .accordion .header-title {
+                padding: 15px 20px !important;
+                font-size: 14px !important;
+            }
+
+            .accordion .card-body {
+                padding: 15px 20px !important;
+                font-size: 14px !important;
+            }
+        }
+
         /* ==========================================================================
    Modern Ticket Pricing Section CSS (Updated for Alignment & Height)
    ========================================================================== */
@@ -236,24 +1428,24 @@
         /*#pricing {*/
         /*    padding: 20px 0 !important;*/
         /*}*/
-        
+
         /*#pricing .section-title-header {*/
         /*    padding: 15px 0 !important;*/
         /*    margin-bottom: 20px !important;*/
         /*}*/
-        
+
         /*#pricing .row:last-child {*/
         /*    margin-top: 10px !important;*/
         /*}*/
-        
+
         /*.section-padding {*/
         /*    padding: 30px 0 !important;*/
         /*}*/
-        
+
         /*.section-padding-compact {*/
         /*    padding: 20px 0 !important;*/
         /*}*/
-        
+
         /*!* NUCLEAR OPTION - Reset hoàn toàn cho Music page *!*/
         /*#pricing,*/
         /*#pricing *,*/
@@ -270,39 +1462,39 @@
         /*    height: auto !important;*/
         /*    border: none !important;*/
         /*}*/
-        
+
         /*#pricing {*/
         /*    padding: 80px 0 !important;*/
         /*    margin: 0 !important;*/
         /*    min-height: 600px !important;*/
         /*}*/
-        
+
         /*#pricing .container {*/
         /*    padding: 0 !important;*/
         /*    margin: 0 !important;*/
         /*    max-width: 100% !important;*/
         /*    width: 100% !important;*/
         /*}*/
-        
+
         /*#pricing .section-title-header {*/
         /*    padding: 30px 0 !important;*/
         /*    margin-bottom: 50px !important;*/
         /*}*/
-        
+
         /*#pricing .row {*/
         /*    padding: 0 20px !important;*/
         /*    margin: 0 !important;*/
         /*}*/
-        
+
         /*#pricing .row:last-child {*/
         /*    margin-top: 30px !important;*/
         /*}*/
-        
+
         /*#pricing .col-lg-4 {*/
         /*    margin-bottom: 30px !important;*/
         /*    padding: 0 15px !important;*/
         /*}*/
-        
+
         /*!* Modern Premium Ticket Cards Design *!*/
         /*#pricing .price-block-wrapper {*/
         /*    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;*/
@@ -317,7 +1509,7 @@
         /*    backdrop-filter: blur(20px) !important;*/
         /*    border: 1px solid rgba(255, 255, 255, 0.1) !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper::before {*/
         /*    content: '';*/
         /*    position: absolute;*/
@@ -329,7 +1521,7 @@
         /*    border-radius: 24px;*/
         /*    z-index: 1;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper::after {*/
         /*    content: '';*/
         /*    position: absolute;*/
@@ -341,27 +1533,27 @@
         /*    animation: shimmer 3s ease-in-out infinite;*/
         /*    z-index: 2;*/
         /*}*/
-        
+
         /*@keyframes shimmer {*/
         /*    0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(30deg); }*/
         /*    50% { transform: translateX(100%) translateY(100%) rotate(30deg); }*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper:hover {*/
         /*    transform: translateY(-20px) scale(1.02) !important;*/
         /*    box-shadow: 0 35px 70px rgba(102, 126, 234, 0.4) !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper > * {*/
         /*    position: relative;*/
         /*    z-index: 3;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .icon {*/
         /*    margin-bottom: 30px !important;*/
         /*    text-align: center !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .icon i {*/
         /*    font-size: 80px !important;*/
         /*    color: #FFFFFF !important;*/
@@ -369,12 +1561,12 @@
         /*    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)) !important;*/
         /*    transition: all 0.3s ease !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper:hover .icon i {*/
         /*    transform: scale(1.1) rotate(5deg) !important;*/
         /*    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5)) !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .price-title {*/
         /*    color: #FFFFFF !important;*/
         /*    font-size: 24px !important;*/
@@ -385,7 +1577,7 @@
         /*    text-align: center !important;*/
         /*    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .price {*/
         /*    color: #FFFFFF !important;*/
         /*    font-size: 42px !important;*/
@@ -398,7 +1590,7 @@
         /*    -webkit-text-fill-color: transparent !important;*/
         /*    background-clip: text !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .available-tickets {*/
         /*    color: rgba(255, 255, 255, 0.9) !important;*/
         /*    font-size: 14px !important;*/
@@ -408,13 +1600,13 @@
         /*    text-transform: uppercase !important;*/
         /*    letter-spacing: 1px !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .price-block-body ul {*/
         /*    list-style: none !important;*/
         /*    padding: 0 !important;*/
         /*    margin-bottom: 35px !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .price-block-body ul li {*/
         /*    font-size: 15px !important;*/
         /*    color: rgba(255, 255, 255, 0.95) !important;*/
@@ -424,12 +1616,12 @@
         /*    padding: 8px 0 !important;*/
         /*    transition: all 0.3s ease !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .price-block-body ul li:hover {*/
         /*    color: #FFFFFF !important;*/
         /*    transform: translateX(5px) !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .price-block-body ul li i {*/
         /*    color: #FFFFFF !important;*/
         /*    margin-right: 12px !important;*/
@@ -443,7 +1635,7 @@
         /*    align-items: center !important;*/
         /*    justify-content: center !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .btn-common {*/
         /*    background: linear-gradient(45deg, #FFFFFF 0%, #F8F9FA 100%) !important;*/
         /*    color: #667eea !important;*/
@@ -459,7 +1651,7 @@
         /*    position: relative !important;*/
         /*    overflow: hidden !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .btn-common::before {*/
         /*    content: '';*/
         /*    position: absolute;*/
@@ -470,11 +1662,11 @@
         /*    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);*/
         /*    transition: left 0.5s ease;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .btn-common:hover::before {*/
         /*    left: 100%;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .btn-common:hover {*/
         /*    background: transparent !important;*/
         /*    color: #FFFFFF !important;*/
@@ -482,7 +1674,7 @@
         /*    transform: translateY(-3px) !important;*/
         /*    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3) !important;*/
         /*}*/
-        
+
         /*#pricing .price-block-wrapper .btn-common.disabled {*/
         /*    background: rgba(255, 255, 255, 0.2) !important;*/
         /*    color: rgba(255, 255, 255, 0.6) !important;*/
@@ -490,33 +1682,33 @@
         /*    cursor: not-allowed !important;*/
         /*    box-shadow: none !important;*/
         /*}*/
-        
+
         /*!* Special styling for different card types *!*/
         /*#pricing .col-lg-4:nth-child(1) .price-block-wrapper {*/
         /*    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;*/
         /*}*/
-        
+
         /*#pricing .col-lg-4:nth-child(2) .price-block-wrapper {*/
         /*    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;*/
         /*}*/
-        
+
         /*#pricing .col-lg-4:nth-child(3) .price-block-wrapper {*/
         /*    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;*/
         /*}*/
-        
+
         /*!* Force override tất cả CSS khác *!*/
         /*html body section#pricing {*/
         /*    padding: 80px 0 !important;*/
         /*    margin: 0 !important;*/
         /*}*/
-        
+
         /*html body section#pricing .container {*/
         /*    padding: 0 !important;*/
         /*    margin: 0 !important;*/
         /*    max-width: 100% !important;*/
         /*    width: 100% !important;*/
         /*}*/
-        
+
         /*html body section#pricing .section-title-header {*/
         /*    margin-bottom: 50px !important;*/
         /*    padding: 30px 0 !important;*/
@@ -615,6 +1807,8 @@
     </style>
 </head>
 <body>
+<!-- Floating Bubbles Canvas for Countdown Timer -->
+<canvas id="bubbles-canvas"></canvas>
 
 <section class="hero hero--slider hero--compact">
     <div class="hero-track" id="heroTrack">
@@ -626,16 +1820,16 @@
             <div class="container hero-content">
                 <div class="hero-actions text-right">
                     <a class="btn btn-common" href="#pricing" th:if="${!#lists.isEmpty(eventDetail.ticketTypes)}">Get Ticket</a>
+                </div>
+            </div>
         </div>
-        </div>
-    </div>
 
         <th:block th:if="${eventDetail?.galleryUrls != null}">
             <div class="hero-slide"
                  th:each="url : ${eventDetail.galleryUrls}"
                  th:if="${url != null and url != ''}"
                  th:style="|background-image: url('${url}')|">
-    </div>
+            </div>
         </th:block>
 
     </div> <button class="hero-nav prev" id="heroPrev" aria-label="Previous" style="display: none;">‹</button>
@@ -731,6 +1925,145 @@
     /*]]>*/
 </script>
 
+<!-- Floating Bubbles Effect for Countdown Timer -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('bubbles-canvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        let animationId;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class FloatingBubble {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100; // Start from bottom
+                this.vx = (Math.random() - 0.5) * 0.5; // Very slow horizontal movement
+                this.vy = -(Math.random() * 2 + 1); // Upward movement
+                this.size = Math.random() * 15 + 5; // Bubble size 5-20px
+                this.opacity = Math.random() * 0.6 + 0.2; // 0.2-0.8 opacity
+                this.color = this.getRandomColor();
+                this.life = 1.0;
+                this.decay = Math.random() * 0.005 + 0.002; // Slow decay
+                this.pulse = Math.random() * Math.PI * 2;
+                this.rotation = 0;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+            }
+
+            getRandomColor() {
+                const colors = [
+                    'rgba(255, 110, 64, 0.8)',  // Neon Orange
+                    'rgba(255, 64, 129, 0.7)',  // Neon Pink
+                    'rgba(0, 229, 255, 0.6)',   // Neon Cyan
+                    'rgba(233, 30, 99, 0.7)',   // Neon Magenta
+                    'rgba(33, 150, 243, 0.6)',  // Neon Blue
+                    'rgba(255, 255, 255, 0.4)'  // White
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.rotationSpeed;
+                this.life -= this.decay;
+                this.pulse += 0.03;
+
+                // Bubble size pulsing
+                this.currentSize = this.size * (0.8 + 0.2 * Math.sin(this.pulse));
+
+                // Opacity pulsing
+                this.currentOpacity = this.opacity * this.life * (0.7 + 0.3 * Math.sin(this.pulse * 1.5));
+
+                // Wobble effect
+                this.wobbleX = Math.sin(this.pulse * 0.8) * 2;
+                this.wobbleY = Math.cos(this.pulse * 0.6) * 1;
+
+                // Reset if bubble goes off screen or life ends
+                if (this.y < -50 || this.life <= 0) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + Math.random() * 50;
+                    this.life = 1.0;
+                    this.vy = -(Math.random() * 2 + 1);
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.currentOpacity;
+                ctx.translate(this.x + this.wobbleX, this.y + this.wobbleY);
+                ctx.rotate(this.rotation);
+
+                // Bubble gradient
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.currentSize);
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(0.7, this.color.replace(/[\d.]+\)$/g, '0.3)'));
+                gradient.addColorStop(1, this.color.replace(/[\d.]+\)$/g, '0.1)'));
+
+                // Main bubble
+                ctx.fillStyle = gradient;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.currentSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Highlight
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(-this.currentSize * 0.3, -this.currentSize * 0.3, this.currentSize * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner glow
+                ctx.fillStyle = this.color.replace(/[\d.]+\)$/g, '0.2)');
+                ctx.beginPath();
+                ctx.arc(0, 0, this.currentSize * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        const bubbles = [];
+        const bubbleCount = 25; // Number of bubbles
+
+        for (let i = 0; i < bubbleCount; i++) {
+            bubbles.push(new FloatingBubble());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            bubbles.forEach(bubble => {
+                bubble.update();
+                bubble.draw();
+            });
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        resizeCanvas();
+        animate();
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Pause animation when tab is not visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                cancelAnimationFrame(animationId);
+            } else {
+                animate();
+            }
+        });
+    });
+</script>
+
 <!-- Music Event Description Section Start -->
 <section id="descriptionm" class="section-padding-compact" th:if="${eventDetail != null}">
     <div class="container">
@@ -747,7 +2080,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-12">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
                     <!-- Event Title -->
                     <h2 th:text="${eventDetail.title}">Event Title</h2>
@@ -784,7 +2117,7 @@
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Music Event</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s" 
+                    <p class="wow fadeInDown" data-wow-delay="0.2s"
                        th:text="${eventDetail != null ? eventDetail.title : 'Music Festival'}">Music Festival</p>
                 </div>
             </div>
@@ -882,7 +2215,7 @@
 <!-- Counter Area End -->
 
 <!-- Schedule Section Start -->
-<section id="schedules" class="schedule section-padding" 
+<section id="schedules" class="schedule section-padding"
          th:if="${eventDetail != null and eventDetail.schedulesByDay != null and !eventDetail.schedulesByDay.isEmpty()}">
     <div class="container">
         <div class="row">
@@ -951,7 +2284,7 @@
 <!-- Schedule Section End -->
 
 <!-- Team/Singers Section Start -->
-<section id="team" class="section-padding text-center" 
+<section id="team" class="section-padding text-center"
          th:if="${eventDetail != null and eventDetail.speakers != null and !eventDetail.speakers.isEmpty()}">
     <div class="container">
         <div class="row">
@@ -967,8 +2300,8 @@
             <div class="col-lg-4 col-md-6 col-sm-6" th:each="speaker : ${eventDetail.speakers}">
                 <div class="simple-artist-card wow fadeInUp" data-wow-delay="0.2s">
                     <div class="artist-image">
-                        <img class="img-fluid" 
-                             th:src="${speaker.imageUrl != null ? speaker.imageUrl : '/music/assets/img/team/img1.jpg'}" 
+                        <img class="img-fluid"
+                             th:src="${speaker.imageUrl != null ? speaker.imageUrl : '/music/assets/img/team/img1.jpg'}"
                              th:alt="${speaker.name}">
                     </div>
                     <div class="artist-info">
@@ -983,7 +2316,7 @@
 <!-- Team Section End -->
 
 <!-- Gallery Section Start -->
-<section id="gallery" class="section-padding" 
+<section id="gallery" class="section-padding"
          th:if="${eventDetail != null and eventDetail.galleryUrls != null and !eventDetail.galleryUrls.isEmpty()}">
     <div class="container">
         <div class="row">
@@ -1177,7 +2510,7 @@
 <!-- Sponsors Section End -->
 
 <!-- Ticket Pricing Area Start -->
-<section id="pricing" 
+<section id="pricing"
          style="padding: 80px 0 !important; margin: 0 !important; min-height: 600px !important;"
          th:if="${eventDetail != null and eventDetail.ticketTypes != null and !eventDetail.ticketTypes.isEmpty()}">
     <div class="container">
@@ -1192,7 +2525,7 @@
             </div>
         </div>
 
-            <div class="row" style="margin-top: 30px !important;">
+        <div class="row" style="margin-top: 30px !important;">
             <div class="col-lg-4 col-sm-6 col-xa-12 mb-3"
                  th:each="ticket, iter : ${eventDetail.ticketTypes}"
                  th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')"
@@ -1225,16 +2558,16 @@
                        th:href="@{'/ticket/buy/' + ${ticket.ticketTypeId}}"
                        class="btn btn-common">Buy Ticket</a>
 
-                    <a th:if="${ticket.isSoldOut()}" 
-                       href="#" 
-                       class="btn btn-common disabled" 
+                    <a th:if="${ticket.isSoldOut()}"
+                       href="#"
+                       class="btn btn-common disabled"
                        style="background-color: #ccc; cursor: not-allowed;">
                         Sold Out
                     </a>
 
-                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}" 
-                       href="#" 
-                       class="btn btn-common disabled" 
+                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}"
+                       href="#"
+                       class="btn btn-common disabled"
                        style="background-color: #999; cursor: not-allowed;">
                         Sale Not Active
                     </a>
@@ -1262,7 +2595,7 @@
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
                 <div class="video" style="border-radius:10px; overflow:hidden;">
                     <iframe
-                        th:src="@{|https://www.google.com/maps?q=${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Da Nang'}&output=embed|}"
+                            th:src="@{|https://www.google.com/maps?q=${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Da Nang'}&output=embed|}"
                             width="100%" height="350" style="border:0;" allowfullscreen="">
                     </iframe>
                 </div>

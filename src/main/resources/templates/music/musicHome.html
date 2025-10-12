@@ -329,12 +329,15 @@
         .counter-section .row {
             display: flex !important;
             align-items: stretch !important;
+            margin: 0 -15px !important;
         }
 
         .counter-section .work-counter-widget {
             display: flex !important;
-            flex: 1 !important;
+            flex: 1 1 0 !important;
             margin-bottom: 20px !important;
+            padding: 0 15px !important;
+            min-width: 0 !important;
         }
 
         .counter-section .counter {
@@ -346,13 +349,15 @@
                     inset 0 0 15px rgba(33, 150, 243, 0.05) !important;
             padding: 30px 20px !important;
             height: 100% !important;
+            width: 100% !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
             align-items: center !important;
             text-align: center !important;
             transition: all 0.3s ease !important;
-            min-height: 200px !important;
+            min-height: 220px !important;
+            box-sizing: border-box !important;
         }
 
         .counter-section .counter:hover {
@@ -400,22 +405,28 @@
             font-weight: 600 !important;
             margin-bottom: 10px !important;
             line-height: 1.3 !important;
-            min-height: 40px !important;
+            min-height: 50px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
+            word-wrap: break-word !important;
+            hyphens: auto !important;
+            padding: 0 10px !important;
         }
 
         .counter-section span {
             color: var(--text-muted) !important;
             font-size: 14px !important;
             line-height: 1.4 !important;
-            min-height: 35px !important;
+            min-height: 40px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
+            word-wrap: break-word !important;
+            hyphens: auto !important;
+            padding: 0 10px !important;
         }
 
         /* Schedule Section Neon - Enhanced */
@@ -445,8 +456,12 @@
         .nav-tabs {
             display: flex !important;
             flex-direction: column !important;
-            gap: 15px !important;
+            gap: 20px !important;
             border: none !important;
+            padding: 10px !important;
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-radius: 25px !important;
+            backdrop-filter: blur(15px) !important;
         }
 
         .nav-tabs .nav-item {
@@ -454,17 +469,35 @@
         }
 
         .nav-tabs .nav-link {
-            background: var(--dark-bg) !important;
+            background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg)) !important;
             border: 2px solid var(--neon-pink) !important;
             color: var(--text-muted) !important;
-            border-radius: 15px !important;
-            padding: 20px 25px !important;
+            border-radius: 20px !important;
+            padding: 25px 20px !important;
             margin: 0 !important;
-            transition: all 0.3s ease !important;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
             width: 100% !important;
             text-align: center !important;
             position: relative !important;
             overflow: hidden !important;
+            backdrop-filter: blur(10px) !important;
+            box-shadow: 
+                0 8px 25px rgba(255, 64, 129, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+            animation: subtle-glow 3s ease-in-out infinite alternate !important;
+        }
+
+        @keyframes subtle-glow {
+            0% {
+                box-shadow: 
+                    0 8px 25px rgba(255, 64, 129, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            }
+            100% {
+                box-shadow: 
+                    0 8px 25px rgba(255, 64, 129, 0.25),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            }
         }
 
         .nav-tabs .nav-link::before {
@@ -474,10 +507,28 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, var(--neon-pink), var(--neon-orange));
+            background: linear-gradient(135deg, 
+                rgba(255, 110, 64, 0.8) 0%,
+                rgba(255, 64, 129, 0.6) 50%,
+                rgba(0, 229, 255, 0.4) 100%);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
             z-index: -1;
+            border-radius: 18px;
+        }
+
+        .nav-tabs .nav-link::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
+            border-radius: 16px;
+            z-index: -1;
+            opacity: 1;
+            transition: opacity 0.4s ease;
         }
 
         .nav-tabs .nav-link.active {
@@ -485,36 +536,61 @@
             border-color: var(--neon-orange) !important;
             color: var(--text-white) !important;
             box-shadow:
-                    0 0 30px rgba(255, 110, 64, 0.6),
-                    inset 0 0 20px rgba(255, 110, 64, 0.2) !important;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+                    0 0 40px rgba(255, 110, 64, 0.8),
+                    0 8px 30px rgba(255, 110, 64, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8) !important;
+            transform: translateY(-3px) scale(1.02) !important;
         }
 
         .nav-tabs .nav-link.active::before {
             opacity: 1 !important;
         }
 
+        .nav-tabs .nav-link.active::after {
+            opacity: 0.8 !important;
+        }
+
         .nav-tabs .nav-link:hover:not(.active) {
             border-color: var(--neon-orange) !important;
             color: var(--neon-orange) !important;
-            box-shadow: 0 0 20px rgba(255, 110, 64, 0.4) !important;
-            transform: translateY(-2px) !important;
+            box-shadow: 
+                0 0 25px rgba(255, 110, 64, 0.5),
+                0 5px 20px rgba(255, 110, 64, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+            transform: translateY(-2px) scale(1.01) !important;
+            text-shadow: 0 0 10px rgba(255, 110, 64, 0.6) !important;
         }
 
         .nav-tabs .nav-link .item-text h4 {
             color: inherit !important;
-            font-size: 18px !important;
-            font-weight: 700 !important;
-            margin-bottom: 5px !important;
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            margin-bottom: 8px !important;
             text-shadow: inherit !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
         }
 
         .nav-tabs .nav-link .item-text h5 {
             color: inherit !important;
-            font-size: 14px !important;
+            font-size: 15px !important;
             font-weight: 500 !important;
             margin: 0 !important;
-            opacity: 0.8 !important;
+            opacity: 0.9 !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .nav-tabs .nav-link.active .item-text h4 {
+            font-size: 22px !important;
+            font-weight: 900 !important;
+            letter-spacing: 1.5px !important;
+        }
+
+        .nav-tabs .nav-link.active .item-text h5 {
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            opacity: 1 !important;
         }
 
         .tab-content {
@@ -563,6 +639,50 @@
             font-weight: 600 !important;
             margin: 0 !important;
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Schedule Activity Cards - Fix for missing activity names */
+        .schedule-activity-card {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-cyan) !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            margin-bottom: 15px !important;
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2) !important;
+            transition: all 0.3s ease !important;
+            position: relative !important;
+        }
+
+        .schedule-activity-card:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow: 0 8px 25px rgba(255, 110, 64, 0.4) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        .schedule-activity-card .activity-time {
+            color: var(--neon-orange) !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            margin-bottom: 10px !important;
+            display: block !important;
+            text-shadow: 0 0 10px var(--neon-orange) !important;
+        }
+
+        .schedule-activity-card .activity-name {
+            color: var(--text-white) !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            margin: 0 !important;
+            line-height: 1.4 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .schedule-activity-card .activity-description {
+            color: var(--text-muted) !important;
+            font-size: 14px !important;
+            margin-top: 8px !important;
+            line-height: 1.5 !important;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
         }
 
         /* Team Section Neon - Enhanced */
@@ -652,7 +772,7 @@
             text-shadow: 0 0 10px rgba(255, 64, 129, 0.7) !important;
         }
 
-        /* Gallery Section Neon */
+        /* Gallery Section Neon - Enhanced */
         #gallery {
             background: var(--darker-bg) !important;
             border: 2px solid var(--neon-magenta) !important;
@@ -663,20 +783,175 @@
 
         .gallery-box {
             background: var(--dark-bg) !important;
-            border: 1px solid var(--neon-magenta) !important;
-            border-radius: 15px !important;
+            border: 2px solid var(--neon-magenta) !important;
+            border-radius: 20px !important;
             box-shadow:
-                    0 0 20px rgba(233, 30, 99, 0.2),
-                    inset 0 0 15px rgba(233, 30, 99, 0.05) !important;
-            transition: all 0.3s ease !important;
+                    0 0 25px rgba(233, 30, 99, 0.3),
+                    inset 0 0 20px rgba(233, 30, 99, 0.05) !important;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            overflow: hidden !important;
+            position: relative !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        .gallery-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(233, 30, 99, 0.1) 0%,
+                rgba(255, 110, 64, 0.1) 50%,
+                rgba(0, 229, 255, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+            border-radius: 18px;
         }
 
         .gallery-box:hover {
-            border-color: var(--neon-cyan) !important;
+            border-color: var(--neon-orange) !important;
             box-shadow:
-                    0 0 30px rgba(0, 229, 255, 0.4),
-                    inset 0 0 20px rgba(0, 229, 255, 0.1) !important;
-            transform: scale(1.05) !important;
+                    0 0 40px rgba(255, 110, 64, 0.6),
+                    0 15px 35px rgba(0, 0, 0, 0.3),
+                    inset 0 0 25px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-8px) scale(1.02) !important;
+        }
+
+        .gallery-box:hover::before {
+            opacity: 1 !important;
+        }
+
+        .gallery-box .img-thumb {
+            position: relative !important;
+            overflow: hidden !important;
+            border-radius: 18px !important;
+            height: 250px !important;
+        }
+
+        .gallery-box .img-thumb img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            filter: brightness(0.9) contrast(1.1) !important;
+        }
+
+        .gallery-box:hover .img-thumb img {
+            transform: scale(1.1) !important;
+            filter: brightness(1.1) contrast(1.2) saturate(1.1) !important;
+        }
+
+        .gallery-box .overlay-box {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: linear-gradient(135deg, 
+                rgba(233, 30, 99, 0.8) 0%,
+                rgba(255, 110, 64, 0.6) 50%,
+                rgba(0, 229, 255, 0.4) 100%) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: 0 !important;
+            transition: all 0.4s ease !important;
+            z-index: 2 !important;
+            border-radius: 18px !important;
+        }
+
+        .gallery-box:hover .overlay-box {
+            opacity: 1 !important;
+        }
+
+        .gallery-box .overlay-box .lightbox {
+            width: 60px !important;
+            height: 60px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: white !important;
+            font-size: 24px !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease !important;
+            backdrop-filter: blur(10px) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .gallery-box .overlay-box .lightbox:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            transform: scale(1.1) rotate(90deg) !important;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .gallery-box .overlay-box .lightbox i {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* Gallery Animation Effects */
+        .gallery-box {
+            animation: gallery-float 6s ease-in-out infinite !important;
+        }
+
+        .gallery-box:nth-child(1) {
+            animation-delay: 0s !important;
+        }
+
+        .gallery-box:nth-child(2) {
+            animation-delay: 2s !important;
+        }
+
+        .gallery-box:nth-child(3) {
+            animation-delay: 4s !important;
+        }
+
+        @keyframes gallery-float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Gallery Loading Animation */
+        .gallery-box .img-thumb {
+            position: relative !important;
+        }
+
+        .gallery-box .img-thumb::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent);
+            animation: shimmer 3s infinite;
+            z-index: 1;
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        .gallery-box:hover .img-thumb::after {
+            animation: none !important;
         }
 
         /* Buttons Neon */
@@ -734,21 +1009,22 @@
 
         .accordion .card {
             background: var(--dark-bg) !important;
-            border: 1px solid var(--neon-magenta) !important;
+            border: 2px solid var(--neon-magenta) !important;
             border-radius: 15px !important;
-            margin-bottom: 15px !important;
+            margin-bottom: 20px !important;
             box-shadow:
-                    0 0 20px rgba(233, 30, 99, 0.2),
-                    inset 0 0 15px rgba(233, 30, 99, 0.05) !important;
-            transition: all 0.3s ease !important;
+                    0 0 25px rgba(233, 30, 99, 0.3),
+                    inset 0 0 20px rgba(233, 30, 99, 0.1) !important;
+            transition: all 0.4s ease !important;
+            overflow: hidden !important;
         }
 
         .accordion .card:hover {
             border-color: var(--neon-orange) !important;
             box-shadow:
-                    0 0 25px rgba(255, 110, 64, 0.3),
-                    inset 0 0 20px rgba(255, 110, 64, 0.1) !important;
-            transform: translateY(-2px) !important;
+                    0 0 35px rgba(255, 110, 64, 0.5),
+                    inset 0 0 25px rgba(255, 110, 64, 0.15) !important;
+            transform: translateY(-3px) !important;
         }
 
         .accordion .card-header {
@@ -770,32 +1046,37 @@
             align-items: center !important;
             justify-content: space-between !important;
             font-size: 16px !important;
-            font-weight: 600 !important;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+            font-weight: 700 !important;
+            text-shadow: none !important;
+            opacity: 1 !important;
         }
 
         .accordion .header-title:hover {
-            background: rgba(255, 110, 64, 0.1) !important;
+            background: rgba(255, 110, 64, 0.15) !important;
             color: var(--neon-orange) !important;
-            text-shadow: 0 0 10px rgba(255, 110, 64, 0.6) !important;
+            text-shadow: none !important;
+            transform: translateX(5px) !important;
         }
 
         .accordion .header-title i {
             color: var(--neon-orange) !important;
-            margin-right: 10px !important;
-            font-size: 18px !important;
-            text-shadow: 0 0 8px rgba(255, 110, 64, 0.6) !important;
+            margin-right: 15px !important;
+            font-size: 20px !important;
+            text-shadow: none !important;
+            flex-shrink: 0 !important;
         }
 
         .accordion .card-body {
             background: var(--darker-bg) !important;
             color: var(--text-white) !important;
-            padding: 20px 25px !important;
+            padding: 25px 30px !important;
             border-radius: 0 0 15px 15px !important;
-            font-size: 15px !important;
-            line-height: 1.6 !important;
-            text-shadow: 0 0 3px rgba(255, 255, 255, 0.2) !important;
+            font-size: 16px !important;
+            line-height: 1.7 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5) !important;
             border-top: 1px solid rgba(233, 30, 99, 0.3) !important;
+            font-weight: 500 !important;
+            opacity: 1 !important;
         }
 
         /* Ticket Section Neon */
@@ -827,7 +1108,7 @@
         }
 
         .colmun-title {
-            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)) !important;
+            background: transparent !important;
             padding: 20px !important;
             text-align: center !important;
             position: relative !important;
@@ -841,6 +1122,8 @@
             font-size: 24px !important;
             color: var(--text-white) !important;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+            background: transparent !important;
+            background-image: none !important;
         }
 
         .colmun-title h5 {
@@ -978,6 +1261,406 @@
             color: var(--neon-orange) !important;
             margin-right: 10px !important;
             text-shadow: 0 0 8px rgba(255, 110, 64, 0.6) !important;
+        }
+
+        /* Guidelines Text Styling */
+        #event-slides .list-specification li span {
+            color: var(--text-white) !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: inline-block !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        #event-slides .intro-title {
+            color: var(--neon-blue) !important;
+            font-size: 24px !important;
+            font-weight: 700 !important;
+            margin-bottom: 20px !important;
+            text-shadow: 0 0 15px rgba(33, 150, 243, 0.8) !important;
+        }
+
+        #event-slides .intro-desc {
+            color: var(--text-white) !important;
+            font-size: 16px !important;
+            margin-bottom: 20px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        /* Force display for guidelines section */
+        #event-slides .list-specification {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        #event-slides .list-specification li {
+            display: list-item !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        #event-slides .list-specification li span {
+            display: inline-block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            color: #ffffff !important;
+            font-size: 16px !important;
+        }
+
+        /* Beautiful Guidelines Display Box */
+        .guidelines-display-box {
+            background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9)) !important;
+            border: 2px solid var(--neon-blue) !important;
+            border-radius: 20px !important;
+            padding: 25px !important;
+            margin: 20px 0 !important;
+            box-shadow: 
+                0 0 30px rgba(33, 150, 243, 0.3),
+                inset 0 0 20px rgba(33, 150, 243, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        .guidelines-content {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
+        }
+
+        .guideline-item {
+            display: flex !important;
+            align-items: flex-start !important;
+            gap: 15px !important;
+            padding: 12px 0 !important;
+            border-bottom: 1px solid rgba(33, 150, 243, 0.2) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .guideline-item:last-child {
+            border-bottom: none !important;
+        }
+
+        .guideline-item:hover {
+            background: rgba(33, 150, 243, 0.1) !important;
+            border-radius: 10px !important;
+            padding: 12px 15px !important;
+            transform: translateX(5px) !important;
+        }
+
+        .guideline-icon {
+            flex-shrink: 0 !important;
+            width: 30px !important;
+            height: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 110, 64, 0.1) !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(255, 110, 64, 0.3) !important;
+            position: relative !important;
+        }
+
+        .guideline-icon i {
+            color: var(--neon-orange) !important;
+            font-size: 18px !important;
+            text-shadow: 0 0 10px rgba(255, 110, 64, 0.8) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            text-align: center !important;
+            line-height: 30px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .guideline-text {
+            flex: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .guideline-text span {
+            color: var(--text-white) !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            font-weight: 400 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Beautiful Organizer Display Box */
+        .organizer-display-box {
+            background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9)) !important;
+            border: 2px solid var(--neon-magenta) !important;
+            border-radius: 25px !important;
+            padding: 30px !important;
+            margin: 20px 0 !important;
+            box-shadow: 
+                0 0 35px rgba(233, 30, 99, 0.3),
+                inset 0 0 25px rgba(233, 30, 99, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .organizer-display-box:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow: 
+                0 0 45px rgba(255, 110, 64, 0.4),
+                inset 0 0 30px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .organizer-content {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 25px !important;
+        }
+
+        .organizer-header-section {
+            display: flex !important;
+            align-items: center !important;
+            gap: 20px !important;
+            padding-bottom: 20px !important;
+            border-bottom: 2px solid rgba(233, 30, 99, 0.3) !important;
+        }
+
+        .organizer-logo {
+            flex-shrink: 0 !important;
+            width: 80px !important;
+            height: 80px !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            border: 3px solid var(--neon-magenta) !important;
+            box-shadow: 0 0 20px rgba(233, 30, 99, 0.4) !important;
+        }
+
+        .organizer-logo img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        .organizer-info h2 {
+            color: var(--text-white) !important;
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            margin: 0 0 10px 0 !important;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .organizer-description {
+            color: var(--text-muted) !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            margin: 0 !important;
+            opacity: 0.9 !important;
+        }
+
+        .organizer-contact-section h3 {
+            color: var(--neon-orange) !important;
+            font-size: 22px !important;
+            font-weight: 600 !important;
+            margin: 0 0 20px 0 !important;
+            text-shadow: 0 0 10px rgba(255, 110, 64, 0.6) !important;
+        }
+
+        .contact-items {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
+        }
+
+        .contact-item {
+            display: flex !important;
+            align-items: center !important;
+            gap: 15px !important;
+            padding: 12px 15px !important;
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(233, 30, 99, 0.2) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .contact-item:hover {
+            background: rgba(233, 30, 99, 0.1) !important;
+            border-color: var(--neon-magenta) !important;
+            transform: translateX(5px) !important;
+            box-shadow: 0 0 15px rgba(233, 30, 99, 0.3) !important;
+        }
+
+        .contact-icon {
+            flex-shrink: 0 !important;
+            width: 30px !important;
+            height: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 110, 64, 0.1) !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(255, 110, 64, 0.3) !important;
+            position: relative !important;
+        }
+
+        .contact-icon i {
+            color: var(--neon-orange) !important;
+            font-size: 18px !important;
+            text-shadow: 0 0 10px rgba(255, 110, 64, 0.8) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            text-align: center !important;
+            line-height: 30px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .contact-text {
+            flex: 1 !important;
+        }
+
+        .contact-text a,
+        .contact-text span {
+            color: var(--text-white) !important;
+            font-size: 16px !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .contact-text a:hover {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 8px rgba(255, 110, 64, 0.6) !important;
+        }
+
+        /* Beautiful Contact Display Box */
+        .contact-display-box {
+            background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9)) !important;
+            border: 2px solid var(--neon-cyan) !important;
+            border-radius: 25px !important;
+            padding: 30px !important;
+            margin: 20px 0 !important;
+            box-shadow: 
+                0 0 35px rgba(0, 229, 255, 0.3),
+                inset 0 0 25px rgba(0, 229, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .contact-display-box:hover {
+            border-color: var(--neon-orange) !important;
+            box-shadow: 
+                0 0 45px rgba(255, 110, 64, 0.4),
+                inset 0 0 30px rgba(255, 110, 64, 0.1) !important;
+            transform: translateY(-5px) !important;
+        }
+
+        .contact-content {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 25px !important;
+        }
+
+        .contact-form-section {
+            text-align: center !important;
+        }
+
+        .contact-form-section h2 {
+            color: var(--text-white) !important;
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            margin: 0 0 15px 0 !important;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .contact-description {
+            color: var(--text-muted) !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            margin: 0 0 30px 0 !important;
+            opacity: 0.9 !important;
+        }
+
+        .contact-form {
+            max-width: 500px !important;
+            margin: 0 auto !important;
+        }
+
+        .form-group {
+            margin: 0 !important;
+        }
+
+        .email-input-wrapper {
+            display: flex !important;
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 2px solid rgba(0, 229, 255, 0.3) !important;
+            border-radius: 15px !important;
+            padding: 5px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .email-input-wrapper:focus-within {
+            border-color: var(--neon-cyan) !important;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4) !important;
+        }
+
+        .email-input {
+            flex: 1 !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 15px 20px !important;
+            color: var(--text-white) !important;
+            font-size: 16px !important;
+            outline: none !important;
+        }
+
+        .email-input::placeholder {
+            color: var(--text-muted) !important;
+            opacity: 0.7 !important;
+        }
+
+        .subscribe-btn {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-orange)) !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 15px 25px !important;
+            color: var(--text-white) !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            white-space: nowrap !important;
+        }
+
+        .subscribe-btn:hover {
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink)) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 5px 20px rgba(255, 110, 64, 0.4) !important;
+        }
+
+        .subscribe-btn i {
+            font-size: 18px !important;
+        }
+
+        @media (max-width: 768px) {
+            .email-input-wrapper {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            
+            .subscribe-btn {
+                width: 100% !important;
+                justify-content: center !important;
+            }
         }
 
         #event-slides .btn-outline-primary {
@@ -1184,6 +1867,77 @@
             transform: translateY(-3px) !important;
         }
 
+        /* Subscribe Section Styling */
+        #subscribe {
+            background: var(--darker-bg) !important;
+            border: 2px solid var(--neon-orange) !important;
+            box-shadow:
+                    0 0 40px rgba(255, 110, 64, 0.3),
+                    inset 0 0 30px rgba(255, 110, 64, 0.1) !important;
+        }
+
+        .subscribe-title {
+            color: var(--text-white) !important;
+            font-size: 32px !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            margin-bottom: 20px !important;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5) !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+
+        .subscribe-inner {
+            text-align: center !important;
+        }
+
+        .subscribe-inner .form-control {
+            background: var(--dark-bg) !important;
+            border: 2px solid var(--neon-cyan) !important;
+            color: var(--text-white) !important;
+            border-radius: 50px !important;
+            padding: 15px 25px !important;
+            font-size: 16px !important;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .subscribe-inner .form-control:focus {
+            border-color: var(--neon-orange) !important;
+            box-shadow: 0 0 30px rgba(255, 110, 64, 0.4) !important;
+            outline: none !important;
+        }
+
+        .subscribe-inner .form-control::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        .sub-btn {
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink)) !important;
+            border: 2px solid var(--neon-orange) !important;
+            color: var(--text-white) !important;
+            border-radius: 50px !important;
+            padding: 15px 30px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            font-size: 14px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 
+                0 0 25px rgba(255, 110, 64, 0.4),
+                inset 0 0 15px rgba(255, 110, 64, 0.1) !important;
+            margin-left: 15px !important;
+        }
+
+        .sub-btn:hover {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)) !important;
+            border-color: var(--neon-pink) !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 
+                0 0 35px rgba(255, 64, 129, 0.6),
+                0 10px 30px rgba(0, 0, 0, 0.3) !important;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .countdown-item {
@@ -1211,6 +1965,47 @@
                 padding: 15px 20px !important;
                 font-size: 14px !important;
             }
+
+            /* Counter Section Mobile */
+            .counter-section .row {
+                flex-direction: column !important;
+                margin: 0 !important;
+            }
+
+            .counter-section .work-counter-widget {
+                padding: 0 0 15px 0 !important;
+                flex: none !important;
+            }
+
+            .counter-section .counter {
+                min-height: 180px !important;
+                padding: 25px 15px !important;
+            }
+
+            .counter-section p {
+                font-size: 15px !important;
+                min-height: 45px !important;
+            }
+
+            .counter-section span {
+                font-size: 13px !important;
+                min-height: 35px !important;
+            }
+
+            /* Gallery Section Mobile */
+            .gallery-box .img-thumb {
+                height: 200px !important;
+            }
+
+            .gallery-box .overlay-box .lightbox {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 20px !important;
+            }
+
+            .gallery-box:hover {
+                transform: translateY(-5px) scale(1.01) !important;
+            }
         }
 
         /* ==========================================================================
@@ -1219,22 +2014,49 @@
 
         /* --- Section Styling --- */
         #pricing {
-            background-color: #1a1a1a; /* Dark background for the whole section */
+            background: url('/music/assets/img/background/bg-pricing.jpg') !important;
+            background-attachment: fixed !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            overflow: hidden !important;
+            position: relative !important;
             padding: 80px 0 !important;
             margin: 0 !important;
         }
 
+        #pricing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6) !important;
+            z-index: 1;
+        }
+
+        #pricing .container,
+        #pricing .section-title-header,
+        #pricing .row {
+            position: relative;
+            z-index: 2;
+        }
+
+
         #pricing .section-title-header {
             margin-bottom: 50px !important;
-            padding: 0 !important; /* Reset padding */
+            padding: 0 !important;
         }
 
         #pricing .section-title-header .section-title {
-            color: #ffffff !important; /* White title on dark background */
+            color: var(--text-white) !important;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5) !important;
         }
 
         #pricing .section-title-header p {
-            color: #cccccc !important; /* Light grey subtitle */
+            color: var(--text-muted) !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
         }
 
         /* --- General Resets (from original code) --- */
@@ -1246,8 +2068,8 @@
 
         #pricing .container {
             padding: 0 !important;
-            margin: 0 auto !important; /* Center the container */
-            max-width: 1140px !important; /* Standard container width */
+            margin: 0 auto !important;
+            max-width: 1140px !important;
             width: 100% !important;
         }
 
@@ -1261,35 +2083,63 @@
         #pricing .col-lg-4 {
             margin-bottom: 30px !important;
             padding: 0 15px !important;
-            display: flex; /* Make column a flex container */
+            display: flex;
         }
 
-        /* --- Modern Ticket Card Design (Modified) --- */
-        /* --- KEY CHANGE: Make card a vertical flex container --- */
+        /* --- Modern Neon Ticket Card Design --- */
         #pricing .price-block-wrapper {
-            background: #ffffff !important;
-            border-radius: 16px !important;
-            padding: 35px 30px !important; /* Reduced top/bottom padding */
-            margin: 0 !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
-            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+            background: linear-gradient(145deg, #1a1a2e, #16213e) !important;
+            border: 2px solid var(--neon-cyan) !important;
+            border-radius: 25px !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
+            box-shadow: 
+                0 0 30px rgba(0, 229, 255, 0.4),
+                inset 0 0 20px rgba(0, 229, 255, 0.1) !important;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
             position: relative !important;
             overflow: hidden !important;
             text-align: center !important;
-            width: 100%; /* Ensure card takes full width of column */
-            display: flex; /* Make card a flex container */
-            flex-direction: column; /* Arrange items vertically */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px) !important;
         }
 
-        /* Remove old gradient/shimmer effects */
-        #pricing .price-block-wrapper::before,
-        #pricing .price-block-wrapper::after {
-            display: none !important;
+        #pricing .price-block-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(0, 229, 255, 0.1) 0%,
+                rgba(255, 110, 64, 0.1) 50%,
+                rgba(233, 30, 99, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+            border-radius: 23px;
         }
 
         #pricing .price-block-wrapper:hover {
-            transform: translateY(-10px) !important;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+            transform: translateY(-15px) scale(1.02) !important;
+            border-color: var(--neon-orange) !important;
+            box-shadow: 
+                0 0 50px rgba(255, 110, 64, 0.6),
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                inset 0 0 30px rgba(255, 110, 64, 0.2) !important;
+        }
+
+        #pricing .price-block-wrapper:hover::before {
+            opacity: 1 !important;
+        }
+
+        #pricing .price-block-wrapper > * {
+            position: relative;
+            z-index: 2;
         }
 
         #pricing .price-block-wrapper > * {
@@ -1299,129 +2149,459 @@
 
         /* --- Icon Styling --- */
         #pricing .price-block-wrapper .icon {
-            margin-bottom: 20px !important; /* Reduced margin */
+            margin: 30px 0 20px 0 !important;
             text-align: center !important;
+            padding: 0 30px !important;
         }
 
         #pricing .price-block-wrapper .icon i {
-            font-size: 48px !important;
-            color: #ff6e40 !important;
-            text-shadow: none !important;
-            filter: none !important;
+            font-size: 60px !important;
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 20px var(--neon-orange) !important;
+            filter: drop-shadow(0 0 10px var(--neon-orange)) !important;
+            transition: all 0.3s ease !important;
         }
 
         #pricing .price-block-wrapper:hover .icon i {
-            transform: scale(1.1) !important;
+            transform: scale(1.1) rotate(5deg) !important;
+            color: var(--neon-pink) !important;
+            text-shadow: 0 0 25px var(--neon-pink) !important;
         }
 
         /* --- Title Styling --- */
+        #pricing .price-block-wrapper .colmun-title {
+            background: transparent !important;
+            background-image: none !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            border-radius: 0 !important;
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        #pricing .price-block-wrapper .colmun-title * {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        #pricing .price-block-wrapper .colmun-title::before,
+        #pricing .price-block-wrapper .colmun-title::after {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
         #pricing .price-block-wrapper .colmun-title h5 {
-            color: #333333 !important;
-            font-size: 20px !important;
-            font-weight: 700 !important;
+            color: #ffffff !important;
+            font-size: 18px !important;
+            font-weight: 900 !important;
             text-transform: uppercase !important;
-            letter-spacing: 1px !important;
-            margin-bottom: 10px !important; /* Reduced margin */
+            letter-spacing: 2px !important;
+            margin: 0 !important;
             text-align: center !important;
-            text-shadow: none !important;
+            text-shadow: 
+                0 0 15px rgba(255, 255, 255, 0.9),
+                0 0 30px rgba(255, 255, 255, 0.5) !important;
+            width: 100% !important;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            position: relative !important;
+            z-index: 10 !important;
         }
 
         /* --- Price Styling --- */
+        #pricing .price-block-wrapper .price {
+            padding: 25px 30px !important;
+            background: rgba(0, 0, 0, 0.3) !important;
+        }
+
         #pricing .price-block-wrapper .price h2 {
-            color: #1a1a1a !important;
-            font-size: 36px !important;
-            font-weight: 800 !important;
+            color: var(--neon-orange) !important;
+            font-size: 42px !important;
+            font-weight: 900 !important;
             text-align: center !important;
-            margin-bottom: 5px !important; /* Reduced margin */
-            background: none !important;
-            -webkit-background-clip: unset !important;
-            -webkit-text-fill-color: unset !important;
+            margin-bottom: 10px !important;
+            text-shadow: 
+                0 0 20px var(--neon-orange),
+                0 0 40px var(--neon-orange) !important;
+            background: linear-gradient(45deg, var(--neon-orange), var(--neon-pink)) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
         }
 
         #pricing .price-block-wrapper .price p {
-            color: #888888 !important;
-            font-size: 13px !important;
-            font-weight: 500 !important;
+            color: var(--text-muted) !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
             text-align: center !important;
-            margin-bottom: 20px !important; /* Reduced margin */
+            margin-bottom: 0 !important;
             text-transform: uppercase !important;
             letter-spacing: 1px !important;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
         }
 
         /* --- Features List Styling --- */
+        #pricing .price-block-wrapper .pricing-list {
+            padding: 25px 30px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            margin: 0 !important;
+        }
+
         #pricing .price-block-wrapper .pricing-list ul {
             list-style: none !important;
             padding: 0 !important;
-            margin-bottom: 25px !important; /* Reduced margin */
+            margin-bottom: 0 !important;
             display: inline-block;
             text-align: left;
         }
 
         #pricing .price-block-wrapper .pricing-list ul li {
             font-size: 15px !important;
-            color: #555555 !important;
-            margin-bottom: 8px !important; /* Reduced margin */
+            color: var(--text-white) !important;
+            margin-bottom: 12px !important;
             display: flex !important;
             align-items: center !important;
-            padding: 0 !important;
+            padding: 8px 0 !important;
+            transition: all 0.3s ease !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
         }
 
         #pricing .price-block-wrapper .pricing-list ul li:hover {
-            color: #1a1a1a !important;
-            transform: none !important;
+            color: var(--neon-orange) !important;
+            transform: translateX(5px) !important;
+            text-shadow: 0 0 10px var(--neon-orange) !important;
         }
 
         #pricing .price-block-wrapper .pricing-list ul li i {
-            color: #ff6e40 !important;
-            margin-right: 10px !important;
+            color: var(--neon-cyan) !important;
+            margin-right: 12px !important;
             font-size: 18px !important;
-            background: none !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
-            width: auto !important;
-            height: auto !important;
+            text-shadow: 0 0 10px var(--neon-cyan) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li:hover i {
+            color: var(--neon-orange) !important;
+            text-shadow: 0 0 15px var(--neon-orange) !important;
+            transform: scale(1.2) !important;
         }
 
         /* --- Button Styling --- */
-        /* --- KEY CHANGE: Auto margin pushes button to the bottom --- */
         #pricing .price-block-wrapper .btn-common {
-            background: #ff6e40 !important;
-            color: #ffffff !important;
-            border: none !important;
-            padding: 15px 30px !important;
-            border-radius: 8px !important;
-            font-weight: 700 !important;
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink)) !important;
+            color: var(--text-white) !important;
+            border: 2px solid var(--neon-orange) !important;
+            padding: 15px 35px !important;
+            border-radius: 50px !important;
+            font-weight: 800 !important;
             text-transform: uppercase !important;
-            letter-spacing: 1px !important;
+            letter-spacing: 2px !important;
             font-size: 14px !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 8px 15px rgba(255, 110, 64, 0.25) !important;
-            margin-top: auto; /* This is the magic property for alignment! */
+            transition: all 0.4s ease !important;
+            box-shadow: 
+                0 0 25px rgba(255, 110, 64, 0.4),
+                inset 0 0 15px rgba(255, 110, 64, 0.1) !important;
+            margin: 30px auto !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            display: block !important;
+            width: fit-content !important;
+            text-align: center !important;
+            align-self: center !important;
+        }
+
+        #pricing .price-block-wrapper .btn-common::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        #pricing .price-block-wrapper .btn-common:hover::before {
+            left: 100%;
         }
 
         #pricing .price-block-wrapper .btn-common:hover {
-            background: #e65a2d !important;
-            color: #ffffff !important;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)) !important;
+            border-color: var(--neon-pink) !important;
             transform: translateY(-3px) !important;
-            box-shadow: 0 12px 25px rgba(255, 110, 64, 0.35) !important;
+            box-shadow: 
+                0 0 35px rgba(255, 64, 129, 0.6),
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(255, 64, 129, 0.2) !important;
         }
 
         #pricing .price-block-wrapper .btn-common.disabled {
-            background: #cccccc !important;
-            color: #888888 !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: var(--text-muted) !important;
+            border-color: var(--text-muted) !important;
             cursor: not-allowed !important;
             box-shadow: none !important;
+            text-shadow: none !important;
         }
 
-        /* --- Remove old card-specific backgrounds --- */
-        #pricing .col-lg-4:nth-child(1) .price-block-wrapper,
-        #pricing .col-lg-4:nth-child(2) .price-block-wrapper,
-        #pricing .col-lg-4:nth-child(3) .price-block-wrapper {
-            background: #ffffff !important;
+        /* --- Individual Card Color Schemes --- */
+        
+        /* CLASS C SEATS - Bronze/Gold Theme */
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper {
+            background: linear-gradient(145deg, #2a1a0a, #1a0f05) !important;
+            border-color: #ffd700 !important;
+            box-shadow: 
+                0 0 30px rgba(255, 215, 0, 0.4),
+                inset 0 0 20px rgba(255, 215, 0, 0.1) !important;
         }
-        /* ==========================================================================
-    Modern Ticket Pricing Section CSS
-    ========================================================================== */
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper:hover {
+            border-color: #ff8c00 !important;
+            box-shadow: 
+                0 0 50px rgba(255, 140, 0, 0.6),
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                inset 0 0 30px rgba(255, 140, 0, 0.2) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .colmun-title {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .colmun-title *,
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .colmun-title::before,
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .colmun-title::after {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .colmun-title h5 {
+            color: #ffd700 !important;
+            text-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .icon i {
+            color: #ffd700 !important;
+            text-shadow: 0 0 20px #ffd700 !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper:hover .icon i {
+            color: #ff8c00 !important;
+            text-shadow: 0 0 25px #ff8c00 !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .price h2 {
+            color: #ffd700 !important;
+            text-shadow: 
+                0 0 20px #ffd700,
+                0 0 40px #ffd700 !important;
+            background: linear-gradient(45deg, #ffd700, #ff8c00) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .pricing-list ul li i {
+            color: #ffd700 !important;
+            text-shadow: 0 0 10px #ffd700 !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .pricing-list ul li:hover i {
+            color: #ff8c00 !important;
+            text-shadow: 0 0 15px #ff8c00 !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .btn-common {
+            background: linear-gradient(135deg, #ffd700, #ff8c00) !important;
+            border-color: #ffd700 !important;
+            box-shadow: 
+                0 0 25px rgba(255, 215, 0, 0.4),
+                inset 0 0 15px rgba(255, 215, 0, 0.1) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper .btn-common:hover {
+            background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
+            border-color: #ff8c00 !important;
+            box-shadow: 
+                0 0 35px rgba(255, 140, 0, 0.6),
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(255, 140, 0, 0.2) !important;
+        }
+
+        /* CLASS B SEATS - Silver/Blue Theme */
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper {
+            background: linear-gradient(145deg, #1a1a2e, #16213e) !important;
+            border-color: #00bfff !important;
+            box-shadow: 
+                0 0 30px rgba(0, 191, 255, 0.4),
+                inset 0 0 20px rgba(0, 191, 255, 0.1) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper:hover {
+            border-color: #0080ff !important;
+            box-shadow: 
+                0 0 50px rgba(0, 128, 255, 0.6),
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                inset 0 0 30px rgba(0, 128, 255, 0.2) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .colmun-title {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .colmun-title *,
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .colmun-title::before,
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .colmun-title::after {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .colmun-title h5 {
+            color: #00bfff !important;
+            text-shadow: 0 0 15px #00bfff, 0 0 30px #00bfff !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .icon i {
+            color: #00bfff !important;
+            text-shadow: 0 0 20px #00bfff !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper:hover .icon i {
+            color: #0080ff !important;
+            text-shadow: 0 0 25px #0080ff !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .price h2 {
+            color: #00bfff !important;
+            text-shadow: 
+                0 0 20px #00bfff,
+                0 0 40px #00bfff !important;
+            background: linear-gradient(45deg, #00bfff, #0080ff) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .pricing-list ul li i {
+            color: #00bfff !important;
+            text-shadow: 0 0 10px #00bfff !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .pricing-list ul li:hover i {
+            color: #0080ff !important;
+            text-shadow: 0 0 15px #0080ff !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .btn-common {
+            background: linear-gradient(135deg, #00bfff, #0080ff) !important;
+            border-color: #00bfff !important;
+            box-shadow: 
+                0 0 25px rgba(0, 191, 255, 0.4),
+                inset 0 0 15px rgba(0, 191, 255, 0.1) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper .btn-common:hover {
+            background: linear-gradient(135deg, #0080ff, #0066cc) !important;
+            border-color: #0080ff !important;
+            box-shadow: 
+                0 0 35px rgba(0, 128, 255, 0.6),
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(0, 128, 255, 0.2) !important;
+        }
+
+        /* CLASS A SEATS - Platinum/Purple Theme */
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper {
+            background: linear-gradient(145deg, #1a0a1a, #2e0a2e) !important;
+            border-color: #e6e6fa !important;
+            box-shadow: 
+                0 0 30px rgba(230, 230, 250, 0.4),
+                inset 0 0 20px rgba(230, 230, 250, 0.1) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper:hover {
+            border-color: #dda0dd !important;
+            box-shadow: 
+                0 0 50px rgba(221, 160, 221, 0.6),
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                inset 0 0 30px rgba(221, 160, 221, 0.2) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .colmun-title {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .colmun-title *,
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .colmun-title::before,
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .colmun-title::after {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .colmun-title h5 {
+            color: #e6e6fa !important;
+            text-shadow: 0 0 15px #e6e6fa, 0 0 30px #e6e6fa !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .icon i {
+            color: #e6e6fa !important;
+            text-shadow: 0 0 20px #e6e6fa !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper:hover .icon i {
+            color: #dda0dd !important;
+            text-shadow: 0 0 25px #dda0dd !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .price h2 {
+            color: #e6e6fa !important;
+            text-shadow: 
+                0 0 20px #e6e6fa,
+                0 0 40px #e6e6fa !important;
+            background: linear-gradient(45deg, #e6e6fa, #dda0dd) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .pricing-list ul li i {
+            color: #e6e6fa !important;
+            text-shadow: 0 0 10px #e6e6fa !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .pricing-list ul li:hover i {
+            color: #dda0dd !important;
+            text-shadow: 0 0 15px #dda0dd !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .btn-common {
+            background: linear-gradient(135deg, #e6e6fa, #dda0dd) !important;
+            border-color: #e6e6fa !important;
+            box-shadow: 
+                0 0 25px rgba(230, 230, 250, 0.4),
+                inset 0 0 15px rgba(230, 230, 250, 0.1) !important;
+        }
+
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper .btn-common:hover {
+            background: linear-gradient(135deg, #dda0dd, #ba55d3) !important;
+            border-color: #dda0dd !important;
+            box-shadow: 
+                0 0 35px rgba(221, 160, 221, 0.6),
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(221, 160, 221, 0.2) !important;
+        }
+
 
 
         /*!* Fix khoảng cách cho Music page *!*/
@@ -2229,6 +3409,7 @@
             </div>
         </div>
 
+
         <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">
             <!-- Tabs left: Days -->
             <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
@@ -2264,14 +3445,23 @@
                          th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">
 
                         <div th:id="'accordion-' + ${iterStat.index}">
-                            <div class="card" th:each="schedule : ${entry.value}">
-                                <div class="card-header">
-                                    <span class="time"
+                            <div class="schedule-activity-card" th:each="schedule : ${entry.value}">
+                                <span class="activity-time"
                                           th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">
-                                        Time
+                                    18:00 - 20:00
                                     </span>
-                                    <h4 th:text="${schedule.activity}">Activity Name</h4>
-                                </div>
+                                <h4 class="activity-name" 
+                                    th:text="${schedule.activity != null and schedule.activity != '' ? schedule.activity : 'Event Activity'}">
+                                    Activity Name
+                                </h4>
+                                <p class="activity-description" th:if="${schedule.activity != null and schedule.activity != ''}" 
+                                   th:text="${'Join us for: ' + schedule.activity}">
+                                    Activity description
+                                </p>
+                                <p class="activity-description" th:if="${schedule.activity == null or schedule.activity == ''}" 
+                                   th:text="${'Exciting event activity starting at ' + #temporals.format(schedule.startTime, 'HH:mm')}">
+                                    Join us for this exciting activity
+                                </p>
                             </div>
                         </div>
 
@@ -2535,7 +3725,7 @@
                         <i th:class="${iter.index == 0} ? 'lni-write' : (${iter.index == 1} ? 'lni-layers' : 'lni-leaf')"></i>
                     </div>
                     <div class="colmun-title">
-                        <h5 th:text="${ticket.name}">Ticket Name</h5>
+                        <h5 th:text="${iter.index == 0} ? 'CLASS C SEATS' : (${iter.index == 1} ? 'CLASS B SEATS' : 'CLASS A SEATS')">Ticket Name</h5>
                     </div>
                     <div class="price">
                         <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Price</h2>
@@ -2618,28 +3808,51 @@
 
                 <h2 class="intro-title">Event Day Instructions</h2>
 
-                <ul class="list-specification" th:if="${eventDetail.guidelines != null}">
-                    <li th:each="line : ${#strings.arraySplit(eventDetail.guidelines, '\\.')}"
-                        th:if="${#strings.trim(line) != ''}">
+                <!-- Beautiful Guidelines Display Box -->
+                <div class="guidelines-display-box" th:if="${eventDetail.guidelines != null and #strings.length(eventDetail.guidelines) > 0}">
+                    <div class="guidelines-content">
+                        <div th:each="line, iterStat : ${#strings.arraySplit(eventDetail.guidelines, '\\.')}"
+                             th:if="${#strings.trim(line) != '' and #strings.length(#strings.trim(line)) > 1}"
+                             class="guideline-item">
+                            <div class="guideline-icon">
                         <i class="lni-check-mark-circle"></i>
+                            </div>
+                            <div class="guideline-text">
                         <span th:text="${#strings.trim(line) + '.'}">Instruction</span>
-                    </li>
-                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <ul class="list-specification" th:if="${eventDetail.guidelines == null}">
-                    <li>
+                <!-- Fallback Guidelines -->
+                <div class="guidelines-display-box" th:if="${eventDetail.guidelines == null or #strings.length(eventDetail.guidelines ?: '') == 0}">
+                    <div class="guidelines-content">
+                        <div class="guideline-item">
+                            <div class="guideline-icon">
                         <i class="lni-check-mark-circle"></i>
+                            </div>
+                            <div class="guideline-text">
                         <span>Please arrive at least 30 minutes before the event starts.</span>
-                    </li>
-                    <li>
+                            </div>
+                        </div>
+                        <div class="guideline-item">
+                            <div class="guideline-icon">
                         <i class="lni-check-mark-circle"></i>
+                            </div>
+                            <div class="guideline-text">
                         <span>Bring your ticket (digital or printed) and valid ID.</span>
-                    </li>
-                    <li>
+                            </div>
+                        </div>
+                        <div class="guideline-item">
+                            <div class="guideline-icon">
                         <i class="lni-check-mark-circle"></i>
+                            </div>
+                            <div class="guideline-text">
                         <span>Follow the event staff instructions for a smooth experience.</span>
-                    </li>
-                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2660,42 +3873,67 @@
         </div>
         <div class="row justify-content-center">
             <div class="col-lg-10 col-md-12">
-                <div class="organizer-details-card wow fadeInUp" data-wow-delay="0.3s">
-
-                    <div class="organizer-header">
-                        <div class="organizer-logo-wrapper" th:if="${eventDetail.organization.imageUrl != null}">
-                            <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo" class="organizer-logo">
+                <!-- Beautiful Organizer Display Box -->
+                <div class="organizer-display-box wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="organizer-content">
+                        <!-- Organization Header -->
+                        <div class="organizer-header-section">
+                            <div class="organizer-logo" th:if="${eventDetail.organization.imageUrl != null}">
+                                <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo">
                         </div>
                         <div class="organizer-info">
                             <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>
-                            <p class="description" th:if="${eventDetail.organization.description != null}"
+                                <p class="organizer-description" th:if="${eventDetail.organization.description != null}"
                                th:text="${eventDetail.organization.description}">
-                                Organization description goes here. This text provides more details about the organizer's mission and vision.
+                                    Organization description goes here.
                             </p>
                         </div>
                     </div>
 
-                    <ul class="organizer-contact-details">
-                        <li th:if="${eventDetail.organization.website != null}">
+                        <!-- Contact Details -->
+                        <div class="organizer-contact-section">
+                            <h3>Contact Information</h3>
+                            <div class="contact-items">
+                                <div class="contact-item" th:if="${eventDetail.organization.website != null}">
+                                    <div class="contact-icon">
                             <i class="lni-world"></i>
+                                    </div>
+                                    <div class="contact-text">
                             <a th:href="${eventDetail.organization.website}" target="_blank"
                                th:text="${eventDetail.organization.website}">www.organizer-website.com</a>
-                        </li>
-                        <li th:if="${eventDetail.organization.email != null}">
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item" th:if="${eventDetail.organization.email != null}">
+                                    <div class="contact-icon">
                             <i class="lni-envelope"></i>
+                                    </div>
+                                    <div class="contact-text">
                             <a th:href="'mailto:' + ${eventDetail.organization.email}"
                                th:text="${eventDetail.organization.email}">contact@organizer.com</a>
-                        </li>
-                        <li th:if="${eventDetail.organization.phone != null}">
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item" th:if="${eventDetail.organization.phone != null}">
+                                    <div class="contact-icon">
                             <i class="lni-phone-handset"></i>
+                                    </div>
+                                    <div class="contact-text">
                             <span th:text="${eventDetail.organization.phone}">+123 456 7890</span>
-                        </li>
-                        <li th:if="${eventDetail.organization.address != null}">
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item" th:if="${eventDetail.organization.address != null}">
+                                    <div class="contact-icon">
                             <i class="lni-map-marker"></i>
+                                    </div>
+                                    <div class="contact-text">
                             <span th:text="${eventDetail.organization.address}">123 Event Street, City, Country</span>
-                        </li>
-                    </ul>
-
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2823,25 +4061,25 @@
 </section>
 <!-- Blog Section End -->
 
-<!-- Subscribe Area Start -->
-<div id="subscribe" class="section-padding">
-    <div class="container">
-        <div class="row justify-content-md-center">
-            <div class="col-md-10 col-lg-7">
-                <div class="subscribe-inner wow fadeInDown" data-wow-delay="0.3s">
-                    <h2 class="subscribe-title">Stay Updated</h2>
-                    <form class="text-center form-inline">
-                        <input class="mb-20 form-control" name="email" placeholder="Enter Your Email to Get Latest Updates">
-                        <button type="submit" class="btn btn-common sub-btn">
-                            <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Subscribe Area End -->
+<!--&lt;!&ndash; Subscribe Area Start &ndash;&gt;-->
+<!--<div id="subscribe" class="section-padding">-->
+<!--    <div class="container">-->
+<!--        <div class="row justify-content-md-center">-->
+<!--            <div class="col-md-10 col-lg-7">-->
+<!--                <div class="subscribe-inner wow fadeInDown" data-wow-delay="0.3s">-->
+<!--                    <h2 class="subscribe-title">Stay Updated</h2>-->
+<!--                    <form class="text-center form-inline">-->
+<!--                        <input class="mb-20 form-control" name="email" placeholder="Enter Your Email to Get Latest Updates">-->
+<!--                        <button type="submit" class="btn btn-common sub-btn">-->
+<!--                            <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>-->
+<!--                        </button>-->
+<!--                    </form>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--&lt;!&ndash; Subscribe Area End &ndash;&gt;-->
 
 <!-- Go to Top Link -->
 <a href="#" class="back-to-top music-scroll-btn">
@@ -2944,6 +4182,52 @@
         updateSlider(); // Khởi tạo vị trí đầu tiên
     });
 </script>
+
+<!-- Contact Section Start -->
+<section id="contact-section" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Contact Us</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Get in touch with us for any questions or support</p>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-12">
+                <!-- Simple Contact Form -->
+                <div class="contact-display-box wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="contact-content">
+                        <div class="contact-form-section">
+                            <h2>Stay Updated</h2>
+                            <p class="contact-description">
+                                Subscribe to our newsletter to get the latest updates about the event.
+                            </p>
+                            
+                            <form class="contact-form" action="#" method="post">
+                                <div class="form-group">
+                                    <div class="email-input-wrapper">
+                                        <input type="email" 
+                                               name="email" 
+                                               placeholder="Enter your email address" 
+                                               required 
+                                               class="email-input">
+                                        <button type="submit" class="subscribe-btn">
+                                            <i class="lni-envelope"></i>
+                                            <span>Subscribe</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Contact Section End -->
 
 </body>
 </html>

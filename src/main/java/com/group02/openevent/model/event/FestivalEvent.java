@@ -29,8 +29,6 @@ public class FestivalEvent extends Event {
     @Column(name = "main_organizer")
     private String mainOrganizer; // Department or club organizing
 
-    @Column(name = "expected_attendees")
-    private Integer expectedAttendees;
     
 
     public FestivalEvent() {
@@ -48,7 +46,6 @@ public class FestivalEvent extends Event {
         this.registrationRequired = registrationRequired;
         this.festivalType = festivalType;
         this.mainOrganizer = mainOrganizer;
-        this.expectedAttendees = expectedAttendees;
     }
 
     // Getters & Setters
@@ -116,13 +113,6 @@ public class FestivalEvent extends Event {
         this.mainOrganizer = mainOrganizer;
     }
 
-    public Integer getExpectedAttendees() {
-        return expectedAttendees;
-    }
-
-    public void setExpectedAttendees(Integer expectedAttendees) {
-        this.expectedAttendees = expectedAttendees;
-    }
 
     @Override
     public String toString() {
@@ -135,7 +125,6 @@ public class FestivalEvent extends Event {
                 ", registrationRequired=" + registrationRequired +
                 ", festivalType='" + festivalType + '\'' +
                 ", mainOrganizer='" + mainOrganizer + '\'' +
-                ", expectedAttendees=" + expectedAttendees +
                 '}';
     }
 }

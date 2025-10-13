@@ -323,7 +323,7 @@
    Workshop Details Section CSS
    ========================================================================== */
         #workshop-details {
-            background: #f4f9f9; /* Màu nền xanh xám rất nhạt */
+            background: #fff5f0; /* Màu nền cam nhạt */
         }
 
         .workshop-main-content h3, .workshop-sidebar h4 {
@@ -337,7 +337,7 @@
         }
 
         .workshop-main-content h3 i {
-            color: #00A79D; /* Màu xanh teal */
+            color: #FF6600; /* FPT Orange */
         }
 
         .topic-description {
@@ -361,7 +361,7 @@
         }
 
         .prerequisites-list li i {
-            color: #00A79D;
+            color: #FF6600; /* FPT Orange */
             font-size: 20px;
             margin-top: 2px;
         }
@@ -372,7 +372,7 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            border-top: 4px solid #00A79D;
+            border-top: 4px solid #FF6600; /* FPT Orange */
         }
 
         .workshop-sidebar h4 {
@@ -390,8 +390,8 @@
 
         .info-box .info-icon {
             font-size: 28px;
-            color: #00A79D;
-            background: #e6f6f5;
+            color: #FF6600; /* FPT Orange */
+            background: #fff0e6; /* Light orange background */
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -416,7 +416,7 @@
         .materials-box {
             flex-direction: column;
             align-items: flex-start;
-            background-color: #f4f9f9;
+            background-color: #fff5f0; /* Light orange background */
             padding: 20px;
             border-radius: 8px;
         }
@@ -426,7 +426,7 @@
         }
 
         .btn-materials {
-            background-color: #00A79D;
+            background-color: #FF6600; /* FPT Orange */
             color: white;
             text-align: center;
             padding: 12px 20px;
@@ -440,10 +440,193 @@
         }
 
         .btn-materials:hover {
-            background-color: #007c74;
+            background-color: #e55a00; /* Darker orange on hover */
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 167, 157, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3); /* Orange shadow */
+        }
+
+        /* ==========================================================================
+           Additional Orange Theme Updates
+           ========================================================================== */
+        
+        /* Section title line (horizontal line under title) */
+        .section-title::after {
+            background-color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* FAQ section icons */
+        .accordion .card-header .header-title i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Counter section icons */
+        .work-counter-widget .icon {
+            margin-bottom: 20px !important;
+        }
+        
+        .work-counter-widget .icon i {
+            color: #FF6600 !important; /* FPT Orange */
+            font-size: 48px !important;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            text-shadow: 0 2px 4px rgba(255, 102, 0, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .work-counter-widget:hover .icon i {
+            transform: scale(1.1) !important;
+            text-shadow: 0 4px 8px rgba(255, 102, 0, 0.5) !important;
+        }
+        
+        /* Counter section styling */
+        .counter-section {
+            background: #FF6600 !important; /* FPT Orange background */
+            color: #FFFFFF !important;
+        }
+        
+        .work-counter-widget p {
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            margin-bottom: 8px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+        
+        .work-counter-widget span {
+            color: #FFFFFF !important;
+            font-size: 14px !important;
+            opacity: 0.9 !important;
+            font-weight: 400 !important;
+        }
+
+        /* Event guidelines check icons */
+        .list-specification li i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Organizer contact icons */
+        .organizer-contact-details i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        .organizer-logo {
+            border-color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Back to top button music notes */
+        .back-to-top .note {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Subscribe button icon */
+        .subscribe-inner .btn i {
+            color: #ffffff !important;
+        }
+
+        /* Gallery overlay icon */
+        .gallery-box .overlay-box a i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Schedule tab active state */
+        .schedule-tab-title .nav-tabs .nav-link.active {
+            background-color: #FF6600 !important; /* FPT Orange */
+            color: #ffffff !important;
+        }
+
+        /* Schedule tab hover state */
+        .schedule-tab-title .nav-tabs .nav-link:hover {
+            background-color: #e55a00 !important; /* Darker orange */
+            color: #ffffff !important;
+        }
+
+        /* ==========================================================================
+           COUNTDOWN TIMER - Light Orange Theme
+           ========================================================================== */
+
+        /* Countdown Timer Section Background */
+        .countdown-timer {
+            background: linear-gradient(135deg, #FFE5CC 0%, #FFF2E6 50%, #FFF8F0 100%) !important; /* Light orange gradient background */
+            border: none !important;
+        }
+
+        /* Countdown Title */
+        .countdown-timer .heading-count h2 {
+            color: #333333 !important; /* Dark text on light orange background */
+            font-weight: 700 !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Countdown Items */
+        .countdown-timer .countdown-item {
+            background: rgba(255, 255, 255, 0.95) !important; /* Semi-transparent white background for countdown boxes */
+            border: 2px solid #FF8C42 !important; /* Light orange border */
+            border-radius: 15px !important;
+            padding: 20px 15px !important;
+            margin: 0 10px !important;
+            box-shadow: 0 4px 15px rgba(255, 140, 66, 0.25) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .countdown-timer .countdown-item:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35) !important;
+            background: rgba(255, 255, 255, 1) !important;
+            border-color: #FF6600 !important;
+        }
+
+        .countdown-timer .countdown-item .number {
+            color: #FF6600 !important; /* FPT Orange numbers */
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            text-shadow: 0 2px 4px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .countdown-item .label {
+            color: #666666 !important; /* Dark grey labels */
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+
+        /* Add to Calendar Button */
+        .countdown-timer .btn {
+            background: #FF6600 !important; /* FPT Orange button */
+            border: 2px solid #FF6600 !important;
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+            padding: 12px 30px !important;
+            border-radius: 25px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .btn:hover {
+            background: transparent !important;
+            color: #FF6600 !important;
+            border-color: #FF6600 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4) !important;
+        }
+
+        /* Separator Lines and Icon */
+        .countdown-timer .separator-line {
+            background: #FFB366 !important; /* Light orange separator lines */
+            height: 2px !important;
+        }
+
+        .countdown-timer .separator-icon {
+            background: #FF6600 !important; /* FPT Orange background for icon */
+            border: 3px solid #FFFFFF !important;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .separator-icon i {
+            color: #FFFFFF !important;
         }
     </style>
 </head>
@@ -853,8 +1036,8 @@
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Artists</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing artists performing at this event</p>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured speakers</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing speakers performing at this event</p>
                 </div>
             </div>
         </div>

@@ -63,7 +63,6 @@ public class FestivalServiceImpl implements IFestivalService {
                     dto.setRegistrationRequired(festivalEvent.getRegistrationRequired());
                     dto.setFestivalType(festivalEvent.getFestivalType());
                     dto.setMainOrganizer(festivalEvent.getMainOrganizer());
-                    dto.setExpectedAttendees(festivalEvent.getExpectedAttendees());
 
                     // === 4. Mapping các đối tượng và danh sách liên quan ===
                     // 🔹 Speakers

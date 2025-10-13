@@ -321,103 +321,466 @@
         /* ==========================================================================
    Festival Details Section CSS
    ========================================================================== */
+        /*#festival-details {*/
+        /*    background: #f9f8fd; !* Màu nền tím xám rất nhạt *!*/
+        /*}*/
+
+        /*.details-card {*/
+        /*    background: #ffffff;*/
+        /*    border-radius: 12px;*/
+        /*    padding: 30px;*/
+        /*    margin-bottom: 30px;*/
+        /*    display: flex;*/
+        /*    align-items: flex-start;*/
+        /*    gap: 25px;*/
+        /*    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);*/
+        /*    transition: transform 0.3s ease, box-shadow 0.3s ease;*/
+        /*    height: calc(100% - 30px);*/
+        /*}*/
+
+        /*.details-card:hover {*/
+        /*    transform: translateY(-5px);*/
+        /*    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);*/
+        /*}*/
+
+        /*.details-card .card-icon {*/
+        /*    font-size: 40px;*/
+        /*    color: #8E44AD; !* Màu tím chủ đạo *!*/
+        /*    line-height: 1;*/
+        /*}*/
+
+        /*.details-card .card-content h3 {*/
+        /*    margin-top: 0;*/
+        /*    margin-bottom: 10px;*/
+        /*    font-size: 22px;*/
+        /*    font-weight: 700;*/
+        /*}*/
+
+        /*.details-card .card-content p {*/
+        /*    margin-bottom: 0;*/
+        /*    line-height: 1.7;*/
+        /*    color: #555;*/
+        /*}*/
+
+        /*!* Thẻ thống kê (số lượng) *!*/
+        /*.stat-card {*/
+        /*    background: #ffffff;*/
+        /*    border-radius: 12px;*/
+        /*    padding: 20px;*/
+        /*    margin-bottom: 30px;*/
+        /*    text-align: center;*/
+        /*    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);*/
+        /*    transition: transform 0.3s ease, box-shadow 0.3s ease;*/
+        /*    height: calc(100% - 30px);*/
+        /*}*/
+        /*.stat-card:hover{*/
+        /*    transform: translateY(-5px);*/
+        /*    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);*/
+        /*}*/
+        /*.stat-number {*/
+        /*    font-size: 42px;*/
+        /*    font-weight: 700;*/
+        /*    color: #8E44AD;*/
+        /*    line-height: 1.2;*/
+        /*}*/
+        /*.stat-label {*/
+        /*    font-size: 14px;*/
+        /*    color: #6c757d;*/
+        /*    margin-top: 5px;*/
+        /*    text-transform: uppercase;*/
+        /*    letter-spacing: 0.5px;*/
+        /*}*/
+
+        /*!* Thiết kế đặc biệt cho card Highlight *!*/
+        /*.highlight-card {*/
+        /*    background: linear-gradient(45deg, #8E44AD, #9B59B6);*/
+        /*    color: #ffffff;*/
+        /*    text-align: center;*/
+        /*    flex-direction: column;*/
+        /*    align-items: center;*/
+        /*}*/
+
+        /*.highlight-card .card-icon {*/
+        /*    color: #ffffff;*/
+        /*    font-size: 50px;*/
+        /*    margin-bottom: 10px;*/
+        /*}*/
+
+        /*.highlight-card h3 {*/
+        /*    color: #ffffff;*/
+        /*    font-size: 28px;*/
+        /*}*/
+
+        /*.highlight-card p {*/
+        /*    color: rgba(255, 255, 255, 0.9);*/
+        /*    font-size: 18px;*/
+        /*    max-width: 800px;*/
+        /*    margin-left: auto;*/
+        /*    margin-right: auto;*/
+        /*}*/
+        /* ==========================================================================
+   Festival Details Section CSS - NEW "TECH MUSIC FESTIVAL NIGHT" THEME
+   ========================================================================== */
+        /* ==========================================================================
+      Festival Details Section CSS - "TECH MUSIC FESTIVAL NIGHT" THEME
+      ========================================================================== */
         #festival-details {
-            background: #f9f8fd; /* Màu nền tím xám rất nhạt */
+            background: #FFFFFF !important; /* Nền trắng */
+            color: #333333 !important;
+            padding: 60px 0 !important;
+            position: relative;
+            overflow: hidden;
         }
 
-        .details-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: flex-start;
-            gap: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: calc(100% - 30px);
+        #festival-details::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(255, 102, 0, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 102, 0, 0.015) 0%, transparent 50%);
+            pointer-events: none;
         }
 
-        .details-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+        /* Đảm bảo tiêu đề khu vực có màu tối trên nền trắng */
+        #festival-details .section-title-header h1 {
+            color: #333333 !important;
+            font-size: 2.8rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 2px !important;
+            margin-bottom: 15px !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+        
+        #festival-details .section-title-header p {
+            color: #666666 !important;
+            font-size: 16px !important;
+            margin-bottom: 40px !important;
+            position: relative;
+            z-index: 2;
         }
 
-        .details-card .card-icon {
-            font-size: 40px;
-            color: #8E44AD; /* Màu tím chủ đạo */
-            line-height: 1;
+        /* Thẻ Highlight chính */
+        .main-highlight {
+            background: linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%) !important;
+            border: 2px solid #FF6600 !important;
+            border-radius: 15px !important;
+            padding: 30px 25px !important;
+            margin-bottom: 0 !important;
+            text-align: center !important;
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.1),
+                0 2px 8px rgba(255, 102, 0, 0.1) !important;
+            transition: all 0.3s ease !important;
+            height: 100% !important;
+            position: relative;
+            overflow: hidden;
         }
 
-        .details-card .card-content h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 22px;
-            font-weight: 700;
+        .main-highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 102, 0, 0.08), transparent);
+            transition: left 0.6s ease;
         }
 
-        .details-card .card-content p {
-            margin-bottom: 0;
-            line-height: 1.7;
-            color: #555;
+        .main-highlight:hover::before {
+            left: 100%;
         }
 
-        /* Thẻ thống kê (số lượng) */
-        .stat-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: calc(100% - 30px);
-        }
-        .stat-card:hover{
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
-        }
-        .stat-number {
-            font-size: 42px;
-            font-weight: 700;
-            color: #8E44AD;
-            line-height: 1.2;
-        }
-        .stat-label {
-            font-size: 14px;
-            color: #6c757d;
-            margin-top: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .main-highlight:hover {
+            transform: translateY(-8px) !important;
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, 0.15),
+                0 4px 12px rgba(255, 102, 0, 0.2) !important;
         }
 
-        /* Thiết kế đặc biệt cho card Highlight */
-        .highlight-card {
-            background: linear-gradient(45deg, #8E44AD, #9B59B6);
-            color: #ffffff;
-            text-align: center;
-            flex-direction: column;
-            align-items: center;
+        .main-highlight .icon {
+            font-size: 2.8rem !important;
+            color: #FF6600 !important;
+            text-shadow: 0 0 15px rgba(255, 102, 0, 0.4) !important;
+            filter: drop-shadow(0 2px 4px rgba(255, 102, 0, 0.2));
+            margin-bottom: 20px !important;
+            display: block !important;
+            animation: iconFloat 3s ease-in-out infinite !important;
+            position: relative;
+            z-index: 2;
         }
 
-        .highlight-card .card-icon {
-            color: #ffffff;
-            font-size: 50px;
-            margin-bottom: 10px;
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(2deg); }
         }
 
-        .highlight-card h3 {
-            color: #ffffff;
-            font-size: 28px;
+        .main-highlight .content h3 {
+            font-size: 1.3rem !important;
+            font-weight: 700 !important;
+            color: #333333 !important;
+            margin: 0 0 10px 0 !important;
+            text-shadow: none !important;
+            letter-spacing: 0.5px !important;
+            position: relative;
+            z-index: 2;
         }
 
-        .highlight-card p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 18px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+        .main-highlight .content p {
+            margin: 0 !important;
+            color: #666666 !important;
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            position: relative;
+            z-index: 2;
         }
+
+        /* Thẻ thông tin/thống kê đồng nhất */
+        .glance-item {
+            background: linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%) !important;
+            border: 2px solid #FF6600 !important;
+            border-radius: 15px !important;
+            padding: 30px 25px !important;
+            text-align: center !important;
+            margin-bottom: 0 !important;
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.1),
+                0 2px 8px rgba(255, 102, 0, 0.1) !important;
+            transition: all 0.3s ease !important;
+            height: 100% !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .glance-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 102, 0, 0.08), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .glance-item:hover::before {
+            left: 100%;
+        }
+
+        .glance-item:hover {
+            transform: translateY(-8px) !important;
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, 0.15),
+                0 4px 12px rgba(255, 102, 0, 0.2) !important;
+        }
+
+        .glance-item .icon {
+            font-size: 2.8rem !important;
+            color: #FF6600 !important;
+            margin-bottom: 20px !important;
+            display: block !important;
+            text-shadow: 0 0 15px rgba(255, 102, 0, 0.4) !important;
+            animation: iconFloat 3s ease-in-out infinite !important;
+            filter: drop-shadow(0 2px 4px rgba(255, 102, 0, 0.2));
+            position: relative;
+            z-index: 2;
+        }
+
+        .glance-item h3 {
+            font-size: 1.3rem !important;
+            font-weight: 700 !important;
+            color: #333333 !important;
+            margin-bottom: 8px !important;
+            line-height: 1.3 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            text-shadow: none !important;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Style riêng cho các con số thống kê */
+        .glance-item h3.stat-number {
+            font-size: 2.2rem !important;
+            font-weight: 900 !important;
+            color: #FF6600 !important;
+            margin-bottom: 8px !important;
+            text-shadow: 0 0 15px rgba(255, 102, 0, 0.4) !important;
+            display: block !important;
+            letter-spacing: -0.5px !important;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glance-item p {
+            font-size: 14px !important;
+            color: #666666 !important;
+            margin-bottom: 0 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            font-weight: 500 !important;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #festival-details .section-title-header h1 {
+                font-size: 2.2rem !important;
+                letter-spacing: 1.5px !important;
+            }
+            .main-highlight {
+                padding: 25px 20px !important;
+            }
+            .main-highlight .icon {
+                font-size: 2.5rem !important;
+            }
+            .main-highlight .content h3 {
+                font-size: 1.2rem !important;
+            }
+            .glance-item {
+                padding: 25px 20px !important;
+            }
+            .glance-item .icon {
+                font-size: 2.5rem !important;
+            }
+            .glance-item h3.stat-number {
+                font-size: 2rem !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            #festival-details .section-title-header h1 {
+                font-size: 1.8rem !important;
+                letter-spacing: 1px !important;
+            }
+            .main-highlight {
+                padding: 20px 15px !important;
+            }
+            .main-highlight .icon {
+                font-size: 2.2rem !important;
+            }
+            .main-highlight .content h3 {
+                font-size: 1.1rem !important;
+            }
+            .glance-item {
+                padding: 20px 15px !important;
+            }
+            .glance-item .icon {
+                font-size: 2.2rem !important;
+            }
+            .glance-item h3.stat-number {
+                font-size: 1.8rem !important;
+            }
+        }
+
+        /* ==========================================================================
+           COUNTDOWN TIMER - Light Orange Theme
+           ========================================================================== */
+
+        /* Countdown Timer Section Background */
+        .countdown-timer {
+            background: linear-gradient(135deg, #FFE5CC 0%, #FFF2E6 50%, #FFF8F0 100%) !important; /* Light orange gradient background */
+            border: none !important;
+        }
+
+        /* Countdown Title */
+        .countdown-timer .heading-count h2 {
+            color: #333333 !important; /* Dark text on light orange background */
+            font-weight: 700 !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Countdown Items */
+        .countdown-timer .countdown-item {
+            background: rgba(255, 255, 255, 0.95) !important; /* Semi-transparent white background for countdown boxes */
+            border: 2px solid #FF8C42 !important; /* Light orange border */
+            border-radius: 15px !important;
+            padding: 20px 15px !important;
+            margin: 0 10px !important;
+            box-shadow: 0 4px 15px rgba(255, 140, 66, 0.25) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .countdown-timer .countdown-item:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35) !important;
+            background: rgba(255, 255, 255, 1) !important;
+            border-color: #FF6600 !important;
+        }
+
+        .countdown-timer .countdown-item .number {
+            color: #FF6600 !important; /* FPT Orange numbers */
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            text-shadow: 0 2px 4px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .countdown-item .label {
+            color: #666666 !important; /* Dark grey labels */
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+
+        /* Add to Calendar Button */
+        .countdown-timer .btn {
+            background: #FF6600 !important; /* FPT Orange button */
+            border: 2px solid #FF6600 !important;
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+            padding: 12px 30px !important;
+            border-radius: 25px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .btn:hover {
+            background: transparent !important;
+            color: #FF6600 !important;
+            border-color: #FF6600 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4) !important;
+        }
+
+        /* Separator Lines and Icon */
+        .countdown-timer .separator-line {
+            background: #FFB366 !important; /* Light orange separator lines */
+            height: 2px !important;
+        }
+
+        .countdown-timer .separator-icon {
+            background: #FF6600 !important; /* FPT Orange background for icon */
+            border: 3px solid #FFFFFF !important;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .separator-icon i {
+            color: #FFFFFF !important;
+        }
+
+        /* Alternative: White Background Option */
+        /*
+        .countdown-timer {
+            background: #FFFFFF !important;
+        }
+        
+        .countdown-timer .heading-count h2 {
+            color: #333333 !important;
+        }
+        
+        .countdown-timer .countdown-item {
+            background: #F8F9FA !important;
+            border: 2px solid #FF6600 !important;
+        }
+        */
     </style>
 </head>
 <body>
@@ -631,6 +994,77 @@
 </section>
 <!-- About Section End -->
 
+<!--<section id="festival-details" class="section-padding">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Festival at a Glance</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Discover the unique soul of our festival</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="row">-->
+<!--            <div class="col-lg-12" th:if="${eventDetail.highlight != null}">-->
+<!--                <div class="details-card highlight-card wow fadeInUp" data-wow-delay="0.3s">-->
+<!--                    <div class="card-icon"><i class="lni-bolt-alt"></i></div>-->
+<!--                    <div class="card-content">-->
+<!--                        <h3>Main Highlight</h3>-->
+<!--                        <p th:text="${eventDetail.highlight}">The main highlight of the festival...</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="col-lg-7 col-md-12" th:if="${eventDetail.festivalTheme != null}">-->
+<!--                <div class="details-card wow fadeInUp" data-wow-delay="0.4s">-->
+<!--                    <div class="card-icon"><i class="lni-leaf"></i></div>-->
+<!--                    <div class="card-content">-->
+<!--                        <h3>Festival Theme</h3>-->
+<!--                        <p th:text="${eventDetail.festivalTheme}">The core theme that inspires all activities...</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="col-lg-5 col-md-12">-->
+<!--                <div class="row">-->
+<!--                    <div class="col-lg-6 col-md-6 col-sm-6" th:if="${eventDetail.expectedAttendees != null}">-->
+<!--                        <div class="stat-card wow fadeInUp" data-wow-delay="0.5s">-->
+<!--                            <div class="stat-number" th:text="${eventDetail.expectedAttendees}">10000</div>-->
+<!--                            <p class="stat-label">Expected Attendees</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="col-lg-6 col-md-6 col-sm-6" th:if="${eventDetail.numberOfActivities != null}">-->
+<!--                        <div class="stat-card wow fadeInUp" data-wow-delay="0.6s">-->
+<!--                            <div class="stat-number" th:text="'+' + ${eventDetail.numberOfActivities}">50+</div>-->
+<!--                            <p class="stat-label">Activities</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="col-lg-6 col-md-12" th:if="${eventDetail.culture != null}">-->
+<!--                <div class="details-card wow fadeInUp" data-wow-delay="0.7s">-->
+<!--                    <div class="card-icon"><i class="lni-world"></i></div>-->
+<!--                    <div class="card-content">-->
+<!--                        <h3>Cultural Focus</h3>-->
+<!--                        <p th:text="${eventDetail.culture}">Cultural aspects and traditions celebrated...</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="col-lg-6 col-md-12" th:if="${eventDetail.targetAudience != null}">-->
+<!--                <div class="details-card wow fadeInUp" data-wow-delay="0.8s">-->
+<!--                    <div class="card-icon"><i class="lni-users"></i></div>-->
+<!--                    <div class="card-content">-->
+<!--                        <h3>Target Audience</h3>-->
+<!--                        <p th:text="${eventDetail.targetAudience}">Who this festival is for...</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
 <section id="festival-details" class="section-padding">
     <div class="container">
         <div class="row">
@@ -642,61 +1076,49 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-lg-12" th:if="${eventDetail.highlight != null}">
-                <div class="details-card highlight-card wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="card-icon"><i class="lni-bolt-alt"></i></div>
-                    <div class="card-content">
+        <div class="row" th:if="${eventDetail.highlight != null}">
+            <div class="col-12 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="main-highlight">
+                    <div class="icon"><i class="lni-bolt-alt"></i></div>
+                    <div class="content">
                         <h3>Main Highlight</h3>
-                        <p th:text="${eventDetail.highlight}">The main highlight of the festival...</p>
+                        <p th:text="${eventDetail.highlight}">Điểm nhấn chính của lễ hội.</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-7 col-md-12" th:if="${eventDetail.festivalTheme != null}">
-                <div class="details-card wow fadeInUp" data-wow-delay="0.4s">
-                    <div class="card-icon"><i class="lni-leaf"></i></div>
-                    <div class="card-content">
-                        <h3>Festival Theme</h3>
-                        <p th:text="${eventDetail.festivalTheme}">The core theme that inspires all activities...</p>
-                    </div>
+        <!-- Khoảng cách giữa Main Highlight và 3 ô nhỏ -->
+        <div class="row mt-4">
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-4" th:if="${eventDetail.festivalTheme != null}">
+                <div class="glance-item wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="icon"><i class="lni-leaf"></i></div>
+                    <h3>Festival Theme</h3>
+                    <p th:text="${eventDetail.festivalTheme}">CHỦ ĐỀ CỦA LỄ HỘI</p>
                 </div>
             </div>
 
-            <div class="col-lg-5 col-md-12">
-                <div class="row">
-                    <div class="col-lg-6 col-md-6 col-sm-6" th:if="${eventDetail.expectedAttendees != null}">
-                        <div class="stat-card wow fadeInUp" data-wow-delay="0.5s">
-                            <div class="stat-number" th:text="${eventDetail.expectedAttendees}">10000</div>
-                            <p class="stat-label">Expected Attendees</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 col-md-6 col-sm-6" th:if="${eventDetail.numberOfActivities != null}">
-                        <div class="stat-card wow fadeInUp" data-wow-delay="0.6s">
-                            <div class="stat-number" th:text="'+' + ${eventDetail.numberOfActivities}">50+</div>
-                            <p class="stat-label">Activities</p>
-                        </div>
-                    </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-4" th:if="${eventDetail.expectedAttendees != null}">
+                <div class="glance-item wow fadeInUp" data-wow-delay="0.5s">
+                    <div class="icon"><i class="lni-users"></i></div>
+                    <h3 class="stat-number" th:text="${eventDetail.expectedAttendees}">500</h3>
+                    <p>Expected Attendees</p>
                 </div>
             </div>
 
-            <div class="col-lg-6 col-md-12" th:if="${eventDetail.culture != null}">
-                <div class="details-card wow fadeInUp" data-wow-delay="0.7s">
-                    <div class="card-icon"><i class="lni-world"></i></div>
-                    <div class="card-content">
-                        <h3>Cultural Focus</h3>
-                        <p th:text="${eventDetail.culture}">Cultural aspects and traditions celebrated...</p>
-                    </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-4" th:if="${eventDetail.numberOfActivities != null}">
+                <div class="glance-item wow fadeInUp" data-wow-delay="0.6s">
+                    <div class="icon"><i class="lni-rocket"></i></div>
+                    <h3 class="stat-number" th:text="'+' + ${eventDetail.numberOfActivities}">+10</h3>
+                    <p>Activities</p>
                 </div>
             </div>
 
-            <div class="col-lg-6 col-md-12" th:if="${eventDetail.targetAudience != null}">
-                <div class="details-card wow fadeInUp" data-wow-delay="0.8s">
-                    <div class="card-icon"><i class="lni-users"></i></div>
-                    <div class="card-content">
-                        <h3>Target Audience</h3>
-                        <p th:text="${eventDetail.targetAudience}">Who this festival is for...</p>
-                    </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-4" th:if="${eventDetail.targetAudience != null}">
+                <div class="glance-item wow fadeInUp" data-wow-delay="0.7s">
+                    <div class="icon"><i class="lni-target-customer"></i></div>
+                    <h3>Target Audience</h3>
+                    <p th:text="${eventDetail.targetAudience}">EXCELENCE STUDENT</p>
                 </div>
             </div>
         </div>
@@ -835,8 +1257,8 @@
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Artists</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing artists performing at this event</p>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Speakers</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing Speakers performing at this event</p>
                 </div>
             </div>
         </div>

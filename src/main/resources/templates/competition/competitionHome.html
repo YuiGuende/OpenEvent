@@ -410,6 +410,371 @@
             font-family: 'Poppins', sans-serif;
         }
 
+        /* Beautiful Event Description Box - UPDATED */
+        .event-description-box {
+            background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9)) !important;
+            border: 2px solid var(--accent-primary) !important;
+            border-radius: 25px !important;
+            padding: 50px 100px !important;
+            margin: 20px 0px !important;
+            box-shadow: 
+                0 0 35px rgba(255, 107, 53, 0.3),
+                inset 0 0 25px rgba(255, 107, 53, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            transition: all 0.3s ease !important;
+            position: relative !important;
+            overflow: hidden !important;
+            animation: descBoxFloat 6s ease-in-out infinite, descBoxGlow 3s ease-in-out infinite alternate !important;
+            width: 100% !important;
+            max-width: none !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Shimmer Effect Overlay */
+        .event-description-box::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -50% !important;
+            left: -50% !important;
+            width: 200% !important;
+            height: 200% !important;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                rgba(255, 107, 53, 0.2), 
+                transparent
+            ) !important;
+            animation: shimmer 4s infinite !important;
+            z-index: 1 !important;
+            pointer-events: none !important;
+        }
+
+        /* Inner Glow Effect */
+        .event-description-box::after {
+            content: '' !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            width: 80% !important;
+            height: 80% !important;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, transparent 70%) !important;
+            animation: innerGlow 3s ease-in-out infinite alternate !important;
+            z-index: 0 !important;
+            transform: translate(-50%, -50%) !important;
+            pointer-events: none !important;
+        }
+
+        /* Make sure content is above overlays */
+        .event-description-box > * {
+            position: relative !important;
+            z-index: 2 !important;
+        }
+
+        /* Force container to be full width */
+        #descriptionm .container {
+            max-width: 100% !important;
+            padding: 0 15px !important;
+        }
+
+        #descriptionm .row {
+            margin: 0 !important;
+        }
+
+        #descriptionm .col-12 {
+            padding: 0 !important;
+        }
+
+        .event-description-box:hover {
+            border-color: var(--accent-secondary) !important;
+            box-shadow: 
+                0 0 50px rgba(247, 147, 30, 0.5),
+                inset 0 0 35px rgba(247, 147, 30, 0.15) !important;
+            transform: translateY(-8px) scale(1.01) !important;
+            animation-play-state: paused !important;
+        }
+
+        /* Floating Animation */
+        @keyframes descBoxFloat {
+            0%, 100% {
+                transform: translateY(0px) !important;
+            }
+            50% {
+                transform: translateY(-10px) !important;
+            }
+        }
+
+        /* Glow Pulsing Animation */
+        @keyframes descBoxGlow {
+            0% {
+                box-shadow: 
+                    0 0 35px rgba(255, 107, 53, 0.3),
+                    inset 0 0 25px rgba(255, 107, 53, 0.1) !important;
+            }
+            100% {
+                box-shadow: 
+                    0 0 50px rgba(247, 147, 30, 0.5),
+                    inset 0 0 35px rgba(247, 147, 30, 0.15) !important;
+            }
+        }
+
+        /* Shimmer Animation */
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(30deg) !important;
+            }
+            50% {
+                transform: translateX(100%) translateY(100%) rotate(30deg) !important;
+            }
+            100% {
+                transform: translateX(-100%) translateY(-100%) rotate(30deg) !important;
+            }
+        }
+
+        /* Inner Glow Animation */
+        @keyframes innerGlow {
+            0% {
+                opacity: 0.3 !important;
+                transform: translate(-50%, -50%) scale(0.9) !important;
+            }
+            100% {
+                opacity: 0.6 !important;
+                transform: translate(-50%, -50%) scale(1.1) !important;
+            }
+        }
+
+        .title-with-cup {
+            text-align: center !important;
+            margin-bottom: 30px !important;
+            animation: titleFloat 4s ease-in-out infinite !important;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% {
+                transform: translateY(0px) !important;
+            }
+            50% {
+                transform: translateY(-5px) !important;
+            }
+        }
+
+        .cup-icon {
+            width: 70px !important;
+            height: 70px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 
+                0 0 30px rgba(255, 107, 53, 0.5),
+                0 0 60px rgba(255, 107, 53, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.1) !important;
+            animation: cupGlowPulse 2s ease-in-out infinite alternate !important;
+            position: relative !important;
+        }
+
+        /* Pulsing Ring Effect */
+        .cup-icon::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -10px !important;
+            left: -10px !important;
+            right: -10px !important;
+            bottom: -10px !important;
+            border-radius: 50% !important;
+            border: 2px solid rgba(255, 107, 53, 0.3) !important;
+            animation: ringPulse 2s ease-in-out infinite !important;
+        }
+
+        @keyframes ringPulse {
+            0% {
+                transform: scale(1) !important;
+                opacity: 1 !important;
+            }
+            50% {
+                transform: scale(1.2) !important;
+                opacity: 0.5 !important;
+            }
+            100% {
+                transform: scale(1) !important;
+                opacity: 1 !important;
+            }
+        }
+
+        .cup-icon i {
+            color: var(--text-white) !important;
+            font-size: 32px !important;
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.5),
+                0 0 30px rgba(255, 107, 53, 0.5) !important;
+            animation: cupRotateBounce 3s ease-in-out infinite !important;
+            position: relative !important;
+            z-index: 1 !important;
+        }
+
+        @keyframes cupGlowPulse {
+            0% {
+                box-shadow: 
+                    0 0 30px rgba(255, 107, 53, 0.5),
+                    0 0 60px rgba(255, 107, 53, 0.3),
+                    inset 0 0 20px rgba(255, 255, 255, 0.1) !important;
+                transform: scale(1) !important;
+            }
+            100% {
+                box-shadow: 
+                    0 0 40px rgba(247, 147, 30, 0.7),
+                    0 0 80px rgba(247, 147, 30, 0.4),
+                    inset 0 0 25px rgba(255, 255, 255, 0.2) !important;
+                transform: scale(1.05) !important;
+            }
+        }
+
+        @keyframes cupRotateBounce {
+            0%, 100% {
+                transform: rotate(-10deg) scale(1) !important;
+            }
+            25% {
+                transform: rotate(10deg) scale(1.1) !important;
+            }
+            50% {
+                transform: rotate(-10deg) scale(1.15) !important;
+            }
+            75% {
+                transform: rotate(10deg) scale(1.1) !important;
+            }
+        }
+
+        .event-description-box h2 {
+            background: linear-gradient(135deg, #ffffff 0%, #ff6e40 50%, #f7931e 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            font-size: 36px !important;
+            font-weight: 700 !important;
+            margin: 0 !important;
+            text-shadow: none !important;
+            filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.5)) !important;
+            animation: titleShine 3s ease-in-out infinite alternate !important;
+        }
+
+        @keyframes titleShine {
+            0% {
+                filter: drop-shadow(0 0 15px rgba(255, 107, 53, 0.5)) !important;
+            }
+            100% {
+                filter: drop-shadow(0 0 25px rgba(247, 147, 30, 0.8)) !important;
+            }
+        }
+
+        .event-description-box p {
+            color: var(--text-secondary) !important;
+            font-size: 18px !important;
+            line-height: 1.8 !important;
+            margin: 0 0 20px 0 !important;
+            text-align: justify !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .event-description-box p.lead {
+            font-size: 22px !important;
+            font-weight: 500 !important;
+            background: linear-gradient(135deg, #ffffff 0%, #ffb380 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            text-align: center !important;
+            margin-bottom: 30px !important;
+            filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.3)) !important;
+        }
+
+        .event-description-box p i {
+            color: #FF6B35 !important;
+            font-size: 28px !important;
+            margin-right: 20px !important;
+            text-shadow: 0 0 15px rgba(255, 107, 53, 0.8) !important;
+            display: inline-block !important;
+            animation: iconPulse 2s ease-in-out infinite !important;
+            vertical-align: top !important;
+            margin-top: 5px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .event-description-box p.lead i {
+            font-size: 32px !important;
+            margin-right: 25px !important;
+            animation: iconBounce 1.5s ease-in-out infinite !important;
+            color: #FF6B35 !important;
+            text-shadow: 0 0 20px rgba(255, 107, 53, 1) !important;
+            vertical-align: top !important;
+            margin-top: 8px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        /* Force icon visibility for all icons */
+        .event-description-box i.lni-trophy,
+        .event-description-box i.lni-star,
+        .event-description-box i.lni-timer,
+        .event-description-box i.lni-gift {
+            display: inline-block !important;
+            color: #FF6B35 !important;
+            font-size: 28px !important;
+            margin-right: 20px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            text-shadow: 0 0 15px rgba(255, 107, 53, 0.8) !important;
+        }
+
+        /* Special override for star icon in description */
+        .event-description-box p.lead i.lni-star {
+            display: inline-block !important;
+            color: #FF6B35 !important;
+            font-size: 32px !important;
+            margin-right: 25px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            text-shadow: 0 0 20px rgba(255, 107, 53, 1) !important;
+            vertical-align: top !important;
+            margin-top: 8px !important;
+        }
+
+        /* Specific styling for timer icon */
+        .event-description-box i.lni-timer {
+            color: #FF6B35 !important;
+        }
+
+        /* Specific styling for gift icon */
+        .event-description-box i.lni-gift {
+            color: #FF6B35 !important;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% {
+                transform: scale(1) !important;
+                text-shadow: 0 0 15px rgba(255, 107, 53, 0.8) !important;
+            }
+            50% {
+                transform: scale(1.1) !important;
+                text-shadow: 0 0 25px rgba(247, 147, 30, 1) !important;
+            }
+        }
+
+        @keyframes iconBounce {
+            0%, 100% {
+                transform: translateY(0) scale(1) !important;
+            }
+            50% {
+                transform: translateY(-5px) scale(1.15) !important;
+            }
+        }
+
+        .event-description-box p span {
+            color: var(--text-primary) !important;
+            font-weight: 600 !important;
+        }
+
         /* Schedule Section - Xanh đậm theme */
         #schedules {
             background: var(--secondary-bg) !important;
@@ -1812,15 +2177,17 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-12">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
                     <!-- Event Title -->
-                    <h2 th:text="${eventDetail.title}">Event Title</h2>
+                    <div class="title-with-cup">
+                        <h2 th:text="${eventDetail.title}">Event Title</h2>
+                    </div>
 
                     <!-- Description -->
                     <p class="lead" th:if="${eventDetail.description != null}">
-                        <i class="lni-music"></i>
-                        <span th:text="${eventDetail.description}">Event description</span>
+                        <i class="lni-star"></i>
+                        <span th:text="${eventDetail.description}">FPT University and its Defining Mark on the International Stage of ICPC. Within the Vietnamese tech and programming community, the International Collegiate Programming Contest (ICPC) has long been regarded as the most prestigious "Olympics" for students in Information Technology. It is not only a premier intellectual arena where young talents compete in algorithms, logical thinking, and problem-solving skills under intense time pressure, but also a solid launching pad for illustrious tech careers.</span>
                     </p>
 
                     <!-- Time -->
@@ -1832,8 +2199,20 @@
 
                     <!-- Benefits -->
                     <p th:if="${eventDetail.benefits != null}">
-                        <i class="lni-microphone"></i>
+                        <i class="lni-gift"></i>
                         <span th:text="'Benefits: ' + ${eventDetail.benefits}">Benefits...</span>
+                    </p>
+
+                    <!-- Additional Info -->
+                    <p>
+                        <i class="lni-trophy"></i>
+                        <span>Join us for an unforgettable experience where talent meets technology and innovation drives success. This competition represents the pinnacle of programming excellence in Vietnam.</span>
+                    </p>
+
+                    <!-- Registration Info -->
+                    <p>
+                        <i class="lni-trophy"></i>
+                        <span>Registration is now open for all eligible participants. Don't miss this opportunity to showcase your skills and compete with the best programmers in the country.</span>
                     </p>
                 </div>
             </div>
@@ -2092,8 +2471,8 @@
         <div class="row">
             <div class="col-12">
                 <div class="section-title-header text-center">
-                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Artists</h1>
-                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing artists performing at this event</p>
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured Judge</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing judges of this event</p>
                 </div>
             </div>
         </div>

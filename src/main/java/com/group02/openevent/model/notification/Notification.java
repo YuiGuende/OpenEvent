@@ -3,11 +3,14 @@ package com.group02.openevent.model.notification;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.request.Request;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "notifications")
 public class Notification {
@@ -22,6 +25,7 @@ public class Notification {
     @ManyToOne
     private Account sender;
 
+    private String title;
 
     @Column(length = 500, nullable = false)
     private String message;

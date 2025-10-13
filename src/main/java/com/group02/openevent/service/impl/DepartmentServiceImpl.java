@@ -61,12 +61,12 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // Calculate total participants from confirmed orders
         long totalParticipants = departmentOrders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                .filter(o -> o.getStatus() == OrderStatus.PAID)
                 .count();
 
         // Calculate total revenue from confirmed orders
         BigDecimal totalRevenue = departmentOrders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                .filter(o -> o.getStatus() == OrderStatus.PAID)
                 .map(Order::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -244,7 +244,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             LocalDateTime monthEnd = monthStart.plusMonths(1);
 
             long participantCount = orders.stream()
-                    .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                    .filter(o -> o.getStatus() == OrderStatus.PAID)
                     .filter(o -> o.getCreatedAt() != null)
                     .filter(o -> !o.getCreatedAt().isBefore(monthStart) && o.getCreatedAt().isBefore(monthEnd))
                     .count();
@@ -271,7 +271,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             LocalDateTime monthEnd = monthStart.plusMonths(1);
 
             BigDecimal monthRevenue = orders.stream()
-                    .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                    .filter(o -> o.getStatus() == OrderStatus.PAID)
                     .filter(o -> o.getCreatedAt() != null)
                     .filter(o -> !o.getCreatedAt().isBefore(monthStart) && o.getCreatedAt().isBefore(monthEnd))
                     .map(Order::getTotalAmount)
@@ -293,7 +293,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // Group orders by event and calculate statistics
         Map<Event, List<Order>> ordersByEvent = orders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                .filter(o -> o.getStatus() == OrderStatus.PAID)
                 .collect(Collectors.groupingBy(Order::getEvent));
 
         // Calculate revenue and ticket count for each event

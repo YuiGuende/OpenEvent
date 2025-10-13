@@ -9,10 +9,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Service;
 
 
 import java.util.List;
-
+@Service
 public interface IOrderRepo extends JpaRepository<Order, Long> {
     
     List<Order> findByCustomer(Customer customer);
@@ -25,7 +26,7 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
 
     @Query("SELECT COUNT(o) FROM Order o " +
             "WHERE o.event.id = :eventId " +
-            "AND o.status = com.group02.openevent.model.order.OrderStatus.CONFIRMED")
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
     Integer countConfirmedParticipantsByEventId(@Param("eventId") Long eventId);
 
     @Query("SELECT DISTINCT o.event FROM Order o WHERE o.customer.customerId = :customerId")
@@ -33,7 +34,7 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
 
     @Query("SELECT DISTINCT o.event FROM Order o " +
             "WHERE o.customer.customerId = :customerId " +
-            "AND o.status = com.group02.openevent.model.order.OrderStatus.CONFIRMED")
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
     List<Event> findConfirmedEventsByCustomerId(@Param("customerId") Long customerId);
 
     @Query("SELECT o FROM Order o WHERE o.event.department.accountId = :departmentId")
@@ -46,6 +47,10 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
 
     @Query("SELECT o FROM Order o WHERE o.event.department.accountId = :departmentId")
     Page<Order> findByDepartmentId(@Param("departmentId") Long departmentId, Pageable pageable);
+
+    @Query("SELECT DISTINCT o.customer.account.accountId FROM Order o " +
+            "WHERE o.event.id = :eventId AND o.status = 'PAID'")
+    List<Long> findDistinctCustomerAccountIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
 }
 
 

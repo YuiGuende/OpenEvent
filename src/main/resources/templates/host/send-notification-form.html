@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gửi Thông Báo Sự Kiện</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .notification-container {
+            max-width: 650px;
+            margin: 50px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 30px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            resize: vertical;
+        }
+        textarea { min-height: 150px; }
+        .event-info { background: #e9f0ff; padding: 10px; border-radius: 6px; margin-bottom: 20px; color: #004085; }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #218838; }
+        .error-message { color: #dc3545; margin-top: 10px; font-weight: bold; }
+        .success-message { color: #28a745; margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="notification-container">
+    <h2>📣 Gửi Thông Báo Đến Người Tham Gia</h2>
+
+    <div class="event-info">
+        Đang gửi thông báo cho Sự kiện có ID: <strong th:text="${eventId}">[Event ID]</strong>
+    </div>
+
+    <form id="notificationForm">
+        <input type="hidden" id="eventId" name="eventId" th:value="${eventId}">
+
+        <label for="title">Tiêu đề Thông báo (Tùy chọn):</label>
+        <input type="text" id="title" name="title" maxlength="100" placeholder="Ví dụ: Thay đổi địa điểm, Cần chuẩn bị..." />
+
+        <label for="message">Nội dung Thông báo (*):</label>
+        <textarea id="message" name="message" required placeholder="Nhập nội dung thông báo chi tiết tại đây (Tối đa 500 ký tự)"></textarea>
+
+        <button type="submit">Gửi Thông Báo Ngay</button>
+
+        <div id="responseMessage" class="success-message" style="display: none;"></div>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('notificationForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Ngăn form gửi theo cách truyền thống
+
+        const eventId = document.getElementById('eventId').value;
+        const title = document.getElementById('title').value;
+        const message = document.getElementById('message').value;
+
+        // Xóa thông báo cũ
+        document.getElementById('responseMessage').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+
+        if (!message) {
+            document.getElementById('errorMessage').innerText = 'Nội dung thông báo không được để trống.';
+            document.getElementById('errorMessage').style.display = 'block';
+            return;
+        }
+
+        const notificationData = {
+            eventId: eventId,
+            title: title,
+            message: message,
+            // Thêm type nếu cần, ví dụ: type: "CUSTOMER_NOTIFICATION"
+        };
+
+        // Địa chỉ API đúng
+        const apiUrl = '/api/notifications/event-participants';
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Thêm header authorization nếu bạn dùng Spring Security
+                // 'Authorization': 'Bearer ' + yourToken,
+            },
+            body: JSON.stringify(notificationData)
+        })
+            .then(response => {
+                // Kiểm tra HTTP status code
+                if (response.ok) {
+                    return response.text(); // Đọc body dưới dạng text
+                } else {
+                    // Xử lý lỗi từ server (4xx hoặc 5xx)
+                    return response.text().then(text => { throw new Error(text || `Lỗi: ${response.status} ${response.statusText}`); });
+                }
+            })
+            .then(data => {
+                // Xử lý thành công
+                document.getElementById('responseMessage').innerText = '✅ ' + data;
+                document.getElementById('responseMessage').style.display = 'block';
+                // Xóa nội dung form sau khi gửi thành công
+                document.getElementById('title').value = '';
+                document.getElementById('message').value = '';
+            })
+            .catch(error => {
+                // Xử lý lỗi mạng hoặc lỗi custom từ .then(response)
+                console.error('Lỗi khi gửi thông báo:', error);
+                document.getElementById('errorMessage').innerText = '❌ Gửi thất bại: ' + error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+            });
+    });
+</script>
+
+</body>
+</html>

@@ -186,7 +186,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Update order status
-        order.setStatus(OrderStatus.CONFIRMED);
+        order.setStatus(OrderStatus.PAID);
         orderRepo.save(order);
     }
 
@@ -207,8 +207,7 @@ public class OrderServiceImpl implements OrderService {
         // PENDING orders (unpaid) are not counted as registered
         return orders.stream()
                 .anyMatch(order -> order.getEvent().getId().equals(eventId) && 
-                         (order.getStatus() == OrderStatus.CONFIRMED || 
-                          order.getStatus() == OrderStatus.PAID));
+                         (order.getStatus() == OrderStatus.PAID));
     }
 
     @Override

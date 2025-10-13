@@ -30,10 +30,9 @@ public class OrderDTO {
     // Computed fields
     public String getStatusBadgeClass() {
         return switch (status) {
-            case CONFIRMED -> "bg-success";
+            case PAID -> "bg-success";
             case PENDING -> "bg-warning";
             case CANCELLED -> "bg-danger";
-            case PAID -> "bg-info";
             case EXPIRED -> "bg-secondary";
             case REFUNDED -> "bg-dark";
             default -> "bg-secondary";

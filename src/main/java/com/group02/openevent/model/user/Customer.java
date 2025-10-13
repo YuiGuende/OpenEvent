@@ -42,6 +42,9 @@ public class Customer {
     @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)
     private Host host;
 
+    @Column(unique = true, length = 100)
+    private String memberID;
+
     public Customer() {
     }
 

@@ -524,6 +524,7 @@ html {
     border: 2px dashed #e0e0e0;
     background: white;
     padding: 2rem;
+    margin-top: 30px;
 }
 
 .event-additional h2 {

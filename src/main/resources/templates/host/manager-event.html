@@ -201,7 +201,9 @@
         /*<![CDATA[*/
         // Thymeleaf sẽ tự động chuyển đổi List<Speaker> thành một mảng đối tượng JavaScript
         const initialSpeakersData = /*[[${speakersData}]]*/ [];
+        const initialSchedulesData = /*[[${schedulesData}]]*/ [];
         console.log('Dữ liệu speakers từ Thymeleaf:', initialSpeakersData);
+        console.log('Dữ liệu schedules từ Thymeleaf:', initialSchedulesData);
         /*]]>*/
     </script>
 
@@ -209,7 +211,7 @@
     <script src="/js/getting-started.js"></script>
     <script src="/js/event-form.js"></script>
     <script src="/js/lineup-manager.js?v=15"></script>
-    <script src="/js/agenda-manager.js?v=2"></script>
+    <script src="/js/agenda-manager.js?v=7"></script>
     <script src="/js/update-event.js"></script>
     <script src="/js/router.js"></script>
     <script src="/js/app.js"></script>

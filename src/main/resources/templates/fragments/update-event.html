@@ -298,7 +298,13 @@
                 <input type="text" id="prerequisites" class="event-form-input" placeholder="Prerequisites your event" th:field="*{prerequisites}">
             </div>
         </div>
-
+        <!-- Save Button -->
+        <div class="event-form-actions" style="margin-top: 32px; text-align: center;">
+            <button type="button" id="saveEventBtn" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Lưu thay đổi
+            </button>
+        </div>
+    </form>
         <!-- Additional sections -->
         <div class="event-section event-additional">
             <h2>Add more sections to your event page</h2>
@@ -321,19 +327,13 @@
             </div>
         </div>
 
-    <!-- Save Button -->
-    <div class="event-form-actions" style="margin-top: 32px; text-align: center;">
-        <button type="button" id="saveEventBtn" class="btn btn-primary btn-lg">
-            <i class="fas fa-save"></i> Lưu thay đổi
-        </button>
-    </div>
 
     <!-- Hidden form để submit ảnh -->
     <form id="imageUploadForm" style="display: none;">
         <input type="hidden" name="eventId" id="eventIdInput">
         <input type="hidden" name="images" id="imagesInput">
     </form>
-    </form>
+
 </div>
 
 <style>
@@ -392,6 +392,39 @@
     font-size: 12px;
     font-weight: 600;
     margin-bottom: 2px;
+}
+
+.schedule-member-summary {
+    background: #fff6f5;
+    border-radius: 16px;
+    padding: 24px 32px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(61,85,254,0.04);
+    border: 1px solid #e57373;
+}
+
+.schedule-member-summary .summary-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.schedule-member-summary .summary-time {
+    color: #e57373;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.schedule-member-summary .summary-activity {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.schedule-member-summary .summary-description {
+    color: #666;
+    font-size: 14px;
 }
 
 .summary-actions {

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.Speaker;
+import com.group02.openevent.model.event.EventSchedule;
 import com.group02.openevent.repository.ISpeakerRepo;
+import com.group02.openevent.repository.IEventScheduleRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IPlaceService;
 import com.group02.openevent.service.impl.PlaceServiceImpl;
@@ -30,6 +32,8 @@ public class EventManageController {
     @Autowired
     ISpeakerRepo speakerRepo;
     @Autowired
+    IEventScheduleRepo scheduleRepo;
+    @Autowired
     ObjectMapper objectMapper;
 
     //    @RequestMapping(value = "/manage/event/{eventId:\\d+}/{path:[^\\.]*}")
@@ -53,7 +57,9 @@ public class EventManageController {
         model.addAttribute("content", "fragments/getting-started :: content");
 
         List<Speaker> speakersList = speakerRepo.findSpeakerByEventId(eventId);
+        List<EventSchedule> schedulesList = scheduleRepo.findByEventId(eventId);
         model.addAttribute("speakersData", speakersList);
+        model.addAttribute("schedulesData", schedulesList);
         // 4. Trả về file layout chính
         return "host/manager-event";
     }

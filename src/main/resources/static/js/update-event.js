@@ -533,6 +533,15 @@ window.initializeEventFormListeners = function() {
                 console.error('populateLineupFromEvent function not found!');
             }
             
+            // Load schedules from database
+            console.log('Attempting to load schedules from database...');
+            if (typeof window.populateSchedulesFromEvent === 'function') {
+                console.log('Calling populateSchedulesFromEvent...');
+                window.populateSchedulesFromEvent();
+            } else {
+                console.error('populateSchedulesFromEvent function not found!');
+            }
+            
             console.log('UPDATE EVENT: Initialization completed');
         }, 200);
 

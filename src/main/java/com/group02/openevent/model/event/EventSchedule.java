@@ -18,6 +18,15 @@ public class EventSchedule {
     private String activity;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public EventSchedule() {
     }

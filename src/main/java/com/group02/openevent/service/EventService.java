@@ -3,14 +3,15 @@ package com.group02.openevent.service;
 
 
 import com.group02.openevent.dto.home.EventCardDTO;
-import com.group02.openevent.dto.request.EventUpdateRequest;
+import com.group02.openevent.dto.request.update.EventUpdateRequest;
 import com.group02.openevent.model.event.*;
-import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.user.Host;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -40,4 +41,6 @@ public interface EventService {
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
     List<EventCardDTO> getCustomerEvents(Long customerId);
     List<EventCardDTO> getLiveEvents(int i);
+    List<Event> getEventByHostId(Long id);
+     Event getEventResponseById(Long id);
 }

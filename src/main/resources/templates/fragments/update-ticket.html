@@ -1,0 +1,261 @@
+
+<!--    &lt;!&ndash; Header &ndash;&gt;-->
+<!--    <div class="ticket-header">-->
+<!--        <div class="container">-->
+<!--            <div class="d-flex align-items-center">-->
+<!--                <div class="ticket-icon me-3">-->
+<!--                    <i class="fas fa-ticket-alt"></i>-->
+<!--                </div>-->
+<!--                <div>-->
+<!--                    <h1 class="ticket-title">Quản lý vé sự kiện</h1>-->
+<!--                    <p class="ticket-subtitle">Tạo và quản lý các loại vé cho sự kiện của bạn</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <!-- Main Content -->
+    <div class="container" th:fragment="content">
+        <div class="row g-4">
+            <!-- Left Column: Ticket Form -->
+            <div class="col-lg-6">
+                <div class="ticket-create-card">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="form-header">
+                                <h2 id="form-title" class="card-title mb-3">
+                                    <i class="fas fa-plus-circle"></i> Tạo Vé Mới
+                                </h2>
+                                <button id="cancel-edit-btn" class="btn btn-outline-secondary" style="display: none;">
+                                    <i class="fas fa-times"></i> Hủy Chỉnh Sửa
+                                </button>
+                            </div>
+                            
+                            <!-- Ticket Creation Form -->
+                            <form id="ticket-form" class="ticket-form">
+                                <input type="hidden" id="ticket-id">
+                                
+                                <!-- Ticket Name -->
+                                <div class="mb-3">
+                                    <label for="ticket-name" class="form-label">
+                                        <i class="fas fa-tag"></i> Tên loại vé <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="ticket-name" 
+                                           placeholder="VD: Vé Early Bird, Vé VIP..." required>
+                                    <div class="valid-feedback">
+                                        <i class="fas fa-check-circle me-1"></i>Tên vé hợp lệ!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        <i class="fas fa-exclamation-circle me-1"></i>Vui lòng nhập tên loại vé
+                                    </div>
+                                </div>
+                                <!-- Description with Rich Text Editor -->
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-align-left"></i> Mô tả
+                                    </label>
+                                    <div class="rich-text-editor">
+                                        <!-- Toolbar -->
+                                        <div class="editor-toolbar">
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" data-command="bold" title="Bold">
+                                                    <i class="fas fa-bold"></i>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" data-command="italic" title="Italic">
+                                                    <i class="fas fa-italic"></i>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" data-command="underline" title="Underline">
+                                                    <i class="fas fa-underline"></i>
+                                                </button>
+                                            </div>
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left">
+                                                    <i class="fas fa-align-left"></i>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Align Center">
+                                                    <i class="fas fa-align-center"></i>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right">
+                                                    <i class="fas fa-align-right"></i>
+                                                </button>
+                                            </div>
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+                                                    <i class="fas fa-list-ul"></i>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+                                                    <i class="fas fa-list-ol"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Editor Content -->
+                                        <div class="editor-content" contenteditable="true" id="ticket-description" data-placeholder="Nhập mô tả chi tiết về loại vé này...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Price and Discount -->
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <label for="ticket-price" class="form-label">
+                                            <i class="fas fa-dollar-sign"></i> Giá (VNĐ) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" class="form-control" id="ticket-price" 
+                                               placeholder="0" min="0" step="1000" required>
+                                        <div class="valid-feedback">
+                                            <i class="fas fa-check-circle me-1"></i>Giá vé hợp lệ!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Vui lòng nhập giá vé hợp lệ
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="ticket-sale" class="form-label">
+                                            <i class="fas fa-percent"></i> Giảm giá (%)
+                                        </label>
+                                        <input type="number" class="form-control" id="ticket-sale" 
+                                               placeholder="0" min="0" max="100" step="1">
+                                        <div class="valid-feedback">
+                                            <i class="fas fa-check-circle me-1"></i>Giảm giá hợp lệ!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Giảm giá phải từ 0-100%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quantity -->
+                                <div class="mb-3">
+                                    <label for="ticket-quantity" class="form-label">
+                                        <i class="fas fa-boxes"></i> Tổng số lượng <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="ticket-quantity" 
+                                           placeholder="0" min="1" required>
+                                    <div class="valid-feedback">
+                                        <i class="fas fa-check-circle me-1"></i>Số lượng hợp lệ!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        <i class="fas fa-exclamation-circle me-1"></i>Số lượng phải lớn hơn 0
+                                    </div>
+                                </div>
+
+                                <!-- Sale Period -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="ticket-start-date" class="form-label">
+                                            <i class="fas fa-calendar-alt"></i> Ngày bắt đầu bán <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="datetime-local" class="form-control" id="ticket-start-date" required>
+                                            <span class="input-group-text">
+                                                <i class="fas fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                        <div class="valid-feedback">
+                                            <i class="fas fa-check-circle me-1"></i>Ngày bắt đầu hợp lệ!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Vui lòng chọn ngày bắt đầu
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="ticket-end-date" class="form-label">
+                                            <i class="fas fa-calendar-check"></i> Ngày kết thúc bán <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="datetime-local" class="form-control" id="ticket-end-date" required>
+                                            <span class="input-group-text">
+                                                <i class="fas fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                        <div class="valid-feedback">
+                                            <i class="fas fa-check-circle me-1"></i>Ngày kết thúc hợp lệ!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Vui lòng chọn ngày kết thúc
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Payment Method -->
+                                <div class="mb-3">
+                                    <label class="form-label">Phương thức thanh toán</label>
+                                    <div class="payment-method-card">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-icon me-3">
+                                                <i class="fas fa-credit-card"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">PayOS</h6>
+                                                <small class="text-muted">Phương thức thanh toán mặc định</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary btn-lg flex-fill" id="submit-btn">
+                                        <i class="fas fa-save me-2"></i> Lưu Vé
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Ticket List -->
+            <div class="col-lg-6">
+                <div class="ticket-list-card">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="list-header">
+                                <h2 class="card-title mb-0">
+                                    <i class="fas fa-list"></i> Danh sách vé
+                                </h2>
+                                <span class="badge bg-light text-dark" id="ticket-count">0 vé</span>
+                            </div>
+                            
+                            <!-- Ticket List Container -->
+                            <div id="ticket-list" class="ticket-list">
+                                <!-- Tickets will be rendered here -->
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="empty-state" class="empty-state text-center py-5">
+                                <div class="empty-icon mb-3">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <h5 class="text-muted">Chưa có vé nào được tạo</h5>
+                                <p class="text-muted">Hãy tạo vé đầu tiên của bạn!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Xác Nhận Xóa</h3>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa vé này không?</p>
+                <p class="modal-warning">Hành động này không thể hoàn tác!</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-delete-btn">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
+                <button class="btn btn-danger" id="confirm-delete-btn">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+

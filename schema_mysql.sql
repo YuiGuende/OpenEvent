@@ -81,6 +81,7 @@ DROP TABLE IF EXISTS `event`;
 CREATE TABLE `event` (
   `event_type` varchar(31) NOT NULL,
   `id` int NOT NULL,
+  `version` bigint DEFAULT '0',
   `benefits` text,
   `created_at` datetime(6) NOT NULL,
   `description` text,

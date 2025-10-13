@@ -1,9 +1,11 @@
-package com.group02.openevent.dto.request;
+package com.group02.openevent.dto.request.update;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.group02.openevent.dto.request.*;
 import com.group02.openevent.dto.ticket.TicketTypeRequest;
 import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.model.event.EventSchedule;
 import com.group02.openevent.model.event.Place;
@@ -22,7 +24,8 @@ import java.util.List;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
-        property = "eventType"
+        property = "eventType",
+        visible = true // ✅ Cho phép field này được set luôn vào object
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = MusicEventUpdateRequest.class, name = "MUSIC"),
@@ -30,7 +33,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = CompetitionEventUpdateRequest.class, name = "COMPETITION"),
         @JsonSubTypes.Type(value = WorkshopEventUpdateRequest.class, name = "WORKSHOP"),
 })
-public abstract class EventUpdateRequest {
+public class EventUpdateRequest {
 
     Long id; // Bắt buộc khi update
 
@@ -39,7 +42,7 @@ public abstract class EventUpdateRequest {
     String description;
     Integer capacity;
 
-    String eventType; // Dùng cho Jackson chọn subclass
+    EventType eventType; // Dùng cho Jackson chọn subclass
 
     LocalDateTime publicDate;
     LocalDateTime enrollDeadline;

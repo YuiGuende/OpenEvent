@@ -30,6 +30,7 @@ public class EventCardDTO {
     private Integer registered;
     private String city;
     private String organizer;
+    private Long idHost;
     private Double minPrice;
     private Double maxPrice;
     private boolean poster;

@@ -90,6 +90,7 @@ CREATE TABLE user_sessions
 CREATE TABLE event
 (
     id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    version          BIGINT DEFAULT 0,
     event_type       VARCHAR(31)  NOT NULL,
     event_title      VARCHAR(150) NOT NULL,
     description      TEXT,

@@ -44,6 +44,112 @@
     }
 }
 
+/* Dropdown Menu Styles */
+.event-actions {
+    position: absolute;
+    z-index: 10;
+    top: 10px;
+    right: 10px;
+    
+}
+
+.event-card {
+    position: relative;
+    overflow: visible;
+    z-index: 1;
+}
+
+.events-list {
+    overflow: visible;
+}
+
+/* Đảm bảo tất cả container cha không bị overflow hidden */
+.main-content,
+.event-wrapper,
+body,
+html {
+    overflow: visible !important;
+}
+
+/* Đặc biệt cho các container có thể gây conflict */
+.container,
+.row,
+.col-lg-6 {
+    overflow: visible !important;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #6c757d;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 200px;
+    padding: 8px 0;
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dropdown-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu a {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    color: #495057;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+    background: #f8f9fa;
+    color: #212529;
+}
+
+.dropdown-menu a i {
+    margin-right: 10px;
+    width: 16px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.dropdown-menu a.delete-action {
+    color: #dc3545;
+}
+
+.dropdown-menu a.delete-action:hover {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 .close {
     position: absolute;
     top: 1rem;

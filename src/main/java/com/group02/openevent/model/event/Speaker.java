@@ -31,7 +31,10 @@ public class Speaker {
     @Column(name = "default_role", nullable = false)
     private SpeakerRole defaultRole = SpeakerRole.SPEAKER;
 
-    @ManyToMany(mappedBy = "speakers")
+     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "event_speaker",
+            joinColumns = @JoinColumn(name = "speaker_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id"))
     @JsonIgnore
     private List<Event> events;
 

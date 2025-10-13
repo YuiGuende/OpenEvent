@@ -1,4 +1,4 @@
-package com.group02.openevent.dto.request;
+package com.group02.openevent.dto.request.update;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

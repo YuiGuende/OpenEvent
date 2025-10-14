@@ -1,6 +1,8 @@
 package com.group02.openevent.mapper;
 
 import com.group02.openevent.dto.request.*;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.dto.request.update.EventUpdateRequest;
 import com.group02.openevent.dto.response.*;
 import com.group02.openevent.model.event.*;
 import org.mapstruct.*;
@@ -27,6 +29,8 @@ public interface EventMapper {
     @SubclassMapping(source = OtherEvent.class, target = OtherResponse.class)
     EventResponse toEventResponse(Event event);
 
+
+
     // ===================== UPDATE =====================
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true) // Không được override ID
@@ -38,14 +42,24 @@ public interface EventMapper {
     @Mapping(target = "organization", ignore = true)
     @Mapping(target = "host", ignore = true)
     @Mapping(target = "parentEvent", ignore = true)
+    @Mapping(target = "eventType", ignore = true)
     void updateEventFromRequest(EventUpdateRequest request, @MappingTarget Event event);
 
+
+
+    @Mapping(target = "id", ignore = true) // Luôn bỏ qua ID khi mapping từ Request vào Entity mới
+    @Mapping(target = "version", ignore = true)
+    void createEventFromRequest(EventCreationRequest request, @MappingTarget Event event);
+
+
     // ===================== TO UPDATE REQUEST =====================
-//    @SubclassMapping(source = MusicEvent.class, target = MusicEventUpdateRequest.class)
-//    @SubclassMapping(source = FestivalEvent.class, target = FestivalEventUpdateRequest.class)
-//    @SubclassMapping(source = WorkshopEvent.class, target = WorkshopEventUpdateRequest.class)
-//    @SubclassMapping(source = CompetitionEvent.class, target = CompetitionEventUpdateRequest.class)
-//    EventUpdateRequest toEventUpdateRequest(Event event);
+    @Mapping(target = "ticketTypes", ignore = true)
+    @Mapping(target = "schedules", ignore = true)
+    @Mapping(target = "speakers", ignore = true)
+    @Mapping(target = "places", ignore = true)
+    @Mapping(target = "eventImages", ignore = true)
+    EventUpdateRequest toUpdateRequest(Event event);
+
 
     // ===================== UTILITIES =====================
 //    default Event toParent(Long parentEventId) {

@@ -1,4 +1,4 @@
-package com.group02.openevent.dto.request;
+package com.group02.openevent.dto.request.update;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,8 +10,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = true)
-public class MusicEventUpdateRequest extends EventUpdateRequest {
-    String musicType;
-    private String genre;
-    private Integer performerCount;
+public class CompetitionEventUpdateRequest extends EventUpdateRequest {
+    String competitionType;
+    String rules;
+    String prizePool;
 }

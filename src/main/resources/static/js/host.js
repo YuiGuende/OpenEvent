@@ -635,6 +635,40 @@ const HostDashboard = {
         }).format(date);
     }
 };
+document.addEventListener('DOMContentLoaded', function() {
+    const actionButtons = document.querySelectorAll('.action-btn');
+
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            // Ngăn chặn sự kiện click lan ra ngoài
+            event.stopPropagation();
+
+            // Tìm menu dropdown tương ứng
+            const dropdownMenu = this.parentNode.querySelector('.dropdown-menu');
+
+            // Ẩn tất cả các menu khác
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu !== dropdownMenu) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            // Chuyển đổi trạng thái hiển thị của menu hiện tại
+            if (dropdownMenu.style.display === 'block') {
+                dropdownMenu.style.display = 'none';
+            } else {
+                dropdownMenu.style.display = 'block';
+            }
+        });
+    });
+
+    // Ẩn menu khi click bất cứ nơi nào ngoài menu
+    document.addEventListener('click', function(event) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    });
+});
 
 
 // Export for external use

@@ -18,7 +18,7 @@ public class EventImage {
 
     private int orderIndex;
 
-    private boolean mainPoster = false;
+    private boolean mainPoster;
     @ManyToOne
     @JsonBackReference
     private Event event;

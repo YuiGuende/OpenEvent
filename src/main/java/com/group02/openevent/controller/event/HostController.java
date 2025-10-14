@@ -1,17 +1,45 @@
 package com.group02.openevent.controller.event;
 
-import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.event.Event;
+import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.IImageService;
+import jakarta.servlet.http.HttpSession;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Arrays;
 import java.util.List;
 
 //@RequestMapping("/manage/organizer")
 @Controller
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class HostController {
+
+    private final EventService eventService;
+    private final IImageService imageService;
+
+    @Autowired
+    public HostController(EventService eventService, IImageService imageService) {
+        this.eventService = eventService;
+        this.imageService = imageService;
+    }
+
+    private Long getHostAccountId(HttpSession session) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            throw new RuntimeException("User not logged in");
+        }
+        return accountId;
+    }
 
     @GetMapping("/organizer")
     public String host(Model model) {
@@ -28,17 +56,22 @@ public class HostController {
     }
 
     @GetMapping("/fragment/dashboard")
-    public String dashboard(Model model) {
-
+    public String dashboard(Model model, HttpSession session) {
+        Long id = getHostAccountId(session);
+        List<Event> eventResponses = eventService.getEventByHostId(id);
+        model.addAttribute("events", eventResponses);
         return "fragments/dashboard :: content";
     }
 
     @GetMapping("/fragment/events")
-    public String events(Model model) {
+    public String events(Model model, HttpSession session) {
+        Long id = getHostAccountId(session);
         EventCreationRequest request = new EventCreationRequest();
         model.addAttribute("eventForm", request);
-        List<String> listTypeEvent = Arrays.asList("MUSIC", "FESTIVAL", "WORKSHOP", "COMPETITION", "OTHERS");
+        List<Event> eventResponses = eventService.getEventByHostId(id);
+        List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
         model.addAttribute("listTypeEvent", listTypeEvent);
+        model.addAttribute("events", eventResponses);
 
         return "fragments/events :: content";
     }
@@ -47,4 +80,13 @@ public class HostController {
     public String settings(Model model) {
         return "fragments/settings :: content";
     }
+
+//    @GetMapping("/event/manage/{id}")
+//    public String manageEvent(@PathVariable Long id, Model model) {
+//        Event event = eventService.getEventById(id)
+//                .orElseThrow(() -> new RuntimeException("Event not found"));
+//        model.addAttribute("event", event);
+//        return "manager-event"; // -> host/manage-event.html
+//    }
+
 }

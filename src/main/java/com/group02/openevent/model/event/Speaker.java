@@ -1,11 +1,15 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.group02.openevent.model.enums.SpeakerRole;
 import jakarta.persistence.*;
 
 import java.util.List;
 
 @Entity
+@Table(name = "speaker")
 public class Speaker {
 
     @Id
@@ -27,6 +31,7 @@ public class Speaker {
     private SpeakerRole defaultRole = SpeakerRole.SPEAKER;
 
     @ManyToMany(mappedBy = "speakers")
+    @JsonIgnore
     private List<Event> events;
 
     public Speaker() {
@@ -74,10 +79,17 @@ public class Speaker {
         this.defaultRole = defaultRole;
     }
 
-    // Sửa lại thành
     public String getRole() {
         // Trả về tên của enum, ví dụ "SINGER", "DJ"
         // Thêm kiểm tra null để an toàn
         return this.defaultRole != null ? this.defaultRole.name() : null;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<Event> events) {
+        this.events = events;
     }
 }

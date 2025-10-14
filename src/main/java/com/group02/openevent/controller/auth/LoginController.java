@@ -1,4 +1,4 @@
-package com.group02.openevent.controller;
+package com.group02.openevent.controller.auth;
 
 import com.group02.openevent.dto.request.LoginRequest;
 import com.group02.openevent.service.AuthService;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class loginController {
+public class LoginController {
 
     @Autowired
     private AuthService authService;

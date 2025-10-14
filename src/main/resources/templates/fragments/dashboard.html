@@ -1,4 +1,5 @@
 
+
 <div th:fragment="content">
     <div class="page-header">
         <div class="breadcrumbs">
@@ -98,22 +99,25 @@
         <div class="section">
             <h2 class="section-title">Các sự kiện sắp tới</h2>
             <div class="events-list">
-                <div class="event-card">
+                <div class="event-card" th:each="event : ${events}">
                     <div class="event-image">
-                        <img alt="Event"
-                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='100%25' height='100%25' fill='%236f42c1'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Segoe UI' font-size='12'%3EEvent%3C/text%3E%3C/svg%3E">
+                        <img alt="Event Image"
+                     th:src="${event.imageUrl}"
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='100%25' height='100%25' fill='%236f42c1'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Segoe UI' font-size='12'%3EEvent%3C/text%3E%3C/svg%3E">
                     </div>
                     <div class="event-details">
-                        <h3 class="event-title">Sự kiện demo</h3>
-                        <p class="event-subtitle">duc le</p>
+                        <h3 class="event-title" th:text="${event.title}">Tên Sự Kiện</h3>
+                        <p class="event-subtitle" th:text="${event.eventType}">Loại Sự Kiện</p>
                         <div class="event-info">
-                            <span class="date-box">SEP 23</span>
-                            <span class="time">9:00 PM - 11:00 PM</span>
-                            <span class="status-badge draft">DRAFT</span>
+                            <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
+                            <span class="time" th:text="|${#temporals.format(event.startsAt, 'h:mm a')} - ${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
+                            <span th:classappend="${event.status.name() == 'DRAFT' ? 'draft' : 'live'}"
+                                  class="status-badge draft"
+                                  th:text="${event.status.name() == 'DRAFT' ? 'DRAFT • SẮP TỚI' : 'LIVE • ĐANG DIỄN RA'}">DRAFT • SẮP TỚI</span>
                         </div>
                         <div class="event-sales">
                             <i class="fas fa-users"></i>
-                            <span>0 đã bán</span>
+                            <span th:text="|0 đã bán|">0 đã bán</span>
                         </div>
                     </div>
                     <button class="action-btn">

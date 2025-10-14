@@ -14,8 +14,8 @@ body {
     background-color: #f7f7fb; /* nền sáng nhẹ */
     color: #333;
     line-height: 1.6;
-    overflow-x: hidden;
     overflow: hidden;
+    height: 100vh;
 }
 
 /* Header */
@@ -101,11 +101,9 @@ body {
     padding: 2rem;
     transition: all 0.3s ease;
     width: calc(100% - 280px);
-    min-height: calc(100vh - 70px);
-    flex-grow: 1;
-    border-radius: 16px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
-    background: white;
+    height: calc(100vh - 60px);
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
 /* When sidebar is collapsed */
@@ -550,6 +548,67 @@ body.sidebar-collapsed .main-content {
     gap: 1rem;
     transition: all 0.3s ease;
     border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+.event-actions {
+    position: absolute;
+    top: 15px; /* Điều chỉnh vị trí từ trên xuống */
+    right: 15px; /* Điều chỉnh vị trí từ phải sang */
+    z-index: 10; /* Đảm bảo menu nằm trên các thành phần khác */
+}
+
+/* Nút bấm */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    color: #333;
+}
+
+/* Menu chính */
+.dropdown-menu {
+    position: absolute;
+    top: 100%; /* Đặt menu bên dưới nút */
+    right: 0;
+    min-width: 180px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 5px 0;
+    list-style: none;
+}
+
+/* Danh sách trong menu */
+.dropdown-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Mục trong menu */
+.dropdown-menu li a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+/* Hover effect */
+.dropdown-menu li a:hover {
+    background-color: #f5f5f5;
+    color: #007bff; /* Màu xanh khi hover */
+}
+
+/* Icon */
+.dropdown-menu li i {
+    margin-right: 10px;
+    width: 15px; /* Cố định chiều rộng icon */
+    text-align: center;
 }
 
 .event-card:hover {
@@ -843,6 +902,7 @@ body.sidebar-collapsed .sidebar-toggle-btn {
         padding: 1rem;
         flex-direction: column;
         text-align: center;
+        position: relative;
     }
 
     .event-image {

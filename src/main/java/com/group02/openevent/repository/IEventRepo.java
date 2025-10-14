@@ -1,9 +1,12 @@
 package com.group02.openevent.repository;
 
 
+import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.event.Speaker;
+import com.group02.openevent.model.user.Host;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,6 +35,8 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE e.status = :status ORDER BY e.createdAt DESC")
     List<Event> findRecommendedEvents(@Param("status") EventStatus status, Pageable pageable);
+    List<Event> getEventByHostId(Long hostId);
+    List<Event> findBySpeakersContains(Speaker speaker);
 
     Page<Event> findByDepartment_AccountIdAndEventTypeAndStatus(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
 

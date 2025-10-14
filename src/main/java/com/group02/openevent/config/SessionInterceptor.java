@@ -103,7 +103,14 @@ public class SessionInterceptor implements HandlerInterceptor {
                 path.startsWith("/api/events/") ||
                 path.startsWith("/api/events/update") ||
                 path.startsWith("/api/current-user") ||
-                path.startsWith("/api/requests");
+                path.startsWith("/api/requests")||
+                path.startsWith("/api/speakers/") ||
+                path.startsWith("/api/schedules/") ||
+                path.startsWith("/api/event-images/") ||
+                path.startsWith("/api/events/update/") ||
+                path.startsWith("/host/*") ||
+                path.startsWith("/fragments/** ")||
+                path.startsWith("/manage/** ");
     }
 
     private String extractSessionToken(HttpServletRequest request) {

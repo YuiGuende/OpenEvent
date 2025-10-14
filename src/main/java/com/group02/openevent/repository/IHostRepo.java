@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IHostRepo extends JpaRepository<Host, Long> {
+    Host getHostById(Long id);
 }

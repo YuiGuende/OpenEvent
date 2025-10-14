@@ -13,7 +13,7 @@ public class Place {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "place_id")
-    private Integer id;
+    private Long id;
 
     @ManyToMany(mappedBy = "places", fetch = FetchType.LAZY)
     @JsonIgnore
@@ -29,7 +29,7 @@ public class Place {
     public Place() {
     }
 
-    public Place(Integer id, List<Event> events, Building building, String placeName) {
+    public Place(Long id, List<Event> events, Building building, String placeName) {
         this.id = id;
         this.events = events;
         this.building = building;
@@ -42,11 +42,11 @@ public class Place {
     }
 
     // Getter & Setter
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

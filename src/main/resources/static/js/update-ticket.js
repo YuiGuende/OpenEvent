@@ -1,10 +1,42 @@
 // Ticket Management System
 class TicketManager {
     constructor() {
-        this.tickets = this.loadTickets()
+        this.tickets = []
         this.editingId = null
         this.deleteId = null
         this.init()
+    }
+
+    /**
+     * Khởi tạo danh sách ticket types từ server
+     * @param {Array} serverTicketTypes - Danh sách ticket types từ server
+     */
+    initializeTicketTypes(serverTicketTypes) {
+        console.log('🔍 TicketManager: Initializing ticket types with server data:', serverTicketTypes);
+        console.log('🔍 TicketManager: serverTicketTypes type:', typeof serverTicketTypes);
+        console.log('🔍 TicketManager: serverTicketTypes length:', serverTicketTypes ? serverTicketTypes.length : 'null/undefined');
+        
+        // Convert server data to local format
+        this.tickets = serverTicketTypes ? serverTicketTypes.map(ticket => ({
+            id: ticket.ticketTypeId.toString(),
+            name: ticket.name,
+            description: ticket.description || '',
+            price: ticket.price || 0,
+            totalQuantity: ticket.totalQuantity || 0,
+            soldQuantity: ticket.soldQuantity || 0,
+            sale: ticket.sale || 0,
+            startSaleDate: ticket.startSaleDate ? new Date(ticket.startSaleDate).toISOString().slice(0, 16) : '',
+            endSaleDate: ticket.endSaleDate ? new Date(ticket.endSaleDate).toISOString().slice(0, 16) : '',
+            isNew: false,
+            isDeleted: false
+        })) : [];
+        
+        console.log('🔍 TicketManager: After initialization - tickets:', this.tickets);
+        console.log('🔍 TicketManager: About to render tickets...');
+        
+        this.renderTickets();
+        
+        console.log('🔍 TicketManager: Tickets rendered successfully');
     }
 
     init() {
@@ -235,6 +267,9 @@ class TicketManager {
         // After successful submission, show create form (no cancel button)
         this.showCreateForm()
         this.renderTickets()
+
+        // Persist immediately to server when clicking save
+        this.saveTicketsToServer()
     }
 
     getFormData() {
@@ -281,25 +316,43 @@ class TicketManager {
     }
 
     createTicket(data) {
-        this.tickets.unshift(data)
-        this.saveTickets()
-        this.showNotification("Tạo vé thành công!", "success")
+        data.isNew = true;
+        data.isDeleted = false;
+        this.tickets.unshift(data);
+        this.renderTickets();
+        if (typeof this.showNotification === 'function') {
+            this.showNotification("Tạo vé thành công!", "success")
+        }
     }
 
     updateTicket(id, data) {
         const index = this.tickets.findIndex((t) => t.id === id)
         if (index !== -1) {
             this.tickets[index] = { ...this.tickets[index], ...data }
-            this.saveTickets()
-            this.showNotification("Cập nhật vé thành công!", "success")
+            this.tickets[index].isNew = false; // Mark as not new (existing ticket)
+            this.tickets[index].isDeleted = false; // Ensure not marked as deleted
+            this.renderTickets();
+            if (typeof this.showNotification === 'function') {
+                this.showNotification("Cập nhật vé thành công!", "success")
+            }
         }
     }
 
     deleteTicket(id) {
-        this.tickets = this.tickets.filter((t) => t.id !== id)
-        this.saveTickets()
-        this.renderTickets()
-        this.showNotification("Xóa vé thành công!", "success")
+        const index = this.tickets.findIndex((t) => t.id === id);
+        if (index !== -1) {
+            // If it's a new ticket, remove it completely
+            if (this.tickets[index].isNew) {
+                this.tickets.splice(index, 1);
+            } else {
+                // If it's an existing ticket, mark as deleted
+                this.tickets[index].isDeleted = true;
+            }
+            this.renderTickets();
+            if (typeof this.showNotification === 'function') {
+                this.showNotification("Xóa vé thành công!", "success")
+            }
+        }
     }
 
     // Edit & Delete
@@ -391,6 +444,8 @@ class TicketManager {
         if (this.deleteId) {
             this.deleteTicket(this.deleteId)
             this.closeDeleteModal()
+            // Persist deletion immediately
+            this.saveTicketsToServer()
         }
     }
 
@@ -400,7 +455,10 @@ class TicketManager {
         const emptyState = document.getElementById("empty-state")
         const ticketCount = document.getElementById("ticket-count")
 
-        if (this.tickets.length === 0) {
+        // Filter out deleted tickets for display
+        const visibleTickets = this.tickets.filter(ticket => !ticket.isDeleted);
+
+        if (visibleTickets.length === 0) {
             container.style.display = "none"
             emptyState.style.display = "block"
             ticketCount.textContent = "0 vé"
@@ -409,9 +467,9 @@ class TicketManager {
 
         container.style.display = "flex"
         emptyState.style.display = "none"
-        ticketCount.textContent = `${this.tickets.length} vé`
+        ticketCount.textContent = `${visibleTickets.length} vé`
 
-        container.innerHTML = this.tickets.map((ticket) => this.renderTicketCard(ticket)).join("")
+        container.innerHTML = visibleTickets.map((ticket) => this.renderTicketCard(ticket)).join("")
 
         // Attach event listeners
         this.attachTicketListeners()
@@ -552,13 +610,119 @@ class TicketManager {
         })
     }
 
-    showNotification(message, type = "success") {
-        // Simple alert for now - you can enhance this with a custom notification system
-        alert(message)
+    // Get tickets data for form submission
+    getTicketsData() {
+        return this.tickets.map(ticket => ({
+            ticketTypeId: ticket.id ? parseInt(ticket.id) : null,
+            name: ticket.name,
+            description: ticket.description,
+            price: ticket.price,
+            totalQuantity: ticket.totalQuantity,
+            soldQuantity: ticket.soldQuantity,
+            startSaleDate: ticket.startSaleDate,
+            endSaleDate: ticket.endSaleDate,
+            sale: ticket.sale,
+            isNew: ticket.isNew || false,
+            isDeleted: ticket.isDeleted || false
+        }));
     }
 }
 
-// Initialize the app
-document.addEventListener("DOMContentLoaded", () => {
-    new TicketManager()
-})
+/**
+ * Populate ticket types from database (similar to populateLineupFromEvent and populateSchedulesFromEvent)
+ */
+function populateTicketTypesFromEvent() {
+    console.log('--- BƯỚC B: populateTicketTypesFromEvent ĐANG CHẠY ---');
+    console.log('initialTicketTypesData:', initialTicketTypesData);
+    
+
+    if (!window.ticketManager) {
+        console.log('Creating new TicketManager instance...');
+        window.ticketManager = new TicketManager();
+    }
+    // 1. Kiểm tra dữ liệu
+    if (!initialTicketTypesData || initialTicketTypesData.length === 0) {
+        console.log('No initial ticket types to populate.');
+        return;
+    }
+    console.log('LOG: Tìm thấy', initialTicketTypesData.length, 'ticket types để load.');
+
+    // 2. Khởi tạo TicketManager với dữ liệu từ database
+    
+    
+    console.log('Initializing TicketManager with database data...');
+    window.ticketManager.initializeTicketTypes(initialTicketTypesData);
+    
+    console.log('✅ Ticket types populated successfully from database');
+}
+function initializeTicketForm() {
+    console.log('🎫 Initializing ticket form...');
+    
+    // Always create TicketManager
+    if (!window.ticketManager) {
+        console.log('Creating new TicketManager instance...');
+        window.ticketManager = new TicketManager();
+    }
+    
+    // Initialize with data from Thymeleaf
+    populateTicketTypesFromEvent();
+    
+    console.log('✅ Ticket form initialized successfully');
+}
+
+// Make functions globally accessible
+window.populateTicketTypesFromEvent = populateTicketTypesFromEvent;
+    window.initializeTicketForm = initializeTicketForm;
+
+// Simple notification helper to avoid runtime errors
+TicketManager.prototype.showNotification = function(message, type) {
+    try {
+        const color = type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#2563eb'
+        const toast = document.createElement('div')
+        toast.textContent = message
+        toast.style.position = 'fixed'
+        toast.style.right = '16px'
+        toast.style.bottom = '16px'
+        toast.style.padding = '12px 16px'
+        toast.style.background = color
+        toast.style.color = 'white'
+        toast.style.borderRadius = '8px'
+        toast.style.zIndex = '9999'
+        document.body.appendChild(toast)
+        setTimeout(() => toast.remove(), 2000)
+    } catch (e) {
+        console.log(message)
+    }
+}
+
+// Save tickets to backend immediately (used on ticket page)
+TicketManager.prototype.saveTicketsToServer = async function() {
+    try {
+        const pathParts = window.location.pathname.split('/')
+        const eventId = pathParts[3]
+        if (!eventId || isNaN(eventId)) {
+            console.error('Cannot determine eventId from URL, skip saving tickets')
+            return
+        }
+
+        const ticketsData = this.getTicketsData()
+        const formData = new FormData()
+        formData.append('ticketsJson', JSON.stringify(ticketsData))
+
+        const res = await fetch(`/api/events/update-tickets/${eventId}`, {
+            method: 'POST',
+            body: formData
+        })
+
+        if (!res.ok) throw new Error('Failed to save tickets')
+
+        if (typeof this.showNotification === 'function') {
+            this.showNotification('Đã lưu vé vào hệ thống', 'success')
+        }
+    } catch (err) {
+        console.error('Error saving tickets:', err)
+        if (typeof this.showNotification === 'function') {
+            this.showNotification('Lưu vé thất bại', 'error')
+        }
+    }
+}

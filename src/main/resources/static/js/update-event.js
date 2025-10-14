@@ -43,8 +43,8 @@ class ImageUploadManager {
             posterBtn.addEventListener('click', this.posterClickHandler);
             posterInput.addEventListener('change', this.posterChangeHandler);
 
-            // Drag and drop for poster
-            this.setupDragAndDrop(posterArea, posterInput, 'poster');
+        // Drag and drop for poster
+        this.setupDragAndDrop(posterArea, posterInput, 'poster');
         }
 
         // Gallery upload
@@ -78,8 +78,8 @@ class ImageUploadManager {
             galleryBtn.addEventListener('click', this.galleryClickHandler);
             galleryInput.addEventListener('change', this.galleryChangeHandler);
 
-            // Drag and drop for gallery
-            this.setupDragAndDrop(galleryArea, galleryInput, 'gallery');
+        // Drag and drop for gallery
+        this.setupDragAndDrop(galleryArea, galleryInput, 'gallery');
         }
     }
 
@@ -108,13 +108,13 @@ class ImageUploadManager {
 
     handleFiles(files, type) {
         files.forEach(file => {
-            if (this.validateFile(file)) {
+            if (this.validateFile(file, type)) {
                 this.processFile(file, type);
             }
         });
     }
 
-    validateFile(file) {
+    validateFile(file, type) {
         // Check file type
         if (!this.allowedTypes.includes(file.type)) {
             this.showError(`File ${file.name} không được hỗ trợ. Chỉ chấp nhận JPG, PNG, WebP.`);
@@ -128,8 +128,14 @@ class ImageUploadManager {
         }
 
         // Check gallery limit
-        if (this.galleryImages.length >= this.maxGalleryImages) {
+        if (type === 'gallery' && this.galleryImages.length >= this.maxGalleryImages) {
             this.showError(`Chỉ được upload tối đa ${this.maxGalleryImages} ảnh gallery.`);
+            return false;
+        }
+
+        // Check poster limit
+        if (type === 'poster' && this.posterImages.length >= 5) {
+            this.showError('Chỉ được upload tối đa 5 ảnh poster.');
             return false;
         }
 
@@ -161,6 +167,9 @@ class ImageUploadManager {
 
             this.updatePreview(type);
             this.updateUploadButtons();
+
+            // Create image in database
+            await this.createImageInDatabase(imageData, type);
 
         } catch (error) {
             console.error('Error processing file:', error);
@@ -223,6 +232,7 @@ class ImageUploadManager {
         img.alt = 'Preview';
 
         const removeBtn = document.createElement('button');
+        removeBtn.type='button'
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
         removeBtn.onclick = () => this.removeImage(imageData.id, type);
@@ -237,26 +247,22 @@ class ImageUploadManager {
             orderBadge.textContent = `#${index + 1}`;
             item.appendChild(orderBadge);
 
-            // Main poster badge
-            if (index === 0) {
+            // Main poster badge - tất cả poster đều có MAIN badge
                 const mainBadge = document.createElement('div');
                 mainBadge.className = 'main-poster-badge';
                 mainBadge.textContent = 'MAIN';
                 item.appendChild(mainBadge);
-            } else {
-                // Set as main button
-                const setMainBtn = document.createElement('button');
-                setMainBtn.className = 'set-main-btn';
-                setMainBtn.textContent = 'SET MAIN';
-                setMainBtn.onclick = () => this.setAsMainPoster(imageData.id);
-                item.appendChild(setMainBtn);
-            }
         }
 
         return item;
     }
 
     removeImage(id, type) {
+        // If it's a database image (has numeric ID), delete from database
+        if (typeof id === 'number' || !isNaN(id)) {
+            this.removeImageFromDatabase(id, type);
+        } else {
+            // If it's a temporary image (has string ID), just remove from arrays
         if (type === 'poster') {
             this.posterImages = this.posterImages.filter(img => img.id !== id);
             // Reorder remaining images
@@ -269,9 +275,46 @@ class ImageUploadManager {
 
         this.updatePreview(type);
         this.updateUploadButtons();
+        }
+    }
+
+    // Method to remove image from database
+    async removeImageFromDatabase(imageId, type) {
+        if (confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+            try {
+                const response = await fetch(`/api/event-images/${imageId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    // Remove from DOM
+                    const item = document.querySelector(`[data-id="${imageId}"]`);
+                    if (item) {
+                        item.remove();
+                    }
+                    
+                    // Nếu xóa poster (mainPoster = true), reload trang để cập nhật UI
+                    if (type === 'poster') {
+                        window.location.reload();
+                    } else {
+                        alert('Xóa ảnh thành công!');
+                    }
+                } else {
+                    alert('Lỗi khi xóa ảnh!');
+                }
+            } catch (error) {
+                console.error('Error deleting image:', error);
+                alert('Lỗi mạng!');
+            }
+        }
     }
 
     setAsMainPoster(id) {
+        // If it's a database image (has numeric ID), call API
+        if (typeof id === 'number' || !isNaN(id)) {
+            this.setAsMainPosterInDatabase(id);
+        } else {
+            // If it's a temporary image (has string ID), handle locally
         const imageIndex = this.posterImages.findIndex(img => img.id === id);
         if (imageIndex === -1) return;
 
@@ -285,12 +328,46 @@ class ImageUploadManager {
         });
 
         this.updatePreview('poster');
+        }
+    }
+
+    // Method to set as main poster in database
+    async setAsMainPosterInDatabase(imageId) {
+        try {
+            const response = await fetch(`/api/event-images/${imageId}/set-main`, {
+                method: 'PUT'
+            });
+            
+            if (response.ok) {
+                // Reload the page to show updated data
+                window.location.reload();
+            } else {
+                alert('Lỗi khi đặt làm poster chính!');
+            }
+        } catch (error) {
+            console.error('Error setting main poster:', error);
+            alert('Lỗi mạng!');
+        }
     }
 
     updateUploadButtons() {
+        const posterBtn = document.getElementById('posterUploadBtn');
+        const posterArea = document.getElementById('posterUploadArea');
         const galleryBtn = document.getElementById('galleryUploadBtn');
         const galleryArea = document.getElementById('galleryUploadArea');
 
+        // Check poster limit
+        if (this.posterImages.length >= 5) {
+            posterBtn.disabled = true;
+            posterArea.style.opacity = '0.5';
+            posterArea.style.cursor = 'not-allowed';
+        } else {
+            posterBtn.disabled = false;
+            posterArea.style.opacity = '1';
+            posterArea.style.cursor = 'pointer';
+        }
+
+        // Check gallery limit
         if (this.galleryImages.length >= this.maxGalleryImages) {
             galleryBtn.disabled = true;
             galleryArea.style.opacity = '0.5';
@@ -365,15 +442,70 @@ class ImageUploadManager {
         }
     }
 
-    // Method to clear all images
-    clearAllImages() {
-        this.posterImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
-        this.galleryImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
-        this.posterImages = [];
-        this.galleryImages = [];
-        this.updatePreview('poster');
-        this.updatePreview('gallery');
-        this.updateUploadButtons();
+    // Method to create image in database
+    async createImageInDatabase(imageData, type) {
+        try {
+            const eventId = window.location.pathname.split('/')[3]; // Get eventId from URL
+            
+            // Upload image to Cloudinary first
+            const imageUrl = await this.uploadImageToCloudinary(imageData.file);
+            
+            const imageRequest = {
+                url: imageUrl,
+                orderIndex: imageData.orderIndex,
+                isMainPoster: type === 'poster', // true cho poster, false cho gallery
+                eventId: parseInt(eventId)
+            };
+            
+            console.log('Creating image in database:', imageRequest);
+            
+            const response = await fetch('/api/event-images', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(imageRequest)
+            });
+            
+            if (response.ok) {
+                const createdImage = await response.json();
+                console.log('Image created successfully:', createdImage);
+                
+                // Update the imageData with the database ID
+                imageData.id = createdImage.id;
+                imageData.url = createdImage.url;
+            } else {
+                const error = await response.json();
+                console.error('Error creating image:', error);
+                this.showError('Lỗi khi lưu ảnh vào cơ sở dữ liệu.');
+            }
+        } catch (error) {
+            console.error('Error creating image in database:', error);
+            this.showError('Lỗi mạng khi lưu ảnh.');
+        }
+    }
+
+    // Method to upload image to Cloudinary
+    async uploadImageToCloudinary(file) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch('/api/speakers/upload/image', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                return result.imageUrl;
+            } else {
+                throw new Error('Failed to upload image to Cloudinary');
+            }
+        } catch (error) {
+            console.error('Error uploading to Cloudinary:', error);
+            throw error;
+        }
     }
     
     // Clean up event listeners
@@ -424,7 +556,6 @@ function initializeImageUploadManager() {
     if (window.imageUploadManager) {
         // Clean up existing instance
         window.imageUploadManager.cleanup();
-        window.imageUploadManager.clearAllImages();
     }
     
     try {
@@ -515,14 +646,16 @@ function initializeEventTitleClick() {
 window.initializeEventFormListeners = function() {
     console.log('Initializing event form listeners...');
     // Wait for elements to be available
-        setTimeout(() => {
+    setTimeout(() => {
             console.log('UPDATE EVENT: Starting initialization...');
-            initializeImageUploadManager();
+        initializeImageUploadManager();
             initializeLineupAndAgendaButtons();
             if (typeof window.initializeEventTypeTabs === 'function') {
                 window.initializeEventTypeTabs();
             }
             initializeEventTitleClick();
+            
+            // Initialize save button
             
             // Load speakers from database
             console.log('Attempting to load speakers from database...');
@@ -540,6 +673,41 @@ window.initializeEventFormListeners = function() {
                 window.populateSchedulesFromEvent();
             } else {
                 console.error('populateSchedulesFromEvent function not found!');
+            }
+            
+            // Load images from database
+            console.log('Attempting to load images from database...');
+            if (typeof window.populateImagesFromEvent === 'function') {
+                console.log('Calling populateImagesFromEvent...');
+                window.populateImagesFromEvent();
+            } else {
+                console.error('populateImagesFromEvent function not found!');
+            }
+            
+            // Load places from database
+            console.log('Attempting to load places from database...');
+            if (typeof window.populatePlacesFromEvent === 'function') {
+                console.log('Calling populatePlacesFromEvent...');
+                window.populatePlacesFromEvent();
+            } else {
+                console.error('populatePlacesFromEvent function not found!');
+            }
+            
+            // Load ticket types from database
+            console.log('Attempting to load ticket types from database...');
+            if (typeof window.populateTicketTypesFromEvent === 'function') {
+                console.log('Calling populateTicketTypesFromEvent...');
+                window.populateTicketTypesFromEvent();
+            } else {
+                console.error('populateTicketTypesFromEvent function not found!');
+            }
+            
+            // Initialize ticketManager for settings page if not exists
+            if (!window.ticketManager && typeof TicketManager !== 'undefined') {
+                console.log('Creating ticketManager for settings page...');
+                window.ticketManager = new TicketManager();
+                // Initialize with empty data since we're on settings page
+                window.ticketManager.initializeTicketTypes([]);
             }
             
             console.log('UPDATE EVENT: Initialization completed');
@@ -560,6 +728,21 @@ window.initializeEventFormListeners = function() {
             try {
                 // First, submit the event form
                 const formData = new FormData(form);
+                
+                // Add places data to form
+                if (placeManager && typeof placeManager.getPlacesData === 'function') {
+                    const placesData = placeManager.getPlacesData();
+                    formData.append('placesJson', JSON.stringify(placesData));
+                    console.log('Added places data to form:', placesData);
+                }
+                
+                // Add tickets data to form
+                if (window.ticketManager && typeof window.ticketManager.getTicketsData === 'function') {
+                    const ticketsData = window.ticketManager.getTicketsData();
+                    formData.append('ticketsJson', JSON.stringify(ticketsData));
+                    console.log('Added tickets data to form:', ticketsData);
+                }
+                
                 const eventResponse = await fetch(form.action, {
                     method: 'POST',
                     body: formData
@@ -597,3 +780,5 @@ window.initializeEventFormListeners = function() {
         });
     }
 };
+
+// PlaceManager đã được tách ra file riêng: place-manager.js

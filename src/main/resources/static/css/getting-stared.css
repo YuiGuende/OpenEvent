@@ -878,3 +878,34 @@ body {
         padding: 1.25rem;
     }
 }
+
+/* Mobile sidebar functionality */
+.sidebar.mobile-open {
+    transform: translateX(0);
+}
+
+body.sidebar-mobile-open {
+    overflow: hidden;
+}
+
+body.sidebar-mobile-open .sidebar-overlay {
+    display: block;
+}
+
+/* Smooth transitions for sidebar */
+.sidebar {
+    transition: var(--transition-base);
+}
+
+#main-wrapper {
+    transition: var(--transition-base);
+}
+
+/* Ensure proper z-index */
+.sidebar {
+    z-index: 1000;
+}
+
+.sidebar-overlay {
+    z-index: 999;
+}

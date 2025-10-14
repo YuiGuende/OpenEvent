@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.group02.openevent.model.event.*;
+import com.group02.openevent.model.enums.Building;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 
@@ -52,6 +53,7 @@ public class EventServiceImpl implements EventService {
     IOrganizationRepo organizationRepo;
     ITicketTypeRepo ticketTypeRepo;
     IHostRepo hostRepo;
+    IPlaceRepo placeRepo;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -102,32 +104,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = existing; // Dùng biến này để xử lý chung
         Long oldId = existing.getId(); // Giữ lại ID cũ để xóa // dùng biến này để xử lý chung
-
-        // 🟡 Nếu người dùng đổi loại event
-        if (!existing.getEventType().equals(request.getEventType())) {
-            log.info("Changing event type from {} → {}", existing.getEventType(), request.getEventType());
-            // Xóa bản cũ hoàn toàn khỏi DB (flush ngay)
-            eventRepo.deleteById(oldId);
-            eventRepo.flush();
-            entityManager.clear();
-
-            // Tạo instance mới theo loại event mới
-            event = switch (request.getEventType()) {
-                case MUSIC -> new MusicEvent();
-                case WORKSHOP -> new WorkshopEvent();
-                case FESTIVAL -> new FestivalEvent();
-                case COMPETITION -> new CompetitionEvent();
-                default -> new Event(); // fallback an toàn
-            };
-
-            // Giữ nguyên id & quan hệ
-            event.setEventType(request.getEventType());
-            event.setOrganization(existing.getOrganization());
-            event.setHost(existing.getHost());
-            event.setParentEvent(existing.getParentEvent());
-            event.setVersion(0L); // reset version cho bản ghi mới
-
-        }
+        log.info("request eventType = {}", event.getEventType());
         eventMapper.updateEventFromRequest(request, event);
 
         // 🟢 Update organization, host, parent
@@ -151,38 +128,76 @@ public class EventServiceImpl implements EventService {
 
 
         // 🟢 Map subclass-specific fields
-        if (event instanceof MusicEvent musicEvent && request instanceof MusicEventUpdateRequest musicReq) {
-            musicEvent.setMusicType(musicReq.getMusicType());
-            musicEvent.setGenre(musicReq.getGenre());
-            musicEvent.setPerformerCount(musicReq.getPerformerCount());
-        } else if (event instanceof WorkshopEvent workshopEvent && request instanceof WorkshopEventUpdateRequest workReq) {
-            workshopEvent.setMaterialsLink(workReq.getMaterialsLink());
-            workshopEvent.setPrerequisites(workReq.getPrerequisites());
-            workshopEvent.setMaxParticipants(workReq.getMaxParticipants());
-            workshopEvent.setSkillLevel(workReq.getSkillLevel());
-            workshopEvent.setTopic(workReq.getTopic());
-        } else if (event instanceof FestivalEvent festivalEvent && request instanceof FestivalEventUpdateRequest festReq) {
-            festivalEvent.setCulture(festReq.getCulture());
-            festivalEvent.setHighlight(festReq.getHighlight());
-        } else if (event instanceof CompetitionEvent competitionEvent && request instanceof CompetitionEventUpdateRequest comReq) {
-            competitionEvent.setCompetitionType(comReq.getCompetitionType());
-            competitionEvent.setRules(comReq.getRules());
-            competitionEvent.setPrizePool(comReq.getPrizePool());
+        switch (String.valueOf(request.getEventType())) {
+            case "COMPETITION" -> {
+                CompetitionEvent comp = (CompetitionEvent) existing;
+                comp.setCompetitionType(request.getCompetitionType());
+                comp.setRules(request.getRules());
+                comp.setPrizePool(request.getPrizePool());
+            }
+            case "MUSIC" -> {
+                MusicEvent mus = (MusicEvent) existing;
+                mus.setMusicType(request.getMusicType());
+                mus.setGenre(request.getGenre());
+                mus.setPerformerCount(request.getPerformerCount());
+            }
+            case "WORKSHOP" -> {
+                WorkshopEvent ws = (WorkshopEvent) existing;
+                ws.setTopic(request.getTopic());
+                ws.setSkillLevel(request.getSkillLevel());
+                ws.setMaxParticipants(request.getMaxParticipants());
+            }
+            case "FESTIVAL" -> {
+                FestivalEvent fe = (FestivalEvent) existing;
+                fe.setCulture(request.getCulture());
+                fe.setHighlight(request.getHighlight());
+            }
         }
 
+
         // 🟢 Speakers
-        if (request.getSpeakers() != null && !request.getSpeakers().isEmpty()) {
-            List<Speaker> speakers = new ArrayList<>();
-            for (SpeakerRequest s : request.getSpeakers()) {
-                Speaker sp = new Speaker();
-                sp.setName(s.getName());
-                sp.setProfile(s.getProfile());
-                sp.setImageUrl(s.getImageUrl());
-                sp.setDefaultRole(s.getDefaultRole());
-                sp.setEvents(List.of(event));
-                speakers.add(sp);
+//        if (request.getSpeakers() != null && !request.getSpeakers().isEmpty()) {
+//            List<Speaker> speakers = new ArrayList<>();
+//            for (SpeakerRequest s : request.getSpeakers()) {
+//                Speaker sp = new Speaker();
+//                sp.setName(s.getName());
+//                sp.setProfile(s.getProfile());
+//                sp.setImageUrl(s.getImageUrl());
+//                sp.setDefaultRole(s.getDefaultRole());
+//                sp.setEvents(List.of(event));
+//                speakers.add(sp);
+//            }
+//            event.setSpeakers(speakers);
+//        }
+
+        // 🟢 Places - Handle places from JSON data
+        if (request.getPlaces() != null) {
+            log.info("Processing {} places for event {}", request.getPlaces().size(), id);
+            
+            // Clear existing places relationship
+            event.getPlaces().clear();
+            
+            // Process each place from request
+            for (Place placeRequest : request.getPlaces()) {
+                Place place;
+                
+                if (placeRequest.getId() != null) {
+                    // Existing place - find by ID
+                    place = placeRepo.findById(Long.parseLong(placeRequest.getId().toString()))
+                            .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeRequest.getId()));
+                } else {
+                    // New place - create new
+                    place = new Place();
+                    place.setPlaceName(placeRequest.getPlaceName());
+                    place.setBuilding(placeRequest.getBuilding());
+                    place = placeRepo.save(place);
+                }
+                
+                // Add to event's places
+                event.getPlaces().add(place);
             }
-            event.setSpeakers(speakers);
+            
+            log.info("Updated event with {} places", event.getPlaces().size());
         }
 
         // ✅ Save cuối cùng

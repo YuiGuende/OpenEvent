@@ -12,4 +12,8 @@ public interface IPlaceRepo extends JpaRepository<Place,Long>
 {
     @Query("SELECT p FROM Place p JOIN p.events e WHERE e.id = :eventId")
     List<Place> findPlacesByEventId(@Param("eventId") Long eventId);
+    
+    // Alternative query using native SQL
+    @Query(value = "SELECT p.* FROM place p INNER JOIN event_place ep ON p.place_id = ep.place_id WHERE ep.event_id = :eventId", nativeQuery = true)
+    List<Place> findPlacesByEventIdNative(@Param("eventId") Long eventId);
 }

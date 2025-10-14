@@ -28,7 +28,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/events/public/**",
                         "/api/current-user",
                         "/api/speakers/**",
-                        "/api/schedules/**"
+                        "/api/schedules/**",
+                        "/api/event-images/**"
                 );
     }
 

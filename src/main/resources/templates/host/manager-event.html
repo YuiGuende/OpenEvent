@@ -202,8 +202,14 @@
         // Thymeleaf sẽ tự động chuyển đổi List<Speaker> thành một mảng đối tượng JavaScript
         const initialSpeakersData = /*[[${speakersData}]]*/ [];
         const initialSchedulesData = /*[[${schedulesData}]]*/ [];
+        const initialImagesData = /*[[${imagesData}]]*/ [];
+        const initialPlacesData = /*[[${allPlaces}]]*/ [];
+        const initialTicketTypesData = /*[[${allTicketTypes}]]*/ [];
         console.log('Dữ liệu speakers từ Thymeleaf:', initialSpeakersData);
         console.log('Dữ liệu schedules từ Thymeleaf:', initialSchedulesData);
+        console.log('Dữ liệu images từ Thymeleaf:', initialImagesData);
+        console.log('Dữ liệu places từ Thymeleaf:', initialPlacesData);
+        console.log('Dữ liệu ticket types từ Thymeleaf:', initialTicketTypesData);
         /*]]>*/
     </script>
 
@@ -212,56 +218,14 @@
     <script src="/js/event-form.js"></script>
     <script src="/js/lineup-manager.js?v=15"></script>
     <script src="/js/agenda-manager.js?v=7"></script>
+    <script src="/js/image-manager.js?v=1"></script>
+    <script src="/js/place-manager.js"></script>
+    <script src="/js/sidebar-manager.js"></script>
     <script src="/js/update-event.js"></script>
     <script src="/js/router.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/update-ticket.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-    <script>
-        // Sidebar collapse functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarCollapseBtn = document.getElementById('sidebarCollapse');
-            const mainWrapper = document.getElementById('main-wrapper');
 
-            // Check if sidebar is collapsed from localStorage
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-
-            if (isCollapsed) {
-                sidebar.classList.add('collapsed');
-                mainWrapper.classList.add('expanded');
-                sidebarCollapseBtn.querySelector('i').classList.remove('bi-chevron-left');
-                sidebarCollapseBtn.querySelector('i').classList.add('bi-chevron-right');
-            }
-
-            // Toggle sidebar collapse
-            sidebarCollapseBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                const icon = sidebarCollapseBtn.querySelector('i');
-
-                console.log('Sidebar toggle clicked. Current state:', isCollapsed ? 'collapsed' : 'expanded');
-
-                if (isCollapsed) {
-                    // Expand sidebar
-                    sidebar.classList.remove('collapsed');
-                    mainWrapper.classList.remove('expanded');
-                    icon.classList.remove('bi-chevron-right');
-                    icon.classList.add('bi-chevron-left');
-                    localStorage.setItem('sidebarCollapsed', 'false');
-                    console.log('Sidebar expanded. Width:', sidebar.offsetWidth + 'px');
-                } else {
-                    // Collapse sidebar
-                    sidebar.classList.add('collapsed');
-                    mainWrapper.classList.add('expanded');
-                    icon.classList.remove('bi-chevron-left');
-                    icon.classList.add('bi-chevron-right');
-                    localStorage.setItem('sidebarCollapsed', 'true');
-                    console.log('Sidebar collapsed. Width:', sidebar.offsetWidth + 'px');
-                }
-            });
-        });
-    </script>
     </body>
     </html>

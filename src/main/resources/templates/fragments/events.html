@@ -51,7 +51,12 @@
                     <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
 
                     <span class="time"
-                          th:text="|${#temporals.format(event.startsAt, 'h:mm a')} - ${#temporals.format(event.endsAt, 'h:mm a')}|">9:00 PM - 11:00 PM</span>
+                          th:text="|${#temporals.format(event.startsAt, 'h:mm a')}|"></span>
+
+                    <span class="date-box" th:text="${#temporals.format(event.endsAt, 'MMM dd')}"></span>
+
+                    <span class="time"
+                          th:text="|${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
 
                     <span th:classappend="${event.status.name() == 'DRAFT' ? 'draft' : 'live'}"
                           class="status-badge"

@@ -12,6 +12,7 @@ import com.group02.openevent.model.event.Place;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,7 +47,9 @@ public class EventUpdateRequest {
 
     LocalDateTime publicDate;
     LocalDateTime enrollDeadline;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     LocalDateTime startsAt;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     LocalDateTime endsAt;
 
     EventStatus status;
@@ -58,6 +61,24 @@ public class EventUpdateRequest {
     Long organizationId;
     Long hostId;
     Long parentEventId;
+
+
+    String competitionType;
+    String rules;
+    String prizePool;
+
+    String culture;
+    String highlight;
+
+    String musicType;
+    String genre;
+    Integer performerCount;
+
+    String topic;
+    String materialsLink;
+    Integer maxParticipants;
+    String skillLevel;
+    String prerequisites;
 
     // ❗ Dùng DTO thay vì entity
     List<Long> subEventIds;

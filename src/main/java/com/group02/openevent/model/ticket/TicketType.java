@@ -1,4 +1,5 @@
 package com.group02.openevent.model.ticket;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group02.openevent.model.event.Event;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ public class TicketType {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
+    @JsonIgnore
     private Event event;
 
     @Column(name = "name", length = 100, nullable = false)

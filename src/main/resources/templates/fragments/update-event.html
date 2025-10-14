@@ -7,74 +7,83 @@
             Quay lại trang chính
         </button>
     </div>
-    <form th:action="@{'/api/events/update/' + ${event.id}}"
-          th:object="${event}"
+    <form th:action="@{'/api/events/update/' + ${request.id}}"
+          th:object="${request}"
           method="post"
           enctype="multipart/form-data">
+          
 
-    <div class="event-content">
-        <!-- Upload Photos -->
-        <div class="event-upload-section">
-            <!-- Poster chính -->
-            <div class="upload-card">
-                <div class="upload-header">
-                    <h3><i class="fas fa-image"></i> Poster chính</h3>
-                    <p>Ảnh sẽ hiển thị ở đầu trang sự kiện và có thể tự động lướt qua</p>
-                </div>
-                <div class="upload-area" id="posterUploadArea">
-                    <button type="button" class="upload-btn" id="posterUploadBtn">
-                        <i class="fas fa-plus"></i>
-                        <span>Thêm poster</span>
-                    </button>
-                    <input type="file" id="posterUploadInput" accept="image/*" style="display:none" multiple>
-                    <div class="upload-info">
-                        <small>Hỗ trợ: JPG, PNG, WebP • Tối đa 5MB mỗi ảnh</small>
+        <div class="event-content">
+            <!-- Upload Photos -->
+            <div class="event-upload-section">
+                <!-- Poster chính -->
+                <div class="upload-card">
+                    <div class="upload-header">
+                        <h3><i class="fas fa-image"></i> Poster chính</h3>
+                        <p>Ảnh sẽ hiển thị ở đầu trang sự kiện và có thể tự động lướt qua</p>
                     </div>
+                    <div class="upload-area" id="posterUploadArea">
+                        <button type="button" class="upload-btn" id="posterUploadBtn">
+                            <i class="fas fa-plus"></i>
+                            <span>Thêm poster</span>
+                        </button>
+                        <input type="file" id="posterUploadInput" accept="image/*" style="display:none" multiple>
+                        <div class="upload-info">
+                            <small>Hỗ trợ: JPG, PNG, WebP • Tối đa 5MB mỗi ảnh</small>
+                        </div>
+                    </div>
+                    <div id="posterPreview" class="preview-container"></div>
                 </div>
-                <div id="posterPreview" class="preview-container"></div>
+
+                <!-- Gallery ảnh -->
+                <div class="upload-card">
+                    <div class="upload-header">
+                        <h3><i class="fas fa-images"></i> Gallery ảnh</h3>
+                        <p>Các ảnh sẽ hiển thị trong phần gallery của sự kiện (tối đa 5 ảnh)</p>
+                    </div>
+                    <div class="upload-area" id="galleryUploadArea">
+                        <button type="button" class="upload-btn" id="galleryUploadBtn">
+                            <i class="fas fa-plus"></i>
+                            <span>Thêm ảnh gallery</span>
+                        </button>
+                        <input type="file" id="galleryUploadInput" accept="image/*" style="display:none" multiple>
+                        <div class="upload-info">
+                            <small>Hỗ trợ: JPG, PNG, WebP • Tối đa 5MB mỗi ảnh • Tối đa 5 ảnh</small>
+                        </div>
+                    </div>
+                    <div id="galleryPreview" class="preview-container"></div>
+                </div>
             </div>
 
-            <!-- Gallery ảnh -->
-            <div class="upload-card">
-                <div class="upload-header">
-                    <h3><i class="fas fa-images"></i> Gallery ảnh</h3>
-                    <p>Các ảnh sẽ hiển thị trong phần gallery của sự kiện (tối đa 5 ảnh)</p>
-                </div>
-                <div class="upload-area" id="galleryUploadArea">
-                    <button type="button" class="upload-btn" id="galleryUploadBtn">
-                        <i class="fas fa-plus"></i>
-                        <span>Thêm ảnh gallery</span>
-                    </button>
-                    <input type="file" id="galleryUploadInput" accept="image/*" style="display:none" multiple>
-                    <div class="upload-info">
-                        <small>Hỗ trợ: JPG, PNG, WebP • Tối đa 5MB mỗi ảnh • Tối đa 5 ảnh</small>
-                    </div>
-                </div>
-                <div id="galleryPreview" class="preview-container"></div>
+            <!-- Type of Event -->
+            <div class="event-type-title" style="font-size:1.25em;font-weight:600;margin-bottom:10px;margin-top:18px;">
+                Chọn loại sự kiện
             </div>
-        </div>
-        
-        <!-- Type of Event -->
-        <div class="event-type-title" style="font-size:1.25em;font-weight:600;margin-bottom:10px;margin-top:18px;">
-            Chọn loại sự kiện
-        </div>
-        <div class="event-type-tabs">
-            <button th:if="${eventType == 'MusicEvent'}" class="event-type-tab active" type="button"
-                    th:classappend="${event.eventType == 'MUSIC'} ? 'active' : ''"
-                    onclick="selectEventType('MUSIC')">Music</button>
-            <button th:if="${eventType == 'WorkshopEvent'}" class="event-type-tab" type="button"
-                    th:classappend="${event.eventType == 'WORKSHOP'} ? 'active' : ''"
-                    onclick="selectEventType('WORKSHOP')">Workshop </button>
-            <button th:if="${eventType == 'FestivalEvent'}" class="event-type-tab" type="button"
-                    th:classappend="${event.eventType == 'FESTIVAL'} ? 'active' : ''"
-                    onclick="selectEventType('FESTIVAL')">Festival</button>
-            <button th:if="${eventType == 'CompetitionEvent'}" class="event-type-tab" type="button"
-                    th:classappend="${event.eventType == 'COMPETITION'} ? 'active' : ''"
-                    onclick="selectEventType('COMPETITION')">Competition</button>
-            <button th:if="${eventType == 'Event'} " class="event-type-tab"  type="button"
-                    th:classappend="${event.eventType == 'OTHER'} ? 'active' : ''"
-                    onclick="selectEventType('OTHER')">Other</button>
-        </div>
+
+            <input type="hidden" th:field="*{eventType}" />
+
+            <div class="event-type-tabs">
+                <button th:if="${eventTypes == 'MusicEvent'}" class="event-type-tab active" type="button"
+                        th:classappend="${request.eventType == 'MUSIC'} ? 'active' : ''"
+                        onclick="selectEventType('MUSIC')">Music
+                </button>
+                <button th:if="${eventTypes == 'WorkshopEvent'}" class="event-type-tab" type="button"
+                        th:classappend="${request.eventType == 'WORKSHOP'} ? 'active' : ''"
+                        onclick="selectEventType('WORKSHOP')">Workshop
+                </button>
+                <button th:if="${eventTypes == 'FestivalEvent'}" class="event-type-tab" type="button"
+                        th:classappend="${request.eventType == 'FESTIVAL'} ? 'active' : ''"
+                        onclick="selectEventType('FESTIVAL')">Festival
+                </button>
+                <button th:if="${eventTypes == 'CompetitionEvent'}" class="event-type-tab" type="button"
+                        th:classappend="${request.eventType == 'COMPETITION'} ? 'active' : ''"
+                        onclick="selectEventType('COMPETITION')">Competition
+                </button>
+                <button th:if="${eventTypes == 'Event'} " class="event-type-tab" type="button"
+                        th:classappend="${request.eventType == 'OTHER'} ? 'active' : ''"
+                        onclick="selectEventType('OTHER')">Other
+                </button>
+            </div>
 
         <!-- Event Title -->
         <div class="event-section">
@@ -83,20 +92,25 @@
             </div>
             <p class="event-desc">A short and sweet sentence about your event.</p>
         </div>
-        
+
         <div class="event-overview-form" id="eventOverviewForm" style="display:none;">
             <h2 class="event-form-title">Event Overview</h2>
             <div class="event-form-group">
                 <label for="eventTitleInput"><b>Tên sự kiện</b></label>
-                <div class="event-form-desc">Be clear and descriptive with a title that tells people what your event is about.</div>
-                <input type="text" id="eventTitleInput" class="event-form-input" placeholder="Event title *" maxlength="140" required th:field="*{title}">
+                <div class="event-form-desc">Be clear and descriptive with a title that tells people what your event is
+                    about.
+                </div>
+                <input type="text" id="eventTitleInput" class="event-form-input" placeholder="Event title *"
+                       maxlength="140" required th:field="*{title}">
             </div>
             <div class="event-form-group">
                 <label for="eventSummaryInput"><b>Description</b></label>
                 <div class="event-form-desc">
-                    Grab people's attention with a short description about your event. Attendees will see this at the top of your event page. (140 characters max)
+                    Grab people's attention with a short description about your event. Attendees will see this at the
+                    top of your event page. (140 characters max)
                 </div>
-                <textarea id="eventSummaryInput" class="event-form-input" placeholder="Summary *" maxlength="140" required th:text="*{description}"></textarea>
+                <textarea id="eventSummaryInput" class="event-form-input" placeholder="Summary *" maxlength="140"
+                          required th:field="*{description}"></textarea>
                 <div class="event-form-count"><span id="summaryCount">0</span> / 140</div>
             </div>
             <div class="event-form-suggest">
@@ -144,370 +158,258 @@
                 </div>
             </div>
         </div>
-                <div class="event-location" style="flex:2; min-width:320px; background:#fafbfc; border-radius:16px; padding:24px; margin-top:0; display:flex; flex-direction:column; align-items:flex-start;">
+        <div class="event-location"
+             style="flex:2; min-width:320px; background:#fafbfc; border-radius:16px; padding:24px; margin-top:0; display:flex; flex-direction:column; align-items:flex-start;">
 
-                    <label for="locationInput" style="font-weight:600; font-size:1.1em; margin-bottom:8px;"><i class="fas fa-map-marker-alt"></i> Location</label>
+            <label for="locationInput" style="font-weight:600; font-size:1.1em; margin-bottom:8px;"><i
+                    class="fas fa-map-marker-alt"></i> Location</label>
 
-                    <!-- Location input field -->
-                    <input type="text" id="locationInput" class="event-form-input" placeholder="Enter a location" style="width:100%; margin-bottom:16px;" 
-                           th:value="${event?.places != null and event?.places.size() > 0 ? event?.places[0]?.placeName : ''}">
-
-                    <!-- Places selection dropdown -->
-                    <select multiple name="places" class="event-form-input" style="margin-bottom:16px;">
-                        <option th:each="p : ${allPlaces}"
-                                th:value="${p.id}"
-                                th:text="${p.placeName + ' (' + p.building + ')'}"
-                                th:selected="${event?.places != null and event?.places.contains(p)}">
-                        </option>
-                    </select>
-
-                    <a href="#" class="event-map-toggle" style="margin-bottom:12px;">Hide map <i class="fas fa-chevron-up"></i></a>
-                    <div class="event-map-preview" style="width:100%;">
-                        <img src="/images/map.png" alt="Map" style="width:100%;border-radius:12px;">
-                    </div>
+            <!-- Location / Place Manager -->
+            <div class="event-section">
+                <div class="event-section-header">
+                    <h2 class="event-title"><i class="fas fa-map-marker-alt"></i> Địa điểm tổ chức</h2>
+                    <p class="event-desc">Quản lý danh sách địa điểm tổ chức cho sự kiện.</p>
                 </div>
+
+                <!-- Bảng hiển thị danh sách Place -->
+                <div style="margin-bottom:16px;">
+                    <table class="table table-striped" style="width:100%; border-collapse:collapse;">
+                        <thead>
+                        <tr>
+                            <th>Tên địa điểm</th>
+                            <th>Tòa nhà</th>
+                            <th>Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="placeList">
+                        <!-- JS sẽ render danh sách tạm thời -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Nút thêm Place -->
+                <button type="button" id="addPlaceBtn" class="btn btn-outline-primary">
+                    <i class="fas fa-plus"></i> Thêm địa điểm
+                </button>
             </div>
 
-        <!-- Event Details -->
-        <div class="event-section">
-            <div class="event-section-header">
-                <h2 class="event-title">Chi tiết sự kiện</h2>
+
+            <a href="#" class="event-map-toggle" style="margin-bottom:12px;">Hide map <i class="fas fa-chevron-up"></i></a>
+            <div class="event-map-preview" style="width:100%;">
+                <img src="/images/map.png" alt="Map" style="width:100%;border-radius:12px;">
             </div>
-            <p class="event-desc">Thông tin bổ sung về sự kiện của bạn.</p>
-            
-            <!-- Building Selection -->
-            <div class="event-form-group">
-                <label for="buildingSelect"><b>Tòa nhà</b></label>
-                <select id="buildingSelect" class="event-form-input" required>
-                    <option value="NONE" th:selected="${event?.places == null or event?.places.isEmpty() or event?.places[0]?.building == 'NONE'}">NONE</option>
-                    <option value="ALPHA" th:selected="${event?.places != null and !event?.places.isEmpty() and event?.places[0]?.building == 'ALPHA'}">ALPHA</option>
-                    <option value="BETA" th:selected="${event?.places != null and !event?.places.isEmpty() and event?.places[0]?.building == 'BETA'}">BETA</option>
-                    <option value="GAMMA" th:selected="${event?.places != null and !event?.places.isEmpty() and event?.places[0]?.building == 'GAMMA'}">GAMMA</option>
+        </div>
+</div>
+
+<!-- Event Details -->
+<div class="event-section">
+    <div class="event-section-header">
+        <h2 class="event-title">Chi tiết sự kiện</h2>
+    </div>
+    <p class="event-desc">Thông tin bổ sung về sự kiện của bạn.</p>
+
+    <!-- Building Selection -->
+
+
+    <!-- Capacity & Points -->
+    <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+        <div class="event-form-group" style="flex: 1;">
+            <label for="capacityInput"><b>Sức chứa <span style="color:#e53935;">*</span></b></label>
+            <div class="event-form-desc">Số lượng người tham gia tối đa</div>
+            <input type="number" id="capacityInput" class="event-form-input" min="1" required th:field="*{capacity}">
+        </div>
+        <div class="event-form-group" style="flex: 1;">
+            <label for="pointsInput"><b>Điểm số <span style="color:#e53935;">*</span></b></label>
+            <div class="event-form-desc">Điểm thưởng cho người tham gia</div>
+            <input type="number" id="pointsInput" class="event-form-input" min="0" required th:field="*{points}">
+        </div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="event-form-group">
+        <label for="benefitsInput"><b>Lợi ích</b></label>
+        <div class="event-form-desc">Những lợi ích mà người tham gia sẽ nhận được</div>
+        <textarea id="benefitsInput" class="event-form-input" placeholder="Mô tả lợi ích của sự kiện..." maxlength="400"
+                  rows="3" th:field="*{benefits}"></textarea>
+        <div class="event-form-count"><span id="benefitsCount">0</span> / 400</div>
+    </div>
+
+    <!-- Learning Objects -->
+    <div class="event-form-group">
+        <label for="learningObjectsInput"><b>Mục tiêu học tập</b></label>
+        <div class="event-form-desc">Những kiến thức và kỹ năng mà người tham gia sẽ học được</div>
+        <textarea id="learningObjectsInput" class="event-form-input" placeholder="Mô tả mục tiêu học tập..."
+                  maxlength="400" rows="3" th:field="*{learningObjects}"></textarea>
+        <div class="event-form-count"><span id="learningObjectsCount">0</span> / 400</div>
+    </div>
+</div>
+
+<!-- Music Fields -->
+<div id="musicFields" th:if="${eventTypes == 'MusicEvent'}" style="display:none; margin-bottom:24px;">
+    <div class="event-form-group">
+        <label for="musicType"><b>Loại nhạc</b></label>
+        <div class="event-form-desc">Chọn loại nhạc cho sự kiện</div>
+        <select id="musicType" class="event-form-input" th:field="*{musicType}">
+            <option value="">Chọn loại nhạc</option>
+            <option value="LIVE">Live Music</option>
+            <option value="DJ">DJ Set</option>
+            <option value="ACOUSTIC">Acoustic</option>
+            <option value="ELECTRONIC">Electronic</option>
+            <option value="ROCK">Rock</option>
+            <option value="POP">Pop</option>
+            <option value="JAZZ">Jazz</option>
+            <option value="CLASSICAL">Classical</option>
+            <option value="OTHER">Khác</option>
+        </select>
+    </div>
+    <div class="event-form-group">
+        <label for="genre"><b>Thể loại</b></label>
+        <div class="event-form-desc">Thể loại nhạc cụ thể</div>
+        <input type="text" id="genre" class="event-form-input"
+               placeholder="Ví dụ: Indie Rock, Electronic Dance Music, Jazz Fusion..." th:field="*{genre}">
+    </div>
+    <div class="event-form-group">
+        <label for="performerCount"><b>Số lượng nghệ sĩ</b></label>
+        <div class="event-form-desc">Số lượng nghệ sĩ/biểu diễn viên tham gia</div>
+        <input type="number" id="performerCount" class="event-form-input" min="1" placeholder="Ví dụ: 3"
+               th:field="*{performerCount}">
+    </div>
+</div>
+
+<!-- Festival Fields -->
+<div id="festivalFields" th:if="${eventTypes == 'FestivalEvent'}" style="display:none; margin-bottom:24px;">
+    <div class="event-form-group">
+        <label for="festivalCulture"><b>Culture</b></label>
+        <input type="text" id="festivalCulture" class="event-form-input"
+               placeholder="Culture (e.g. Vietnamese, Japanese)" th:field="*{culture}">
+    </div>
+    <div class="event-form-group">
+        <label for="festivalHighlight"><b>Highlight</b></label>
+        <input type="text" id="festivalHighlight" class="event-form-input" placeholder="Highlight of the festival"
+               th:field="*{highlight}">
+    </div>
+</div>
+
+<!-- Competition Fields -->
+<div id="competitionFields" th:if="${eventTypes == 'CompetitionEvent'}" style="display:none; margin-bottom:24px;">
+    <div class="event-form-group">
+        <label for="competitionType"><b>Competition Type</b></label>
+        <input type="text" id="competitionType" class="event-form-input"
+               placeholder="Competition type (e.g. Hackathon, Esport)" th:field="*{competitionType}">
+    </div>
+    <div class="event-form-group">
+        <label for="competitionRules"><b>Rules</b></label>
+        <textarea id="competitionRules" class="event-form-input" placeholder="Competition rules"
+                  th:field="*{rules}"></textarea>
+    </div>
+    <div class="event-form-group">
+        <label for="prizePool"><b>Prize Pool</b></label>
+        <input type="text" id="prizePool" class="event-form-input" placeholder="Prize pool (e.g. $1000)"
+               th:field="*{prizePool}">
+    </div>
+</div>
+
+<!-- Workshop Fields -->
+<div id="workshopFields" th:if="${eventTypes == 'WorkshopEvent'}" style="display:none; margin-bottom:24px;">
+    <div class="event-form-group">
+        <label for="workshopTopic"><b>Topic</b></label>
+        <input type="text" id="workshopTopic" class="event-form-input" placeholder="Workshop topic" th:field="*{topic}">
+    </div>
+    <div class="event-form-group">
+        <label for="materialsLink"><b>Materials Link</b></label>
+        <input type="url" id="materialsLink" class="event-form-input" placeholder="Link to workshop materials"
+               th:field="*{materialsLink}">
+    </div>
+    <div class="event-form-group">
+        <label for="workshopMax"><b>Số lượng tối đa</b></label>
+        <input type="number" id="workshopMax" class="event-form-input" placeholder="MaxParticipants your event"
+               th:field="*{maxParticipants}">
+    </div>
+    <div class="event-form-group">
+        <label for="skillLevel"><b>SkillLevel</b></label>
+        <input type="text" id="skillLevel" class="event-form-input" placeholder="Skill Level" th:field="*{skillLevel}">
+    </div>
+    <div class="event-form-group">
+        <label for="prerequisites"><b>Prerequisistes</b></label>
+        <input type="text" id="prerequisites" class="event-form-input" placeholder="Prerequisites your event"
+               th:field="*{prerequisites}">
+    </div>
+</div>
+<!-- Save Button -->
+<div class="event-form-actions" style="margin-top: 32px; text-align: center;">
+    <button type="submit" id="saveEventBtn" class="btn btn-primary btn-lg">
+        <i class="fas fa-save"></i> Lưu thay đổi
+    </button>
+</div>
+</form>
+    <!-- Modal thêm địa điểm -->
+    <div id="addPlaceModal"
+         style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
+        <div style="background:white; padding:24px; border-radius:12px; width:400px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+            <h3 style="margin-bottom:16px;">Thêm địa điểm mới</h3>
+
+            <div class="form-group" style="margin-bottom:12px;">
+                <label for="newPlaceName"><b>Tên địa điểm</b></label>
+                <input type="text" id="newPlaceName" class="event-form-input" placeholder="Nhập tên địa điểm">
+            </div>
+
+            <div class="form-group" style="margin-bottom:12px;">
+                <label for="newPlaceBuilding"><b>Tòa nhà</b></label>
+                <select id="newPlaceBuilding" class="event-form-input">
+                    <option value="NONE">NONE</option>
+                    <option value="ALPHA">ALPHA</option>
+                    <option value="BETA">BETA</option>
+                    <option value="GAMMA">GAMMA</option>
                 </select>
             </div>
-            
-            <!-- Capacity & Points -->
-            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
-                <div class="event-form-group" style="flex: 1;">
-                    <label for="capacityInput"><b>Sức chứa <span style="color:#e53935;">*</span></b></label>
-                    <div class="event-form-desc">Số lượng người tham gia tối đa</div>
-                        <input type="number" id="capacityInput" class="event-form-input" min="1" required th:field="*{capacity}">
-                </div>
-                <div class="event-form-group" style="flex: 1;">
-                    <label for="pointsInput"><b>Điểm số <span style="color:#e53935;">*</span></b></label>
-                    <div class="event-form-desc">Điểm thưởng cho người tham gia</div>
-                    <input type="number" id="pointsInput" class="event-form-input" min="0" required th:field="*{points}">
-                </div>
-            </div>
-            
-            <!-- Benefits -->
-            <div class="event-form-group">
-                <label for="benefitsInput"><b>Lợi ích</b></label>
-                <div class="event-form-desc">Những lợi ích mà người tham gia sẽ nhận được</div>
-                <textarea id="benefitsInput" class="event-form-input" placeholder="Mô tả lợi ích của sự kiện..." maxlength="400" rows="3" th:field="*{benefits}"></textarea>
-                <div class="event-form-count"><span id="benefitsCount">0</span> / 400</div>
-            </div>
-            
-            <!-- Learning Objects -->
-            <div class="event-form-group">
-                <label for="learningObjectsInput"><b>Mục tiêu học tập</b></label>
-                <div class="event-form-desc">Những kiến thức và kỹ năng mà người tham gia sẽ học được</div>
-                <textarea id="learningObjectsInput" class="event-form-input" placeholder="Mô tả mục tiêu học tập..." maxlength="400" rows="3" th:field="*{learningObjects}"></textarea>
-                <div class="event-form-count"><span id="learningObjectsCount">0</span> / 400</div>
-            </div>
-        </div>
 
-        <!-- Music Fields -->
-        <div id="musicFields" th:if="${eventType == 'MusicEvent'}" style="display:none; margin-bottom:24px;">
-            <div class="event-form-group">
-                <label for="musicType"><b>Loại nhạc</b></label>
-                <div class="event-form-desc">Chọn loại nhạc cho sự kiện</div>
-                <select id="musicType" class="event-form-input" th:field="*{musicType}">
-                    <option value="">Chọn loại nhạc</option>
-                    <option value="LIVE">Live Music</option>
-                    <option value="DJ">DJ Set</option>
-                    <option value="ACOUSTIC">Acoustic</option>
-                    <option value="ELECTRONIC">Electronic</option>
-                    <option value="ROCK">Rock</option>
-                    <option value="POP">Pop</option>
-                    <option value="JAZZ">Jazz</option>
-                    <option value="CLASSICAL">Classical</option>
-                    <option value="OTHER">Khác</option>
-                </select>
-            </div>
-            <div class="event-form-group">
-                <label for="genre"><b>Thể loại</b></label>
-                <div class="event-form-desc">Thể loại nhạc cụ thể</div>
-                <input type="text" id="genre" class="event-form-input" placeholder="Ví dụ: Indie Rock, Electronic Dance Music, Jazz Fusion..." th:field="*{genre}">
-            </div>
-            <div class="event-form-group">
-                <label for="performerCount"><b>Số lượng nghệ sĩ</b></label>
-                <div class="event-form-desc">Số lượng nghệ sĩ/biểu diễn viên tham gia</div>
-                <input type="number" id="performerCount" class="event-form-input" min="1" placeholder="Ví dụ: 3" th:field="*{performerCount}">
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button id="savePlaceBtn" class="btn btn-primary">Lưu</button>
+                <button id="closePlaceModalBtn" class="btn btn-secondary">Đóng</button>
             </div>
         </div>
+    </div>
 
-        <!-- Festival Fields -->
-        <div id="festivalFields" th:if="${eventType == 'FestivalEvent'}" style="display:none; margin-bottom:24px;">
-            <div class="event-form-group">
-                <label for="festivalCulture"><b>Culture</b></label>
-                <input type="text" id="festivalCulture" class="event-form-input" placeholder="Culture (e.g. Vietnamese, Japanese)" th:field="*{culture}">
-            </div>
-            <div class="event-form-group">
-                <label for="festivalHighlight"><b>Highlight</b></label>
-                <input type="text" id="festivalHighlight" class="event-form-input" placeholder="Highlight of the festival" th:field="*{highlight}">
-            </div>
+    <!-- Additional sections -->
+<div class="event-section event-additional">
+    <h2>Add more sections to your event page</h2>
+    <p class="event-desc">
+        Make your event stand out even more. These sections help attendees find information and answer their questions -
+        which means more ticket sales and less time answering messages.
+    </p>
+    <div class="event-add-list">
+        <div class="event-add-row">
+            <span class="event-add-icon"><i class="fas fa-customer"></i></span>
+            <span class="event-add-label">Lineup <span class="event-add-new">New</span></span>
+            <button type="button" class="event-add-btn" id="addLineupBtn">Add</button>
         </div>
-
-        <!-- Competition Fields -->
-        <div id="competitionFields" th:if="${eventType == 'CompetitionEvent'}" style="display:none; margin-bottom:24px;">
-            <div class="event-form-group">
-                <label for="competitionType"><b>Competition Type</b></label>
-                <input type="text" id="competitionType" class="event-form-input" placeholder="Competition type (e.g. Hackathon, Esport)" th:field="*{competitionType}">
-            </div>
-            <div class="event-form-group">
-                <label for="competitionRules"><b>Rules</b></label>
-                <textarea id="competitionRules" class="event-form-input" placeholder="Competition rules" th:field="*{rules}"></textarea>
-            </div>
-            <div class="event-form-group">
-                <label for="prizePool"><b>Prize Pool</b></label>
-                <input type="text" id="prizePool" class="event-form-input" placeholder="Prize pool (e.g. $1000)" th:field="*{prizePool}">
-            </div>
+        <div id="lineupSections"></div>
+        <div class="event-add-row">
+            <span class="event-add-icon"><i class="fas fa-calendar-alt"></i></span>
+            <span class="event-add-label">Schedule</span>
+            <button type="button" class="event-add-btn" id="addAgendaBtn">Add</button>
+            <div id="agendaSections"></div>
         </div>
-
-        <!-- Workshop Fields -->
-        <div id="workshopFields" th:if="${eventType == 'WorkshopEvent'}" style="display:none; margin-bottom:24px;">
-            <div class="event-form-group">
-                <label for="workshopTopic"><b>Topic</b></label>
-                <input type="text" id="workshopTopic" class="event-form-input" placeholder="Workshop topic" th:field="*{topic}">
-            </div>
-            <div class="event-form-group">
-                <label for="materialsLink"><b>Materials Link</b></label>
-                <input type="url" id="materialsLink" class="event-form-input" placeholder="Link to workshop materials"th:field="*{materialsLink}">
-            </div>
-            <div class="event-form-group">
-                <label for="workshopMax"><b>Số lượng tối đa</b></label>
-                <input type="number" id="workshopMax" class="event-form-input" placeholder="MaxParticipants your event" th:field="*{maxParticipants}">
-            </div>
-            <div class="event-form-group">
-                <label for="skillLevel"><b>SkillLevel</b></label>
-                <input type="text" id="skillLevel" class="event-form-input" placeholder="Skill Level" th:field="*{skillLevel}">
-            </div>
-            <div class="event-form-group">
-                <label for="prerequisites"><b>Prerequisistes</b></label>
-                <input type="text" id="prerequisites" class="event-form-input" placeholder="Prerequisites your event" th:field="*{prerequisites}">
-            </div>
-        </div>
-        <!-- Save Button -->
-        <div class="event-form-actions" style="margin-top: 32px; text-align: center;">
-            <button type="button" id="saveEventBtn" class="btn btn-primary btn-lg">
-                <i class="fas fa-save"></i> Lưu thay đổi
-            </button>
-        </div>
-    </form>
-        <!-- Additional sections -->
-        <div class="event-section event-additional">
-            <h2>Add more sections to your event page</h2>
-            <p class="event-desc">
-                Make your event stand out even more. These sections help attendees find information and answer their questions - which means more ticket sales and less time answering messages.
-            </p>
-            <div class="event-add-list">
-                <div class="event-add-row">
-                    <span class="event-add-icon"><i class="fas fa-customer"></i></span>
-                    <span class="event-add-label">Lineup <span class="event-add-new">New</span></span>
-                    <button type="button" class="event-add-btn" id="addLineupBtn">Add</button>
-                </div>
-                <div id="lineupSections"></div>
-                <div class="event-add-row">
-                    <span class="event-add-icon"><i class="fas fa-calendar-alt"></i></span>
-                    <span class="event-add-label">Schedule</span>
-                    <button type="button" class="event-add-btn" id="addAgendaBtn">Add</button>
-                    <div id="agendaSections"></div>
-                </div>
-            </div>
-        </div>
+    </div>
+</div>
 
 
-    <!-- Hidden form để submit ảnh -->
-    <form id="imageUploadForm" style="display: none;">
-        <input type="hidden" name="eventId" id="eventIdInput">
-        <input type="hidden" name="images" id="imagesInput">
-    </form>
+<!-- Hidden form để submit ảnh -->
+<form id="imageUploadForm" style="display: none;">
+    <input type="hidden" name="eventId" id="eventIdInput">
+    <input type="hidden" name="images" id="imagesInput">
+</form>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Pass ticket types data from Thymeleaf to JavaScript
+    const initialTicketTypesData = /*[[${allTicketTypes}]]*/ [];
+    console.log('Dữ liệu ticket types từ Thymeleaf (settings):', initialTicketTypesData);
+    /*]]>*/
+</script>
 
 </div>
 
-<style>
-/* Summary card styles */
-.lineup-member-summary {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
 
-.summary-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
 
-.summary-drag-handle {
-    color: #ccc;
-    cursor: move;
-}
 
-.summary-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.summary-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.summary-details {
-    flex: 1;
-}
-
-.summary-name {
-    font-weight: 600;
-    font-size: 16px;
-    margin-bottom: 4px;
-}
-
-.summary-tagline {
-    color: #666;
-    font-size: 14px;
-}
-
-.summary-role {
-    color: #007bff;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 2px;
-}
-
-.schedule-member-summary {
-    background: #fff6f5;
-    border-radius: 16px;
-    padding: 24px 32px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(61,85,254,0.04);
-    border: 1px solid #e57373;
-}
-
-.schedule-member-summary .summary-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.schedule-member-summary .summary-time {
-    color: #e57373;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.schedule-member-summary .summary-activity {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.schedule-member-summary .summary-description {
-    color: #666;
-    font-size: 14px;
-}
-
-.summary-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.summary-edit, .summary-delete {
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 8px;
-    cursor: pointer;
-    color: #666;
-}
-
-.summary-edit:hover {
-    background: #f0f8ff;
-    border-color: #007bff;
-    color: #007bff;
-}
-
-.summary-delete:hover {
-    background: #fff5f5;
-    border-color: #dc3545;
-    color: #dc3545;
-}
-</style>
-
-<script>
-// Expose speakers data to JavaScript
-window.allSpeakers = /*[[${allSpeakers}]]*/ [];
-console.log('Speakers data loaded:', window.allSpeakers);
-</script>
-
-<!--<script>-->
-<!--document.addEventListener('DOMContentLoaded', function() {-->
-<!--    // Save button event listener-->
-<!--    document.getElementById('saveEventBtn').addEventListener('click', function() {-->
-<!--        saveEvent();-->
-<!--    });-->
-<!--});-->
-
-<!--function saveEvent() {-->
-<!--    // Get event ID from URL-->
-<!--    const pathParts = window.location.pathname.split('/');-->
-<!--    const eventId = pathParts[3];-->
-<!--    -->
-<!--    const eventData = {-->
-<!--        id: parseInt(eventId),-->
-<!--        title: document.getElementById('eventTitleInput').value,-->
-<!--        description: document.getElementById('eventSummaryInput').value,-->
-<!--        capacity: parseInt(document.getElementById('capacityInput').value),-->
-<!--        points: parseInt(document.getElementById('pointsInput').value),-->
-<!--        benefits: document.getElementById('benefitsInput').value,-->
-<!--        learningObjects: document.getElementById('learningObjectsInput').value,-->
-<!--        startsAt: document.getElementById('startDate').value,-->
-<!--        endsAt: document.getElementById('endDate').value,-->
-<!--        enrollDeadline: document.getElementById('enrollDeadline').value,-->
-<!--        eventType: "MUSIC", // Default to MUSIC for now-->
-<!--        places: [{-->
-<!--            building: document.getElementById('buildingSelect').value,-->
-<!--            placeName: document.getElementById('locationInput').value-->
-<!--        }]-->
-<!--    };-->
-<!--    -->
-<!--    fetch(`/api/events/update/${eventId}`, {-->
-<!--        method: 'PUT',-->
-<!--        headers: {-->
-<!--            'Content-Type': 'application/json',-->
-<!--        },-->
-<!--        body: JSON.stringify(eventData)-->
-<!--    })-->
-<!--    .then(response => {-->
-<!--        if (response.ok) {-->
-<!--            showSuccessMessage('Cập nhật sự kiện thành công!');-->
-<!--        } else {-->
-<!--            showErrorMessage('Có lỗi xảy ra khi cập nhật sự kiện');-->
-<!--        }-->
-<!--    })-->
-<!--    .catch(error => {-->
-<!--        console.error('Error:', error);-->
-<!--        showErrorMessage('Có lỗi xảy ra khi cập nhật sự kiện');-->
-<!--    });-->
-<!--}-->
-<!--</script>-->

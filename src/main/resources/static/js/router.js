@@ -69,7 +69,7 @@ class SpaRouter {
         this.mainContent.innerHTML = '<div class="loading-spinner"></div>'; // Hiển thị spinner
 
         try {
-            // Lấy eventId từ URL hiện tại
+                // Lấy eventId từ URL hiện tại
             const pathParts = window.location.pathname.split('/');
             const eventId = pathParts[3]; // phần tử thứ 3 là số id
             

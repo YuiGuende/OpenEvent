@@ -416,7 +416,7 @@
             border: 2px solid var(--accent-primary) !important;
             border-radius: 25px !important;
             padding: 50px 100px !important;
-            margin: 20px 0px !important;
+            margin: 12px 0 40px !important; /* Tighten gap to title, keep bottom space */
             box-shadow: 
                 0 0 35px rgba(255, 107, 53, 0.3),
                 inset 0 0 25px rgba(255, 107, 53, 0.1) !important;
@@ -482,6 +482,14 @@
 
         #descriptionm .col-12 {
             padding: 0 !important;
+        }
+
+        /* Add spacing from countdown and tighten title-to-box gap */
+        #descriptionm {
+            margin-top: 60px !important;
+        }
+        #descriptionm .section-title-header {
+            margin-bottom: 8px !important;
         }
 
         .event-description-box:hover {
@@ -2179,10 +2187,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
-                    <!-- Event Title -->
-                    <div class="title-with-cup">
-                        <h2 th:text="${eventDetail.title}">Event Title</h2>
-                    </div>
+                    <!-- Removed duplicate title to avoid repetition with section header -->
 
                     <!-- Description -->
                     <p class="lead" th:if="${eventDetail.description != null}">

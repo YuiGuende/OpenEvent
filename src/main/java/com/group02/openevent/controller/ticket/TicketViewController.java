@@ -20,8 +20,8 @@ public class TicketViewController {
     private final EventService eventService;
     private final TicketTypeService ticketTypeService;
 
-    @GetMapping("/{eventType}/{eventId}/ticket")
-    public String viewTickets(@PathVariable String eventType, @PathVariable Long eventId, Model model) {
+    @GetMapping("/ticket/{eventId}")
+    public String viewTickets( @PathVariable Long eventId, Model model) {
         // Get event details
         Optional<Event> eventOpt = eventService.getEventById(eventId);
         if (eventOpt.isEmpty()) {
@@ -35,8 +35,6 @@ public class TicketViewController {
 
         model.addAttribute("event", event);
         model.addAttribute("tickets", tickets);
-        model.addAttribute("eventId", eventId);
-        model.addAttribute("eventType", eventType);
 
         return "event/view-ticket";
     }

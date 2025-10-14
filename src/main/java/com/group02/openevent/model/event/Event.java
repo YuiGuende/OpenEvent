@@ -149,8 +149,17 @@ public class Event {
     public Event() {
     }
 
-    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+    @Column(name = "venue_address", length = 500)
+    private String venueAddress;
+
+    @Column(name = "guidelines", columnDefinition = "TEXT")
+    private String guidelines;
+
+
+
+    public Event(Long id, boolean poster, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages, Organization organization, String venueAddress, String guidelines) {
         this.id = id;
+        this.poster = poster;
         this.parentEvent = parentEvent;
         this.subEvents = subEvents;
         this.title = title;
@@ -171,207 +180,9 @@ public class Event {
         this.speakers = speakers;
         this.places = places;
         this.eventImages = eventImages;
-    }
-
-    // Getter & Setter
-
-
-    public Host getHost() {
-        return host;
-    }
-
-    public void setHost(Host host) {
-        this.host = host;
-    }
-
-    public double getMaxTicketPice() {
-        double maxTicketPice = 0;
-        for (TicketType ticketType : ticketTypes) {
-            if (ticketType.getPrice().doubleValue() > maxTicketPice) {
-                maxTicketPice = ticketType.getPrice().doubleValue();
-            }
-        }
-        return maxTicketPice;
-
-    }
-    public double getMinTicketPice() {
-        double minTicketPice = 0;
-        for (TicketType ticketType : ticketTypes) {
-            if (ticketType.getPrice().doubleValue() < minTicketPice) {
-                minTicketPice = ticketType.getPrice().doubleValue();
-            }
-        }
-        return minTicketPice;
-
-    }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
-    }
-
-    public List<Speaker> getSpeakers() {
-        return speakers;
-    }
-
-    public void setSpeakers(List<Speaker> speakers) {
-        this.speakers = speakers;
-    }
-
-    public LocalDateTime getPublicDate() {
-        return publicDate;
-    }
-
-    public void setPublicDate(LocalDateTime publicDate) {
-        this.publicDate = publicDate;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Event getParentEvent() {
-        return parentEvent;
-    }
-
-    public void setParentEvent(Event parentEvent) {
-        this.parentEvent = parentEvent;
-    }
-
-    public List<Event> getSubEvents() {
-        return subEvents;
-    }
-
-    public void setSubEvents(List<Event> subEvents) {
-        this.subEvents = subEvents;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public LocalDateTime getEnrollDeadline() {
-        return enrollDeadline;
-    }
-
-    public void setEnrollDeadline(LocalDateTime enrollDeadline) {
-        this.enrollDeadline = enrollDeadline;
-    }
-
-    public LocalDateTime getStartsAt() {
-        return startsAt;
-    }
-
-    public void setStartsAt(LocalDateTime startsAt) {
-        this.startsAt = startsAt;
-    }
-
-    public LocalDateTime getEndsAt() {
-        return endsAt;
-    }
-
-    public void setEndsAt(LocalDateTime endsAt) {
-        this.endsAt = endsAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public EventStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(EventStatus status) {
-        this.status = status;
-    }
-
-    public String getBenefits() {
-        return benefits;
-    }
-
-    public void setBenefits(String benefits) {
-        this.benefits = benefits;
-    }
-
-    public String getLearningObjects() {
-        return learningObjects;
-    }
-
-    public void setLearningObjects(String learningObjects) {
-        this.learningObjects = learningObjects;
-    }
-
-
-    public Integer getPoints() {
-        return points;
-    }
-
-    public void setPoints(Integer points) {
-        this.points = points;
-    }
-
-    public List<Place> getPlaces() {
-        return places;
-    }
-
-    public void setPlaces(List<Place> places) {
-        this.places = places;
-    }
-
-    public List<EventSchedule> getSchedules() {
-        return schedules;
-    }
-
-    public void setSchedules(List<EventSchedule> schedules) {
-        this.schedules = schedules;
-    }
-
-    public Set<EventImage> getEventImages() {
-        return eventImages;
-    }
-
-    public void setEventImages(Set<EventImage> eventImages) {
-        this.eventImages = eventImages;
+        this.organization = organization;
+        this.venueAddress = venueAddress;
+        this.guidelines = guidelines;
     }
 
     @Override
@@ -398,19 +209,24 @@ public class Event {
                 '}';
     }
 
-    public boolean isPoster() {
-        return poster;
-    }
+    public double getMaxTicketPice() {
+        double maxTicketPice = 0;
+        for (TicketType ticketType : ticketTypes) {
+            if (ticketType.getPrice().doubleValue() > maxTicketPice) {
+                maxTicketPice = ticketType.getPrice().doubleValue();
+            }
+        }
+        return maxTicketPice;
 
-    public void setPoster(boolean poster) {
-        this.poster = poster;
     }
+    public double getMinTicketPice() {
+        double minTicketPice = 0;
+        for (TicketType ticketType : ticketTypes) {
+            if (ticketType.getPrice().doubleValue() < minTicketPice) {
+                minTicketPice = ticketType.getPrice().doubleValue();
+            }
+        }
+        return minTicketPice;
 
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
     }
 }

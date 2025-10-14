@@ -1,463 +1,1694 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-      <!--Thymeleaf-->
-      <!-- Required meta tags -->
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title th:text="${event.title} + ' - Workshop Event'">Workshop Event - FPT University</title>
-      <!-- Bootstrap CSS -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/bootstrap.min.css}">
-      <!-- Icon -->
-      <link rel="stylesheet" th:href="@{/music/assets/fonts/line-icons.css}">
-      <!-- Slicknav -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/slicknav.css}">
-      <!-- Nivo Lightbox -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/nivo-lightbox.css}">
-      <!-- Animate -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/animate.css}">
-      <!-- Main Style -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/main.css}">
-      <!-- Responsive Style -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/responsive.css}">
-      <!-- Theme Colors -->
-      <link rel="stylesheet" th:href="@{/music/assets/css/themeColors.css}">
-      
-      <!-- Custom Workshop Styles -->
-      <style>
-        /* Workshop specific styles */
-        .workshop-badge {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title th:text="${eventDetail != null ? eventDetail.title : 'Music Event'} + ' - OpenEvent'">Music Event - OpenEvent</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/bootstrap.min.css}">
+    <!-- Icons -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/fonts/line-icons.css}">
+    <!-- Slicknav -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/slicknav.css}">
+    <!-- Nivo Lightbox -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/nivo-lightbox.css}">
+    <!-- Animate -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/animate.css}">
+    <!-- Main Style -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/main.css}">
+    <!-- Responsive Style -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/responsive.css}">
+    <!-- Theme Colors -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/themeColors.css}">
+    <!-- Music Theme CSS -->
+    <link rel="stylesheet" th:href="@{/workshop/assets/css/music-theme.css}">
+
+    <style>
+        /* ==========================================================================
+   Modern Ticket Pricing Section CSS (Updated for Alignment & Height)
+   ========================================================================== */
+
+        /* --- Section Styling --- */
+        #pricing {
+            background-color: #1a1a1a; /* Dark background for the whole section */
+            padding: 80px 0 !important;
+            margin: 0 !important;
         }
-        
-        .skill-level {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+
+        #pricing .section-title-header {
+            margin-bottom: 50px !important;
+            padding: 0 !important; /* Reset padding */
         }
-        
-        .skill-beginner { background: #d4edda; color: #155724; }
-        .skill-intermediate { background: #fff3cd; color: #856404; }
-        .skill-advanced { background: #f8d7da; color: #721c24; }
-        
-        .materials-section {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            border-radius: 16px;
-            padding: 30px;
-            margin: 20px 0;
-            box-shadow: 0 8px 32px rgba(33, 150, 243, 0.2);
+
+        #pricing .section-title-header .section-title {
+            color: #ffffff !important; /* White title on dark background */
         }
-        
-        .prerequisites-section {
-            background: #fff3e0;
-            border-left: 4px solid #ff9800;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
+
+        #pricing .section-title-header p {
+            color: #cccccc !important; /* Light grey subtitle */
         }
-        
-        .learning-outcomes-section {
-            background: #e8f5e8;
-            border-left: 4px solid #4caf50;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
+
+        /* --- General Resets (from original code) --- */
+        #pricing, #pricing .container, #pricing .row, #pricing .col-12, #pricing .col-lg-4, #pricing .section-title-header, #pricing .section-title, #pricing .price-block-wrapper {
+            min-height: auto !important;
+            height: auto !important;
+            border: none !important;
         }
-        
-        .certification-section {
-            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            margin: 20px 0;
-            box-shadow: 0 8px 32px rgba(156, 39, 176, 0.2);
+
+        #pricing .container {
+            padding: 0 !important;
+            margin: 0 auto !important; /* Center the container */
+            max-width: 1140px !important; /* Standard container width */
+            width: 100% !important;
         }
-        
-        .instructor-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            margin-bottom: 30px;
+
+        #pricing .row {
+            padding: 0 15px !important;
+            margin: 0 -15px !important;
+            justify-content: center;
         }
-        
-        .instructor-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+
+        /* --- KEY CHANGE: Ensure columns are flex containers for equal height cards --- */
+        #pricing .col-lg-4 {
+            margin-bottom: 30px !important;
+            padding: 0 15px !important;
+            display: flex; /* Make column a flex container */
         }
-        
-        .instructor-image {
+
+        /* --- Modern Ticket Card Design (Modified) --- */
+        /* --- KEY CHANGE: Make card a vertical flex container --- */
+        #pricing .price-block-wrapper {
+            background: #ffffff !important;
+            border-radius: 16px !important;
+            padding: 35px 30px !important; /* Reduced top/bottom padding */
+            margin: 0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+            position: relative !important;
+            overflow: hidden !important;
+            text-align: center !important;
+            width: 100%; /* Ensure card takes full width of column */
+            display: flex; /* Make card a flex container */
+            flex-direction: column; /* Arrange items vertically */
+        }
+
+        /* Remove old gradient/shimmer effects */
+        #pricing .price-block-wrapper::before,
+        #pricing .price-block-wrapper::after {
+            display: none !important;
+        }
+
+        #pricing .price-block-wrapper:hover {
+            transform: translateY(-10px) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        #pricing .price-block-wrapper > * {
             position: relative;
+            z-index: 3;
+        }
+
+        /* --- Icon Styling --- */
+        #pricing .price-block-wrapper .icon {
+            margin-bottom: 20px !important; /* Reduced margin */
+            text-align: center !important;
+        }
+
+        #pricing .price-block-wrapper .icon i {
+            font-size: 48px !important;
+            color: #ff6e40 !important;
+            text-shadow: none !important;
+            filter: none !important;
+        }
+
+        #pricing .price-block-wrapper:hover .icon i {
+            transform: scale(1.1) !important;
+        }
+
+        /* --- Title Styling --- */
+        #pricing .price-block-wrapper .colmun-title h5 {
+            color: #333333 !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            margin-bottom: 10px !important; /* Reduced margin */
+            text-align: center !important;
+            text-shadow: none !important;
+        }
+
+        /* --- Price Styling --- */
+        #pricing .price-block-wrapper .price h2 {
+            color: #1a1a1a !important;
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            margin-bottom: 5px !important; /* Reduced margin */
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+        }
+
+        #pricing .price-block-wrapper .price p {
+            color: #888888 !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            text-align: center !important;
+            margin-bottom: 20px !important; /* Reduced margin */
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+
+        /* --- Features List Styling --- */
+        #pricing .price-block-wrapper .pricing-list ul {
+            list-style: none !important;
+            padding: 0 !important;
+            margin-bottom: 25px !important; /* Reduced margin */
+            display: inline-block;
+            text-align: left;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li {
+            font-size: 15px !important;
+            color: #555555 !important;
+            margin-bottom: 8px !important; /* Reduced margin */
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 !important;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li:hover {
+            color: #1a1a1a !important;
+            transform: none !important;
+        }
+
+        #pricing .price-block-wrapper .pricing-list ul li i {
+            color: #ff6e40 !important;
+            margin-right: 10px !important;
+            font-size: 18px !important;
+            background: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        /* --- Button Styling --- */
+        /* --- KEY CHANGE: Auto margin pushes button to the bottom --- */
+        #pricing .price-block-wrapper .btn-common {
+            background: #ff6e40 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 15px 30px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            font-size: 14px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 8px 15px rgba(255, 110, 64, 0.25) !important;
+            margin-top: auto; /* This is the magic property for alignment! */
+        }
+
+        #pricing .price-block-wrapper .btn-common:hover {
+            background: #e65a2d !important;
+            color: #ffffff !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 12px 25px rgba(255, 110, 64, 0.35) !important;
+        }
+
+        #pricing .price-block-wrapper .btn-common.disabled {
+            background: #cccccc !important;
+            color: #888888 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+        }
+
+        /* --- Remove old card-specific backgrounds --- */
+        #pricing .col-lg-4:nth-child(1) .price-block-wrapper,
+        #pricing .col-lg-4:nth-child(2) .price-block-wrapper,
+        #pricing .col-lg-4:nth-child(3) .price-block-wrapper {
+            background: #ffffff !important;
+        }
+    </style>
+    <style>
+        /* ==========================================================================
+   Organizer Details Section CSS
+   ========================================================================== */
+        #organizer-details {
+            background-color: #f8f9fa; /* Màu nền nhẹ để tách biệt section */
+        }
+
+        .organizer-details-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
             overflow: hidden;
-            height: 280px;
+            margin-top: 20px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Khoảng cách giữa các phần tử bên trong card */
         }
-        
-        .instructor-image img {
-            width: 100%;
-            height: 100%;
+
+        .organizer-header {
+            display: flex;
+            align-items: center;
+            gap: 30px; /* Khoảng cách giữa logo và text */
+        }
+
+        .organizer-logo-wrapper {
+            flex-shrink: 0; /* Đảm bảo logo không bị co lại */
+        }
+
+        .organizer-logo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            border: 5px solid #ff6e40; /* Màu cam chủ đạo của theme */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .instructor-card:hover .instructor-image img {
-            transform: scale(1.05);
-        }
-        
-        .instructor-info {
-            padding: 20px;
-            text-align: center;
-            background: white;
-        }
-        
-        .instructor-info h3 {
-            font-size: 1.4rem;
+
+        .organizer-info h2 {
+            font-size: 32px;
             font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 10px;
             color: #333;
-            margin-bottom: 8px;
         }
-        
-        .instructor-info p {
-            color: #28a745;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+
+        .organizer-info p.description {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 0;
+        }
+
+        .organizer-contact-details {
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef; /* Đường kẻ ngang phân cách */
+            list-style: none;
+            padding-left: 0;
             margin: 0;
         }
-        
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #333;
+
+        .organizer-contact-details li {
+            display: flex;
+            align-items: center;
             margin-bottom: 15px;
-            position: relative;
+            font-size: 16px;
+        }
+
+        .organizer-contact-details i {
+            font-size: 20px;
+            color: #ff6e40;
+            margin-right: 15px;
+            width: 25px; /* Căn chỉnh icon cho thẳng hàng */
             text-align: center;
         }
-        
-        .section-title::after {
-            content: '';
+
+        .organizer-contact-details a {
+            color: #ff6e40;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .organizer-contact-details a:hover {
+            color: #333;
+        }
+
+        /* ==========================================================================
+   Workshop Details Section CSS
+   ========================================================================== */
+        #workshop-details {
+            background: #fff5f0; /* Màu nền cam nhạt */
+        }
+
+        .workshop-main-content h3, .workshop-sidebar h4 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .workshop-main-content h3 i {
+            color: #FF6600; /* FPT Orange */
+        }
+
+        .topic-description {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .prerequisites-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .prerequisites-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .prerequisites-list li i {
+            color: #FF6600; /* FPT Orange */
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        /* Sidebar */
+        .workshop-sidebar {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-top: 4px solid #FF6600; /* FPT Orange */
+        }
+
+        .workshop-sidebar h4 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .info-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-box .info-icon {
+            font-size: 28px;
+            color: #FF6600; /* FPT Orange */
+            background: #fff0e6; /* Light orange background */
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .info-box .info-text strong {
+            font-size: 16px;
             display: block;
-            width: 80px;
-            height: 4px;
-            background: #28a745;
-            margin: 15px auto 0;
-            border-radius: 2px;
+            color: #333;
+        }
+
+        .info-box .info-text p {
+            margin: 0;
+            color: #666;
+            font-size: 15px;
+        }
+
+        .materials-box {
+            flex-direction: column;
+            align-items: flex-start;
+            background-color: #fff5f0; /* Light orange background */
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .materials-box .info-text {
+            margin-bottom: 15px;
+        }
+
+        .btn-materials {
+            background-color: #FF6600; /* FPT Orange */
+            color: white;
+            text-align: center;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+            width: 100%;
+            display: block;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-materials:hover {
+            background-color: #e55a00; /* Darker orange on hover */
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3); /* Orange shadow */
+        }
+
+        /* ==========================================================================
+           Additional Orange Theme Updates
+           ========================================================================== */
+        
+        /* Section title line (horizontal line under title) */
+        .section-title::after {
+            background-color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* FAQ section icons */
+        .accordion .card-header .header-title i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Counter section icons */
+        .work-counter-widget .icon {
+            margin-bottom: 20px !important;
         }
         
-        /* Hero Slider CSS */
-        .hero--slider{ position:relative; overflow:hidden; }
-        .hero-track{
-            display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
-            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        .work-counter-widget .icon i {
+            color: #FF6600 !important; /* FPT Orange */
+            font-size: 48px !important;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            text-shadow: 0 2px 4px rgba(255, 102, 0, 0.3) !important;
+            transition: all 0.3s ease !important;
         }
-        .hero-track::-webkit-scrollbar{ display:none; }
-        .hero-slide{
-            position:relative; min-width:100vw; height:70vh;
-            background-position:center; background-size:cover; scroll-snap-align:start;
-        }
-        .hero-slide::before{
-            content:""; position:absolute; inset:0; z-index:0;
-            background: rgba(0,0,0,0.3);
-        }
-        .hero-content{
-            position:relative; z-index:1; height:100%;
-            display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; color:#fff;
-            padding-bottom: 60px; padding-right: 40px;
-        }
-        .hero-content h1{
-            font-size: clamp(32px, 6vw, 64px);
-            font-weight: 700; margin-bottom: 16px; text-shadow: 0 2px 8px rgba(0,0,0,.3);
-        }
-        .hero-actions{
-            display: flex; gap: 12px; margin-top: 20px;
-        }
-        .hero-nav{
-            position: absolute; top: 50%; transform: translateY(-50%);
-            width: 48px; height: 48px; border-radius: 50%;
-            background: rgba(255,255,255,.9); border: none;
-            font-size: 20px; color: #333; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s ease; z-index: 10;
-        }
-        .hero-nav:hover{ background: #fff; transform: translateY(-50%) scale(1.1); }
-        .hero-nav.prev{ left: 20px; }
-        .hero-nav.next{ right: 20px; }
-        .hero-progress{
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 8px; z-index: 10;
-        }
-        .hero-progress-bar{
-            width: 40px; height: 4px; background: rgba(255,255,255,.3);
-            border-radius: 2px; cursor: pointer; transition: all 0.3s ease;
-        }
-        .hero-progress-bar.active{ background: #28a745; }
-        .hero-progress-bar:hover{ background: rgba(255,255,255,.6); }
-        .hero--compact .hero-slide{ height: 50vh; }
         
-        @media (max-width: 768px) {
-            .hero-slide{ height:60vh; }
-            .hero-nav{ width:36px; height:36px; font-size:16px; }
-            .hero-actions{ 
-                flex-direction: column; 
-                gap: 8px; 
-                width: 100%; 
-                max-width: 200px; 
-                position: absolute;
-                bottom: 16px;
-                right: 16px;
+        .work-counter-widget:hover .icon i {
+            transform: scale(1.1) !important;
+            text-shadow: 0 4px 8px rgba(255, 102, 0, 0.5) !important;
+        }
+        
+        /* Counter section styling */
+        .counter-section {
+            background: #FF6600 !important; /* FPT Orange background */
+            color: #FFFFFF !important;
+        }
+        
+        .work-counter-widget p {
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            margin-bottom: 8px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+        
+        .work-counter-widget span {
+            color: #FFFFFF !important;
+            font-size: 14px !important;
+            opacity: 0.9 !important;
+            font-weight: 400 !important;
+        }
+
+        /* Event guidelines check icons */
+        .list-specification li i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Organizer contact icons */
+        .organizer-contact-details i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        .organizer-logo {
+            border-color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Back to top button music notes */
+        .back-to-top .note {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Subscribe button icon */
+        .subscribe-inner .btn i {
+            color: #ffffff !important;
+        }
+
+        /* Gallery overlay icon */
+        .gallery-box .overlay-box a i {
+            color: #FF6600 !important; /* FPT Orange */
+        }
+
+        /* Schedule tab active state */
+        .schedule-tab-title .nav-tabs .nav-link.active {
+            background-color: #FF6600 !important; /* FPT Orange */
+            color: #ffffff !important;
+        }
+
+        /* Schedule tab hover state */
+        .schedule-tab-title .nav-tabs .nav-link:hover {
+            background-color: #e55a00 !important; /* Darker orange */
+            color: #ffffff !important;
+        }
+
+        /* ==========================================================================
+           COUNTDOWN TIMER - Light Orange Theme
+           ========================================================================== */
+
+        /* Countdown Timer Section Background */
+        .countdown-timer {
+            background: linear-gradient(135deg, #FFE5CC 0%, #FFF2E6 50%, #FFF8F0 100%) !important; /* Light orange gradient background */
+            border: none !important;
+        }
+
+        /* Countdown Title */
+        .countdown-timer .heading-count h2 {
+            color: #333333 !important; /* Dark text on light orange background */
+            font-weight: 700 !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Countdown Items */
+        .countdown-timer .countdown-item {
+            background: rgba(255, 255, 255, 0.95) !important; /* Semi-transparent white background for countdown boxes */
+            border: 2px solid #FF8C42 !important; /* Light orange border */
+            border-radius: 15px !important;
+            padding: 20px 15px !important;
+            margin: 0 10px !important;
+            box-shadow: 0 4px 15px rgba(255, 140, 66, 0.25) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .countdown-timer .countdown-item:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35) !important;
+            background: rgba(255, 255, 255, 1) !important;
+            border-color: #FF6600 !important;
+        }
+
+        .countdown-timer .countdown-item .number {
+            color: #FF6600 !important; /* FPT Orange numbers */
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            text-shadow: 0 2px 4px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .countdown-item .label {
+            color: #666666 !important; /* Dark grey labels */
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+        }
+
+        /* Add to Calendar Button */
+        .countdown-timer .btn {
+            background: #FF6600 !important; /* FPT Orange button */
+            border: 2px solid #FF6600 !important;
+            color: #FFFFFF !important;
+            font-weight: 600 !important;
+            padding: 12px 30px !important;
+            border-radius: 25px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .btn:hover {
+            background: transparent !important;
+            color: #FF6600 !important;
+            border-color: #FF6600 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(255, 102, 0, 0.4) !important;
+        }
+
+        /* Separator Lines and Icon */
+        .countdown-timer .separator-line {
+            background: #FFB366 !important; /* Light orange separator lines */
+            height: 2px !important;
+        }
+
+        .countdown-timer .separator-icon {
+            background: #FF6600 !important; /* FPT Orange background for icon */
+            border: 3px solid #FFFFFF !important;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3) !important;
+        }
+
+        .countdown-timer .separator-icon i {
+            color: #FFFFFF !important;
+        }
+    </style>
+</head>
+<body>
+
+<section class="hero hero--slider hero--compact">
+    <div class="hero-track" id="heroTrack">
+
+        <div class="hero-slide"
+             th:with="imageUrl=${!#strings.isEmpty(eventDetail.bannerUrl) ? eventDetail.bannerUrl : '/music/assets/img/background/banner.jpg'}"
+             th:style="|background-image: url('${imageUrl}')|">
+
+            <div class="container hero-content">
+                <div class="hero-actions text-right">
+                    <a class="btn btn-common" href="#pricing" th:if="${!#lists.isEmpty(eventDetail.ticketTypes)}">Get Ticket</a>
+                </div>
+            </div>
+        </div>
+
+        <th:block th:if="${eventDetail?.galleryUrls != null}">
+            <div class="hero-slide"
+                 th:each="url : ${eventDetail.galleryUrls}"
+                 th:if="${url != null and url != ''}"
+                 th:style="|background-image: url('${url}')|">
+            </div>
+        </th:block>
+
+    </div> <button class="hero-nav prev" id="heroPrev" aria-label="Previous" style="display: none;">‹</button>
+    <button class="hero-nav next" id="heroNext" aria-label="Next" style="display: none;">›</button>
+    <div class="hero-progress" id="heroProgress" style="display: none;"></div>
+</section>
+<!-- Banner Section End -->
+
+<!-- Countdown Section Start -->
+<section class="countdown-timer section-padding-compact" th:if="${eventDetail != null and eventDetail.startsAt != null}">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="heading-count">
+                    <h2 class="wow fadeInDown" data-wow-delay="0.2s">Event Will Start In</h2>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="time-countdown wow fadeInUp" data-wow-delay="0.2s">
+                    <div id="clock" class="time-count"></div>
+                </div>
+
+                <!-- Add to Calendar Button -->
+                <div class="text-center mt-2">
+                    <a href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
+                        Add to My Calendar
+                    </a>
+                </div>
+
+                <!-- Decorative separator -->
+                <div class="countdown-separator wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="separator-line"></div>
+                    <div class="separator-icon">
+                        <i class="lni-music"></i>
+                    </div>
+                    <div class="separator-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Countdown Section End -->
+
+<!-- Countdown Script -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        const eventStartDateStr = /*[[${eventDetail != null and eventDetail.startsAt != null ? #temporals.format(eventDetail.startsAt, "yyyy-MM-dd'T'HH:mm:ss") : ''}]]*/ '';
+        const eventStartDate = eventStartDateStr ? new Date(eventStartDateStr).getTime() : null;
+        const clockElement = document.getElementById("clock");
+
+        if (!eventStartDate || !clockElement) {
+            if (clockElement) {
+                clockElement.innerHTML = "<h3>No start date available</h3>";
             }
+            return;
         }
-      </style>
-  </head>
-  <body>
-  <!-- Banner -->
-  <section class="hero hero--slider hero--compact">
-      <div class="hero-track" id="heroTrack">
-          <!-- Lặp qua tất cả ảnh từ DB -->
-          <div th:each="img : ${eventImages}"
-               class="hero-slide"
-               th:style="|background-image: url('${img.url}')|">
-              <div class="container hero-content">
-                  <div class="hero-actions text-right">
-                      <a class="btn btn-common" href="#">Enroll Now</a>
-                  </div>
-              </div>
-          </div>
-      </div>
 
-      <!-- Nav buttons -->
-      <button class="hero-nav prev" id="heroPrev" aria-label="Previous">‹</button>
-      <button class="hero-nav next" id="heroNext" aria-label="Next">›</button>
+        const countdown = setInterval(function () {
+            const now = new Date().getTime();
+            const distance = eventStartDate - now;
 
-      <!-- Progress indicator -->
-      <div class="hero-progress">
-          <div class="hero-progress-bar" th:each="img : ${eventImages}"></div>
-      </div>
-  </section>
+            if (distance < 0) {
+                clearInterval(countdown);
+                clockElement.innerHTML = "<h3>Event is happening now!</h3>";
+                return;
+            }
 
-  <!-- Event Info Section -->
-  <section class="section-padding">
-      <div class="container">
-          <div class="row">
-              <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
-                  <div class="event-description-box">
-                      <h2 th:text="${event.title}">Workshop Title</h2>
-                      <p class="lead" th:text="${event.description}">Workshop description...</p>
-                      
-                      <!-- Workshop Badge & Skill Level -->
-                      <div class="text-center mb-4">
-                          <span class="workshop-badge">Workshop Event</span>
-                          <span th:if="${event.skillLevel != null}" 
-                                th:class="'skill-level skill-' + ${#strings.toLowerCase(event.skillLevel)}"
-                                th:text="${event.skillLevel}">Beginner</span>
-                      </div>
-                      
-                      <!-- Event Details -->
-                      <div class="row">
-                          <div class="col-md-6">
-                              <p><i class="lni-calendar"></i> <strong>Start Date:</strong> <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 09:00</span></p>
-                              <p><i class="lni-calendar"></i> <strong>End Date:</strong> <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 17:00</span></p>
-                          </div>
-                          <div class="col-md-6">
-                              <p><i class="lni-users"></i> <strong>Capacity:</strong> <span th:text="${event.capacity}">30</span> participants</p>
-                              <p><i class="lni-map-marker"></i> <strong>Venue:</strong> <span th:if="${event.places != null and !event.places.empty}" th:text="${event.places[0].placeName}">FPT University</span></p>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              
-              <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-                  <!-- Certification Section -->
-                  <div class="certification-section" th:if="${event.certification != null}">
-                      <h3><i class="lni-certificate"></i> Certification</h3>
-                      <p th:text="${event.certification}">Workshop certificate...</p>
-                  </div>
-                  
-                  <!-- Equipment Needed -->
-                  <div class="prerequisites-section" th:if="${event.equipment != null}">
-                      <h4><i class="lni-laptop"></i> Equipment Needed</h4>
-                      <p th:text="${event.equipment}">Laptop, notebook...</p>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-  <!-- Materials Section -->
-  <section class="section-padding" th:if="${event.materials != null}">
-      <div class="container">
-          <h2 class="section-title">Learning Materials</h2>
-          <div class="materials-section">
-              <p th:text="${event.materials}">Workshop materials and resources...</p>
-          </div>
-      </div>
-  </section>
+            clockElement.innerHTML = `
+            <div class="countdown-item">
+              <span class="number">${days.toString().padStart(2, '0')}</span>
+              <span class="label">Days</span>
+            </div>
+            <div class="countdown-item">
+              <span class="number">${hours.toString().padStart(2, '0')}</span>
+              <span class="label">Hours</span>
+            </div>
+            <div class="countdown-item">
+              <span class="number">${minutes.toString().padStart(2, '0')}</span>
+              <span class="label">Minutes</span>
+            </div>
+            <div class="countdown-item">
+              <span class="number">${seconds.toString().padStart(2, '0')}</span>
+              <span class="label">Seconds</span>
+            </div>`;
+        }, 1000);
+    });
+    /*]]>*/
+</script>
 
-  <!-- Prerequisites Section -->
-  <section class="section-padding" th:if="${event.prerequisites != null}">
-      <div class="container">
-          <h2 class="section-title">Prerequisites</h2>
-          <div class="prerequisites-section">
-              <p th:text="${event.prerequisites}">Required knowledge and skills...</p>
-          </div>
-      </div>
-  </section>
+<!-- Music Event Description Section Start -->
+<section id="descriptionm" class="section-padding-compact" th:if="${eventDetail != null}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s"
+                        th:text="${eventDetail.title}">Event Title</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+<!--                        <span th:if="${eventDetail.musicType != null}" th:text="'Type: ' + ${eventDetail.musicType}"></span>-->
+<!--                        <span th:if="${eventDetail.genre != null}" th:text="' | Genre: ' + ${eventDetail.genre}"></span>-->
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
+                    <!-- Event Title -->
+                    <h2 th:text="${eventDetail.title}">Event Title</h2>
 
-  <!-- Learning Outcomes Section -->
-  <section class="section-padding" th:if="${event.learningOutcomes != null}">
-      <div class="container">
-          <h2 class="section-title">Learning Outcomes</h2>
-          <div class="learning-outcomes-section">
-              <p th:text="${event.learningOutcomes}">What you will learn...</p>
-          </div>
-      </div>
-  </section>
+                    <!-- Description -->
+                    <p class="lead" th:if="${eventDetail.description != null}">
+                        <i class="lni-music"></i>
+                        <span th:text="${eventDetail.description}">Event description</span>
+                    </p>
 
-  <!-- Instructors Section -->
-  <section id="team" class="section-padding" th:if="${event.speakers != null and !event.speakers.empty}">
-      <div class="container">
-          <h2 class="section-title">Instructors & Experts</h2>
-          <div class="row">
-              <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12" th:each="speaker : ${event.speakers}">
-                  <div class="instructor-card">
-                      <div class="instructor-image">
-                          <img th:src="${speaker.imageUrl}" th:alt="${speaker.name}" src="/music/assets/img/speaker/speaker1.jpg">
-                      </div>
-                      <div class="instructor-info">
-                          <h3 th:text="${speaker.name}">Instructor Name</h3>
-                          <p th:text="${speaker.role}">Instructor</p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
+                    <!-- Time -->
+                    <p th:if="${eventDetail.startsAt != null and eventDetail.endsAt != null}">
+                        <i class="lni-timer"></i>
+                        Start: <span th:text="${#temporals.format(eventDetail.startsAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        - End: <span th:text="${#temporals.format(eventDetail.endsAt, 'dd/MM/yyyy HH:mm')}"></span>
+                    </p>
 
-  <!-- Schedule Section -->
-  <section class="section-padding" th:if="${event.schedules != null and !event.schedules.empty}">
-      <div class="container">
-          <h2 class="section-title">Workshop Schedule</h2>
-          <div class="row">
-              <div class="col-md-12">
-                  <div class="table-responsive">
-                      <table class="table table-striped">
-                          <thead>
-                              <tr>
-                                  <th>Time</th>
-                                  <th>Session</th>
-                                  <th>Duration</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr th:each="schedule : ${event.schedules}">
-                                  <td th:text="${#temporals.format(schedule.startTime, 'HH:mm')}">09:00</td>
-                                  <td th:text="${schedule.activity}">Introduction</td>
-                                  <td th:text="${#temporals.format(schedule.endTime, 'HH:mm')}">10:00</td>
-                              </tr>
-                          </tbody>
-                      </table>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
+                    <!-- Benefits -->
+                    <p th:if="${eventDetail.benefits != null}">
+                        <i class="lni-microphone"></i>
+                        <span th:text="'Benefits: ' + ${eventDetail.benefits}">Benefits...</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Music Event Description Section End -->
 
-  <!-- Gallery Section -->
-  <section class="section-padding" th:if="${eventImages != null and !eventImages.empty}">
-      <div class="container">
-          <h2 class="section-title">Workshop Gallery</h2>
-          <div class="row">
-              <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12" th:each="img : ${eventImages}">
-                  <div class="gallery-box">
-                      <div class="img-thumb">
-                          <img th:src="${img.url}" th:alt="Workshop Image" src="/music/assets/img/gallery/gallery1.jpg">
-                          <div class="overlay-box">
-                              <a th:href="${img.url}" class="lightbox" data-lightbox="gallery">
-                                  <i class="lni-plus"></i>
-                              </a>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
+<!-- About Section Start -->
+<section id="about" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">About This Music Event</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s" 
+                       th:text="${eventDetail != null ? eventDetail.title : 'Music Festival'}">Music Festival</p>
+                </div>
+            </div>
+        </div>
+        <div class="row align-items-stretch">
+            <div class="col-xs-12 col-md-6 col-lg-4">
+                <div class="about-item">
+                    <img th:src="@{/music/assets/img/about/img1.jpg}" alt="Our Mission">
+                    <div class="about-text">
+                        <h3><a href="#">Our Mission</a></h3>
+                        <p>Connecting the music community, creating a creative space and inspiring the young generation.</p>
+                        <a class="btn btn-common btn-rm" href="#">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 col-lg-4">
+                <div class="about-item">
+                    <img th:src="@{/music/assets/img/about/img2.jpg}" alt="What You Will Experience">
+                    <div class="about-text">
+                        <h3><a href="#">What You Will Experience?</a></h3>
+                        <p>Amazing artists and bands, music workshops, food areas and many other exciting activities.</p>
+                        <a class="btn btn-common btn-rm" href="#">Explore Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 col-lg-4">
+                <div class="about-item">
+                    <img th:src="@{/music/assets/img/about/img3.jpg}" alt="Benefits of Joining">
+                    <div class="about-text">
+                        <h3><a href="#">Benefits of Joining</a></h3>
+                        <p th:text="${eventDetail != null and eventDetail.benefits != null ? eventDetail.benefits : 'Amazing benefits and experiences'}">Amazing benefits</p>
+                        <a class="btn btn-common btn-rm" href="#">Register Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- About Section End -->
 
-  <!-- Enrollment CTA -->
-  <section class="section-padding" style="background: #f8f9fa;">
-      <div class="container text-center">
-          <h2 class="section-title">Ready to Learn?</h2>
-          <p class="lead">Join this hands-on workshop and enhance your skills!</p>
-          <a href="#" class="btn btn-common btn-lg">Enroll Now</a>
-      </div>
-  </section>
+<section id="workshop-details" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Workshop Key Information</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Get ready for a hands-on learning experience</p>
+                </div>
+            </div>
+        </div>
 
-  <!-- Scripts -->
-  <script th:src="@{/music/assets/js/jquery-min.js}"></script>
-  <script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
-  <script th:src="@{/music/assets/js/popper.min.js}"></script>
-  <script th:src="@{/music/assets/js/waypoints.min.js}"></script>
-  <script th:src="@{/music/assets/js/jquery.counterup.min.js}"></script>
-  <script th:src="@{/music/assets/js/wow.js}"></script>
-  <script th:src="@{/music/assets/js/jquery.nav.js}"></script>
-  <script th:src="@{/music/assets/js/jquery.slicknav.js}"></script>
-  <script th:src="@{/music/assets/js/nivo-lightbox.js}"></script>
-  <script th:src="@{/music/assets/js/main.js}"></script>
+        <div class="row">
+            <div class="col-lg-7 col-md-12">
+                <div class="workshop-main-content wow fadeInLeft" data-wow-delay="0.3s">
+                    <div th:if="${eventDetail.topic != null}">
+                        <h3><i class="lni lni-bulb"></i> Main Topic</h3>
+                        <p class="topic-description" th:text="${eventDetail.topic}">The main topic of the workshop will be discussed here in detail.</p>
+                    </div>
 
-  <!-- Hero Slider Script -->
-  <script>
-      document.addEventListener('DOMContentLoaded', function() {
-          const track = document.getElementById('heroTrack');
-          const slides = track.querySelectorAll('.hero-slide');
-          const prevBtn = document.getElementById('heroPrev');
-          const nextBtn = document.getElementById('heroNext');
-          const progressBars = document.querySelectorAll('.hero-progress-bar');
-          
-          let currentSlide = 0;
-          
-          function updateSlider() {
-              track.style.transform = `translateX(-${currentSlide * 100}%)`;
-              progressBars.forEach((bar, index) => {
-                  bar.classList.toggle('active', index === currentSlide);
-              });
-          }
-          
-          function nextSlide() {
-              currentSlide = (currentSlide + 1) % slides.length;
-              updateSlider();
-          }
-          
-          function prevSlide() {
-              currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-              updateSlider();
-          }
-          
-          nextBtn.addEventListener('click', nextSlide);
-          prevBtn.addEventListener('click', prevSlide);
-          
-          // Auto-play
-          setInterval(nextSlide, 5000);
-          
-          // Progress bar click
-          progressBars.forEach((bar, index) => {
-              bar.addEventListener('click', () => {
-                  currentSlide = index;
-                  updateSlider();
-              });
-          });
-      });
-  </script>
-  </body>
+                    <div th:if="${eventDetail.prerequisites != null}">
+                        <h3><i class="lni lni-list"></i> What to Prepare (Prerequisites)</h3>
+                        <ul class="prerequisites-list">
+                            <li th:each="sentence : ${#strings.arraySplit(eventDetail.prerequisites, '.')}"
+                                th:if="${!#strings.trim(sentence).isEmpty()}">
+                                <i class="lni lni-checkmark-circle"></i>
+                                <span th:text="${#strings.trim(sentence)} + '.'">Prerequisite item.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 col-md-12">
+                <div class="workshop-sidebar wow fadeInRight" data-wow-delay="0.4s">
+                    <h4>At a Glance</h4>
+                    <div class="info-box" th:if="${eventDetail.skillLevel != null}">
+                        <div class="info-icon"><i class="lni lni-bar-chart"></i></div>
+                        <div class="info-text">
+                            <strong>Skill Level</strong>
+                            <p th:text="${eventDetail.skillLevel}">Beginner</p>
+                        </div>
+                    </div>
+                    <div class="info-box" th:if="${eventDetail.maxParticipants != null}">
+                        <div class="info-icon"><i class="lni lni-users"></i></div>
+                        <div class="info-text">
+                            <strong>Max Participants</strong>
+                            <p th:text="${eventDetail.maxParticipants} + ' seats'">50 seats</p>
+                        </div>
+                    </div>
+                    <div class="info-box materials-box" th:if="${eventDetail.materialsLink != null}">
+                        <div class="info-icon"><i class="lni lni-download"></i></div>
+                        <div class="info-text">
+                            <strong>Course Materials</strong>
+                            <p>Get all the necessary files before you start.</p>
+                        </div>
+                        <a th:href="${eventDetail.materialsLink}" target="_blank" class="btn btn-materials">Download Materials</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Counter Area Start -->
+<section class="counter-section section-padding" th:if="${eventDetail != null}">
+    <div class="container">
+        <div class="row">
+            <!-- Location -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.3s">
+                    <div class="icon"><i class="lni-map"></i></div>
+                    <p th:text="${eventDetail.places != null and !eventDetail.places.isEmpty() 
+                        ? eventDetail.places[0].placeName 
+                        : 'Venue'}">Venue</p>
+                    <span th:text="${eventDetail.places != null and !eventDetail.places.isEmpty() 
+                        ? eventDetail.places[0].building 
+                        : 'Building'}">Building</span>
+                </div>
+            </div>
+
+            <!-- Time -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.6s">
+                    <div class="icon"><i class="lni-timer"></i></div>
+                    <p th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null 
+                        ? #temporals.format(eventDetail.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(eventDetail.endsAt, 'dd/MM/yyyy') 
+                        : 'Date TBA'}">Date</p>
+                    <span th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null 
+                        ? #temporals.format(eventDetail.startsAt, 'HH:mm') + ' – ' + #temporals.format(eventDetail.endsAt, 'HH:mm') 
+                        : 'Time TBA'}">Time</span>
+                </div>
+            </div>
+
+            <!-- Capacity -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="0.9s">
+                    <div class="icon"><i class="lni-users"></i></div>
+                    <p th:text="${eventDetail.capacity != null 
+                        ? eventDetail.capacity + ' Seats' 
+                        : 'Limited Seats'}">Capacity</p>
+                    <span>Book early to secure your spot</span>
+                </div>
+            </div>
+
+            <!-- Benefits -->
+            <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
+                <div class="counter wow fadeInRight" data-wow-delay="1.2s">
+                    <div class="icon"><i class="lni-coffee-cup"></i></div>
+                    <p th:text="${eventDetail.benefits != null 
+                        ? eventDetail.benefits 
+                        : 'Great Benefits'}">Benefits</p>
+                    <span>Don't miss out</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Counter Area End -->
+
+<!-- Schedule Section Start -->
+<section id="schedules" class="schedule section-padding" 
+         th:if="${eventDetail != null and eventDetail.schedulesByDay != null and !eventDetail.schedulesByDay.isEmpty()}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Schedule</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Discover activities and performances throughout the event
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="schedule-area row wow fadeInDown" data-wow-delay="0.3s">
+            <!-- Tabs left: Days -->
+            <div class="schedule-tab-title col-md-3 col-lg-3 col-xs-12">
+                <div class="table-responsive">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" th:each="entry, iterStat : ${eventDetail.schedulesByDay}">
+                            <a class="nav-link"
+                               th:classappend="${iterStat.index == 0} ? 'active' : ''"
+                               th:id="'day-' + ${iterStat.index} + '-tab'"
+                               data-toggle="tab"
+                               th:href="'#day-' + ${iterStat.index}"
+                               role="tab"
+                               th:aria-controls="'day-' + ${iterStat.index}"
+                               th:aria-expanded="${iterStat.index == 0}">
+                                <div class="item-text">
+                                    <h4 th:text="'Day ' + (${iterStat.index + 1})">Day 1</h4>
+                                    <h5 th:text="${#temporals.format(entry.key, 'dd MMMM yyyy')}">Date</h5>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Content right: Activities -->
+            <div class="schedule-tab-content col-md-9 col-lg-9 col-xs-12 clearfix">
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade"
+                         th:each="entry, iterStat : ${eventDetail.schedulesByDay}"
+                         th:id="'day-' + ${iterStat.index}"
+                         role="tabpanel"
+                         th:classappend="${iterStat.index == 0} ? 'show active' : ''"
+                         th:aria-labelledby="'day-' + ${iterStat.index} + '-tab'">
+
+                        <div th:id="'accordion-' + ${iterStat.index}">
+                            <div class="card" th:each="schedule : ${entry.value}">
+                                <div class="card-header">
+                                    <span class="time"
+                                          th:text="${#temporals.format(schedule.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(schedule.endTime, 'HH:mm')}">
+                                        Time
+                                    </span>
+                                    <h4 th:text="${schedule.activity}">Activity Name</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Schedule Section End -->
+
+<!-- Team/Singers Section Start -->
+<section id="team" class="section-padding text-center" 
+         th:if="${eventDetail != null and eventDetail.speakers != null and !eventDetail.speakers.isEmpty()}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Featured speakers</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the amazing speakers performing at this event</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 col-sm-6" th:each="speaker : ${eventDetail.speakers}">
+                <div class="simple-artist-card wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="artist-image">
+                        <img class="img-fluid" 
+                             th:src="${speaker.imageUrl != null ? speaker.imageUrl : '/music/assets/img/team/img1.jpg'}" 
+                             th:alt="${speaker.name}">
+                    </div>
+                    <div class="artist-info">
+                        <h3 th:text="${speaker.name}">Artist Name</h3>
+                        <p th:text="${speaker.role}">Role</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Team Section End -->
+
+<!-- Gallery Section Start -->
+<section id="gallery" class="section-padding" 
+         th:if="${eventDetail != null and eventDetail.galleryUrls != null and !eventDetail.galleryUrls.isEmpty()}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Gallery</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Beautiful moments from the event
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-6 col-lg-4" th:each="imageUrl : ${eventDetail.galleryUrls}">
+                <div class="gallery-box">
+                    <div class="img-thumb">
+                        <img class="img-fluid" th:src="${imageUrl}" alt="Event Gallery Image">
+                    </div>
+                    <div class="overlay-box text-center">
+                        <a class="lightbox" th:href="${imageUrl}">
+                            <i class="lni-plus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Gallery Section End -->
+
+<!-- FAQ Section Start -->
+<section id="faq" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Frequently Asked Questions</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Have questions? We're here to help!</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
+                <div class="accordion">
+                    <div class="card">
+                        <div class="card-header" id="headingOne">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionOne" aria-expanded="true">
+                                <i class="lni-pencil"></i> How to register for the event?
+                            </div>
+                        </div>
+                        <div id="questionOne" class="collapse" aria-labelledby="headingOne">
+                            <div class="card-body">
+                                Simply click on "Buy Ticket" button, select your preferred ticket type, and complete the payment process.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingTwo">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionTwo" aria-expanded="false">
+                                <i class="lni-pencil"></i> Which payment methods do you accept?
+                            </div>
+                        </div>
+                        <div id="questionTwo" class="collapse" aria-labelledby="headingTwo">
+                            <div class="card-body">
+                                We accept various payment methods including credit cards, debit cards, and online banking.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionThree" aria-expanded="false">
+                                <i class="lni-pencil"></i> What should I bring to the event?
+                            </div>
+                        </div>
+                        <div id="questionThree" class="collapse" aria-labelledby="headingThree">
+                            <div class="card-body">
+                                Bring your ticket (digital or printed), valid ID, and comfortable clothing suitable for the event.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingFour">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionFour" aria-expanded="false">
+                                <i class="lni-pencil"></i> Is there parking available?
+                            </div>
+                        </div>
+                        <div id="questionFour" class="collapse" aria-labelledby="headingFour">
+                            <div class="card-body">
+                                Yes, parking is available at the venue. Details will be provided in your confirmation email.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-12 col-sm-12">
+                <div class="accordion">
+                    <div class="card">
+                        <div class="card-header" id="headingFive">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionFive" aria-expanded="true">
+                                <i class="lni-pencil"></i> Can I get a refund?
+                            </div>
+                        </div>
+                        <div id="questionFive" class="collapse" aria-labelledby="headingFive">
+                            <div class="card-body">
+                                Refund policies vary by event. Please check the specific terms and conditions for your ticket.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingSix">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionSix" aria-expanded="false">
+                                <i class="lni-pencil"></i> Are food and drinks provided?
+                            </div>
+                        </div>
+                        <div id="questionSix" class="collapse" aria-labelledby="headingSix">
+                            <div class="card-body">
+                                <span th:text="${eventDetail != null and eventDetail.benefits != null ? eventDetail.benefits : 'Food and beverage options will be available at the venue.'}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingSeven">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionSeven" aria-expanded="false">
+                                <i class="lni-pencil"></i> What time should I arrive?
+                            </div>
+                        </div>
+                        <div id="questionSeven" class="collapse" aria-labelledby="headingSeven">
+                            <div class="card-body">
+                                We recommend arriving at least 30 minutes before the event start time for check-in and seating.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingEight">
+                            <div class="header-title" data-toggle="collapse" data-target="#questionEight" aria-expanded="false">
+                                <i class="lni-pencil"></i> Is the event suitable for all ages?
+                            </div>
+                        </div>
+                        <div id="questionEight" class="collapse" aria-labelledby="headingEight">
+                            <div class="card-body">
+                                Age requirements may vary. Please check the event details or contact us for specific information.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- FAQ Section End -->
+
+<!-- Sponsors Section Start -->
+<section id="sponsors" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Our Sponsors</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Thank you to our partners</p>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-30 text-center wow fadeInDown" data-wow-delay="0.3s">
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-01.png}" alt="Sponsor 1"></a>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-02.png}" alt="Sponsor 2"></a>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-03.jpg}" alt="Sponsor 3"></a>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="spnsors-logo">
+                    <a href="#"><img class="img-fluid" th:src="@{/music/assets/img/sponsors/logo-04.png}" alt="Sponsor 4"></a>
+                </div>
+            </div>
+            <div class="col-12 text-center">
+                <a href="#" class="btn btn-common">Become a Sponsor</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Sponsors Section End -->
+
+<!-- Ticket Pricing Area Start -->
+<section id="pricing" class="section-padding" 
+         th:if="${eventDetail != null and eventDetail.ticketTypes != null and !eventDetail.ticketTypes.isEmpty()}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Ticket Packages</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Choose the right package for you
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 col-sm-6 col-xa-12 mb-3"
+                 th:each="ticket, iter : ${eventDetail.ticketTypes}"
+                 th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')"
+                 th:data-wow-delay="'0.' + ${iter.index + 2} + 's'">
+                <div class="price-block-wrapper">
+                    <div class="icon">
+                        <i th:class="${iter.index == 0} ? 'lni-write' : (${iter.index == 1} ? 'lni-layers' : 'lni-leaf')"></i>
+                    </div>
+                    <div class="colmun-title">
+                        <h5 th:text="${ticket.name}">Ticket Name</h5>
+                    </div>
+                    <div class="price">
+                        <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Price</h2>
+                        <p>
+                            <span th:text="${ticket.availableQuantity}"></span> Tickets Available
+                        </p>
+                    </div>
+
+                    <div class="pricing-list">
+                        <ul>
+                            <li>
+                                <i class="lni-check-mark-circle"></i>
+                                <span class="text" th:text="${ticket.description}">Ticket description</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Buy button based on ticket availability and sale status -->
+                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut()}"
+                       th:href="@{'/ticket/' + ${eventDetail.getId()}}"
+                       class="btn btn-common">Buy Ticket</a>
+
+                    <a th:if="${ticket.isSoldOut()}" 
+                       href="#" 
+                       class="btn btn-common disabled" 
+                       style="background-color: #ccc; cursor: not-allowed;">
+                        Sold Out
+                    </a>
+
+                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}" 
+                       href="#" 
+                       class="btn btn-common disabled" 
+                       style="background-color: #999; cursor: not-allowed;">
+                        Sale Not Active
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Ticket Pricing Area End -->
+
+<!-- Event Guidelines Section Start -->
+<section id="event-slides" class="section-padding" th:if="${eventDetail != null}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Guidelines</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        All the information you need for the best experience
+                    </p>
+                </div>
+            </div>
+
+            <!-- Google Map -->
+            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInRight" data-wow-delay="0.3s">
+                <div class="video" style="border-radius:10px; overflow:hidden;">
+                    <iframe
+                        th:src="@{|https://www.google.com/maps?q=${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Da Nang'}&output=embed|}"
+                            width="100%" height="350" style="border:0;" allowfullscreen="">
+                    </iframe>
+                </div>
+
+                <!-- Open in Google Maps button -->
+                <a class="btn btn-outline-primary mt-3"
+                   th:href="@{|https://www.google.com/maps/dir/?api=1&destination=${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Da Nang'}|}"
+                   target="_blank">
+                    Open in Google Maps
+                </a>
+            </div>
+
+            <!-- Guidelines -->
+            <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
+                <p class="intro-desc">
+                    Join us at
+                    <span th:text="${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'the venue'}">the venue</span>
+                    for an unforgettable experience!
+                </p>
+
+                <h2 class="intro-title">Event Day Instructions</h2>
+
+                <ul class="list-specification" th:if="${eventDetail.guidelines != null}">
+                    <li th:each="line : ${#strings.arraySplit(eventDetail.guidelines, '\\.')}"
+                        th:if="${#strings.trim(line) != ''}">
+                        <i class="lni-check-mark-circle"></i>
+                        <span th:text="${#strings.trim(line) + '.'}">Instruction</span>
+                    </li>
+                </ul>
+
+                <ul class="list-specification" th:if="${eventDetail.guidelines == null}">
+                    <li>
+                        <i class="lni-check-mark-circle"></i>
+                        <span>Please arrive at least 30 minutes before the event starts.</span>
+                    </li>
+                    <li>
+                        <i class="lni-check-mark-circle"></i>
+                        <span>Bring your ticket (digital or printed) and valid ID.</span>
+                    </li>
+                    <li>
+                        <i class="lni-check-mark-circle"></i>
+                        <span>Follow the event staff instructions for a smooth experience.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Event Guidelines Section End -->
+
+<!-- Organizer Section Start -->
+<section id="organizer-details" class="section-padding"
+         th:if="${eventDetail != null and eventDetail.organization != null}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Organizer</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the team behind this amazing event</p>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-12">
+                <div class="organizer-details-card wow fadeInUp" data-wow-delay="0.3s">
+
+                    <div class="organizer-header">
+                        <div class="organizer-logo-wrapper" th:if="${eventDetail.organization.imageUrl != null}">
+                            <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo" class="organizer-logo">
+                        </div>
+                        <div class="organizer-info">
+                            <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>
+                            <p class="description" th:if="${eventDetail.organization.description != null}"
+                               th:text="${eventDetail.organization.description}">
+                                Organization description goes here. This text provides more details about the organizer's mission and vision.
+                            </p>
+                        </div>
+                    </div>
+
+                    <ul class="organizer-contact-details">
+                        <li th:if="${eventDetail.organization.website != null}">
+                            <i class="lni-world"></i>
+                            <a th:href="${eventDetail.organization.website}" target="_blank"
+                               th:text="${eventDetail.organization.website}">www.organizer-website.com</a>
+                        </li>
+                        <li th:if="${eventDetail.organization.email != null}">
+                            <i class="lni-envelope"></i>
+                            <a th:href="'mailto:' + ${eventDetail.organization.email}"
+                               th:text="${eventDetail.organization.email}">contact@organizer.com</a>
+                        </li>
+                        <li th:if="${eventDetail.organization.phone != null}">
+                            <i class="lni-phone-handset"></i>
+                            <span th:text="${eventDetail.organization.phone}">+123 456 7890</span>
+                        </li>
+                        <li th:if="${eventDetail.organization.address != null}">
+                            <i class="lni-map-marker"></i>
+                            <span th:text="${eventDetail.organization.address}">123 Event Street, City, Country</span>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--<section id="organizer" class="section-padding" -->
+<!--         th:if="${eventDetail != null and eventDetail.organization != null}">-->
+<!--    <div class="container">-->
+<!--        <div class="row">-->
+<!--            <div class="col-12">-->
+<!--                <div class="section-title-header text-center">-->
+<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Organizer</h1>-->
+<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the team behind this amazing event</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="row justify-content-center">-->
+<!--            <div class="col-lg-8 col-md-10">-->
+<!--                <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">-->
+<!--                    <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>-->
+<!--                    <p th:if="${eventDetail.organization.description != null}" -->
+<!--                       th:text="${eventDetail.organization.description}">Organization description</p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.email != null}">-->
+<!--                        <i class="lni-envelope"></i>-->
+<!--                        <span th:text="${eventDetail.organization.email}">Email</span>-->
+<!--                    </p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.phone != null}">-->
+<!--                        <i class="lni-phone"></i>-->
+<!--                        <span th:text="${eventDetail.organization.phone}">Phone</span>-->
+<!--                    </p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.website != null}">-->
+<!--                        <i class="lni-world"></i>-->
+<!--                        <a th:href="${eventDetail.organization.website}" -->
+<!--                           th:text="${eventDetail.organization.website}" -->
+<!--                           target="_blank">Website</a>-->
+<!--                    </p>-->
+<!--                    -->
+<!--                    <p th:if="${eventDetail.organization.address != null}">-->
+<!--                        <i class="lni-map-marker"></i>-->
+<!--                        <span th:text="${eventDetail.organization.address}">Address</span>-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
+<!-- Organizer Section End -->
+
+<!-- Blog Section Start -->
+<section id="blog" class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Latest News</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">Stay updated with the latest information</p>
+                </div>
+            </div>
+        </div>
+        <div class="row align-items-stretch">
+            <div class="col-lg-4 col-md-6 col-xs-12 d-flex">
+                <div class="blog-item w-100">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-1.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Music</div>
+                        <h3 class="title">
+                            <a href="#">Event Highlights & Updates</a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Latest Update</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12 d-flex">
+                <div class="blog-item w-100">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-2.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Artists</div>
+                        <h3 class="title">
+                            <a href="#">Meet The Performers</a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Featured</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-xs-12 d-flex">
+                <div class="blog-item w-100">
+                    <div class="blog-image">
+                        <a href="#">
+                            <img class="img-fluid" th:src="@{/music/assets/img/blog/img-3.jpg}" alt="">
+                        </a>
+                    </div>
+                    <div class="descr">
+                        <div class="tag">Tips</div>
+                        <h3 class="title">
+                            <a href="#">Event Preparation Guide</a>
+                        </h3>
+                        <div class="meta-tags">
+                            <span class="date">Helpful</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 text-center mt-4">
+                <a href="#" class="btn btn-common">Read More</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Blog Section End -->
+
+<!-- Subscribe Area Start -->
+<div id="subscribe" class="section-padding">
+    <div class="container">
+        <div class="row justify-content-md-center">
+            <div class="col-md-10 col-lg-7">
+                <div class="subscribe-inner wow fadeInDown" data-wow-delay="0.3s">
+                    <h2 class="subscribe-title">Stay Updated</h2>
+                    <form class="text-center form-inline">
+                        <input class="mb-20 form-control" name="email" placeholder="Enter Your Email to Get Latest Updates">
+                        <button type="submit" class="btn btn-common sub-btn">
+                            <span class="ladda-label"><i class="lni-music"></i> Subscribe</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Subscribe Area End -->
+
+<!-- Go to Top Link -->
+<a href="#" class="back-to-top music-scroll-btn">
+    <div class="music-icon">
+        <div class="note note-1">♪</div>
+        <div class="note note-2">♫</div>
+        <div class="note note-3">♪</div>
+    </div>
+    <div class="scroll-text">TOP</div>
+</a>
+
+<!-- Preloader -->
+<div id="preloader">
+    <div class="sk-circle">
+        <div class="sk-circle1 sk-child"></div>
+        <div class="sk-circle2 sk-child"></div>
+        <div class="sk-circle3 sk-child"></div>
+        <div class="sk-circle4 sk-child"></div>
+        <div class="sk-circle5 sk-child"></div>
+        <div class="sk-circle6 sk-child"></div>
+        <div class="sk-circle7 sk-child"></div>
+        <div class="sk-circle8 sk-child"></div>
+        <div class="sk-circle9 sk-child"></div>
+        <div class="sk-circle10 sk-child"></div>
+        <div class="sk-circle11 sk-child"></div>
+        <div class="sk-circle12 sk-child"></div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script th:src="@{/workshop/assets/js/jquery-min.js}"></script>
+<script th:src="@{/workshop/assets/js/popper.min.js}"></script>
+<script th:src="@{/workshop/assets/js/bootstrap.min.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.countdown.min.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.nav.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.easing.min.js}"></script>
+<script th:src="@{/workshop/assets/js/wow.js}"></script>
+<script th:src="@{/workshop/assets/js/jquery.slicknav.js}"></script>
+<script th:src="@{/workshop/assets/js/nivo-lightbox.js}"></script>
+<script th:src="@{/workshop/assets/js/main.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const heroTrack = document.getElementById('heroTrack');
+        const prevBtn = document.getElementById('heroPrev');
+        const nextBtn = document.getElementById('heroNext');
+        const heroProgress = document.getElementById('heroProgress');
+        const heroSlides = document.querySelectorAll('#heroTrack .hero-slide');
+
+        if (!heroTrack || heroSlides.length <= 1) {
+            // Nếu chỉ có 1 ảnh hoặc không có ảnh nào, không cần làm gì cả
+            return;
+        }
+
+        let currentSlide = 0;
+        const totalSlides = heroSlides.length;
+
+        // Khi có nhiều hơn 1 ảnh, hiển thị các nút điều khiển
+        prevBtn.style.display = 'flex';
+        nextBtn.style.display = 'flex';
+        heroProgress.style.display = 'flex';
+
+        // Tự động tạo các thanh progress bar
+        heroProgress.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'hero-progress-bar';
+            bar.addEventListener('click', () => goToSlide(i));
+            heroProgress.appendChild(bar);
+        }
+
+        const progressBars = heroProgress.querySelectorAll('.hero-progress-bar');
+
+        function updateSlider() {
+            const translateX = -currentSlide * 100;
+            heroTrack.style.transform = `translateX(${translateX}%)`;
+            heroTrack.style.transition = 'transform 0.5s ease-in-out';
+            progressBars.forEach((bar, index) => {
+                bar.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function goToSlide(slideIndex) {
+            currentSlide = slideIndex;
+            updateSlider();
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
+        }
+
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+        setInterval(nextSlide, 5000); // Tự động chuyển slide mỗi 5 giây
+        updateSlider(); // Khởi tạo vị trí đầu tiên
+    });
+</script>
+
+</body>
 </html>

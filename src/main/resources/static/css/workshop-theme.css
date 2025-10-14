@@ -1,0 +1,391 @@
+/* Workshop Theme CSS - Professional Blue/Purple Theme */
+
+/* Schedule tabs hover effect */
+.schedule-tab-title .nav-link:hover {
+    background-color: #4A90E2 !important;
+    color: white !important;
+}
+
+.schedule-tab-title .nav-link.active {
+    background-color: #4A90E2 !important;
+    color: white !important;
+}
+
+/* Activity cards hover effect */
+.card-header:hover {
+    background-color: #4A90E2 !important;
+    color: white !important;
+}
+
+/* Ticket Cards - Equal Height */
+.price-block-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    background: white;
+    padding: 30px;
+}
+
+.price-block-wrapper:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Fixed height sections */
+.price-block-wrapper .icon {
+    flex-shrink: 0;
+    margin-bottom: 20px;
+}
+
+.price-block-wrapper .colmun-title {
+    flex-shrink: 0;
+    margin-bottom: 15px;
+}
+
+.price-block-wrapper .price {
+    flex-shrink: 0;
+    margin-bottom: 20px;
+}
+
+/* Description section takes remaining space */
+.price-block-wrapper .pricing-list {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+/* Button always at bottom */
+.price-block-wrapper .btn {
+    margin-top: auto;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* Row container for equal height cards */
+#pricing .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    min-height: 600px; /* Ensure minimum height */
+}
+
+#pricing .col-lg-4 {
+    display: flex;
+    margin-bottom: 30px;
+    align-items: stretch;
+}
+
+/* Ticket Packages Section Spacing */
+#pricing {
+    padding-top: 40px !important; /* Giảm padding trên từ default */
+    padding-bottom: 60px !important;
+}
+
+#pricing .section-title-header {
+    margin-bottom: 10px; /* Giảm khoảng cách từ title xuống cards */
+}
+
+#pricing .section-title {
+    margin-bottom: 8px; /* Giảm khoảng cách dưới title chính */
+}
+
+#pricing .section-title-header p {
+    margin-bottom: 5px; /* Giảm margin dưới subtitle xuống gần cards */
+}
+
+/* Responsive for mobile */
+@media (max-width: 768px) {
+    #pricing .col-lg-4 {
+        flex-direction: column;
+    }
+    
+    .price-block-wrapper {
+        margin-bottom: 30px;
+    }
+    
+    #pricing {
+        padding-top: 30px !important;
+        padding-bottom: 40px !important;
+    }
+}
+
+/* Event Guidelines Section - Beautiful UI */
+#event-slides {
+    background: linear-gradient(135deg, #F8FAFF 0%, #E8F2FF 100%);
+    padding: 60px 0;
+}
+
+#event-slides .section-title {
+    color: var(--blue-dark, #2C5AA0);
+    font-weight: 700;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+#event-slides .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(135deg, #4A90E2, #6BB6FF);
+    border-radius: 2px;
+}
+
+#event-slides .section-title-header p {
+    color: #6C757D;
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+/* Google Maps Container */
+#event-slides .video {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#event-slides .video:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+#event-slides .video iframe {
+    border-radius: 15px;
+}
+
+/* Google Maps Button */
+#event-slides .btn-outline-primary {
+    border: 2px solid #4A90E2;
+    color: #4A90E2;
+    background: transparent;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+#event-slides .btn-outline-primary:hover {
+    background: #4A90E2;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+}
+
+/* Guidelines Content */
+#event-slides .intro-desc {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #495057;
+    margin-bottom: 30px;
+}
+
+#event-slides .intro-title {
+    color: #4A90E2;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+#event-slides .intro-title::before {
+    content: '';
+    position: absolute;
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 25px;
+    background: linear-gradient(135deg, #4A90E2, #6BB6FF);
+    border-radius: 2px;
+}
+
+/* Guidelines List */
+#event-slides .list-specification {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#event-slides .list-specification li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 18px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+#event-slides .list-specification li:hover {
+    transform: translateX(8px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-left-color: #4A90E2;
+}
+
+#event-slides .list-specification li i {
+    color: #4A90E2;
+    font-size: 20px;
+    margin-right: 18px;
+    margin-top: 3px;
+    flex-shrink: 0;
+    background: rgba(74, 144, 226, 0.1);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#event-slides .list-specification li span {
+    color: #495057;
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 500;
+    flex: 1;
+}
+
+/* Highlight key words */
+#event-slides .list-specification li span:first-child {
+    font-weight: 600;
+}
+
+/* Responsive for Event Guidelines */
+@media (max-width: 768px) {
+    #event-slides {
+        padding: 40px 0;
+    }
+    
+    #event-slides .video {
+        margin-bottom: 30px;
+    }
+    
+    #event-slides .intro-title {
+        font-size: 20px;
+    }
+    
+    #event-slides .list-specification li {
+        padding: 15px 18px;
+        margin-bottom: 10px;
+    }
+    
+    #event-slides .list-specification li i {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+        margin-right: 15px;
+    }
+    
+    #event-slides .list-specification li span {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+}
+
+/* Workshop-specific styles */
+.workshop-separator-icon {
+    background: linear-gradient(135deg, #4A90E2, #6BB6FF);
+    color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+}
+
+/* Workshop back to top button */
+.workshop-scroll-btn {
+    background: linear-gradient(135deg, #4A90E2, #6BB6FF);
+    color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+}
+
+.workshop-scroll-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.workshop-scroll-btn .scroll-text {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* Workshop countdown separator */
+.workshop-separator-icon i {
+    font-size: 28px;
+}
+
+/* Professional workshop styling */
+.workshop-professional-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-top: 4px solid #4A90E2;
+}
+
+.workshop-professional-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Workshop benefits styling */
+.workshop-benefits-list {
+    list-style: none;
+    padding: 0;
+}
+
+.workshop-benefits-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 15px 20px;
+    background: rgba(74, 144, 226, 0.05);
+    border-radius: 10px;
+    border-left: 4px solid #4A90E2;
+    transition: all 0.3s ease;
+}
+
+.workshop-benefits-list li:hover {
+    background: rgba(74, 144, 226, 0.1);
+    transform: translateX(5px);
+}
+
+.workshop-benefits-list li i {
+    color: #4A90E2;
+    font-size: 20px;
+    margin-right: 15px;
+    width: 30px;
+    text-align: center;
+}

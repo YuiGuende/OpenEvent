@@ -52,6 +52,25 @@ public class EventServiceImpl implements EventService {
     private EntityManager entityManager;
 
     @Override
+    public List<EventCardDTO> getCustomerEvents(Long customerId) {
+        List<Event> events = orderService.findConfirmedEventsByCustomerId(customerId);
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventCardDTO> getLiveEvents(int i) {
+        List<Event> events = eventRepo.findRecommendedEvents(
+                EventStatus.ONGOING,
+                PageRequest.of(0, i)
+        );
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public EventResponse saveEvent(EventCreationRequest request) {
         Event event = eventMapper.toEvent(request);
 
@@ -194,25 +213,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventCardDTO> getCustomerEvents(Long customerId) {
-        List<Event> events = orderService.findConfirmedEventsByCustomerId(customerId);
-        return events.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<EventCardDTO> getLiveEvents(int i) {
-        List<Event> events = eventRepo.findRecommendedEvents(
-                EventStatus.ONGOING,
-                PageRequest.of(0, i)
-        );
-        return events.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public CompetitionEvent saveCompetitionEvent(CompetitionEvent competitionEvent) {
         if (competitionEvent.getSchedules() != null) {
             competitionEvent.getSchedules().forEach(s -> s.setEvent(competitionEvent));
@@ -340,13 +340,12 @@ public class EventServiceImpl implements EventService {
                 .endsAt(event.getEndsAt())
                 .enrollDeadline(event.getEnrollDeadline())
                 .capacity(event.getCapacity())
-                .registered(registered) // TODO: Get actual registration count from Order/Registration table
-                .city(city) // TODO: Extract from Places
-                .organizer(organizer) // TODO: Get from Host/Organizer
+                .registered(registered)
+                .city(city)
+                .organizer(organizer)
                 .maxPrice(event.getMaxTicketPice())
-                .minPrice(event.getMinTicketPice())// TODO: Get from ticket pricing
+                .minPrice(event.getMinTicketPice())
                 .poster(event.isPoster())
                 .build();
     }
 }
-

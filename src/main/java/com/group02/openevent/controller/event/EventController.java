@@ -104,7 +104,7 @@ public class EventController {
     public ResponseEntity<EventResponse> updateEvent(@PathVariable("id") Long id,
                                                      @RequestBody EventUpdateRequest request){
         log.info("Controller Update User");
-        log.info(request.getSpeakers().getFirst().getName());
+        log.info(request.getSpeakers().get(0).getName());
         EventResponse updated = eventService.updateEvent(id, request);
 
         return ResponseEntity.ok(updated);

@@ -30,6 +30,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.group02.openevent.model.event.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +98,45 @@ public class EventServiceImpl implements EventService {
             return eventRepo.findByDepartment_AccountId(departmentId, pageable);
         }
     }
+
+
+    @Override
+    public List<EventCardDTO> searchEvents(String keyword, String type,
+                                           LocalDate startDate, LocalDate endDate) {
+
+        LocalDateTime fromDateTime = (startDate != null)
+                ? startDate.atStartOfDay()
+                : LocalDateTime.MIN;
+        LocalDateTime toDateTime = (endDate != null)
+                ? endDate.atTime(23, 59, 59)
+                : LocalDateTime.MAX;
+
+        EventType eventType = null;
+        if (type != null && !type.isBlank()) {
+            try {
+                eventType = EventType.valueOf(type.toUpperCase()); // convert String -> Enum
+            } catch (IllegalArgumentException e) {
+                System.out.println("⚠️ Invalid event type: " + type);
+            }
+        }
+
+        List<Event> events = eventRepo.searchEvents(
+                (keyword == null || keyword.isBlank()) ? null : keyword.trim(),
+                eventType,
+                fromDateTime,
+                toDateTime
+        );
+
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+
+
+
+
 
     @Override
     @Transactional
@@ -348,4 +389,6 @@ public class EventServiceImpl implements EventService {
                 .poster(event.isPoster())
                 .build();
     }
+
+
 }

@@ -1675,7 +1675,7 @@
         /* --- Title Styling --- */
         #pricing .price-block-wrapper .colmun-title h5,
         #pricing .price-block-wrapper h5 {
-            color: #FFFFFF !important; /* Force white text */
+            color:#ff6b36 !important;/* Force white text */
             font-size: 20px !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
@@ -2735,10 +2735,7 @@
                     </div>
 
                     <!-- Buy button based on ticket availability and sale status -->
-                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut()}"
-                       th:href="@{'/ticket/' + ${eventDetail.getId()}}"
-                       class="btn btn-common">Buy Ticket</a>
-
+s
                     <a th:if="${ticket.isSoldOut()}"
                        href="#"
                        class="btn btn-common disabled"

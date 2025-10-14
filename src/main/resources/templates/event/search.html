@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Kết quả tìm kiếm | OpenEvent</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+
+<body class="page-bg">
+<div th:replace="fragments/header :: siteHeader('search')"></div>
+<style>
+    .grid-2-cols {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2rem;
+    }
+
+    .event-card--horizontal {
+        display: flex;
+        gap: 1.5rem;
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .event-card--horizontal .event-cover {
+        width: 260px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    .search-sidebar {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .filter-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+
+    .filter-label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 0.3rem;
+    }
+
+    .filter-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .filter-list li {
+        margin-bottom: 0.25rem;
+    }
+
+</style>
+
+<main>
+    <!-- 🔍 Search Bar -->
+    <section class="section search-bar">
+        <div class="container">
+            <form class="event-search" th:action="@{/search}" method="get" role="search">
+                <label class="es-field es-grow">
+                    <span class="es-label">Từ khóa</span>
+                    <input class="es-input" type="text" name="q" placeholder="Tìm sự kiện, CLB, chủ đề…"
+                           th:value="${query}" />
+                </label>
+
+                <label class="es-field">
+                    <span class="es-label">Loại</span>
+                    <select class="es-select" name="type">
+                        <option value="">Tất cả</option>
+                        <option value="Music" th:selected="${param.type == 'Music'}">Music</option>
+                        <option value="Workshop" th:selected="${param.type == 'Workshop'}">Workshop</option>
+                        <option value="Festival" th:selected="${param.type == 'Festival'}">Festival</option>
+                        <option value="Competition" th:selected="${param.type == 'Competition'}">Competition</option>
+                        <option value="Other" th:selected="${param.type == 'Other'}">Other</option>
+                    </select>
+                </label>
+
+                <div class="es-field">
+                    <span class="es-label">Thời gian</span>
+                    <div class="es-inline">
+                        <input class="es-input" type="date" name="from" th:value="${param.from}" />
+                        <span class="es-sep">–</span>
+                        <input class="es-input" type="date" name="to" th:value="${param.to}" />
+                    </div>
+                </div>
+
+                <button class="btn btn-primary es-submit" type="submit">Tìm sự kiện</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 🧭 Layout: Filter + Results -->
+    <section class="section search-results">
+        <div class="container grid grid-2-cols">
+
+            <!-- Sidebar Filters -->
+            <aside class="search-sidebar">
+                <div class="filter-block">
+                    <h3 class="filter-title">Bộ lọc</h3>
+
+                    <div class="filter-group">
+                        <span class="filter-label">Loại sự kiện</span>
+                        <ul class="filter-list">
+                            <li><label><input type="checkbox" /> Music</label></li>
+                            <li><label><input type="checkbox" /> Workshop</label></li>
+                            <li><label><input type="checkbox" /> Festival</label></li>
+                            <li><label><input type="checkbox" /> Competition</label></li>
+                            <li><label><input type="checkbox" /> Other</label></li>
+                        </ul>
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label">Giá vé</span>
+                        <ul class="filter-list">
+                            <li><label><input type="checkbox" /> Miễn phí</label></li>
+                            <li><label><input type="checkbox" /> Dưới 100K</label></li>
+                            <li><label><input type="checkbox" /> 100K - 200K</label></li>
+                            <li><label><input type="checkbox" /> Trên 200K</label></li>
+                        </ul>
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label">Thời gian</span>
+                        <ul class="filter-list">
+                            <li><label><input type="checkbox" /> Tuần này</label></li>
+                            <li><label><input type="checkbox" /> Tháng này</label></li>
+                            <li><label><input type="checkbox" /> Năm nay</label></li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Search Results -->
+            <div class="results-panel">
+
+                <div class="results-header">
+                    <h2 th:text="'Kết quả cho: ' + ${query}">Kết quả tìm kiếm</h2>
+                    <p th:if="${#lists.isEmpty(results)}">Không tìm thấy sự kiện nào phù hợp.</p>
+                </div>
+
+                <!-- 🔹 Event List -->
+                <div class="event-list" th:if="${!#lists.isEmpty(results)}">
+                    <article class="event-card event-card--horizontal" th:each="event : ${results}">
+                        <img class="event-cover" th:src="${event.imageUrl}" th:alt="${event.title}" />
+
+                        <div class="card-body">
+                            <h3 class="card-title" th:text="${event.title}">Event title</h3>
+
+                            <p class="card-meta">
+                                <span th:text="${event.eventType.name()}">Workshop</span> •
+                                <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy')}">20/09/2025</span> →
+                                <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy')}">22/09/2025</span>
+                            </p>
+
+                            <p class="event-org" th:text="${'Tổ chức: ' + event.organizer}">Organizer: ...</p>
+
+                            <p class="price-label">
+                                <strong th:text="${'Giá: ' + event.priceLabel}">Price: Free</strong>
+                            </p>
+
+                            <div class="capacity-row">
+                                <span th:text="${'Đã đăng ký: ' + event.registered + ' / ' + event.capacity}">
+                                    Registered: 0 / 0
+                                </span>
+                            </div>
+
+                            <div class="bar">
+                                <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
+                            </div>
+
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + event.eventTypeTag}">#Workshop</span>
+                                <span class="badge badge-live" th:if="${event.live}">Live</span>
+                                <span class="tag" th:if="${event.soldOut}">Hết chỗ</span>
+                            </div>
+
+                            <a class="btn btn-primary"
+                               th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Fallback -->
+                <div class="empty-results" th:if="${#lists.isEmpty(results)}">
+                    <img src="/img/empty-state.svg" alt="No results" class="empty-image"/>
+                    <p>Không tìm thấy sự kiện nào khớp với tiêu chí tìm kiếm của bạn.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: siteFooter()"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

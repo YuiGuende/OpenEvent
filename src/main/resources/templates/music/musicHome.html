@@ -994,6 +994,15 @@
             inset 0 0 30px rgba(233, 30, 99, 0.1) !important;
         }
 
+        /* Force FAQ question text to pure white for better readability */
+        #faq .accordion .card-header,
+        #faq .accordion .card-header *,
+        #faq .accordion .header-title,
+        #faq .accordion .header-title * {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
         .accordion .card {
             background: var(--dark-bg) !important;
             border: 2px solid var(--neon-magenta) !important;

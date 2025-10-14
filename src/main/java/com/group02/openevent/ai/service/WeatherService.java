@@ -18,14 +18,14 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class WeatherService {
-    private static final String API_KEY =ConfigLoader.get("API_WEATHER");
+    private static final String API_KEY =ConfigLoader.get("api.weather");
     private static final String BASE_URL = "http://api.weatherapi.com/v1/forecast.json";
 
     public String getForecastNote(LocalDateTime date, String location) {
         try {
             String url = BASE_URL + "?key=" + API_KEY + "&q=" + URLEncoder.encode(location, StandardCharsets.UTF_8)
                     + "&dt=" + date + "&days=1";
-            
+
             HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestMethod("GET");
 
@@ -33,7 +33,7 @@ public class WeatherService {
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                 String json = reader.lines().collect(Collectors.joining());
-                
+
                 JSONObject obj = new JSONObject(json);
                 JSONObject day = obj.getJSONObject("forecast")
                         .getJSONArray("forecastday").getJSONObject(0)
@@ -47,7 +47,7 @@ public class WeatherService {
                             " 🌧 (khả năng mưa: " + rainChance + "%)";
                 }
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,4 +55,3 @@ public class WeatherService {
         return "";
     }
 }
-

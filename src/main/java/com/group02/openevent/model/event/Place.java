@@ -21,6 +21,7 @@ public class Place {
     @Column(nullable = false)
     private Building building = Building.NONE;
 
+
     @Column(name = "place_name", nullable = false, length = 150)
     private String placeName;
 

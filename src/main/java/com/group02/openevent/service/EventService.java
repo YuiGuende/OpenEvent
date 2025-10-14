@@ -31,13 +31,16 @@ public interface EventService {
     boolean removeEvent(Long id);
     boolean deleteByTitle(String title);
     List<Event> findByTitle(String title);
+    List<Event> findByTitleAndPublicStatus(String title);
     List<Event> getAllEvents();
     Optional<Event> getEventByEventId(Long eventId);
     Optional<Event> getFirstEventByTitle(String title);
+    Optional<Event> getFirstPublicEventByTitle(String title);
 //  Optional<Event> getNextUpcomingEventByUserId(int userId);
     List<Event> getEventsByPlace(int placeId);
 
     // Methods for AI support
+    List<Event> getEventsByIds(List<Long> ids);
     List<Event> getEventsBetween(LocalDateTime start, LocalDateTime end, Long userId);
     List<Event> getEventByUserId(Long userId);
     Event updateEventStatus(Long eventId, EventStatus status);
@@ -53,4 +56,6 @@ public interface EventService {
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
     List<EventCardDTO> getCustomerEvents(Long customerId);
     List<EventCardDTO> getLiveEvents(int i);
+    Optional<Event> getNextUpcomingEventByUserId(Long userId);
+
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.group02.openevent.ai.listener.EventVectorSyncListener;
+import com.group02.openevent.model.email.EmailReminder;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@EntityListeners(EventVectorSyncListener.class)
 @Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "event_type", discriminatorType = DiscriminatorType.STRING)
@@ -47,6 +50,7 @@ public class Event {
             generator = "event_sequence"
     )
     private Long id;
+
     @Column(nullable = true)
     private boolean poster;
 
@@ -136,10 +140,13 @@ public class Event {
     private List<TicketType> ticketTypes = new ArrayList<>();
 
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmailReminder> emailReminders;
+
     public Event() {
     }
 
-    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages,List<EmailReminder> emailReminders) {
         this.id = id;
         this.parentEvent = parentEvent;
         this.subEvents = subEvents;
@@ -161,6 +168,7 @@ public class Event {
         this.speakers = speakers;
         this.places = places;
         this.eventImages = eventImages;
+        this.emailReminders = emailReminders;
     }
 
     // Getter & Setter
@@ -225,6 +233,14 @@ public class Event {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<EmailReminder> getEmailReminders() {
+        return emailReminders;
+    }
+
+    public void setEmailReminders(List<EmailReminder> emailReminders) {
+        this.emailReminders = emailReminders;
     }
 
     public Event getParentEvent() {

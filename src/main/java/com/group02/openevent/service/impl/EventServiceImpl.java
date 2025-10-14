@@ -62,6 +62,13 @@ public class EventServiceImpl implements EventService {
         return null;
     }
 
+    public List<Event> getEventsByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return eventRepo.findAllById(ids);
+    }
+
     @Override
     public List<EventCardDTO> getCustomerEvents(Long customerId) {
         List<Event> events = orderService.findConfirmedEventsByCustomerId(customerId);
@@ -163,6 +170,11 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Event> findByTitleAndPublicStatus(String title) {
+        return eventRepo.findByTitleAndPublicStatus(title);
+    }
+
+    @Override
     public List<Event> getAllEvents() {
         return eventRepo.findAll();
     }
@@ -186,6 +198,15 @@ public class EventServiceImpl implements EventService {
         }
         return Optional.of(events.get(0)); // trả về sự kiện đầu tiên
     }
+
+    @Override
+    public Optional<Event> getFirstPublicEventByTitle(String title) {
+        List<Event> events = eventRepo.findByTitleAndPublicStatus(title);
+        if (events.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(events.get(0)); // trả về sự kiện PUBLIC đầu tiên
+    }
 //    @Override
 //    public Optional<Event> getNextUpcomingEventByUserId(int userId) {
 //        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
@@ -203,6 +224,11 @@ public class EventServiceImpl implements EventService {
                 .filter(event -> event.getStartsAt().isAfter(start) || event.getStartsAt().isEqual(start))
                 .filter(event -> event.getEndsAt().isBefore(end) || event.getEndsAt().isEqual(end))
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Optional<Event> getNextUpcomingEventByUserId(Long userId) {
+        // Gọi repository với điều kiện: sự kiện PHẢI BẮT ĐẦU sau thời điểm hiện tại
+        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
     }
 
     @Override
@@ -295,7 +321,7 @@ public class EventServiceImpl implements EventService {
                 .organizer(organizer) // TODO: Get from Host/Organizer
                 .maxPrice(event.getMaxTicketPice())
                 .minPrice(event.getMinTicketPice())// TODO: Get from ticket pricing
-                .poster(event.isPoster())
+//                .poster(event.isPoster())
                 .build();
     }
 

@@ -44,12 +44,17 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment createPaymentLinkForOrder(Order order, String returnUrl, String cancelUrl) {
+        logger.info("🔍 DEBUG: Starting createPaymentLinkForOrder - orderId: {}, amount: {}", 
+                order.getOrderId(), order.getTotalAmount());
+        
         try {
             // Prepare PayOS payment request using SDK
             long orderCode = System.currentTimeMillis() / 1000; // Use timestamp as order code
             int amount = order.getTotalAmount().intValue();
             // PayOS description max 25 characters
             String description = "Order #" + order.getOrderId();
+            logger.info("🔍 DEBUG: PayOS request - orderCode: {}, amount: {}, description: {}", 
+                    orderCode, amount, description);
 
             // Create payment item
             PaymentLinkItem item = PaymentLinkItem.builder()
@@ -68,18 +73,20 @@ public class PaymentServiceImpl implements PaymentService {
                 .cancelUrl(cancelUrl)
                 .build();
 
+            logger.info("🔍 DEBUG: Calling PayOS API...");
             logger.info("Creating PayOS payment link: orderCode={}, amount={}, description={}", orderCode, amount, description);
 
             // Call PayOS SDK
             CreatePaymentLinkResponse payOSResponse = payOS.paymentRequests().create(paymentRequest);
 
-            logger.info("PayOS payment link created successfully: paymentLinkId={}, checkoutUrl={}", 
+            logger.info("✅ DEBUG: PayOS payment link created successfully: paymentLinkId={}, checkoutUrl={}", 
                 payOSResponse.getPaymentLinkId(), payOSResponse.getCheckoutUrl());
 
             // Calculate expiration time (15 minutes from now)
             LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(15);
 
             // Create payment record
+            logger.info("🔍 DEBUG: Creating Payment object...");
             Payment payment = new Payment();
             payment.setOrder(order);
             payment.setPaymentLinkId(payOSResponse.getPaymentLinkId()); // Save as String
@@ -93,10 +100,16 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setReturnUrl(returnUrl);
             payment.setCancelUrl(cancelUrl);
 
-            return paymentRepo.save(payment);
+            logger.info("🔍 DEBUG: Saving payment to database...");
+            Payment savedPayment = paymentRepo.save(payment);
+            logger.info("✅ DEBUG: Payment saved successfully - paymentId: {}, status: {}", 
+                    savedPayment.getPaymentId(), savedPayment.getStatus());
+            
+            return savedPayment;
 
         } catch (Exception e) {
-            logger.error("Error creating payment link: ", e);
+            logger.error("❌ DEBUG: Exception in createPaymentLinkForOrder: {}", e.getMessage(), e);
+            logger.error("❌ DEBUG: Exception stack trace:", e);
             throw new RuntimeException("Error creating payment link: " + e.getMessage());
         }
     }

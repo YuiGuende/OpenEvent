@@ -1,16 +1,14 @@
 package com.group02.openevent.ai.service;
 
 import com.group02.openevent.ai.dto.Action;
+import com.group02.openevent.model.email.EmailReminder;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.user.Host;
-import com.group02.openevent.service.EventService;
-import com.group02.openevent.service.CustomerService;
-import com.group02.openevent.service.HostService;
-import com.group02.openevent.service.OrganizationService;
+import com.group02.openevent.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -27,9 +25,9 @@ import java.util.Optional;
  * @author Admin
  */
 @Service
-@Transactional
 public class AgentEventService {
-    
+    @Autowired
+    private EmailReminderService emailReminderService;
     @Autowired
     private EventService eventService;
     
@@ -41,6 +39,29 @@ public class AgentEventService {
     
     @Autowired
     private OrganizationService organizationService;
+
+    /**
+     * Lưu yêu cầu nhắc nhở email vào cơ sở dữ liệu.
+     * @param eventId ID sự kiện cần nhắc nhở.
+     * @param remindMinutes Số phút nhắc trước thời gian bắt đầu sự kiện.
+     */
+    public void saveEmailReminder(Long eventId, int remindMinutes, Long userId) {
+        // 1. Tạo đối tượng EmailReminder
+        Event event = eventService.getEventByEventId(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sự kiện có ID: " + eventId + " để tạo nhắc nhở."));
+
+        EmailReminder reminder = new EmailReminder();
+        // Gán Khóa ngoại Event object (Thay thế cho việc set eventId thô)
+        reminder.setEvent(event);
+        reminder.setUserId(userId);
+        reminder.setRemindMinutes(remindMinutes);
+        reminder.setCreatedAt(LocalDateTime.now());
+        reminder.setSent(false);
+
+        // 3. Lưu vào Database
+        emailReminderService.save(reminder);
+        System.out.println("lưu được rồi e");
+    }
 
     // ✅ Lưu sự kiện từ Action (ADD_EVENT) - New version with userId
     public void saveEventFromAction(Action action, Long userId) {

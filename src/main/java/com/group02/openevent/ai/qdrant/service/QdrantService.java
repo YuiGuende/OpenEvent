@@ -1,6 +1,10 @@
 package com.group02.openevent.ai.qdrant.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.group02.openevent.ai.util.ConfigLoader;
+import lombok.extern.slf4j.Slf4j;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.http.*;
@@ -14,95 +18,265 @@ import io.qdrant.client.grpc.Points.ScoredPoint;
  * @author Admin
  */
 @Service
+@Slf4j
 public class QdrantService {
+    private final String baseUrl;
+    private final String apiKey;
+    private final String collection;
+    private final int vectorSize; // Giữ lại như final
 
-    private static final String QDRANT_URL = "https://45124d23-3e70-444c-884a-99ffe3ee3107.us-east4-0.gcp.cloud.qdrant.io:6333"; // hoặc URL của Qdrant cloud
-    private static final String COLLECTION_NAME = "vector_duc";
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final HttpClient http = HttpClient.newHttpClient();
+    private final ObjectMapper om = new ObjectMapper();
 
-    public String upsertEmbedding(String id, float[] embedding, Map<String, Object> payload) throws Exception {
-        List<Float> vector = new ArrayList<>();
-        for (float v : embedding) {
-            vector.add(v);
-        }
-        Object parsedId;
-        // Sửa tại đây: parse ID sang Integer (hoặc UUID nếu bạn dùng UUID)
+    // Constructor TIÊM (INJECT) các giá trị cấu hình từ Spring
+    public QdrantService(
+            @Value("${qdrant.url}") String baseUrl,
+            @Value("${qdrant.api.key}") String apiKey,
+            @Value("${qdrant.collection}") String collection,
+            @Value("${qdrant.vector.size}") int vectorSize // Đảm bảo bạn có qdrant.vector.size trong config
+    ) {
+        this.baseUrl = baseUrl.trim();
+        this.apiKey = apiKey.trim();
+        this.collection = collection.trim();
+        this.vectorSize = vectorSize;
+    }
+
+
+    @PostConstruct
+    public void initializeIndexes() {
+        log.info("Bắt đầu khởi tạo các chỉ mục (index) cần thiết cho Qdrant collection '{}'...", collection);
         try {
-            parsedId = Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            try {
-                // Nếu không phải số, thử parse thành UUID
-                parsedId = UUID.fromString(id);
-            } catch (IllegalArgumentException e2) {
-                throw new RuntimeException("ID phải là số nguyên hoặc UUID hợp lệ. Giá trị: " + id);
-            }
+            // Đảm bảo collection tồn tại trước khi tạo index
+            ensureCollection();
+
+            // Tạo index cho các trường cần lọc để tăng tốc độ truy vấn
+            createPayloadIndex("startsAt", "integer");
+            createPayloadIndex("kind", "keyword");
+            createPayloadIndex("place_id", "integer"); // Thêm index cho place_id nếu cần
+
+            log.info("✅ Hoàn tất khởi tạo chỉ mục cho Qdrant.");
+        } catch (Exception e) {
+            // Lỗi này thường xảy ra nếu index đã tồn tại, có thể bỏ qua một cách an toàn
+            log.warn("⚠️ Không thể tạo chỉ mục Qdrant. Có thể chỉ mục đã tồn tại hoặc có lỗi kết nối. Lỗi: {}", e.getMessage());
         }
-        Map<String, Object> point = new HashMap<>();
-        point.put("id", parsedId);
-        point.put("vector", vector);
-        point.put("payload", payload);
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("points", List.of(point));
-        String jsonRequest = mapper.writeValueAsString(requestBody);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(QDRANT_URL + "/collections/" + COLLECTION_NAME + "/points"))
-                .header("Content-Type", "application/json")
-                .header("api-key", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.K1KkF5GitElW8iLR8WgOnbG3KXW0DADlcJO-MDTdFks")
-                .PUT(HttpRequest.BodyPublishers.ofString(jsonRequest))
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
-            throw new RuntimeException("Lỗi khi gửi embedding tới Qdrant: " + response.body());
-        }
-
-        return response.body();
     }
 
-    public List<Map<String, Object>> searchSimilarVectors(float[] queryVector, int topK) throws Exception {
-        List<Float> vector = new ArrayList<>();
-        for (float v : queryVector) {
-            vector.add(v);
-        }
-
-        Map<String, Object> searchRequest = new HashMap<>();
-        searchRequest.put("vector", vector);
-        searchRequest.put("top", topK); // số kết quả tương đồng muốn lấy
-        searchRequest.put("with_payload", true); // trả luôn metadata/payload
-
-        String jsonRequest = mapper.writeValueAsString(searchRequest);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(QDRANT_URL + "/collections/" + COLLECTION_NAME + "/points/search"))
-                .header("Content-Type", "application/json")
-                .header("api-key", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.K1KkF5GitElW8iLR8WgOnbG3KXW0DADlcJO-MDTdFks")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonRequest))
+    // Gọi trước khi upsert/search
+    public void ensureCollection() throws Exception {
+        HttpRequest get = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection))
+                .header("api-key", apiKey)
                 .build();
+        HttpResponse<String> resp = http.send(get, HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() == 200) return; // đã có
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() != 200) {
-            throw new RuntimeException("Lỗi khi tìm vector tương tự: " + response.body());
-        }
-
-        // Phân tích JSON kết quả
-        JsonNode jsonNode = mapper.readTree(response.body());
-        List<Map<String, Object>> results = new ArrayList<>();
-
-        for (JsonNode resultNode : jsonNode.get("result")) {
-            Map<String, Object> resultMap = new HashMap<>();
-            resultMap.put("id", resultNode.get("id").asText());
-            resultMap.put("score", resultNode.get("score").asDouble());
-            if (resultNode.has("payload")) {
-                resultMap.put("payload", mapper.convertValue(resultNode.get("payload"), Map.class));
-            }
-            results.add(resultMap);
-        }
-
-        return results;
+        // tạo mới
+        var body = Map.of(
+                "vectors", Map.of("size", vectorSize, "distance", "Cosine")
+        );
+        HttpRequest put = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection))
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .PUT(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(body)))
+                .build();
+        HttpResponse<String> created = http.send(put, HttpResponse.BodyHandlers.ofString());
+        requireOk(created, "Tạo collection thất bại");
     }
 
+    public String upsertEmbedding(String id, float[] embedding, Map<String,Object> payload) throws Exception {
+        ensureCollection();
+
+        // vector -> List<Float>
+        List<Float> vec = new ArrayList<>(embedding.length);
+        for (float v : embedding) vec.add(v);
+
+        // id: số -> Integer, ngược lại -> String
+        Object qId;
+        try { qId = Long.valueOf(id); }
+        catch (NumberFormatException e) { qId = id; } // giữ nguyên chuỗi
+
+        Map<String,Object> point = new HashMap<>();
+        point.put("id", qId);
+        point.put("vector", vec);
+        if (payload != null) point.put("payload", payload);
+
+        Map<String,Object> req = Map.of("points", List.of(point));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection + "/points"))
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .PUT(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(req)))
+                .build();
+
+        HttpResponse<String> resp = http.send(request, HttpResponse.BodyHandlers.ofString());
+        requireOk(resp, "Upsert lỗi");
+        return resp.body();
+    }
+
+
+    public List<Map<String,Object>> searchSimilarVectors(float[] queryVector, int limit) throws Exception {
+        ensureCollection();
+
+        List<Float> vec = new ArrayList<>(queryVector.length);
+        for (float v : queryVector) vec.add(v);
+
+        Map<String,Object> req = new HashMap<>();
+        req.put("vector", vec);
+        req.put("limit", limit);
+        req.put("with_payload", true);
+
+        HttpRequest httpReq = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection + "/points/search"))
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(req)))
+                .build();
+
+        HttpResponse<String> resp = http.send(httpReq, HttpResponse.BodyHandlers.ofString());
+        requireOk(resp, "Search lỗi");
+
+        JsonNode root = om.readTree(resp.body());
+        List<Map<String,Object>> out = new ArrayList<>();
+        for (JsonNode n : root.path("result")) {
+            Map<String,Object> m = new HashMap<>();
+            m.put("id", n.path("id").isNumber() ? n.get("id").asLong() : n.get("id").asText());
+            m.put("score", n.path("score").asDouble());
+            if (n.has("payload")) m.put("payload", om.convertValue(n.get("payload"), Map.class));
+            out.add(m);
+        }
+        return out;
+    }
+    /**
+     * Tìm kiếm Vector với bộ lọc Metadata (Filtering).
+     * Đây là hàm tổng quát được sử dụng bởi VectorIntentClassifier và EventVectorSearchService.
+     * @param queryVector Vector tìm kiếm.
+     * @param limit Số lượng kết quả.
+     * @param filter Bộ lọc metadata Qdrant (dưới dạng Map<String, Object>).
+     * @return Danh sách các điểm (point) Qdrant phù hợp.
+     */
+    public List<Map<String, Object>> searchSimilarVectorsWithFilter(
+            float[] queryVector,
+            int limit,
+            Map<String, Object> filter) throws Exception {
+
+        ensureCollection();
+
+        List<Float> vec = new ArrayList<>(queryVector.length);
+        for (float v : queryVector) vec.add(v);
+
+        Map<String, Object> req = new HashMap<>();
+        req.put("vector", vec);
+        req.put("limit", limit);
+        req.put("with_payload", true);
+
+        // ÁP DỤNG BỘ LỌC TÙY CHỈNH
+        if (filter != null && !filter.isEmpty()) {
+            req.put("filter", filter);
+        }
+
+        HttpRequest httpReq = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection + "/points/search"))
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(req)))
+                .build();
+
+        HttpResponse<String> resp = http.send(httpReq, HttpResponse.BodyHandlers.ofString());
+        requireOk(resp, "Search lỗi (có filter)");
+
+        // Tái sử dụng logic parse kết quả JSON
+        JsonNode root = om.readTree(resp.body());
+        List<Map<String,Object>> out = new ArrayList<>();
+        for (JsonNode n : root.path("result")) {
+            Map<String,Object> m = new HashMap<>();
+            m.put("id", n.path("id").isNumber() ? n.get("id").asLong() : n.get("id").asText());
+            m.put("score", n.path("score").asDouble());
+            if (n.has("payload")) m.put("payload", om.convertValue(n.get("payload"), Map.class));
+            out.add(m);
+        }
+        return out;
+    }
+
+    private void requireOk(HttpResponse<String> resp, String msg) {
+        if (resp.statusCode() != 200) throw new RuntimeException(msg + ": HTTP " + resp.statusCode() + " - " + resp.body());
+        try {
+            JsonNode root = om.readTree(resp.body());
+            if (root.has("status") && !root.path("status").path("error").isNull()
+                    && !root.path("status").path("error").asText().isEmpty()) {
+                throw new RuntimeException(msg + ": " + root.path("status").path("error").asText());
+            }
+        } catch (Exception ignore) { /* nếu body không phải JSON hợp lệ, đã check statusCode ở trên */ }
+    }
+    /**
+     * Tìm kiếm các địa điểm Place gần nhất bằng Vector Search trong Qdrant.
+     */
+    public List<Map<String, Object>> searchPlacesByVector(float[] queryVector, int limit) throws Exception {
+        // 1. Chuẩn bị Vector
+        List<Float> vec = new ArrayList<>(queryVector.length);
+        for (float v : queryVector) vec.add(v);
+
+        Map<String, Object> req = new HashMap<>();
+        req.put("vector", vec);
+        req.put("limit", limit);
+        req.put("with_payload", true);
+
+        // THÊM FILTER: Nếu bạn có payload "kind:place" trong Qdrant
+        // req.put("filter", Map.of("must", List.of(Map.of("key", "kind", "match", Map.of("value", "place")))));
+        Map<String, Object> filter = Map.of(
+                "must", List.of(
+                        // Yêu cầu trường 'kind' trong payload phải có giá trị là 'place'
+                        Map.of("key", "kind", "match", Map.of("value", "place"))
+                )
+        );
+        req.put("filter", filter); // <-- Thêm bộ lọc vào request
+
+        // 2. Gọi API Qdrant (Sử dụng logic từ searchSimilarVectors)
+        HttpRequest httpReq = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection + "/points/search"))
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(req)))
+                .build();
+
+        HttpResponse<String> resp = http.send(httpReq, HttpResponse.BodyHandlers.ofString());
+
+        // Tái sử dụng logic kiểm tra lỗi và parsing JSON từ searchSimilarVectors
+        requireOk(resp, "Search Places lỗi");
+
+        // Logic parse JSON (Giống hệt searchSimilarVectors)
+        JsonNode root = om.readTree(resp.body());
+        List<Map<String,Object>> out = new ArrayList<>();
+        for (JsonNode n : root.path("result")) {
+            Map<String,Object> m = new HashMap<>();
+            m.put("id", n.path("id").isNumber() ? n.get("id").asLong() : n.get("id").asText());
+            m.put("score", n.path("score").asDouble());
+            if (n.has("payload")) m.put("payload", om.convertValue(n.get("payload"), Map.class));
+            out.add(m);
+        }
+        return out;
+    }
+    /**
+     * Tạo Payload Index cho một key cụ thể (ví dụ: 'kind') để tối ưu hóa việc lọc.
+     */
+    public void createPayloadIndex(String fieldName, String fieldType) throws Exception {
+        String indexUrl = baseUrl + "/collections/" + collection + "/index";
+
+        var body = Map.of(
+                "field_name", fieldName,
+                "field_schema", fieldType, // Ví dụ: "keyword" hoặc "integer"
+                "wait", true
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(indexUrl))
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .PUT(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(body)))
+                .build();
+
+        HttpResponse<String> resp = http.send(request, HttpResponse.BodyHandlers.ofString());
+        requireOk(resp, "Tạo Payload Index thất bại cho key: " + fieldName);
+    }
 }

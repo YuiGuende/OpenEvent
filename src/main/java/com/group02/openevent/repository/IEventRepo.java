@@ -32,6 +32,13 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     boolean removeEventById(int id);
     boolean deleteEventByTitle(String title);
     List<Event> findByTitle(String title);
+    @Query("SELECT e FROM Event e WHERE e.title = :title AND e.status = 'PUBLIC'")
+    List<Event> findByTitleAndPublicStatus(@Param("title") String title);
+    @Query("SELECT e FROM Event e WHERE e.host.id = :userId AND e.startsAt > :now ORDER BY e.startsAt ASC LIMIT 1")
+    Optional<Event> findNextUpcomingEventByUserId(
+            @Param("userId") Long userId,
+            @Param("now") LocalDateTime now
+    );
     List<Event> findByStatus(EventStatus status);
     // Pageable listing
     @Query("SELECT e FROM Event e JOIN e.places p WHERE p.id = :placeId")
@@ -51,6 +58,7 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE e.poster = true")
     List<Event> findByPosterTrue();
+
 
     @Query("SELECT e FROM Event e WHERE e.status = :status ORDER BY e.createdAt DESC")
     List<Event> findRecommendedEvents(@Param("status") EventStatus status, Pageable pageable);

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ import java.util.Map;
 @RequestMapping("/api/ai")
 @CrossOrigin(origins = "*")
 @Tag(name = "AI Controller", description = "API for AI-powered event management")
+@Slf4j
 public class AIController {
 
     private final IChatHistoryRepo chatHistoryRepo;
@@ -76,14 +78,33 @@ public class AIController {
                 session.setAttribute("sessionId", sessionId);
             }
 
-            // Lấy AI Agent cho session này
-            EventAIAgent agent = SessionManager.getOrCreate(sessionId);
+            // Lấy AI Agent cho session này với error handling
+            EventAIAgent agent;
+            try {
+                agent = SessionManager.getOrCreate(sessionId);
+            } catch (Exception e) {
+                log.error("Session management error: {}", e.getMessage(), e);
+                return ResponseEntity.internalServerError()
+                    .body(new CustomerResponse("❌ Lỗi quản lý session. Vui lòng thử lại.", false));
+            }
             
             // Xử lý input và lấy response từ AI
-            String aiResponse = agent.processUserInput(message, userId, response);
+            String aiResponse;
+            try {
+                aiResponse = agent.processUserInput(message, userId, response);
+            } catch (Exception e) {
+                log.error("AI processing error: {}", e.getMessage(), e);
+                return ResponseEntity.internalServerError()
+                    .body(new CustomerResponse("❌ Lỗi xử lý AI. Vui lòng thử lại sau.", false));
+            }
             
             // Lưu lịch sử chat vào database
-            saveChatHistory(userId, message, aiResponse, sessionId);
+            try {
+                saveChatHistory(userId, message, aiResponse, sessionId);
+            } catch (Exception e) {
+                log.warn("Failed to save chat history: {}", e.getMessage());
+                // Continue execution even if history saving fails
+            }
             
             // Kiểm tra nếu cần reload frontend
             boolean shouldReload = aiResponse.contains("__RELOAD__");
@@ -93,10 +114,37 @@ public class AIController {
             
             return ResponseEntity.ok(new CustomerResponse(aiResponse, shouldReload));
             
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid input: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(new CustomerResponse("❌ Dữ liệu đầu vào không hợp lệ", false));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Unexpected error in AI chat: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
-                .body(new CustomerResponse("❌ Đã xảy ra lỗi khi xử lý yêu cầu: " + e.getMessage(), false));
+                .body(new CustomerResponse("❌ Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.", false));
+        }
+    }
+
+    /**
+     * Health check cho AI system
+     * @return ResponseEntity chứa trạng thái hệ thống
+     */
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        try {
+            Map<String, Object> health = new HashMap<>();
+            health.put("status", "UP");
+            health.put("timestamp", LocalDateTime.now().toString());
+            health.put("sessionStats", SessionManager.getSessionStats());
+            
+            return ResponseEntity.ok(health);
+        } catch (Exception e) {
+            log.error("Health check failed: {}", e.getMessage(), e);
+            Map<String, Object> errorHealth = new HashMap<>();
+            errorHealth.put("status", "DOWN");
+            errorHealth.put("error", e.getMessage());
+            errorHealth.put("timestamp", LocalDateTime.now().toString());
+            return ResponseEntity.internalServerError().body(errorHealth);
         }
     }
 

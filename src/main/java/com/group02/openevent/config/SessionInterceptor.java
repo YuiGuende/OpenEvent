@@ -85,6 +85,7 @@ public class SessionInterceptor implements HandlerInterceptor {
                path.equals("/index.html") ||
                path.startsWith("/login") ||
                 path.startsWith("/api/ai/") ||
+                path.startsWith("/api/debug/") ||
                path.startsWith("/register") ||
                path.startsWith("/api/current-user");
     }

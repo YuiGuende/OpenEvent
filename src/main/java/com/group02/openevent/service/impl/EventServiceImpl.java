@@ -362,9 +362,16 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventCardDTO convertToDTO(Event event) {
-        String organizer = event.getOrganization() != null && event.getOrganization().getOrgName() != null
-                ? event.getOrganization().getOrgName()
-                : (event.getHost() != null ? event.getHost().getHostName() : "Unknown");
+        // Avoid touching Host->Customer->Account to prevent EntityNotFound on bad data
+        String organizer = null;
+        if (event.getOrganization() != null && event.getOrganization().getOrgName() != null) {
+            organizer = event.getOrganization().getOrgName();
+        } else if (event.getHost() != null && event.getHost().getOrganization() != null
+                && event.getHost().getOrganization().getOrgName() != null) {
+            organizer = event.getHost().getOrganization().getOrgName();
+        } else {
+            organizer = "Unknown";
+        }
         String city = event.getPlaces() != null && !event.getPlaces().isEmpty()
                 ? event.getPlaces().get(0).getPlaceName()
                 : "TBA";
@@ -387,6 +394,7 @@ public class EventServiceImpl implements EventService {
                 .maxPrice(event.getMaxTicketPice())
                 .minPrice(event.getMinTicketPice())
                 .poster(event.isPoster())
+                .benefits(event.getBenefits())
                 .build();
     }
 

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đơn hàng - OpenEvent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+<header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
+
+<main class="container my-5">
+    <a th:href="@{/orders}" class="btn btn-outline-secondary mb-4">
+        <i class="bi bi-arrow-left"></i> Quay lại danh sách
+    </a>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <img th:src="${order.eventImageUrl}" th:alt="${order.eventTitle}" class="img-fluid rounded" onerror="this.src='/images/event-banner.jpg'">
+                    <h3 class="mt-3" th:text="${order.eventTitle}">Event Title</h3>
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-calendar"></i>
+                        <span th:text="${#temporals.format(order.eventStartsAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-ticket-perforated"></i>
+                        <span th:text="${order.ticketTypeName}">Ticket</span>
+                    </p>
+                </div>
+                <div class="col-lg-4">
+                    <h5>Thanh toán</h5>
+                    <div class="d-flex justify-content-between">
+                        <span>Thành tiền</span>
+                        <strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</strong>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge" th:classappend="${order.statusBadgeClass}" th:text="${order.status}">PAID</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+

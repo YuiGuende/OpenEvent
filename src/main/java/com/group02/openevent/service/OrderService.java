@@ -2,12 +2,13 @@ package com.group02.openevent.service;
 
 import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
+import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,10 @@ public interface OrderService {
     Optional<Order> getPendingOrderForEvent(Long customerId, Long eventId);
     Integer countUniqueParticipantsByEventId( Long eventId);
     List<Event> findConfirmedEventsByCustomerId(Long customerId);
+
+    // New: DTO-based retrieval for customer order listing
+    List<UserOrderDTO> getOrderDTOsByCustomerId(Long customerId, OrderStatus status);
+    List<UserOrderDTO> getOrderDTOsByCustomer(Customer customer, OrderStatus status);
 }
 
 

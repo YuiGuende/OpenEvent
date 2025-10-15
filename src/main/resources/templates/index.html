@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>OpenEvent — Static Preview</title>
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <style>
+        /* Chỉnh lại bố cục thanh tìm kiếm cho đều */
+        .event-search {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .es-submit {
+            min-width: 140px;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+        
+        /* Responsive cho mobile */
+        @media (max-width: 768px) {
+            .event-search {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .es-submit {
+                min-width: auto;
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 
 <body class="page-bg">
@@ -53,14 +82,14 @@
         <div class="container">
             <form class="event-search" th:action="@{/search}" method="get" role="search">
                 <label class="es-field es-grow">
-                    <span class="es-label">Tìm kiếm</span>
-                    <input class="es-input" type="text" name="q" placeholder="Tìm sự kiện, CLB, chủ đề…" />
+                    <span class="es-label">Search</span>
+                    <input class="es-input" type="text" name="q" placeholder="Search events, clubs, topics..." />
                 </label>
 
                 <label class="es-field">
-                    <span class="es-label">Loại</span>
+                    <span class="es-label">Type</span>
                     <select class="es-select" name="type">
-                        <option value="">Tất cả</option>
+                        <option value="">All</option>
                         <option value="Music">Music</option>
                         <option value="Workshop">Workshop</option>
                         <option value="Festival">Festival</option>
@@ -69,32 +98,20 @@
                     </select>
                 </label>
 
-<!--                <label class="es-field">-->
-<!--                    <span class="es-label">Campus</span>-->
-<!--                    <select class="es-select" name="city">-->
-<!--                        <option value="">Bất kỳ</option>-->
-<!--                        <option value="Hà Nội">Hà Nội</option>-->
-<!--                        <option value="HCM">HCM</option>-->
-<!--                        <option value="Đà Nẵng">Đà Nẵng</option>-->
-<!--                        <option value="Cần Thơ">Cần Thơ</option>-->
-<!--                        <option value="Quy Nhơn">Quy Nhơn</option>-->
-<!--                    </select>-->
-<!--                </label>-->
-
                 <div class="es-field">
-                    <span class="es-label">Thời gian</span>
+                    <span class="es-label">Time</span>
                     <div class="es-inline">
                         <input class="es-input" type="date" name="from" />
                         <span class="es-sep">–</span>
                         <input class="es-input" type="date" name="to" />
                         <label class="es-check">
                             <input type="checkbox" name="freeOnly" value="true" />
-                            <span>Chỉ Free</span>
+                            <span>Free Only</span>
                         </label>
                     </div>
                 </div>
 
-                <button class="btn btn-primary es-submit" type="submit">Tìm sự kiện</button>
+                <button class="btn btn-primary es-submit" type="submit">Search Events</button>
             </form>
 
             <!--            <form class="event-search" th:action="@{/events}" method="get" role="search">-->
@@ -169,13 +186,13 @@
                         <div class="card-body">
                             <h3 class="card-title" th:text="${ev.title}">Event title</h3>
                             <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">City • Date • Duration</p>
-                            <p class="event-org" th:text="${'Tổ chức: ' + ev.organizer}">Organizer: ...</p>
+                            <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
 
                             <div class="capacity">
                                 <div class="capacity-row">
-                                    <span th:text="${'Đã đăng ký: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini" th:text="${'Giá: ' + ev.priceLabel}">Price: Free</span>
+                                    <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                    <span class="capacity-mini" th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
@@ -185,7 +202,7 @@
                             <div class="event-tags">
                                 <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
                                 <span class="badge badge-live" th:if="${ev.live}">Live</span>
-                                <span class="tag" th:if="${ev.soldOut}">Hết chỗ</span>
+                                <span class="tag" th:if="${ev.soldOut}">Sold Out</span>
                             </div>
                         </div>
                     </a>
@@ -219,11 +236,11 @@
                     <div class="card-body">
                         <h3 class="card-title">Summer Fest</h3>
                         <p class="card-meta">HCM • 22/09/2025 • 2h</p>
-                        <p class="event-org">Tổ chức: Event Hub</p>
+                        <p class="event-org">Organizer: Event Hub</p>
                         <div class="capacity">
                             <div class="capacity-row">
-                                <span>Đã đăng ký: 480 / 600</span>
-                                <span class="capacity-mini">Giá: 100k</span>
+                                <span>Registered: 480 / 600</span>
+                                <span class="capacity-mini">Price: 100k</span>
                             </div>
                             <div class="bar">
                                 <div class="fill" style="width:80%"></div>
@@ -240,11 +257,11 @@
                     <div class="card-body">
                         <h3 class="card-title">Open Campus Tour</h3>
                         <p class="card-meta">Đà Nẵng • 17/09/2025 • 1.5h</p>
-                        <p class="event-org">Tổ chức: FPT University</p>
+                        <p class="event-org">Organizer: FPT University</p>
                         <div class="capacity">
                             <div class="capacity-row">
-                                <span>Đã đăng ký: 150 / 150</span>
-                                <span class="capacity-mini">Giá: Free</span>
+                                <span>Registered: 150 / 150</span>
+                                <span class="capacity-mini">Price: Free</span>
                             </div>
                             <div class="bar">
                                 <div class="fill" style="width:100%"></div>
@@ -252,7 +269,7 @@
                         </div>
                         <div class="event-tags">
                             <span class="tag">#Conference</span>
-                            <span class="tag">Hết chỗ</span>
+                            <span class="tag">Sold Out</span>
                         </div>
                     </div>
                 </article>
@@ -291,13 +308,13 @@
                         <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
                         <div class="card-body">
                             <h3 class="card-title" th:text="${ev.title}">Event title</h3>
-                            <p class="card-meta" th:text="${ev.city + ' • Hôm nay • ' + ev.durationLabel}">City • Today • Duration</p>
-                            <p class="event-org" th:text="${'Tổ chức: ' + ev.organizer}">Organizer: ...</p>
+                            <p class="card-meta" th:text="${ev.city + ' • Today • ' + ev.durationLabel}">City • Today • Duration</p>
+                            <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
                             <div class="capacity">
                                 <div class="capacity-row">
-                                    <span th:text="${'Đã đăng ký: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini" th:text="${'Giá: ' + ev.priceLabel}">Price: Free</span>
+                                    <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                    <span class="capacity-mini" th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
@@ -319,7 +336,7 @@
                     <img src="/img/event1.jpg" alt="Acoustic Night" class="event-cover"/>
                     <div class="card-body">
                         <h3 class="card-title">Acoustic Night</h3>
-                        <p class="card-meta">HCM • Hôm nay • 2h</p>
+                        <p class="card-meta">HCM • Today • 2h</p>
                         <p class="event-org">Organizer: Music Club</p>
                         <div class="capacity">
                             <div class="capacity-row">
@@ -342,7 +359,7 @@
                     <img src="/img/event2.jpg" alt="AI Workshop" class="event-cover"/>
                     <div class="card-body">
                         <h3 class="card-title">AI Workshop</h3>
-                        <p class="card-meta">Hà Nội • Hôm nay • 1h</p>
+                        <p class="card-meta">Hà Nội • Today • 1h</p>
                         <p class="event-org">Organizer: GDSC</p>
                         <div class="capacity">
                             <div class="capacity-row">
@@ -364,12 +381,12 @@
                     <img src="/img/event3.jpg" alt="Tech Summit" class="event-cover"/>
                     <div class="card-body">
                         <h3 class="card-title">Tech Summit</h3>
-                        <p class="card-meta">Đà Nẵng • Hôm nay • 3h</p>
-                        <p class="event-org">Tổ chức: Biz Club</p>
+                        <p class="card-meta">Đà Nẵng • Today • 3h</p>
+                        <p class="event-org">Organizer: Biz Club</p>
                         <div class="capacity">
                             <div class="capacity-row">
-                                <span>Đã đăng ký: 352 / 400</span>
-                                <span class="capacity-mini">Giá: 200k</span>
+                                <span>Registered: 352 / 400</span>
+                                <span class="capacity-mini">Price: 200k</span>
                             </div>
                             <div class="bar">
                                 <div class="fill" style="width:88%"></div>
@@ -411,14 +428,14 @@
                                th:text="${event.city + ' • ' + event.dateLabel + ' • ' + event.durationLabel}">
                                 City • Date • Duration
                             </p>
-                            <p class="event-org" th:text="${'Tổ chức: ' + event.organizer}">Organizer: ...</p>
+                            <p class="event-org" th:text="${'Organizer: ' + event.organizer}">Organizer: ...</p>
 
                             <div class="capacity">
                                 <div class="capacity-row">
-                                    <span th:text="${'Đã đăng ký: ' + event.registered + ' / ' + event.capacity}">
+                                    <span th:text="${'Registered: ' + event.registered + ' / ' + event.capacity}">
                                         Registered: 0 / 0
                                     </span>
-                                    <span class="capacity-mini" th:text="${'Giá: ' + event.priceLabel}">Price: Free</span>
+                                    <span class="capacity-mini" th:text="${'Price: ' + event.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
@@ -428,7 +445,7 @@
                             <div class="event-tags">
                                 <span class="tag" th:text="${'#' + event.eventTypeTag}">#Tag</span>
                                 <span class="badge badge-live" th:if="${event.live}">Live</span>
-                                <span class="tag" th:if="${event.soldOut}">Hết chỗ</span>
+                                <span class="tag" th:if="${event.soldOut}">Sold Out</span>
                             </div>
                         </div>
                     </a>
@@ -441,11 +458,11 @@
                     <div class="card-body">
                         <h3 class="card-title">Data Viz 101</h3>
                         <p class="card-meta">Hà Nội • 28/09/2025 • 2h</p>
-                        <p class="event-org">Tổ chức: DS Club</p>
+                        <p class="event-org">Organizer: DS Club</p>
                         <div class="capacity">
                             <div class="capacity-row">
-                                <span>Đã đăng ký: 120 / 200</span>
-                                <span class="capacity-mini">Giá: 70k</span>
+                                <span>Registered: 120 / 200</span>
+                                <span class="capacity-mini">Price: 70k</span>
                             </div>
                             <div class="bar">
                                 <div class="fill" style="width:60%"></div>
@@ -462,11 +479,11 @@
                     <div class="card-body">
                         <h3 class="card-title">Startup Night</h3>
                         <p class="card-meta">HCM • 30/09/2025 • 2.5h</p>
-                        <p class="event-org">Tổ chức: Startup Hub</p>
+                        <p class="event-org">Organizer: Startup Hub</p>
                         <div class="capacity">
                             <div class="capacity-row">
-                                <span>Đã đăng ký: 300 / 500</span>
-                                <span class="capacity-mini">Giá: Free</span>
+                                <span>Registered: 300 / 500</span>
+                                <span class="capacity-mini">Price: Free</span>
                             </div>
                             <div class="bar">
                                 <div class="fill" style="width:60%"></div>
@@ -484,11 +501,11 @@
                     <div class="card-body">
                         <h3 class="card-title">Campus Coding Jam</h3>
                         <p class="card-meta">Đà Nẵng • 05/10/2025 • 3h</p>
-                        <p class="event-org">Tổ chức: Biz Club</p>
+                        <p class="event-org">Organizer: Biz Club</p>
                         <div class="capacity">
                             <div class="capacity-row">
-                                <span>Đã đăng ký: 150 / 180</span>
-                                <span class="capacity-mini">Giá: 120k</span>
+                                <span>Registered: 150 / 180</span>
+                                <span class="capacity-mini">Price: 120k</span>
                             </div>
                             <div class="bar">
                                 <div class="fill" style="width:83%"></div>

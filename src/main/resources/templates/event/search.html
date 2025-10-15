@@ -5,55 +5,161 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Kết quả tìm kiếm | OpenEvent</title>
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <style>
+        /* Chỉnh lại bố cục thanh tìm kiếm cho đều */
+        .event-search {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .es-submit {
+            min-width: 140px;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+        
+        /* Responsive cho mobile */
+        @media (max-width: 768px) {
+            .event-search {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .es-submit {
+                min-width: auto;
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 
 <body class="page-bg">
 <div th:replace="fragments/header :: siteHeader('search')"></div>
 <style>
-    .grid-2-cols {
+    /* Layout 3 cột như booking.com */
+    .search-layout {
         display: grid;
-        grid-template-columns: 300px 1fr;
+        grid-template-columns: 320px 1fr;
         gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
-    .event-card--horizontal {
-        display: flex;
-        gap: 1.5rem;
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .event-card--horizontal .event-cover {
-        width: 260px;
-        height: 180px;
-        object-fit: cover;
-        border-radius: 10px;
-    }
-
+    /* Sidebar chứa map và filters */
     .search-sidebar {
         background: #fff;
-        border-radius: 12px;
-        padding: 1rem;
+        border-radius: 8px;
+        padding: 0;
         box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        height: fit-content;
+        position: sticky;
+        top: 2rem;
+    }
+
+    /* Map section */
+    .map-section {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .map-container {
+        width: 100%;
+        height: 200px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .map-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+    }
+
+    .search-sidebar .map-pin {
+        width: 20px;
+        height: 20px;
+        background: #ff6b35;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        margin-bottom: 8px;
+        position: relative;
+    }
+
+    .map-pin::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .search-sidebar .show-on-map-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    /* Filter sections */
+    .filter-section {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .filter-section:last-child {
+        border-bottom: none;
     }
 
     .filter-title {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .filter-subtitle {
         font-weight: 600;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #333;
     }
 
     .filter-group {
-        margin-bottom: 1rem;
+        margin-bottom: 16px;
+    }
+
+    .filter-group:last-child {
+        margin-bottom: 0;
     }
 
     .filter-label {
         font-weight: 500;
         display: block;
-        margin-bottom: 0.3rem;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #333;
     }
 
     .filter-list {
@@ -63,9 +169,785 @@
     }
 
     .filter-list li {
-        margin-bottom: 0.25rem;
+        margin-bottom: 6px;
     }
 
+    .filter-list label {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+    }
+
+    .filter-list input[type="checkbox"] {
+        margin-right: 8px;
+        width: 16px;
+        height: 16px;
+    }
+
+    .filter-count {
+        color: #666;
+        font-size: 12px;
+        margin-left: 4px;
+    }
+
+    /* Price range slider */
+    .price-range {
+        margin-top: 8px;
+    }
+
+    .price-range input[type="range"] {
+        width: 100%;
+        margin: 8px 0;
+    }
+
+    .price-display {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+    }
+
+    /* Results panel */
+    .results-panel {
+        background: #fff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .results-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+    }
+
+    .view-toggle {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 6px;
+        padding: 2px;
+    }
+
+    .view-btn {
+        padding: 8px 16px;
+        border: none;
+        background: transparent;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .results-panel .view-btn.active {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .sort-dropdown {
+        margin-left: auto;
+        margin-right: 1rem;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        font-size: 14px;
+    }
+
+    /* Event cards - horizontal layout */
+    .event-card--horizontal {
+        display: flex;
+        flex-direction: row;
+        gap: 1.5rem;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        align-items: stretch;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .event-card--horizontal:hover {
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* Image Section */
+    .event-image-section {
+        position: relative;
+        flex-shrink: 0;
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .event-cover {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
+
+    .image-dots {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+    }
+
+    /* Countdown Timer */
+    .countdown-timer {
+        background: linear-gradient(135deg, #ff6b35, #e55a2b);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .countdown-label {
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        opacity: 0.9;
+    }
+
+    .countdown-display {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .countdown-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .countdown-number {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .countdown-unit {
+        font-size: 10px;
+        font-weight: 500;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .countdown-expired {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffebee;
+        background: rgba(220, 53, 69, 0.2);
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.5);
+        transition: all 0.2s;
+    }
+
+    .dot.active {
+        background: white;
+        width: 20px;
+        border-radius: 3px;
+    }
+
+    /* Content Section */
+    .event-content-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .event-favorite {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    /* Event Title */
+    .event-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 8px 0 8px 0;
+        color: #ff6b35;
+        line-height: 1.3;
+    }
+
+    /* Date & Time */
+    .event-datetime {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #ff6b35;
+    }
+
+    .datetime-icon {
+        font-size: 16px;
+    }
+
+
+    /* Event Location */
+    .event-location {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .event-location span {
+        color: #0066cc;
+        cursor: pointer;
+    }
+
+    /* Event Type Tag */
+    .event-type-tag {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .tag-icon {
+        font-size: 14px;
+    }
+
+    .event-type-tag span:last-child {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #bbdefb;
+    }
+
+    .event-badges {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-featured {
+        background: #e8f5e8;
+        color: #2d5a2d;
+    }
+
+    .badge-genius {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .badge-deal {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .card-meta {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .event-location {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    /* Benefits */
+    .event-benefits {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #28a745;
+    }
+
+    .benefits-icon {
+        font-size: 16px;
+    }
+
+    /* Organizer */
+    .event-organizer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #6c757d;
+    }
+
+    .organizer-icon {
+        font-size: 16px;
+    }
+
+    /* Availability Warning */
+    .availability-warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 12px;
+        border-left: 4px solid #ffc107;
+    }
+
+    .event-availability {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .availability-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .price-section {
+        text-align: right;
+    }
+
+    .price-label {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    /* Availability & Price Section */
+    .availability-price-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: auto;
+    }
+
+    .availability-bar {
+        flex: 1;
+        margin-right: 1rem;
+    }
+
+    .availability-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .availability-label {
+        font-size: 16px;
+    }
+
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    /* Dual Progress Container */
+    .dual-progress-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .progress-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .progress-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e5e5e5;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        position: relative;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    .time-progress {
+        background: linear-gradient(90deg, #ff6b35, #ff8c42);
+        box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    }
+
+    .ticket-progress {
+        background: linear-gradient(90deg, #28a745, #34ce57);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .price-section {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    .price-info {
+        text-align: right;
+    }
+
+    .price-range {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .price-min,
+    .price-max {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .price-separator {
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .price-single .price-current {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .price-note {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    .capacity-row {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .bar {
+        width: 100%;
+        height: 4px;
+        background: #e5e5e5;
+        border-radius: 2px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+    .results-panel .fill {
+        height: 100%;
+        background: #ff6b35;
+        transition: width 0.3s;
+    }
+
+    .event-tags {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .tag {
+        padding: 4px 8px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .badge-live {
+        background: #ff4444;
+        color: white;
+    }
+
+    /* Chỉ áp dụng cho các nút trong trang search, không ảnh hưởng header */
+    .search-results .btn,
+    .results-panel .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .search-results .btn-primary,
+    .results-panel .btn-primary {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .search-results .btn-primary:hover,
+    .results-panel .btn-primary:hover {
+        background: #e55a2b;
+    }
+
+    /* Empty state */
+    .empty-results {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #666;
+    }
+
+    .empty-image {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Breadcrumb styling */
+    .breadcrumb {
+        margin-bottom: 1rem;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .breadcrumb span:not(:last-child)::after {
+        content: " > ";
+        margin: 0 4px;
+    }
+
+    /* Additional improvements */
+    .event-card--horizontal .event-cover {
+        position: relative;
+    }
+
+    .event-card--horizontal .event-cover::after {
+        content: "";
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 2px;
+    }
+
+    .event-card--horizontal .event-cover::before {
+        content: "● ● ● ●";
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255,255,255,0.7);
+        font-size: 8px;
+        letter-spacing: 2px;
+    }
+
+    /* Rating display */
+    .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .results-panel .rating-score {
+        background: #ff6b35;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .rating-text {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .rating-reviews {
+        font-size: 12px;
+        color: #666;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .search-layout {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .search-sidebar {
+            position: static;
+        }
+        
+        .event-card--horizontal {
+            flex-direction: column;
+            padding: 1rem;
+        }
+        
+        .event-image-section {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .countdown-timer {
+            margin-top: 12px;
+        }
+        
+        .event-cover {
+            width: 100%;
+            height: 200px;
+        }
+
+        .image-dots {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .availability-price-section {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .availability-bar {
+            margin-right: 0;
+        }
+
+        .dual-progress-container {
+            gap: 6px;
+        }
+
+        .progress-bar {
+            height: 6px;
+        }
+
+        .price-section {
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .results-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .view-toggle {
+            align-self: flex-end;
+        }
+    }
 </style>
 
 <main>
@@ -74,15 +956,15 @@
         <div class="container">
             <form class="event-search" th:action="@{/search}" method="get" role="search">
                 <label class="es-field es-grow">
-                    <span class="es-label">Từ khóa</span>
-                    <input class="es-input" type="text" name="q" placeholder="Tìm sự kiện, CLB, chủ đề…"
+                    <span class="es-label">Search</span>
+                    <input class="es-input" type="text" name="q" placeholder="Search events, clubs, topics…"
                            th:value="${query}" />
                 </label>
 
                 <label class="es-field">
-                    <span class="es-label">Loại</span>
+                    <span class="es-label">Type</span>
                     <select class="es-select" name="type">
-                        <option value="">Tất cả</option>
+                        <option value="">All</option>
                         <option value="Music" th:selected="${param.type == 'Music'}">Music</option>
                         <option value="Workshop" th:selected="${param.type == 'Workshop'}">Workshop</option>
                         <option value="Festival" th:selected="${param.type == 'Festival'}">Festival</option>
@@ -92,7 +974,7 @@
                 </label>
 
                 <div class="es-field">
-                    <span class="es-label">Thời gian</span>
+                    <span class="es-label">Time</span>
                     <div class="es-inline">
                         <input class="es-input" type="date" name="from" th:value="${param.from}" />
                         <span class="es-sep">–</span>
@@ -100,49 +982,74 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary es-submit" type="submit">Tìm sự kiện</button>
+                <button class="btn btn-primary es-submit" type="submit">Search Events</button>
             </form>
         </div>
     </section>
 
     <!-- 🧭 Layout: Filter + Results -->
     <section class="section search-results">
-        <div class="container grid grid-2-cols">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <div style="margin-bottom: 1rem; font-size: 14px; color: #666;">
+                <span>Home</span> > <span>Vietnam</span> > <span>Ho Chi Minh City</span> > <span>Search results</span>
+            </div>
+            
+            <div class="search-layout">
 
             <!-- Sidebar Filters -->
             <aside class="search-sidebar">
-                <div class="filter-block">
-                    <h3 class="filter-title">Bộ lọc</h3>
+                    <!-- Map Section -->
+                    <div class="map-section">
+                        <div class="map-container">
+                            <div class="map-placeholder">
+                                <div class="map-pin"></div>
+                                <div>Hồ Chí Minh</div>
+                                <button class="show-on-map-btn">Show on map</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter by section -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">Filter by:</h3>
 
                     <div class="filter-group">
-                        <span class="filter-label">Loại sự kiện</span>
+                            <span class="filter-subtitle">Your previous filters</span>
                         <ul class="filter-list">
-                            <li><label><input type="checkbox" /> Music</label></li>
-                            <li><label><input type="checkbox" /> Workshop</label></li>
-                            <li><label><input type="checkbox" /> Festival</label></li>
-                            <li><label><input type="checkbox" /> Competition</label></li>
-                            <li><label><input type="checkbox" /> Other</label></li>
+                                <li><label><input type="checkbox" /> All deals <span class="filter-count">(381)</span></label></li>
                         </ul>
                     </div>
 
                     <div class="filter-group">
-                        <span class="filter-label">Giá vé</span>
+                            <span class="filter-subtitle">Your budget (per ticket)</span>
+                            <div class="price-range">
+                                <div class="price-display">₫ 0 – ₫ 200+</div>
+                                <input type="range" min="0" max="200" value="200" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deals section -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">Deals</h3>
                         <ul class="filter-list">
-                            <li><label><input type="checkbox" /> Miễn phí</label></li>
-                            <li><label><input type="checkbox" /> Dưới 100K</label></li>
-                            <li><label><input type="checkbox" /> 100K - 200K</label></li>
-                            <li><label><input type="checkbox" /> Trên 200K</label></li>
+                            <li><label><input type="checkbox" /> All deals <span class="filter-count">(381)</span></label></li>
                         </ul>
                     </div>
 
-                    <div class="filter-group">
-                        <span class="filter-label">Thời gian</span>
+                    <!-- Popular filters -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">Popular filters</h3>
                         <ul class="filter-list">
-                            <li><label><input type="checkbox" /> Tuần này</label></li>
-                            <li><label><input type="checkbox" /> Tháng này</label></li>
-                            <li><label><input type="checkbox" /> Năm nay</label></li>
+                            <li><label><input type="checkbox" /> Free cancellation <span class="filter-count">(636)</span></label></li>
+                            <li><label><input type="checkbox" /> Music events <span class="filter-count">(438)</span></label></li>
+                            <li><label><input type="checkbox" /> Workshop <span class="filter-count">(94)</span></label></li>
+                            <li><label><input type="checkbox" /> Festival <span class="filter-count">(641)</span></label></li>
+                            <li><label><input type="checkbox" /> Competition <span class="filter-count">(498)</span></label></li>
+                            <li><label><input type="checkbox" /> Excellent: 9+ <span class="filter-count">(295)</span></label></li>
+                            <li><label><input type="checkbox" /> Free tickets <span class="filter-count">(313)</span></label></li>
                         </ul>
-                    </div>
                 </div>
             </aside>
 
@@ -150,58 +1057,161 @@
             <div class="results-panel">
 
                 <div class="results-header">
-                    <h2 th:text="'Kết quả cho: ' + ${query}">Kết quả tìm kiếm</h2>
-                    <p th:if="${#lists.isEmpty(results)}">Không tìm thấy sự kiện nào phù hợp.</p>
+                    <h2 class="results-title" th:text="${#lists.size(results)} + ' events found'">1,163 events found</h2>
+                    
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <select class="sort-dropdown">
+                            <option>Our top picks</option>
+                            <option>Price (lowest first)</option>
+                            <option>Price (highest first)</option>
+                            <option>Distance from center</option>
+                            <option>Guest rating</option>
+                        </select>
+                        
+                        <div class="view-toggle">
+                            <button class="view-btn active">List</button>
+                            <button class="view-btn">Grid</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 🔹 Event List -->
                 <div class="event-list" th:if="${!#lists.isEmpty(results)}">
-                    <article class="event-card event-card--horizontal" th:each="event : ${results}">
+                    <a class="event-card event-card--horizontal" 
+                       th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
+                       th:each="event : ${results}">
+                        <!-- Image Section (Left) -->
+                        <div class="event-image-section">
                         <img class="event-cover" th:src="${event.imageUrl}" th:alt="${event.title}" />
+                            <button class="event-favorite">♡</button>
+                            <!-- Image dots indicator -->
+                            <div class="image-dots">
+                                <span class="dot active"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            
+                            <!-- Countdown Timer -->
+                            <div class="countdown-timer" th:if="${event.enrollDeadline != null}">
+                                <div class="countdown-label">Registration closes in:</div>
+                                <div class="countdown-display">
+                                    <div class="countdown-item" th:if="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) > 0}">
+                                        <span class="countdown-number" th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline)}">5</span>
+                                        <span class="countdown-unit">days</span>
+                                    </div>
+                                    <div class="countdown-item" th:if="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) <= 0}">
+                                        <span class="countdown-expired">Registration Closed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                        <div class="card-body">
-                            <h3 class="card-title" th:text="${event.title}">Event title</h3>
+                        <!-- Content Section (Right) -->
+                        <div class="event-content-section">
+                            <!-- Badges -->
+                            <div class="event-badges">
+                                <span class="badge badge-featured" th:if="${event.id % 3 == 0}">Featured</span>
+                                <span class="badge badge-genius" th:if="${event.id % 5 == 0}">Genius</span>
+                                <span class="badge badge-deal" th:if="${event.id % 7 == 0}">Limited-time Deal</span>
+                            </div>
 
-                            <p class="card-meta">
-                                <span th:text="${event.eventType.name()}">Workshop</span> •
-                                <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy')}">20/09/2025</span> →
-                                <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy')}">22/09/2025</span>
-                            </p>
+                            <!-- Title -->
+                            <h3 class="event-title" th:text="${event.title}">Event title</h3>
 
-                            <p class="event-org" th:text="${'Tổ chức: ' + event.organizer}">Organizer: ...</p>
-
-                            <p class="price-label">
-                                <strong th:text="${'Giá: ' + event.priceLabel}">Price: Free</strong>
-                            </p>
-
-                            <div class="capacity-row">
-                                <span th:text="${'Đã đăng ký: ' + event.registered + ' / ' + event.capacity}">
-                                    Registered: 0 / 0
+                            <!-- Date & Time -->
+                            <div class="event-datetime">
+                                <span class="datetime-icon">📅</span>
+                                <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">20/09/2025 09:00</span>
+                                <span th:if="${event.endsAt != event.startsAt}">
+                                    → <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}">22/09/2025 17:00</span>
                                 </span>
                             </div>
 
-                            <div class="bar">
-                                <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
+                            <!-- Location -->
+                            <div class="event-location">
+                                <span th:text="${event.city}">Ho Chi Minh</span> •
+                                <span>Show on map</span> •
+                                <span th:text="${(event.id % 10) + 1} + ' km from center'">2.3 km from center</span>
                             </div>
 
-                            <div class="event-tags">
-                                <span class="tag" th:text="${'#' + event.eventTypeTag}">#Workshop</span>
-                                <span class="badge badge-live" th:if="${event.live}">Live</span>
-                                <span class="tag" th:if="${event.soldOut}">Hết chỗ</span>
+                            <!-- Event Type Tag -->
+                            <div class="event-type-tag">
+                                <span class="tag-icon">🏷️</span>
+                                <span th:text="${event.eventType.name()}">Workshop</span>
                             </div>
 
-                            <a class="btn btn-primary"
-                               th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}">
-                                Xem chi tiết
-                            </a>
+                            <!-- Benefits -->
+                            <div class="event-benefits" th:if="${event.benefits != null and !event.benefits.isEmpty()}">
+                                <span class="benefits-icon">🎁</span>
+                                <span th:text="${event.benefits}">Free lunch, Certificate, Networking</span>
+                            </div>
+
+                            <!-- Organizer -->
+                            <div class="event-organizer">
+                                <span class="organizer-icon">👤</span>
+                                <span th:text="'Organizer: ' + event.organizer">Organizer: Event Organizer</span>
+                            </div>
+
+                            <!-- Availability Warning -->
+                            <div class="availability-warning" th:if="${!event.isSoldOut() and (event.capacity - event.registered) <= 10}">
+                                <span th:text="'Only ' + (event.capacity - event.registered) + ' tickets left at this price'">Only 3 tickets left at this price</span>
+                            </div>
+
+                            <!-- Availability & Price Section -->
+                            <div class="availability-price-section">
+                                <div class="availability-bar">
+                                    <div class="availability-info">
+                                        <span class="availability-label">🎫</span>
+                                        <span th:text="${(event.capacity - event.registered) + ' tickets left'}" 
+                                              th:if="${!event.isSoldOut()}">50 tickets left</span>
+                                        <span th:text="'Sold Out'" th:if="${event.isSoldOut()}" class="sold-out">Sold Out</span>
+                                    </div>
+                                    
+                                    <!-- Dual Progress Bar -->
+                                    <div class="dual-progress-container">
+                                        <!-- Time Progress Bar -->
+                                        <div class="progress-section" th:if="${event.enrollDeadline != null}">
+                                            <div class="progress-label">Time Left</div>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill time-progress" 
+                                                     th:style="|width: ${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) > 0 ? (T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) * 100 / 30) : 0}%|"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Ticket Progress Bar -->
+                                        <div class="progress-section">
+                                            <div class="progress-label">Tickets</div>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill ticket-progress" 
+                                                     th:style="|width: ${event.registrationPercentage}%|"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="price-section">
+                                    <div class="price-info">
+                                        <div class="price-range" th:if="${event.minPrice != null and event.maxPrice != null and event.minPrice != event.maxPrice}">
+                                            <span class="price-min" th:text="${event.minPrice == 0 ? 'Free' : (event.minPrice + 'k')}">Free</span>
+                                            <span class="price-separator">-</span>
+                                            <span class="price-max" th:text="${event.maxPrice + 'k'}">400k</span>
+                                        </div>
+                                        <div class="price-single" th:if="${event.minPrice == null or event.maxPrice == null or event.minPrice == event.maxPrice}">
+                                            <span class="price-current" th:text="${event.priceLabel}">Free</span>
+                                        </div>
+                                        <div class="price-note">Includes taxes and fees</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </article>
+                    </a>
                 </div>
 
                 <!-- Fallback -->
                 <div class="empty-results" th:if="${#lists.isEmpty(results)}">
                     <img src="/img/empty-state.svg" alt="No results" class="empty-image"/>
-                    <p>Không tìm thấy sự kiện nào khớp với tiêu chí tìm kiếm của bạn.</p>
+                    <p>No events found matching your search criteria.</p>
                 </div>
 
             </div>

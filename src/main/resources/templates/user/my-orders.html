@@ -10,25 +10,46 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #F8F9FB;
-            font-family: 'Inter', 'Nunito Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-            font-size: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-attachment: fixed;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            min-height: 100vh;
         }
 
         .page-header {
-            background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+            background: rgba(255, 107, 53, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 20px 0; /* smaller height */
-            margin-bottom: 20px;
-            box-shadow: 0 6px 18px rgba(255, 107, 53, 0.18);
+            padding: 24px 0;
+            margin-bottom: 32px;
+            box-shadow: 
+                0 8px 32px rgba(255, 107, 53, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
         .page-header .container { display: flex; align-items: center; }
         .page-toolbar { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .toolbar-left { display: flex; align-items: center; gap: 12px; }
         .back-btn {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 40px; height: 40px; border-radius: 999px; color: #FF6B35; background: #fff; border: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            width: 44px; height: 44px; border-radius: 16px; 
+            color: #FF6B35; 
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 8px 24px rgba(0,0,0,0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 32px rgba(0,0,0,0.16),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
         .page-header h1 {
             font-size: 28px;
@@ -62,30 +83,84 @@
         }
 
         .order-card {
-            background: white;
-            border-radius: 12px;
+            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+            border-radius: 20px;
             overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e5e5;
-            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.08),
+                0 2px 8px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 107, 53, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            backdrop-filter: blur(10px);
         }
 
         .order-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 60px rgba(255, 107, 53, 0.15),
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .event-image {
-            width: 160px;
+            width: 180px;
             height: 120px;
             object-fit: cover;
             object-position: center;
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
             background: #fff;
             display: block;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Perforated ticket cut effect */
+        .ticket-perforation {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 8px,
+                #e5e7eb 8px,
+                #e5e7eb 12px
+            );
+            z-index: 2;
+        }
+
+        .ticket-perforation::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: #F8F9FB;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+        }
+
+        .ticket-perforation::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -10px;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: #F8F9FB;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
         }
 
         .order-price {
@@ -99,19 +174,26 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 10px;
+            gap: 12px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.02) 0%, rgba(255, 140, 66, 0.02) 100%);
+            border-radius: 16px;
+            position: relative;
         }
         .price-label {
-            font-size: 12px;
+            font-size: 11px;
             color: #6B7280;
             text-transform: uppercase;
-            letter-spacing: .4px;
-            font-weight: 600;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
         .order-amount {
-            font-size: 22px;
-            font-weight: 800;
+            font-size: 24px;
+            font-weight: 900;
             color: #FF6B35;
+            text-shadow: 0 2px 4px rgba(255, 107, 53, 0.1);
+            margin-bottom: 8px;
         }
 
         /* Status-specific action buttons */
@@ -119,23 +201,61 @@
             background: linear-gradient(135deg, #FF8C42, #FF6B35);
             color: #fff;
             border: none;
-            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            box-shadow: 
+                0 8px 24px rgba(255, 107, 53, 0.3),
+                0 2px 8px rgba(255, 107, 53, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
         }
-        .btn-status-pending:hover { background: #e55a2b; color: #fff; }
+        .btn-status-pending:hover { 
+            background: linear-gradient(135deg, #e55a2b, #d94a1f); 
+            color: #fff; 
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 32px rgba(255, 107, 53, 0.4),
+                0 4px 12px rgba(255, 107, 53, 0.3);
+        }
 
         .btn-status-paid {
-            background: #16A34A;
+            background: linear-gradient(135deg, #16A34A, #15803d);
             color: #fff;
             border: none;
-            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            box-shadow: 
+                0 8px 24px rgba(22, 163, 74, 0.3),
+                0 2px 8px rgba(22, 163, 74, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
         }
-        .btn-status-paid:hover { background: #14833d; color: #fff; }
+        .btn-status-paid:hover { 
+            background: linear-gradient(135deg, #14833d, #166534); 
+            color: #fff; 
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 32px rgba(22, 163, 74, 0.4),
+                0 4px 12px rgba(22, 163, 74, 0.3);
+        }
 
         .btn-status-cancelled {
             background: #FFEAEA;
             color: #DC2626;
             border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
             cursor: not-allowed;
+            text-transform: uppercase;
         }
 
         .status-PAID {
@@ -313,6 +433,9 @@
 
     <div th:if="${orders.size() > 0}">
         <div th:each="o : ${orders}" class="order-card">
+            <!-- Perforated ticket cut -->
+            <div class="ticket-perforation"></div>
+            
             <div class="row g-0">
                 <div class="col-auto">
                     <img th:src="${o.eventImageUrl}"
@@ -321,42 +444,42 @@
                          onerror="this.src='/images/Logo.png'">
                 </div>
                 <div class="col">
-                    <div class="p-3">
+                    <div class="p-4">
                         <div class="row">
                             <div class="col-lg-7">
-                                <h5 th:text="${o.eventTitle}">Event name</h5>
-                                <p class="mb-1">
-                                    <i class="bi bi-ticket-perforated"></i>
-                                    <span class="text-primary fw-bold" th:text="${o.ticketTypeName}">Ticket type</span>
-                                </p>
-                                <p class="text-muted mb-1">
-                                    <i class="bi bi-calendar-check"></i>
-                                    Ordered at: <span th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
-                                </p>
-                                <p class="text-muted mb-0">
-                                    <i class="bi bi-clock"></i>
-                                    Event starts: <span th:text="${#temporals.format(o.eventStartsAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 18:00</span>
-                                </p>
+                                <h4 class="mb-3" style="font-weight: 800; color: #1f2937; font-size: 20px;" th:text="${o.eventTitle}">FPT Music Festival 2025</h4>
+                                <div class="mb-2">
+                                    <i class="bi bi-ticket-perforated text-primary me-2"></i>
+                                    <span class="text-primary fw-bold" style="font-size: 16px;" th:text="${o.ticketTypeName}">Class C Seats</span>
+                                </div>
+                                <div class="mb-2 text-muted">
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    <span style="font-weight: 500;">Ngày đặt:</span> <span th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">16/10/2025 00:35</span>
+                                </div>
+                                <div class="text-muted">
+                                    <i class="bi bi-clock me-2"></i>
+                                    <span style="font-weight: 500;">Diễn ra:</span> <span th:text="${#temporals.format(o.eventStartsAt, 'dd/MM/yyyy HH:mm')}">25/10/2025 18:00</span>
+                                </div>
                             </div>
                             <div class="col-lg-5 text-lg-end order-right">
-                                <div class="price-label">Total</div>
+                                <div class="price-label">Tổng tiền</div>
                                 <div class="order-amount"
-                                     th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">100,000đ</div>
+                                     th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">165,000đ</div>
                                 <span class="status-badge" th:classappend="${o.statusBadgeClass}"
-                                      th:text="${o.status}">PAID</span>
-                                <div>
+                                      th:text="${o.status}">PENDING</span>
+                                <div class="mt-3">
                                     <a th:if="${o.status.name() == 'PAID'}"
                                        th:href="@{/ticket/{eventId}(eventId=${o.eventId})}"
-                                       class="btn btn-sm btn-status-paid">
-                                        <i class="bi bi-ticket"></i> View ticket
+                                       class="btn btn-status-paid">
+                                        <i class="bi bi-ticket me-2"></i>Xem vé
                                     </a>
                                     <a th:if="${o.status.name() == 'PENDING'}"
                                        th:href="@{/payment/process/{orderId}(orderId=${o.orderId})}"
-                                       class="btn btn-sm btn-status-pending">
-                                        <i class="bi bi-credit-card"></i> Pay now
+                                       class="btn btn-status-pending">
+                                        <i class="bi bi-credit-card me-2"></i>Thanh toán ngay
                                     </a>
-                                    <button th:if="${o.status.name() == 'CANCELLED'}" class="btn btn-sm btn-status-cancelled" disabled>
-                                        <i class="bi bi-x-circle"></i> Cancelled
+                                    <button th:if="${o.status.name() == 'CANCELLED'}" class="btn btn-status-cancelled" disabled>
+                                        <i class="bi bi-x-circle me-2"></i>Đã hủy
                                     </button>
                                 </div>
                             </div>

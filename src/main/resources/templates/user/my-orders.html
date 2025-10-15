@@ -1,22 +1,50 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đơn hàng của tôi - OpenEvent</title>
+    <title>My Orders - OpenEvent</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #F8F9FB;
+            font-family: 'Inter', 'Nunito Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            font-size: 15px;
         }
 
         .page-header {
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
             color: white;
-            padding: 40px 0;
-            margin-bottom: 30px;
+            padding: 20px 0; /* smaller height */
+            margin-bottom: 20px;
+            box-shadow: 0 6px 18px rgba(255, 107, 53, 0.18);
+        }
+        .page-header .container { display: flex; align-items: center; }
+        .page-toolbar { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .toolbar-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border-radius: 999px; color: #FF6B35; background: #fff; border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+        }
+        .page-header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .toolbar-action {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: #fff; padding: 10px 16px; border-radius: 999px; backdrop-filter: blur(2px);
+            text-decoration: none; font-weight: 600;
         }
 
         .stats-card {
@@ -30,7 +58,7 @@
         .stats-number {
             font-size: 2rem;
             font-weight: bold;
-            color: #8B5CF6;
+            color: #FF6B35;
         }
 
         .order-card {
@@ -39,6 +67,7 @@
             overflow: hidden;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e5e5;
             transition: all 0.3s ease;
         }
 
@@ -48,60 +77,115 @@
         }
 
         .event-image {
-            width: 120px;
+            width: 160px;
             height: 120px;
             object-fit: cover;
+            object-position: center;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.06);
+            background: #fff;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
         .order-price {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #8B5CF6;
+            color: #FF6B35;
+        }
+
+        /* Right column styling */
+        .order-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .price-label {
+            font-size: 12px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            font-weight: 600;
+        }
+        .order-amount {
+            font-size: 22px;
+            font-weight: 800;
+            color: #FF6B35;
+        }
+
+        /* Status-specific action buttons */
+        .btn-status-pending {
+            background: linear-gradient(135deg, #FF8C42, #FF6B35);
+            color: #fff;
+            border: none;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
+        }
+        .btn-status-pending:hover { background: #e55a2b; color: #fff; }
+
+        .btn-status-paid {
+            background: #16A34A;
+            color: #fff;
+            border: none;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+        }
+        .btn-status-paid:hover { background: #14833d; color: #fff; }
+
+        .btn-status-cancelled {
+            background: #FFEAEA;
+            color: #DC2626;
+            border: 1px solid #FECACA;
+            cursor: not-allowed;
         }
 
         .status-PAID {
-            background-color: #10b981;
-            color: white;
+            background-color: #E6FFEA; /* light green */
+            color: #16A34A; /* green text */
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
+            border: 1px solid #BBF7D0;
         }
 
         .status-PENDING {
-            background-color: #f59e0b;
-            color: white;
+            background-color: #FFE5CC; /* light orange */
+            color: #FF6B35; /* orange text */
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
+            border: 1px solid #FFD2AD;
         }
 
         .status-CANCELLED {
-            background-color: #ef4444;
-            color: white;
+            background-color: #FFEAEA; /* light red */
+            color: #DC2626; /* red text */
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
+            border: 1px solid #FECACA;
         }
 
         .status-EXPIRED {
-            background-color: #6b7280;
-            color: white;
+            background-color: #F3F4F6;
+            color: #6B7280;
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
+            border: 1px solid #E5E7EB;
         }
 
         .status-REFUNDED {
-            background-color: #3b82f6;
-            color: white;
+            background-color: #E0F2FE;
+            color: #2563EB;
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
+            border: 1px solid #BAE6FD;
         }
 
         .empty-state {
@@ -115,6 +199,48 @@
             font-size: 5rem;
             color: #d1d5db;
         }
+
+        /* FPT Orange themed buttons */
+        .btn-primary {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #e25f2f;
+            border-color: #e25f2f;
+        }
+        .btn-success {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+        }
+        .btn-success:hover, .btn-success:focus {
+            background-color: #e25f2f;
+            border-color: #e25f2f;
+        }
+
+        /* Override Bootstrap primary text to FPT orange */
+        .text-primary {
+            color: #FF6B35 !important;
+        }
+
+        /* Fade-in animation for cards */
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .stats-card, .order-card, .card.mb-4 {
+            animation: fadeInUp .45s ease both;
+        }
+        .order-card:nth-child(1) { animation-delay: .05s; }
+        .order-card:nth-child(2) { animation-delay: .1s; }
+        .order-card:nth-child(3) { animation-delay: .15s; }
+        
+        /* Filter chips row */
+        .filter-row { display: flex; gap: 12px; margin: 8px 0 20px; flex-wrap: wrap; }
+        .chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #fff; border: 1px solid #e5e5e5; color: #333; text-decoration: none; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .chip .count { background: #F8F9FB; color: #FF6B35; font-weight: 700; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+        .chip.active { background: #FFE5CC; border-color: #FFD2AD; color: #FF6B35; }
+        .chip.active .count { background: #fff; }
     </style>
 
 </head>
@@ -124,9 +250,18 @@
 
 <div class="page-header">
     <div class="container">
-        <h1><i class="bi bi-receipt-cutoff"></i> Đơn hàng của tôi</h1>
-        <p class="mb-0">Quản lý và theo dõi đơn hàng sự kiện</p>
+        <div class="page-toolbar">
+            <div class="toolbar-left">
+                <a href="/" class="back-btn" aria-label="Back"><i class="bi bi-arrow-left"></i></a>
+                <div>
+                    <h1><i class="bi bi-receipt-cutoff"></i> Đơn hàng của tôi</h1>
+                    <p class="mb-0">Quản lý và theo dõi đơn hàng sự kiện</p>
+                </div>
+            </div>
+            <a class="toolbar-action" href="/host/your-events">Sự kiện của tôi</a>
+        </div>
     </div>
+    
 </div>
 
 <div class="container mb-5">
@@ -151,22 +286,30 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" action="/orders" class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label"><i class="bi bi-funnel"></i> Lọc theo trạng thái</label>
-                    <select name="status" class="form-select" onchange="this.form.submit()">
-                        <option value="">Tất cả đơn hàng</option>
-                        <option th:each="st : ${orderStatuses}"
-                                th:value="${st}"
-                                th:text="${st}"
-                                th:selected="${st == selectedStatus}"></option>
-                    </select>
-                </div>
-            </form>
-        </div>
+    <!-- Filter chips (static demo, can be wired to query params) -->
+    <div class="filter-row">
+        <a href="/orders" class="chip active"><span class="count" th:text="${totalOrders}">1</span> Tất cả</a>
+        <a href="/orders?status=PAID" class="chip"><span class="count" th:text="${paidOrders}">0</span> Đã thanh toán</a>
+        <a href="/orders?status=PENDING" class="chip"><span class="count" th:text="${pendingOrders}">1</span> Chờ thanh toán</a>
+        <a href="/orders?status=CANCELLED" class="chip"><span class="count">0</span> Đã hủy</a>
     </div>
+
+<!--    <div class="card mb-4">-->
+<!--        <div class="card-body">-->
+<!--            <form method="get" action="/orders" class="row g-3">-->
+<!--                <div class="col-md-4">-->
+<!--                    <label class="form-label"><i class="bi bi-funnel"></i> Filter by status</label>-->
+<!--                    <select name="status" class="form-select" onchange="this.form.submit()">-->
+<!--                        <option value="">All orders</option>-->
+<!--                        <option th:each="st : ${orderStatuses}"-->
+<!--                                th:value="${st}"-->
+<!--                                th:text="${st}"-->
+<!--                                th:selected="${st == selectedStatus}"></option>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
 
     <div th:if="${orders.size() > 0}">
         <div th:each="o : ${orders}" class="order-card">
@@ -181,40 +324,40 @@
                     <div class="p-3">
                         <div class="row">
                             <div class="col-lg-7">
-                                <h5 th:text="${o.eventTitle}">Tên sự kiện</h5>
+                                <h5 th:text="${o.eventTitle}">Event name</h5>
                                 <p class="mb-1">
                                     <i class="bi bi-ticket-perforated"></i>
-                                    <span class="text-primary fw-bold" th:text="${o.ticketTypeName}">Loại vé</span>
+                                    <span class="text-primary fw-bold" th:text="${o.ticketTypeName}">Ticket type</span>
                                 </p>
                                 <p class="text-muted mb-1">
                                     <i class="bi bi-calendar-check"></i>
-                                    Ngày đặt: <span th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+                                    Ordered at: <span th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
                                 </p>
                                 <p class="text-muted mb-0">
                                     <i class="bi bi-clock"></i>
-                                    Sự kiện: <span th:text="${#temporals.format(o.eventStartsAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 18:00</span>
+                                    Event starts: <span th:text="${#temporals.format(o.eventStartsAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 18:00</span>
                                 </p>
                             </div>
-                            <div class="col-lg-5 text-lg-end">
-                                <div class="order-price mb-2"
-                                     th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">
-                                    100,000đ
-                                </div>
-                                <div class="mb-3">
-                                    <span class="status-badge" th:classappend="${o.statusBadgeClass}"
-                                          th:text="${o.status}">PAID</span>
-                                </div>
+                            <div class="col-lg-5 text-lg-end order-right">
+                                <div class="price-label">Total</div>
+                                <div class="order-amount"
+                                     th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">100,000đ</div>
+                                <span class="status-badge" th:classappend="${o.statusBadgeClass}"
+                                      th:text="${o.status}">PAID</span>
                                 <div>
                                     <a th:if="${o.status.name() == 'PAID'}"
                                        th:href="@{/ticket/{eventId}(eventId=${o.eventId})}"
-                                       class="btn btn-sm btn-primary">
-                                        <i class="bi bi-ticket"></i> Xem vé
+                                       class="btn btn-sm btn-status-paid">
+                                        <i class="bi bi-ticket"></i> View ticket
                                     </a>
                                     <a th:if="${o.status.name() == 'PENDING'}"
                                        th:href="@{/payment/process/{orderId}(orderId=${o.orderId})}"
-                                       class="btn btn-sm btn-success">
-                                        <i class="bi bi-credit-card"></i> Thanh toán
+                                       class="btn btn-sm btn-status-pending">
+                                        <i class="bi bi-credit-card"></i> Pay now
                                     </a>
+                                    <button th:if="${o.status.name() == 'CANCELLED'}" class="btn btn-sm btn-status-cancelled" disabled>
+                                        <i class="bi bi-x-circle"></i> Cancelled
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -226,9 +369,9 @@
 
     <div th:if="${orders.size() == 0}" class="empty-state">
         <i class="bi bi-inbox"></i>
-        <h4 class="mt-3">Chưa có đơn hàng nào</h4>
-        <p class="text-muted">Khám phá và đăng ký các sự kiện thú vị!</p>
-        <a th:href="@{/}" class="btn btn-primary btn-lg mt-3"><i class="bi bi-search"></i> Khám phá sự kiện</a>
+        <h4 class="mt-3">No orders yet</h4>
+        <p class="text-muted">Discover and register for exciting events!</p>
+        <a th:href="@{/}" class="btn btn-primary btn-lg mt-3"><i class="bi bi-search"></i> Explore events</a>
     </div>
 </div>
 

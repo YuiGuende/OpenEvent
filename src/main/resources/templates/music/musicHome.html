@@ -2872,6 +2872,56 @@
             flex-direction: column;
             gap: 30px; /* Khoảng cách giữa các phần tử bên trong card */
         }
+        
+        /* Fix layout alignment and overflow for Organizer block */
+        #organizer-details .container {
+            max-width: 1140px;
+        }
+        #organizer-details .organizer-display-box {
+            width: 100%;
+            box-sizing: border-box;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #organizer-details .contact-items {
+            width: 100%;
+        }
+        #organizer-details .contact-item {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0; /* prevent external spacing causing visual separation */
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(233, 30, 99, 0.2);
+            border-radius: 12px;
+            box-shadow: none;
+        }
+        #organizer-details .contact-item + .contact-item {
+            margin-top: 12px;
+        }
+        #organizer-details .contact-text {
+            flex: 1;
+            min-width: 0; /* enable text-overflow within flex */
+        }
+        #organizer-details .contact-text a,
+        #organizer-details .contact-text span {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.6;
+        }
+        /* Ensure icon and text vertically centered and aligned */
+        #organizer-details .contact-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+        #organizer-details .contact-item { align-items: center; }
+
+        /* Fix potential container padding cropping inner rows */
+        #organizer-details .row { margin-left: 0; margin-right: 0; }
 
         .organizer-header {
             display: flex;

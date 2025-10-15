@@ -23,9 +23,69 @@
                th:classappend="${page == 'contact'} ? ' is-active'">Contact</a>
         </nav>
         <!-- Actions -->
-        <div class="customer-actions">
-            <a class="btn btn-ghost" href="create-event.html" th:href="@{/events?create=true}">Tạo sự kiện</a>
-            <a class="btn btn-primary" href="login.html" th:href="@{/login}">Đăng nhập</a>
+        <div class="customer-actions" style="display:flex; align-items:center; gap:12px;">
+            <a class="btn btn-ghost" href="create-event.html" th:href="@{/events?create=true}">Create Event</a>
+            <a id="loginLink" class="btn btn-primary" href="login.html" th:href="@{/login}">Log in</a>
+            <div id="userMenu" class="user-menu" style="display:none; position: relative;">
+                <button id="userBtn" class="btn btn-primary user-trigger" type="button" style="display:inline-flex; align-items:center; gap:10px; border-radius:999px; padding:8px 14px; height:40px; line-height:24px;">
+                    <span id="userAvatar" class="avatar" style="width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.25); color:#ffffff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">U</span>
+                    <span id="userName" style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#ffffff;">User</span>
+                    <span style="display:inline-block; transform: translateY(1px); color:#ffffff;">▾</span>
+                </button>
+                <div id="userDropdown" class="dropdown" style="display:none; position:absolute; right:0; top:50px; min-width:220px; background:#fff; border:1px solid #e5e7eb; box-shadow:0 8px 24px rgba(0,0,0,0.12); border-radius:12px; overflow:hidden; z-index:1000;">
+                    <div style="padding:10px 12px; font-size:13px; color:#6b7280; border-bottom:1px solid #f1f5f9;">Account</div>
+                    <a href="/orders" class="dropdown-item" style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My orders</a>
+                    <a href="/user" class="dropdown-item" style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My profile</a>
+                    <div style="border-top:1px solid #f1f5f9;"></div>
+                    <a href="#" id="logoutAction" class="dropdown-item" style="display:block; padding:10px 12px; text-decoration:none; color:#ef4444; font-weight:600;">Sign out</a>
+                </div>
+            </div>
         </div>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var login = document.getElementById('loginLink');
+            var menu = document.getElementById('userMenu');
+            var btn = document.getElementById('userBtn');
+            var dd = document.getElementById('userDropdown');
+            var nameEl = document.getElementById('userName');
+            var av = document.getElementById('userAvatar');
+            var logout = document.getElementById('logoutAction');
+
+            function closeDropdown(){ if(dd) dd.style.display='none'; }
+            function toggleDropdown(e){ e.preventDefault(); if(!dd) return; dd.style.display = (dd.style.display==='none'||dd.style.display==='') ? 'block' : 'none'; }
+            function outside(e){ if(!menu) return; if(!menu.contains(e.target)) closeDropdown(); }
+
+            // Bind events
+            if(btn) btn.addEventListener('click', toggleDropdown);
+            document.addEventListener('click', outside);
+            document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDropdown(); });
+
+            if (logout) {
+                logout.addEventListener('click', function(e){
+                    e.preventDefault();
+                    closeDropdown();
+                    fetch('/api/logout', { method: 'POST' })
+                        .then(function(){ window.location.reload(); })
+                        .catch(function(){ window.location.reload(); });
+                });
+            }
+
+            // Fetch current user once
+            fetch('/api/current-user').then(function(r){ return r.ok ? r.json() : { authenticated:false }; })
+                .then(function(data){
+                    if (data && data.authenticated) {
+                        if (login) login.style.display = 'none';
+                        if (menu) menu.style.display = '';
+                        var display = data.email || ('User #' + (data.accountId||''));
+                        if (nameEl) nameEl.textContent = display;
+                        if (av) av.textContent = (display||'U').trim().charAt(0).toUpperCase();
+                    } else {
+                        if (login) login.style.display = '';
+                        if (menu) menu.style.display = 'none';
+                    }
+                })
+                .catch(function(){ /* ignore */ });
+        });
+        </script>
     </div>
 </header>

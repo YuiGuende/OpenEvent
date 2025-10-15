@@ -9,6 +9,7 @@ import com.group02.openevent.ai.qdrant.model.PendingEvent;
 import com.group02.openevent.ai.qdrant.model.TimeContext;
 import com.group02.openevent.ai.qdrant.service.QdrantService;
 import com.group02.openevent.ai.qdrant.service.VectorIntentClassifier;
+import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
@@ -484,8 +485,21 @@ hoặc
                                 } else {
                                     event.setEnrollDeadline(defaultDeadline);
                                 }
+
                                 event.setStatus(EventStatus.DRAFT);   // mặc định khi tạo mới
-                                event.setEventType(EventType.OTHERS); // mặc định nếu chưa phân loại
+
+                                String eventTypeString = getStr(args, "event_type");
+                                if (eventTypeString != null) {
+                                    try {
+                                        // Chuyển chuỗi "MUSIC" thành enum EventType.MUSIC
+                                        event.setEventType(EventType.valueOf(eventTypeString.toUpperCase()));
+                                    } catch (IllegalArgumentException e) {
+                                        // Nếu người dùng/AI nhập loại không hợp lệ, dùng giá trị mặc định
+                                        event.setEventType(EventType.OTHERS);
+                                    }
+                                } else {
+                                    event.setEventType(EventType.OTHERS); // Mặc định nếu không có
+                                } // mặc định nếu chưa phân loại
 
 // Tùy chọn
                                 if (action.getArgs().containsKey("description")) {
@@ -542,35 +556,32 @@ hoặc
                                     // Use createEventByCustomer to handle host creation and organization assignment
                                     Event saved = agentEventService.createEventByCustomer((long) userId, event, orgId);
                                     systemResult.append("✅ Đã thêm sự kiện: ").append(saved.getTitle())
-                                            .append(saved.getOrganization() != null
-                                                    ? " (Org: " + saved.getOrganization().getOrgName() + ")"
-                                                    : " (không gắn Organization)")
                                             .append("\n");
                                     shouldReload = true;
                                     System.out.println("✅ Event saved successfully: " + saved.getTitle() + " with ID: " + saved.getId());
-                                    try {
-                                        log.info("Upserting event vector to Qdrant for event ID: {}", saved.getId());
+//                                    try {
+//                                        log.info("Upserting event vector to Qdrant for event ID: {}", saved.getId());
 
                                         // 1. Tạo vector từ tiêu đề sự kiện
-                                        float[] eventVector = embeddingService.getEmbedding(saved.getTitle());
+//                                        float[] eventVector = embeddingService.getEmbedding(saved.getTitle());
 
                                         // 2. Chuẩn bị payload cho Qdrant
-                                        Map<String, Object> payload = new HashMap<>();
-                                        payload.put("event_id", saved.getId());
-                                        payload.put("title", saved.getTitle());
-                                        payload.put("kind", "event"); // Rất quan trọng cho việc lọc sau này
-                                        payload.put("startsAt", saved.getStartsAt().toEpochSecond(java.time.ZoneOffset.UTC)); // Chuyển thành Unix timestamp
+//                                        Map<String, Object> payload = new HashMap<>();
+//                                        payload.put("event_id", saved.getId());
+//                                        payload.put("title", saved.getTitle());
+//                                        payload.put("kind", "event"); // Rất quan trọng cho việc lọc sau này
+//                                        payload.put("startsAt", saved.getStartsAt().toEpochSecond(java.time.ZoneOffset.UTC)); // Chuyển thành Unix timestamp
 
                                         // 3. Gọi service để upsert
-                                        qdrantService.upsertEmbedding(String.valueOf(saved.getId()), eventVector, payload);
+//                                        qdrantService.upsertEmbedding(String.valueOf(saved.getId()), eventVector, payload);
 
-                                        log.info("✅ Successfully upserted event vector for '{}'", saved.getTitle());
+//                                        log.info("✅ Successfully upserted event vector for '{}'", saved.getTitle());
 
-                                    } catch (Exception qdrantEx) {
-                                        log.error("❌ Failed to upsert event vector to Qdrant for event ID {}: {}", saved.getId(), qdrantEx.getMessage());
+//                                    } catch (Exception qdrantEx) {
+//                                        log.error("❌ Failed to upsert event vector to Qdrant for event ID {}: {}", saved.getId(), qdrantEx.getMessage());
                                         // Không cần ném lỗi ra ngoài, chỉ cần ghi log
                                         // Việc không đồng bộ được vector không nên làm hỏng luồng tạo sự kiện chính
-                                    }
+//                                    }
                                 } catch (Exception e) {
                                     log.error("❌ Error creating event: {}", e.getMessage(), e);
                                     e.printStackTrace();
@@ -814,7 +825,7 @@ hoặc
                             // Lấy thông tin customer từ userId để kiểm tra email
                             System.out.println("🔍 DEBUG: Looking for user with account ID: " + userId);
                             Optional<Customer> customerOpt = userRepo.findByAccount_AccountId((long) userId);
-                            
+
                             if (customerOpt.isEmpty() || customerOpt.get().getAccount() == null) {
                                 System.out.println("❌ DEBUG: User not found or account is null");
                                 systemResult.append("❌ Không tìm thấy thông tin tài khoản của bạn. Vui lòng đăng nhập lại.");

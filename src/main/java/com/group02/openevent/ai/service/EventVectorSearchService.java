@@ -60,8 +60,23 @@ public class EventVectorSearchService {
         // Lấy Event ID từ payload Qdrant và lấy Entity từ Database
         List<Long> eventIds = qdrantResults.stream()
                 .map(result -> {
-                    // event_id được lưu dưới dạng Long trong payload
-                    return (Long) ((Map<String, Object>) result.get("payload")).get("event_id");
+                    // Lấy payload ra một cách an toàn
+                    Object payloadObj = result.get("payload");
+                    if (!(payloadObj instanceof Map)) {
+                        return null; // Bỏ qua nếu payload không phải là Map
+                    }
+                    Map<String, Object> payload = (Map<String, Object>) payloadObj;
+
+                    // Lấy event_id ra dưới dạng Object
+                    Object eventIdObj = payload.get("event_id");
+
+                    // Kiểm tra xem nó có phải là một con số không
+                    if (eventIdObj instanceof Number) {
+                        // Chuyển đổi an toàn sang long, dù nó là Integer hay Long
+                        return ((Number) eventIdObj).longValue();
+                    }
+
+                    return null; // Bỏ qua nếu event_id không phải là số
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

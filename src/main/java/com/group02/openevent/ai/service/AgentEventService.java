@@ -1,6 +1,7 @@
 package com.group02.openevent.ai.service;
 
 import com.group02.openevent.ai.dto.Action;
+import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.email.EmailReminder;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.enums.EventStatus;
@@ -135,7 +136,7 @@ public class AgentEventService {
 
             existing.setCreatedAt(LocalDateTime.now());
 
-            eventService.saveEvent(existing);
+            eventService.saveEventAgent(existing);
             System.out.println("🔄 Đã cập nhật sự kiện: " + existing.getTitle());
 
         } catch (Exception e) {
@@ -232,7 +233,7 @@ public class AgentEventService {
         if (draft.getStatus() == null) draft.setStatus(EventStatus.DRAFT);
         if (draft.getEventType() == null) draft.setEventType(EventType.OTHERS);
         if (draft.getCreatedAt() == null) draft.setCreatedAt(LocalDateTime.now());
-        
-        return eventService.saveEvent(draft);
+
+        return eventService.saveEventAgent(draft);
     }
 }

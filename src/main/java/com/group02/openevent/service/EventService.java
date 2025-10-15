@@ -40,6 +40,8 @@ public interface EventService {
     List<Event> getEventsByPlace(int placeId);
 
     // Methods for AI support
+    Event saveEventAgent(Event request);
+
     List<Event> getEventsByIds(List<Long> ids);
     List<Event> getEventsBetween(LocalDateTime start, LocalDateTime end, Long userId);
     List<Event> getEventByUserId(Long userId);

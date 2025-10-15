@@ -84,35 +84,23 @@ public class QdrantService {
         requireOk(created, "Tạo collection thất bại");
     }
 
-    public String upsertEmbedding(String id, float[] embedding, Map<String,Object> payload) throws Exception {
-        ensureCollection();
-
-        // vector -> List<Float>
+    public String upsertEmbedding(String id, float[] embedding, Map<String, Object> payload) throws Exception {
         List<Float> vec = new ArrayList<>(embedding.length);
         for (float v : embedding) vec.add(v);
 
-        // id: số -> Integer, ngược lại -> String
         Object qId;
         try { qId = Long.valueOf(id); }
-        catch (NumberFormatException e) { qId = id; } // giữ nguyên chuỗi
+        catch (NumberFormatException e) { qId = id; }
 
-        Map<String,Object> point = new HashMap<>();
+        Map<String, Object> point = new HashMap<>();
         point.put("id", qId);
         point.put("vector", vec);
         if (payload != null) point.put("payload", payload);
 
-        Map<String,Object> req = Map.of("points", List.of(point));
+        // Gọi hàm upsert theo lô với danh sách chỉ có 1 point
+        upsertPoints(List.of(point));
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/collections/" + collection + "/points"))
-                .header("Content-Type", "application/json")
-                .header("api-key", apiKey)
-                .PUT(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(req)))
-                .build();
-
-        HttpResponse<String> resp = http.send(request, HttpResponse.BodyHandlers.ofString());
-        requireOk(resp, "Upsert lỗi");
-        return resp.body();
+        return "{\"status\":\"ok\"}";
     }
 
 
@@ -279,4 +267,31 @@ public class QdrantService {
         HttpResponse<String> resp = http.send(request, HttpResponse.BodyHandlers.ofString());
         requireOk(resp, "Tạo Payload Index thất bại cho key: " + fieldName);
     }
+    /**
+     * ✅ PHƯƠNG THỨC MỚI QUAN TRỌNG:
+     * Upsert một danh sách các điểm (points) lên Qdrant trong một lần gọi API duy nhất.
+     */
+    public void upsertPoints(List<Map<String, Object>> points) throws Exception {
+        if (points == null || points.isEmpty()) {
+            log.warn("upsertPoints được gọi với danh sách rỗng, bỏ qua.");
+            return;
+        }
+
+        ensureCollection();
+
+        // Body của request sẽ chứa một danh sách các point trong key "points"
+        Map<String, Object> req = Map.of("points", points);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection + "/points?wait=true")) // wait=true để đảm bảo dữ liệu được ghi xong
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .PUT(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(req)))
+                .build();
+
+        HttpResponse<String> resp = http.send(request, HttpResponse.BodyHandlers.ofString());
+        requireOk(resp, "Lỗi khi upsert theo lô (batch upsert)");
+        log.info("✅ Upsert thành công {} points vào collection '{}'", points.size(), collection);
+    }
+
 }

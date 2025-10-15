@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Đồng bộ Event & một số intent mẫu vào Qdrant (vector store)
@@ -107,60 +108,45 @@ public class EventVectorSyncService {
         return s == null ? "" : s;
     }
     /**
-     * Đồng bộ toàn bộ sự kiện đang có vào Qdrant
+     * Đồng bộ toàn bộ sự kiện đang có vào Qdrant THEO LÔ.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public void syncAllEvents() {
-        List<Event> all = eventService.getAllEvents();
-        log.info("Found {} events to sync", all.size());
+        List<Event> allEvents = eventService.getAllEvents();
+        if (allEvents.isEmpty()) {
+            log.info("Không có sự kiện nào để đồng bộ.");
+            return;
+        }
+        log.info("Tìm thấy {} sự kiện. Bắt đầu đồng bộ theo lô...", allEvents.size());
 
-        for (Event e : all) {
-            try {
-                String content = toSearchableText(e);
-                float[] vec = embeddingService.getEmbedding(content);
+        try {
+            // 1. Chuẩn bị tất cả văn bản cần tạo embedding
+            List<String> textsToEmbed = allEvents.stream().map(this::toSearchableText).toList();
 
-                Map<String, Object> payload = new LinkedHashMap<>();
-                payload.put("kind", "event");
-                payload.put("event_id", e.getId());
-                payload.put("title", nullSafe(e.getTitle()));
-                payload.put("description", nullSafe(e.getDescription()));
-                payload.put("startsAt", e.getStartsAt() != null ? e.getStartsAt().format(TS) : null);
-                payload.put("endsAt", e.getEndsAt() != null ? e.getEndsAt().format(TS) : null);
-                payload.put("enrollDeadline", e.getEnrollDeadline() != null ? e.getEnrollDeadline().format(TS) : null);
-                payload.put("status", e.getStatus() != null ? e.getStatus().name() : null);
-                payload.put("eventType", e.getEventType() != null ? e.getEventType().name() : EventType.OTHERS.name());
-                payload.put("orgName", e.getOrganization() != null ? e.getOrganization().getOrgName() : null);
-                payload.put("hostName", e.getHost() != null ? e.getHost().getHostName() : null);
-                payload.put("capacity", e.getCapacity());
-                payload.put("points", e.getPoints());
-                payload.put("publicDate", e.getPublicDate() != null ? e.getPublicDate().format(TS) : null);
-                payload.put("benefits", e.getBenefits());
-                payload.put("learningObjects", e.getLearningObjects());
+            // 2. Gọi EmbeddingService MỘT LẦN DUY NHẤT
+            List<float[]> vectors = embeddingService.getEmbeddings(textsToEmbed);
 
-// Thêm thông tin diễn giả (tên)
-                payload.put("speakers",
-                        e.getSpeakers() == null ? List.of()
-                                : e.getSpeakers().stream().map(Speaker::getName).filter(Objects::nonNull).toList()
-                );
+            // 3. Chuẩn bị danh sách các điểm (points) để upsert
+            List<Map<String, Object>> pointsToUpsert = IntStream.range(0, allEvents.size())
+                    .mapToObj(i -> {
+                        Event e = allEvents.get(i);
+                        Map<String, Object> payload = createEventPayload(e);
 
-// Thêm thông tin giá vé (Min/Max Price)
-// Lưu ý: Đảm bảo TicketTypeDTO được xử lý đúng cách, nếu không, dùng getter trực tiếp
-                payload.put("minPrice", e.getMinTicketPice());
-                payload.put("maxPrice", e.getMaxTicketPice());
-// END: Thêm các trường bị thiếu/quan trọng
-                payload.put("places",
-                        e.getPlaces() == null ? List.of()
-                                : e.getPlaces().stream().map(Place::getPlaceName).filter(Objects::nonNull).toList()
-                );
+                        Map<String, Object> point = new HashMap<>();
+                        point.put("id", String.valueOf(e.getId()));
+                        point.put("vector", toFloatList(vectors.get(i)));
+                        point.put("payload", payload);
 
-                // dùng event id làm point id (Qdrant chấp nhận integer id)
-                String id = String.valueOf(e.getId());
+                        return point;
+                    })
+                    .collect(Collectors.toList());
 
-                qdrantService.upsertEmbedding(id, vec, payload);
-                log.info("Upserted event {} (id={})", e.getTitle(), e.getId());
-            } catch (Exception ex) {
-                log.error("Sync event id={} failed: {}", e.getId(), ex.getMessage());
-            }
+            // 4. Gọi QdrantService MỘT LẦN DUY NHẤT
+            qdrantService.upsertPoints(pointsToUpsert);
+            log.info("✅ Đồng bộ thành công {} sự kiện vào Qdrant.", allEvents.size());
+
+        } catch (Exception ex) {
+            log.error("❌ Lỗi khi đồng bộ sự kiện theo lô: {}", ex.getMessage(), ex);
         }
     }
 
@@ -285,45 +271,148 @@ public class EventVectorSyncService {
     }
 
     /**
-     * Seed tất cả các Place hiện có trong DB vào Qdrant để hỗ trợ tìm kiếm thực thể (entity search).
+     * Seed tất cả các Place vào Qdrant THEO LÔ.
      */
     public void seedAllPlaces() {
-        // Giả định PlaceService đã được inject và có phương thức getAllPlaces()
         List<Place> allPlaces = placeService.findAllPlaces();
-        // Thay thế bằng logic logging của bạn nếu không dùng log.info
-        System.out.println("Found " + allPlaces.size() + " places to seed into Qdrant.");
+        if (allPlaces.isEmpty()) {
+            log.info("Không có địa điểm nào để seed.");
+            return;
+        }
+        log.info("Tìm thấy {} địa điểm. Bắt đầu seed theo lô...", allPlaces.size());
 
-        for (Place p : allPlaces) {
-            try {
-                // Chuỗi văn bản dùng để tạo vector (chỉ dùng các trường hiện có)
-                String content = String.join(" ",
-                        nullSafe(p.getPlaceName()),
-                        p.getBuilding() != Building.NONE ? "Tòa " + p.getBuilding().name() : ""
-                ).trim();
+        try {
+            // 1. Chuẩn bị texts
+            List<String> textsToEmbed = allPlaces.stream()
+                    .map(p -> String.join(" ", nullSafe(p.getPlaceName()), getBuildingName(p)).trim())
+                    .toList();
 
-                if (content.isEmpty()) {
-                    System.out.println("Skipping place ID=" + p.getId() + " due to empty content.");
-                    continue;
-                }
+            // 2. Tạo embeddings một lần
+            List<float[]> vectors = embeddingService.getEmbeddings(textsToEmbed);
 
-                float[] vec = embeddingService.getEmbedding(content);
+            // 3. Chuẩn bị points
+            List<Map<String, Object>> pointsToUpsert = IntStream.range(0, allPlaces.size())
+                    .mapToObj(i -> {
+                        Place p = allPlaces.get(i);
+                        Map<String, Object> payload = new LinkedHashMap<>();
+                        payload.put("kind", "place");
+                        payload.put("place_id", p.getId());
+                        payload.put("name", nullSafe(p.getPlaceName()));
+                        payload.put("building", getBuildingName(p));
 
-                Map<String, Object> payload = new LinkedHashMap<>();
-                payload.put("kind", "place"); // KEY QUAN TRỌNG NHẤT CHO FILTERING
-                payload.put("place_id", p.getId());
-                payload.put("name", nullSafe(p.getPlaceName()));
-                payload.put("building", p.getBuilding() != Building.NONE ? p.getBuilding().name() : "");
+                        Map<String, Object> point = new HashMap<>();
+                        String uniqueId = UUID.nameUUIDFromBytes(("place_" + p.getId()).getBytes()).toString();
+                        point.put("id", uniqueId);
+                        point.put("vector", toFloatList(vectors.get(i)));
+                        point.put("payload", payload);
 
-                // Dùng Place ID làm Point ID (đảm bảo nó là String)
-                String id = String.valueOf(p.getId());
+                        return point;
+                    })
+                    .collect(Collectors.toList());
 
-                qdrantService.upsertEmbedding(id, vec, payload);
-                System.out.println("Upserted place: " + p.getPlaceName() + " (ID=" + p.getId() + ")");
+            // 4. Upsert một lần
+            qdrantService.upsertPoints(pointsToUpsert);
+            log.info("✅ Seed thành công {} địa điểm vào Qdrant.", allPlaces.size());
 
-            } catch (Exception ex) {
-                System.err.println("Seed place ID=" + p.getId() + " failed: " + ex.getMessage());
-            }
+        } catch (Exception ex) {
+            log.error("❌ Lỗi khi seed địa điểm theo lô: {}", ex.getMessage(), ex);
         }
     }
 
+    /**
+     * ✅ PHƯƠNG THỨC CHUNG ĐỂ SEED THEO LÔ, TRÁNH LẶP CODE
+     */
+    private void seedBatch(List<String> contents, String kind, String typeKey, String typeValue, String contentKey) {
+        if (contents == null || contents.isEmpty()) return;
+        log.info("Bắt đầu seed {} items cho kind '{}', type '{}'...", contents.size(), kind, typeValue);
+
+        try {
+            // 1. Tạo tất cả embeddings một lần
+            List<float[]> vectors = embeddingService.getEmbeddings(contents);
+
+            // 2. Chuẩn bị points
+            List<Map<String, Object>> pointsToUpsert = IntStream.range(0, contents.size())
+                    .mapToObj(i -> {
+                        Map<String, Object> payload = new LinkedHashMap<>();
+                        payload.put("kind", kind);
+                        payload.put(typeKey, typeValue);
+                        payload.put(contentKey, contents.get(i));
+
+                        Map<String, Object> point = new HashMap<>();
+                        point.put("id", UUID.randomUUID().toString());
+                        point.put("vector", toFloatList(vectors.get(i)));
+                        point.put("payload", payload);
+
+                        return point;
+                    })
+                    .collect(Collectors.toList());
+
+            // 3. Upsert tất cả points một lần
+            qdrantService.upsertPoints(pointsToUpsert);
+            log.info("✅ Seed thành công {} items.", contents.size());
+        } catch (Exception ex) {
+            log.error("❌ Lỗi khi seed theo lô cho kind '{}', type '{}': {}", kind, typeValue, ex.getMessage());
+        }
+    }
+    // Helper để chuyển float[] sang List<Float>
+    private List<Float> toFloatList(float[] vector) {
+        if (vector == null) return Collections.emptyList();
+        return IntStream.range(0, vector.length)
+                .mapToObj(i -> vector[i])
+                .collect(Collectors.toList());
+    }
+    /**
+     * Helper để tạo payload đầy đủ cho một đối tượng Event.
+     * Tách ra từ hàm syncAllEvents cũ để tái sử dụng và làm sạch code.
+     * @param e Đối tượng Event cần tạo payload.
+     * @return Một Map chứa tất cả các metadata cần thiết cho Qdrant.
+     */
+    private Map<String, Object> createEventPayload(Event e) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+
+        // --- Thông tin cơ bản ---
+        payload.put("kind", "event");
+        payload.put("event_id", e.getId());
+        payload.put("title", nullSafe(e.getTitle()));
+        payload.put("description", nullSafe(e.getDescription()));
+
+        // --- Thời gian (định dạng thành chuỗi) ---
+        // Ghi chú: Lưu dưới dạng Unix timestamp (số nguyên) sẽ tốt hơn cho việc lọc theo khoảng thời gian
+        // Ví dụ: payload.put("startsAt_timestamp", e.getStartsAt() != null ? e.getStartsAt().toEpochSecond(java.time.ZoneOffset.UTC) : null);
+        payload.put("startsAt", e.getStartsAt() != null ? e.getStartsAt().format(TS) : null);
+        payload.put("endsAt", e.getEndsAt() != null ? e.getEndsAt().format(TS) : null);
+        payload.put("enrollDeadline", e.getEnrollDeadline() != null ? e.getEnrollDeadline().format(TS) : null);
+        payload.put("publicDate", e.getPublicDate() != null ? e.getPublicDate().format(TS) : null);
+
+        // --- Phân loại và Trạng thái ---
+        payload.put("status", e.getStatus() != null ? e.getStatus().name() : null);
+        payload.put("eventType", e.getEventType() != null ? e.getEventType().name() : null); // Thay vì dùng OTHERS, để null nếu không có
+
+        // --- Thông tin tổ chức ---
+        payload.put("orgName", e.getOrganization() != null ? e.getOrganization().getOrgName() : null);
+        payload.put("hostName", e.getHost() != null ? e.getHost().getHostName() : null);
+
+        // --- Thuộc tính khác ---
+        payload.put("capacity", e.getCapacity());
+        payload.put("points", e.getPoints());
+        payload.put("benefits", e.getBenefits());
+        payload.put("learningObjects", e.getLearningObjects());
+
+        // --- Dữ liệu từ các mối quan hệ (Relationships) ---
+        payload.put("speakers",
+                e.getSpeakers() == null ? Collections.emptyList()
+                        : e.getSpeakers().stream().map(Speaker::getName).filter(Objects::nonNull).toList()
+        );
+
+        payload.put("places",
+                e.getPlaces() == null ? Collections.emptyList()
+                        : e.getPlaces().stream().map(Place::getPlaceName).filter(Objects::nonNull).toList()
+        );
+
+        // --- Thông tin giá vé ---
+        payload.put("minPrice", e.getMinTicketPice());
+        payload.put("maxPrice", e.getMaxTicketPice());
+
+        return payload;
+    }
 }

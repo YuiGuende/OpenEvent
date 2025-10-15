@@ -9,9 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Service để tạo embeddings từ text sử dụng HuggingFace API
@@ -40,13 +38,30 @@ public class EmbeddingService {
     }
 
     public float[] getEmbedding(String input) throws Exception {
+        if (input == null || input.isBlank()) {
+            throw new IllegalArgumentException("Input text cannot be null or empty.");
+        }
+        // Gọi lại hàm xử lý theo lô với danh sách chỉ có 1 phần tử
+        List<float[]> embeddings = getEmbeddings(List.of(input));
+        if (embeddings.isEmpty()) {
+            throw new RuntimeException("Failed to get embedding for single text.");
+        }
+        return embeddings.get(0);
+    }
+
+    public List<float[]> getEmbeddings(List<String> texts) throws Exception {
+        if (texts == null || texts.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 1. Chuẩn bị body với danh sách các input
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", modelId);
-        requestBody.put("input", List.of(input)); // dạng array
+        requestBody.put("input", texts); // Gửi cả danh sách `texts`
 
         String jsonRequest = mapper.writeValueAsString(requestBody);
 
-
+        // 2. Tạo và gửi yêu cầu API
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
                 .header("Authorization", "Bearer " + apiToken)
@@ -56,23 +71,29 @@ public class EmbeddingService {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-
         if (response.statusCode() != 200) {
-            throw new RuntimeException("Failed to get embedding: " + response.body());
+            throw new RuntimeException("Embedding API request failed with status " + response.statusCode() + ": " + response.body());
         }
 
-        // Parse kết quả JSON
-        JsonNode jsonNode = mapper.readTree(response.body());
-        JsonNode embeddingArray = jsonNode.get("data").get(0).get("embedding");
+        // 3. Xử lý kết quả trả về là một danh sách các vector
+        JsonNode root = mapper.readTree(response.body());
+        JsonNode dataArray = root.get("data");
 
-        float[] vector = new float[embeddingArray.size()];
-        for (int i = 0; i < embeddingArray.size(); i++) {
-            vector[i] = embeddingArray.get(i).floatValue();
+        List<float[]> results = new ArrayList<>();
+        if (dataArray.isArray()) {
+            for (JsonNode dataNode : dataArray) {
+                JsonNode embeddingArray = dataNode.get("embedding");
+                if (embeddingArray.isArray()) {
+                    float[] vector = new float[embeddingArray.size()];
+                    for (int i = 0; i < embeddingArray.size(); i++) {
+                        vector[i] = embeddingArray.get(i).floatValue();
+                    }
+                    results.add(vector);
+                }
+            }
         }
-
-        return vector;
+        return results;
     }
-
     public double cosineSimilarity(float[] a, float[] b) {
         if (a.length != b.length) {
             throw new IllegalArgumentException("Vectors must be same length");

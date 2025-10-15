@@ -46,14 +46,37 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse saveEvent(EventCreationRequest request) {
-        // đảm bảo schedule biết event cha
-        Event event = eventMapper.toEvent(request);
-
-        if (event.getSchedules() != null) {
-            event.getSchedules().forEach(s -> s.setEvent(event));
+        Event event;
+        log.info("Saving event {}", request.getEventType());
+        log.info("Saving event from DTO type: {}", request.getClass().getName());
+        switch (request.getEventType()) {
+            case WORKSHOP:
+                event = new WorkshopEvent();
+                break;
+            case MUSIC:
+                event = new MusicEvent();
+                break;
+            case FESTIVAL:
+                event = new FestivalEvent();
+                break;
+            case COMPETITION:
+                event = new CompetitionEvent();
+                break;
+            default:
+                // Khối này chỉ dành cho trường hợp EventType không hợp lệ hoặc không có
+                log.warn("Unknown or null EventType received. Defaulting to generic Event.");
+                event = new Event();
+                break;
         }
-        event.setSpeakers(request.getSpeakers());
-        event.setPlaces(request.getPlaces());
+        log.info("Saving event {}", event.getClass().getName());
+        eventMapper.createEventFromRequest(request, event);
+        final Event finalEvent = event;
+        if (event.getSubEvents() != null) {
+            event.getSubEvents().forEach(sub -> sub.setParentEvent(finalEvent));
+        }
+
+        event.setHost(hostRepo.getHostById(Long.parseLong("1")));
+
         return eventMapper.toEventResponse(eventRepo.save(event));
     }
 
@@ -323,6 +346,11 @@ public class EventServiceImpl implements EventService {
                 .minPrice(event.getMinTicketPice())// TODO: Get from ticket pricing
 //                .poster(event.isPoster())
                 .build();
+    }
+
+    @Override
+    public EventResponse saveEvent(EventCreationRequest event) {
+        return null;
     }
 
 

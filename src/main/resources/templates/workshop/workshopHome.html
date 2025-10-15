@@ -788,6 +788,37 @@
         }
     </style>
 </head>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Dùng Locale US trực tiếp trong biểu thức Thymeleaf khi format thời gian
+
+        // Lấy dữ liệu bằng Thymeleaf inline với fallback để JS hợp lệ khi chưa render
+        const title = /*[[${eventDetail != null ? eventDetail.title : 'Music Event'}]]*/ 'Music Event';
+        const details = /*[[${eventDetail != null and eventDetail.description != null ? eventDetail.description : 'Join our amazing event!'}]]*/ 'Join our amazing event!';
+        const start = /*[[${eventDetail != null and eventDetail.startsAt != null ? #temporals.format(eventDetail.startsAt, "yyyyMMdd'T'HHmmss'Z'", T(java.util.Locale).US) : '20250101T090000Z'}]]*/ '20250101T090000Z';
+        const end = /*[[${eventDetail != null and eventDetail.endsAt != null ? #temporals.format(eventDetail.endsAt, "yyyyMMdd'T'HHmmss'Z'", T(java.util.Locale).US) : '20250101T120000Z'}]]*/ '20250101T120000Z';
+        const locationStr = /*[[${eventDetail != null and eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Campus'}]]*/ 'FPT University Campus';
+
+        const googleCalendarUrl =
+            // Xây dựng URL với các giá trị đã được encode
+            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+            `&text=${encodeURIComponent(title)}` +
+            `&dates=${start}/${end}` +
+            `&details=${encodeURIComponent(details)}` +
+            `&location=${encodeURIComponent(locationStr)}`;
+
+        const button = document.getElementById("addToCalendarBtn");
+        if (button) {
+            button.href = googleCalendarUrl;
+            button.target = "_blank";
+        }
+    });
+    /*]]>*/
+</script>
+
 <body>
 
 <section class="hero hero--slider hero--compact">
@@ -834,7 +865,7 @@
 
                 <!-- Add to Calendar Button -->
                 <div class="text-center mt-2">
-                    <a href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
+                    <a id="addToCalendarBtn" href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
                         Add to My Calendar
                     </a>
                 </div>

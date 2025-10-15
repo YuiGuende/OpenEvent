@@ -52,57 +52,90 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
         .page-header h1 {
-            font-size: 28px;
-            font-weight: 800;
+            font-size: 32px;
+            font-weight: 700;
             margin: 0;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .page-header p {
             margin: 0;
-            font-size: 14px;
+            font-size: 16px;
             opacity: 0.9;
+            font-weight: 500;
         }
         .toolbar-action {
-            background: rgba(255,255,255,0.18);
-            border: 1px solid rgba(255,255,255,0.35);
-            color: #fff; padding: 10px 16px; border-radius: 999px; backdrop-filter: blur(2px);
-            text-decoration: none; font-weight: 600;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff; 
+            padding: 12px 20px; 
+            border-radius: 16px; 
+            text-decoration: none; 
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 16px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .toolbar-action:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-1px);
+            box-shadow: 
+                0 8px 24px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.3);
         }
 
         .stats-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 24px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                0 16px 48px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
 
         .stats-number {
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 2.5rem;
+            font-weight: 700;
             color: #FF6B35;
+            text-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
         }
 
         .order-card {
-            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
             overflow: hidden;
-            margin-bottom: 24px;
+            margin-bottom: 32px;
             box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.08),
-                0 2px 8px rgba(0, 0, 0, 0.04),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 107, 53, 0.1);
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            backdrop-filter: blur(10px);
         }
 
         .order-card:hover {
-            transform: translateY(-8px) scale(1.02);
+            transform: translateY(-8px) scale(1.01);
             box-shadow: 
-                0 20px 60px rgba(255, 107, 53, 0.15),
-                0 8px 32px rgba(0, 0, 0, 0.12),
-                0 2px 8px rgba(0, 0, 0, 0.08);
+                0 20px 60px rgba(255, 107, 53, 0.2),
+                0 8px 32px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 107, 53, 0.3);
         }
 
         .event-image {

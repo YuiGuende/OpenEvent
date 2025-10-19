@@ -15,6 +15,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.swing.text.html.Option;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,4 +47,22 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     Page<Event> findByDepartment_AccountId(Long departmentId, Pageable pageable);
 
     Page<Event> findByDepartment_AccountIdAndStatus(Long departmentId, EventStatus status, Pageable pageable);
+
+    @Query("""
+    SELECT e FROM Event e
+    WHERE (:keyword IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      AND (:type IS NULL OR e.eventType = :type)
+      AND e.startsAt >= :fromDateTime
+      AND e.endsAt <= :toDateTime
+""")
+    List<Event> searchEvents(@Param("keyword") String keyword,
+                             @Param("type") EventType type,
+                             @Param("fromDateTime") LocalDateTime fromDateTime,
+                             @Param("toDateTime") LocalDateTime toDateTime);
+
+
+
+
+
+
 }

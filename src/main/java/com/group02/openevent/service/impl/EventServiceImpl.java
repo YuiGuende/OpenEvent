@@ -34,6 +34,8 @@ import com.group02.openevent.model.enums.Building;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -237,6 +239,45 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+
+    @Override
+    public List<EventCardDTO> searchEvents(String keyword, String type,
+                                           LocalDate startDate, LocalDate endDate) {
+
+        LocalDateTime fromDateTime = (startDate != null)
+                ? startDate.atStartOfDay()
+                : LocalDateTime.MIN;
+        LocalDateTime toDateTime = (endDate != null)
+                ? endDate.atTime(23, 59, 59)
+                : LocalDateTime.MAX;
+
+        EventType eventType = null;
+        if (type != null && !type.isBlank()) {
+            try {
+                eventType = EventType.valueOf(type.toUpperCase()); // convert String -> Enum
+            } catch (IllegalArgumentException e) {
+                System.out.println("⚠️ Invalid event type: " + type);
+            }
+        }
+
+        List<Event> events = eventRepo.searchEvents(
+                (keyword == null || keyword.isBlank()) ? null : keyword.trim(),
+                eventType,
+                fromDateTime,
+                toDateTime
+        );
+
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+
+
+
+
+
     @Override
     public CompetitionEvent saveCompetitionEvent(CompetitionEvent competitionEvent) {
         if (competitionEvent.getSchedules() != null) {
@@ -346,9 +387,16 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventCardDTO convertToDTO(Event event) {
-        String organizer = event.getOrganization() != null && event.getOrganization().getOrgName() != null
-                ? event.getOrganization().getOrgName()
-                : (event.getHost() != null ? event.getHost().getHostName() : "Unknown");
+        // Avoid touching Host->Customer->Account to prevent EntityNotFound on bad data
+        String organizer = null;
+        if (event.getOrganization() != null && event.getOrganization().getOrgName() != null) {
+            organizer = event.getOrganization().getOrgName();
+        } else if (event.getHost() != null && event.getHost().getOrganization() != null
+                && event.getHost().getOrganization().getOrgName() != null) {
+            organizer = event.getHost().getOrganization().getOrgName();
+        } else {
+            organizer = "Unknown";
+        }
         String city = event.getPlaces() != null && !event.getPlaces().isEmpty()
                 ? event.getPlaces().get(0).getPlaceName()
                 : "TBA";
@@ -371,7 +419,10 @@ public class EventServiceImpl implements EventService {
                 .maxPrice(event.getMaxTicketPice())
                 .minPrice(event.getMinTicketPice())
                 .poster(event.isPoster())
+                .benefits(event.getBenefits())
                 .build();
     }
+
+
 }
 

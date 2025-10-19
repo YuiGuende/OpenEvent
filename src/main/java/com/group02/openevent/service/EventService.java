@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,4 +45,6 @@ public interface EventService {
     List<Event> getEventByHostId(Long id);
      Event getEventResponseById(Long id);
     Page<Event> getEventsByDepartment(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
+
+    List<EventCardDTO> searchEvents(String keyword, String type, LocalDate startDate, LocalDate endDate);
 }

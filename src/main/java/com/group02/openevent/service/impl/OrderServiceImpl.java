@@ -2,6 +2,7 @@ package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
+import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
@@ -148,6 +149,40 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> getOrdersByCustomerId(Long customerId) {
         return orderRepo.findByCustomerId(customerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserOrderDTO> getOrderDTOsByCustomerId(Long customerId, OrderStatus status) {
+        List<Order> orders = orderRepo.findByCustomerId(customerId);
+        if (status != null) {
+            orders = orders.stream()
+                    .filter(o -> o.getStatus() == status)
+                    .toList();
+        }
+        orders.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        return orders.stream().map(this::mapToUserOrderDTO).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserOrderDTO> getOrderDTOsByCustomer(Customer customer, OrderStatus status) {
+        return getOrderDTOsByCustomerId(customer.getCustomerId(), status);
+    }
+
+    private UserOrderDTO mapToUserOrderDTO(Order order) {
+        return UserOrderDTO.builder()
+                .orderId(order.getOrderId())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .eventId(order.getEvent() != null ? order.getEvent().getId() : null)
+                .eventTitle(order.getEvent() != null ? order.getEvent().getTitle() : null)
+                .eventImageUrl(order.getEvent() != null ? order.getEvent().getImageUrl() : null)
+                .eventStartsAt(order.getEvent() != null ? order.getEvent().getStartsAt() : null)
+                .ticketTypeId(order.getTicketType() != null ? order.getTicketType().getTicketTypeId() : null)
+                .ticketTypeName(order.getTicketType() != null ? order.getTicketType().getName() : null)
+                .totalAmount(order.getTotalAmount())
+                .build();
     }
 
     @Override

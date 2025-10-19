@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - OpenEvent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <style>
+        body {
+            background-color: white;
+        }
+
+        .page-header {
+            background-color: white;
+            color: #333;
+            padding: 30px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stats-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .order-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-left: 4px solid #FF6B35;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            border-left-color: #e55a2b;
+        }
+
+        .order-card.cancelled {
+            opacity: 0.6;
+            border-left-color: #dc3545;
+        }
+
+        .order-card.cancelled:hover {
+            border-left-color: #c82333;
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.15);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .event-image:hover {
+            transform: scale(1.02);
+        }
+
+        .filter-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-left: 4px solid #FF6B35;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-input {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
+        .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+
+        .ticket-id {
+            background: linear-gradient(135deg, #FF6B35, #e55a2b);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .event-title {
+            color: #FF6B35;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .ticket-info {
+            background-color: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #495057;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .date-info {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .date-info i {
+            width: 16px;
+            color: #FF6B35;
+        }
+
+        .order-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .status-PAID {
+            background-color: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-PENDING {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-CANCELLED {
+            background-color: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-EXPIRED {
+            background-color: #6c757d;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-REFUNDED {
+            background-color: #17a2b8;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #6c757d;
+        }
+
+        .btn-primary {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #e55a2b;
+            border-color: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-success {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background-color: #e55a2b;
+            border-color: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-secondary {
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+        }
+    </style>
+
+</head>
+<body>
+
+<header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
+
+<div class="page-header">
+    <div class="container">
+        <h2><i class="bi bi-receipt-cutoff"></i> My Orders</h2>
+        <p class="mb-0 text-muted">Manage and track your event orders</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="stats-card">
+                <div class="stats-number" th:text="${totalOrders}">0</div>
+                <div class="text-muted">Total Orders</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stats-card">
+                <div class="stats-number" th:text="${paidOrders}">0</div>
+                <div class="text-muted">Paid Orders</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <h5 class="mb-3"><i class="bi bi-funnel"></i> Filter & Search</h5>
+        <form method="get" action="/orders" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control search-input" 
+                       placeholder="Event name, Order ID..." 
+                       th:value="${searchQuery}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option th:each="st : ${orderStatuses}"
+                            th:value="${st}"
+                            th:text="${st}"
+                            th:selected="${st == selectedStatus}"></option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Sort By</label>
+                <select name="sort" class="form-select">
+                    <option value="newest" th:selected="${sortBy == 'newest'}">Newest First</option>
+                    <option value="oldest" th:selected="${sortBy == 'oldest'}">Oldest First</option>
+                    <option value="price_high" th:selected="${sortBy == 'price_high'}">Price High → Low</option>
+                    <option value="price_low" th:selected="${sortBy == 'price_low'}">Price Low → High</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">From Date</label>
+                <input type="date" name="fromDate" class="form-control" th:value="${fromDate}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">To Date</label>
+                <input type="date" name="toDate" class="form-control" th:value="${toDate}">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div th:if="${orders.size() > 0}">
+        <div th:each="o : ${orders}" class="order-card" th:classappend="${o.status.name() == 'CANCELLED'} ? 'cancelled' : ''">
+            <div class="row g-0 h-100">
+                <!-- Hình ảnh (1/3 chiều rộng) -->
+                <div class="col-md-4">
+                    <div class="p-3 h-100 d-flex align-items-center">
+                        <img th:src="${o.eventImageUrl}"
+                             th:alt="${o.eventTitle}"
+                             class="event-image"
+                             onerror="this.src='/images/Logo.png'">
+                    </div>
+                </div>
+                
+                <!-- Thông tin vé (2/3 chiều rộng) -->
+                <div class="col-md-8">
+                    <div class="p-3 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="event-title mb-2" th:text="${o.eventTitle}">Event Title</h5>
+                            <div class="ticket-info mb-2">
+                                <i class="bi bi-ticket-perforated"></i>
+                                <span th:text="${o.ticketTypeName}">Ticket Type</span>
+                            </div>
+                            <div class="date-info mb-1">
+                                <i class="bi bi-calendar-check"></i>
+                                Order Date: <span th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+                            </div>
+                            <div class="date-info mb-2">
+                                <i class="bi bi-clock"></i>
+                                Event Date: <span th:text="${#temporals.format(o.eventStartsAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 18:00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-end">
+                            <div>
+                                <div class="mb-2">
+                                    <span class="status-badge" th:classappend="${o.statusBadgeClass}"
+                                          th:text="${o.status}">PAID</span>
+                                </div>
+                                <div class="ticket-id">
+                                    <i class="bi bi-ticket-perforated"></i> Ticket ID: <span th:text="${o.orderId}">#12345</span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-end">
+                                <div class="order-price mb-3"
+                                     th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                                    100,000đ
+                                </div>
+                                <div>
+                                    <a th:if="${o.status.name() == 'PAID'}"
+                                       th:href="@{/ticket/{eventId}(eventId=${o.eventId})}"
+                                       class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i> View Detail
+                                    </a>
+                                    <a th:if="${o.status.name() == 'PENDING'}"
+                                       th:href="@{/payment/process/{orderId}(orderId=${o.orderId})}"
+                                       class="btn btn-sm btn-success">
+                                        <i class="bi bi-credit-card"></i> Pay Now
+                                    </a>
+                                    <a th:if="${o.status.name() == 'CANCELLED'}"
+                                       href="#"
+                                       class="btn btn-sm btn-secondary disabled">
+                                        <i class="bi bi-x-circle"></i> Cancelled
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${orders.size() == 0}" class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h4 class="mt-3">No Orders Yet</h4>
+        <p class="text-muted">Discover and register for exciting events!</p>
+        <a th:href="@{/}" class="btn btn-primary btn-lg mt-3"><i class="bi bi-search"></i> Explore Events</a>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+

@@ -781,8 +781,179 @@
             border: 2px solid #FF6600 !important;
         }
         */
+
+        /* ==========================================================================
+           DESCRIPTION BOX - Simple & Clean Styling for Festival Home
+           ========================================================================== */
+
+        .event-description-box {
+            background: #FFFFFF !important;
+            border: 2px solid #FF6600 !important;
+            border-radius: 15px !important;
+            padding: 60px 100px !important; /* Larger padding for bigger box */
+            margin: 12px 0 40px !important;   /* Tighten gap to title, keep bottom space */
+            box-shadow: 0 4px 20px rgba(255, 102, 0, 0.15) !important;
+            transition: all 0.3s ease !important;
+            width: 100% !important; /* Full width */
+            max-width: none !important; /* No max-width constraint */
+            box-sizing: border-box !important;
+        }
+
+        /* Force container to be full width */
+        #descriptionm .container {
+            max-width: 100% !important;
+            padding: 0 15px !important;
+        }
+
+        /* Add clear spacing from previous countdown section */
+        #descriptionm {
+            margin-top: 60px !important;
+        }
+
+        #descriptionm .row {
+            margin: 0 !important;
+        }
+
+        #descriptionm .col-12 {
+            padding: 0 !important;
+        }
+
+        /* Tighten spacing below title for closer box */
+        #descriptionm .section-title-header {
+            margin-bottom: 8px !important;
+        }
+
+        .event-description-box:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 30px rgba(255, 102, 0, 0.25) !important;
+        }
+
+        .event-description-box h2 {
+            color: #FF6600 !important;
+            font-size: 32px !important;
+            font-weight: 700 !important;
+            margin: 0 0 25px 0 !important;
+            text-align: center !important;
+        }
+
+        .event-description-box p {
+            color: #333333 !important;
+            font-size: 16px !important;
+            line-height: 1.7 !important;
+            margin: 0 0 18px 0 !important;
+            text-align: left !important;
+        }
+
+        .event-description-box p.lead {
+            font-size: 18px !important;
+            font-weight: 500 !important;
+            color: #555555 !important;
+            text-align: center !important;
+            margin-bottom: 25px !important;
+        }
+
+        .event-description-box p i {
+            color: #FF6600 !important;
+            font-size: 20px !important;
+            margin-right: 15px !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
+
+        .event-description-box p.lead i {
+            font-size: 22px !important;
+            margin-right: 18px !important;
+            color: #FF6600 !important;
+        }
+
+        /* Force icon visibility for all icons */
+        .event-description-box i.lni-music,
+        .event-description-box i.lni-timer,
+        .event-description-box i.lni-microphone {
+            display: inline-block !important;
+            color: #FF6600 !important;
+            font-size: 20px !important;
+            margin-right: 15px !important;
+            vertical-align: middle !important;
+        }
+
+        .event-description-box p span {
+            color: #333333 !important;
+            font-weight: 500 !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .event-description-box {
+                padding: 40px 50px !important;
+                margin: 15px 0px !important;
+            }
+            
+            .event-description-box h2 {
+                font-size: 28px !important;
+            }
+            
+            .event-description-box p {
+                font-size: 15px !important;
+            }
+            
+            .event-description-box p.lead {
+                font-size: 16px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .event-description-box {
+                padding: 30px 40px !important;
+                margin: 10px 0px !important;
+            }
+            
+            .event-description-box h2 {
+                font-size: 24px !important;
+            }
+            
+            .event-description-box p {
+                font-size: 14px !important;
+            }
+            
+            .event-description-box p.lead {
+                font-size: 15px !important;
+            }
+        }
     </style>
 </head>
+
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Dùng Locale US trực tiếp trong biểu thức Thymeleaf khi format thời gian
+
+        // Lấy dữ liệu bằng Thymeleaf inline với fallback để JS hợp lệ khi chưa render
+        const title = /*[[${eventDetail != null ? eventDetail.title : 'Music Event'}]]*/ 'Music Event';
+        const details = /*[[${eventDetail != null and eventDetail.description != null ? eventDetail.description : 'Join our amazing event!'}]]*/ 'Join our amazing event!';
+        const start = /*[[${eventDetail != null and eventDetail.startsAt != null ? #temporals.format(eventDetail.startsAt, "yyyyMMdd'T'HHmmss'Z'", T(java.util.Locale).US) : '20250101T090000Z'}]]*/ '20250101T090000Z';
+        const end = /*[[${eventDetail != null and eventDetail.endsAt != null ? #temporals.format(eventDetail.endsAt, "yyyyMMdd'T'HHmmss'Z'", T(java.util.Locale).US) : '20250101T120000Z'}]]*/ '20250101T120000Z';
+        const locationStr = /*[[${eventDetail != null and eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Campus'}]]*/ 'FPT University Campus';
+
+        const googleCalendarUrl =
+            // Xây dựng URL với các giá trị đã được encode
+            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+            `&text=${encodeURIComponent(title)}` +
+            `&dates=${start}/${end}` +
+            `&details=${encodeURIComponent(details)}` +
+            `&location=${encodeURIComponent(locationStr)}`;
+
+        const button = document.getElementById("addToCalendarBtn");
+        if (button) {
+            button.href = googleCalendarUrl;
+            button.target = "_blank";
+        }
+    });
+    /*]]>*/
+</script>
+
 <body>
 
 <section class="hero hero--slider hero--compact">
@@ -829,7 +1000,7 @@
 
                 <!-- Add to Calendar Button -->
                 <div class="text-center mt-2">
-                    <a href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
+                    <a id="addToCalendarBtn" href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
                         Add to My Calendar
                     </a>
                 </div>
@@ -838,7 +1009,7 @@
                 <div class="countdown-separator wow fadeInUp" data-wow-delay="0.4s">
                     <div class="separator-line"></div>
                     <div class="separator-icon">
-                        <i class="lni-music"></i>
+                        <i class="lni-star"></i>
                     </div>
                     <div class="separator-line"></div>
                 </div>
@@ -916,10 +1087,9 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-12">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
-                    <!-- Event Title -->
-                    <h2 th:text="${eventDetail.title}">Event Title</h2>
+                    <!-- Event Title removed to avoid duplicate with section header -->
 
                     <!-- Description -->
                     <p class="lead" th:if="${eventDetail.description != null}">
@@ -1084,16 +1254,16 @@
                         <h3>Main Highlight</h3>
                         <p th:text="${eventDetail.highlight}">Điểm nhấn chính của lễ hội.</p>
                     </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
         <!-- Khoảng cách giữa Main Highlight và 3 ô nhỏ -->
         <div class="row mt-4">
             <div class="col-lg-3 col-md-6 col-sm-12 mb-4" th:if="${eventDetail.festivalTheme != null}">
                 <div class="glance-item wow fadeInUp" data-wow-delay="0.4s">
                     <div class="icon"><i class="lni-leaf"></i></div>
-                    <h3>Festival Theme</h3>
+                        <h3>Festival Theme</h3>
                     <p th:text="${eventDetail.festivalTheme}">CHỦ ĐỀ CỦA LỄ HỘI</p>
                 </div>
             </div>
@@ -1117,7 +1287,7 @@
             <div class="col-lg-3 col-md-6 col-sm-12 mb-4" th:if="${eventDetail.targetAudience != null}">
                 <div class="glance-item wow fadeInUp" data-wow-delay="0.7s">
                     <div class="icon"><i class="lni-target-customer"></i></div>
-                    <h3>Target Audience</h3>
+                        <h3>Target Audience</h3>
                     <p th:text="${eventDetail.targetAudience}">EXCELENCE STUDENT</p>
                 </div>
             </div>

@@ -34,6 +34,7 @@ public class EventCardDTO {
     private Double minPrice;
     private Double maxPrice;
     private boolean poster;
+    private String benefits;
     
     // Computed fields for display
     public String getDateLabel() {

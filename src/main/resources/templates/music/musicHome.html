@@ -163,14 +163,42 @@
             width: 100% !important;
             max-width: none !important;
             padding: 60px 80px !important;
-            margin: 50px 0 !important;
+            margin: 12px 0 12px !important; /* Equal top/bottom spacing for visual balance */
         }
 
-        /* Ensure description section container uses full width */
+        /* Ensure description section container uses full width (edge-to-edge) */
         #descriptionm .container {
             max-width: 100% !important;
-            padding-left: 20px !important;
-            padding-right: 20px !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        #descriptionm .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        #descriptionm .col-12 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        /* Add spacing from countdown and tighten title-to-box gap */
+        #descriptionm {
+            margin-top: 10px !important; /* Bring section closer to previous block */
+        }
+
+        #descriptionm .section-title-header {
+            margin-bottom: 0 !important; /* Remove extra space before the box */
+        }
+
+        /* Hide outer title so the heading appears only inside the cyan box */
+        #descriptionm .section-title-header .section-title {
+            display: none !important;
+        }
+
+        #descriptionm .section-title-header p {
+            display: none !important;
         }
 
         .event-description-box h2 {
@@ -969,6 +997,15 @@
             border: 2px solid var(--neon-magenta) !important;
             box-shadow: 0 0 40px rgba(233, 30, 99, 0.3),
             inset 0 0 30px rgba(233, 30, 99, 0.1) !important;
+        }
+
+        /* Force FAQ question text to pure white for better readability */
+        #faq .accordion .card-header,
+        #faq .accordion .card-header *,
+        #faq .accordion .header-title,
+        #faq .accordion .header-title * {
+            color: #ffffff !important;
+            opacity: 1 !important;
         }
 
         .accordion .card {
@@ -2835,6 +2872,56 @@
             flex-direction: column;
             gap: 30px; /* Khoảng cách giữa các phần tử bên trong card */
         }
+        
+        /* Fix layout alignment and overflow for Organizer block */
+        #organizer-details .container {
+            max-width: 1140px;
+        }
+        #organizer-details .organizer-display-box {
+            width: 100%;
+            box-sizing: border-box;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #organizer-details .contact-items {
+            width: 100%;
+        }
+        #organizer-details .contact-item {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0; /* prevent external spacing causing visual separation */
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(233, 30, 99, 0.2);
+            border-radius: 12px;
+            box-shadow: none;
+        }
+        #organizer-details .contact-item + .contact-item {
+            margin-top: 12px;
+        }
+        #organizer-details .contact-text {
+            flex: 1;
+            min-width: 0; /* enable text-overflow within flex */
+        }
+        #organizer-details .contact-text a,
+        #organizer-details .contact-text span {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.6;
+        }
+        /* Ensure icon and text vertically centered and aligned */
+        #organizer-details .contact-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+        #organizer-details .contact-item { align-items: center; }
+
+        /* Fix potential container padding cropping inner rows */
+        #organizer-details .row { margin-left: 0; margin-right: 0; }
 
         .organizer-header {
             display: flex;
@@ -2904,6 +2991,63 @@
         }
     </style>
 </head>
+
+
+<!--<script>-->
+<!--    document.addEventListener("DOMContentLoaded", function () {-->
+<!--        // 🔹 Ví dụ dữ liệu sự kiện-->
+<!--        const event = {-->
+<!--            title: "FPT Music Festival 2025",-->
+<!--            start: "2025-11-10T09:00:00Z",  // UTC format-->
+<!--            end: "2025-11-10T12:00:00Z",-->
+<!--            details: "Join us for an unforgettable night of music and performances!",-->
+<!--            location: "FPT University, HCMC"-->
+<!--        };-->
+
+<!--        // 🔹 Tạo link Google Calendar-->
+<!--        const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.start.replace(/[-:]/g, '').replace('.000Z','Z')}/${event.end.replace(/[-:]/g, '').replace('.000Z','Z')}&details=${encodeURIComponent(event.details)}&location=${encodeURIComponent(event.location)}`;-->
+
+<!--        // 🔹 Gán link vào nút-->
+<!--        const button = document.getElementById("addToCalendarBtn");-->
+<!--        button.href = calendarLink;-->
+<!--        button.target = "_blank"; // mở tab mới-->
+<!--    });-->
+<!--</script>-->
+
+
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Dùng Locale US trực tiếp trong biểu thức Thymeleaf khi format thời gian
+
+        // Lấy dữ liệu bằng Thymeleaf inline với fallback để JS hợp lệ khi chưa render
+        const title = /*[[${eventDetail != null ? eventDetail.title : 'Music Event'}]]*/ 'Music Event';
+        const details = /*[[${eventDetail != null and eventDetail.description != null ? eventDetail.description : 'Join our amazing event!'}]]*/ 'Join our amazing event!';
+        const start = /*[[${eventDetail != null and eventDetail.startsAt != null ? #temporals.format(eventDetail.startsAt, "yyyyMMdd'T'HHmmss'Z'", T(java.util.Locale).US) : '20250101T090000Z'}]]*/ '20250101T090000Z';
+        const end = /*[[${eventDetail != null and eventDetail.endsAt != null ? #temporals.format(eventDetail.endsAt, "yyyyMMdd'T'HHmmss'Z'", T(java.util.Locale).US) : '20250101T120000Z'}]]*/ '20250101T120000Z';
+        const locationStr = /*[[${eventDetail != null and eventDetail.venueAddress != null ? eventDetail.venueAddress : 'FPT University Campus'}]]*/ 'FPT University Campus';
+
+        const googleCalendarUrl =
+            // Xây dựng URL với các giá trị đã được encode
+            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+            `&text=${encodeURIComponent(title)}` +
+            `&dates=${start}/${end}` +
+            `&details=${encodeURIComponent(details)}` +
+            `&location=${encodeURIComponent(locationStr)}`;
+
+        const button = document.getElementById("addToCalendarBtn");
+        if (button) {
+            button.href = googleCalendarUrl;
+            button.target = "_blank";
+        }
+    });
+    /*]]>*/
+</script>
+
+
+
 <body>
 <!-- Floating Bubbles Canvas for Countdown Timer -->
 <canvas id="bubbles-canvas"></canvas>
@@ -2955,7 +3099,8 @@
 
                 <!-- Add to Calendar Button -->
                 <div class="text-center mt-2">
-                    <a href="#" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
+                    <a id="addToCalendarBtn" href="#"
+                       class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
                         Add to My Calendar
                     </a>
                 </div>
@@ -3184,7 +3329,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
-                    <!-- Event Title -->
+                    <!-- Title moved inside the cyan box for better aesthetics -->
                     <h2 th:text="${eventDetail.title}">Event Title</h2>
 
                     <!-- Description -->
@@ -3271,11 +3416,11 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.3s">
                     <div class="icon"><i class="lni-map"></i></div>
-                    <p th:text="${eventDetail.places != null and !eventDetail.places.isEmpty() 
-                        ? eventDetail.places[0].placeName 
+                    <p th:text="${eventDetail.places != null and !eventDetail.places.isEmpty()
+                        ? eventDetail.places[0].placeName
                         : 'Venue'}">Venue</p>
-                    <span th:text="${eventDetail.places != null and !eventDetail.places.isEmpty() 
-                        ? eventDetail.places[0].building 
+                    <span th:text="${eventDetail.places != null and !eventDetail.places.isEmpty()
+                        ? eventDetail.places[0].building
                         : 'Building'}">Building</span>
                 </div>
             </div>
@@ -3284,11 +3429,11 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.6s">
                     <div class="icon"><i class="lni-timer"></i></div>
-                    <p th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null 
-                        ? #temporals.format(eventDetail.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(eventDetail.endsAt, 'dd/MM/yyyy') 
+                    <p th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null
+                        ? #temporals.format(eventDetail.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(eventDetail.endsAt, 'dd/MM/yyyy')
                         : 'Date TBA'}">Date</p>
-                    <span th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null 
-                        ? #temporals.format(eventDetail.startsAt, 'HH:mm') + ' – ' + #temporals.format(eventDetail.endsAt, 'HH:mm') 
+                    <span th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null
+                        ? #temporals.format(eventDetail.startsAt, 'HH:mm') + ' – ' + #temporals.format(eventDetail.endsAt, 'HH:mm')
                         : 'Time TBA'}">Time</span>
                 </div>
             </div>
@@ -3297,8 +3442,8 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.9s">
                     <div class="icon"><i class="lni-users"></i></div>
-                    <p th:text="${eventDetail.capacity != null 
-                        ? eventDetail.capacity + ' Seats' 
+                    <p th:text="${eventDetail.capacity != null
+                        ? eventDetail.capacity + ' Seats'
                         : 'Limited Seats'}">Capacity</p>
                     <span>Book early to secure your spot</span>
                 </div>
@@ -3308,8 +3453,8 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="1.2s">
                     <div class="icon"><i class="lni-coffee-cup"></i></div>
-                    <p th:text="${eventDetail.benefits != null 
-                        ? eventDetail.benefits 
+                    <p th:text="${eventDetail.benefits != null
+                        ? eventDetail.benefits
                         : 'Great Benefits'}">Benefits</p>
                     <span>Don't miss out</span>
                 </div>
@@ -3891,51 +4036,6 @@
         </div>
     </div>
 </section>
-<!--<section id="organizer" class="section-padding" -->
-<!--         th:if="${eventDetail != null and eventDetail.organization != null}">-->
-<!--    <div class="container">-->
-<!--        <div class="row">-->
-<!--            <div class="col-12">-->
-<!--                <div class="section-title-header text-center">-->
-<!--                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Event Organizer</h1>-->
-<!--                    <p class="wow fadeInDown" data-wow-delay="0.2s">Meet the team behind this amazing event</p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <div class="row justify-content-center">-->
-<!--            <div class="col-lg-8 col-md-10">-->
-<!--                <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">-->
-<!--                    <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>-->
-<!--                    <p th:if="${eventDetail.organization.description != null}" -->
-<!--                       th:text="${eventDetail.organization.description}">Organization description</p>-->
-<!--                    -->
-<!--                    <p th:if="${eventDetail.organization.email != null}">-->
-<!--                        <i class="lni-envelope"></i>-->
-<!--                        <span th:text="${eventDetail.organization.email}">Email</span>-->
-<!--                    </p>-->
-<!--                    -->
-<!--                    <p th:if="${eventDetail.organization.phone != null}">-->
-<!--                        <i class="lni-phone"></i>-->
-<!--                        <span th:text="${eventDetail.organization.phone}">Phone</span>-->
-<!--                    </p>-->
-<!--                    -->
-<!--                    <p th:if="${eventDetail.organization.website != null}">-->
-<!--                        <i class="lni-world"></i>-->
-<!--                        <a th:href="${eventDetail.organization.website}" -->
-<!--                           th:text="${eventDetail.organization.website}" -->
-<!--                           target="_blank">Website</a>-->
-<!--                    </p>-->
-<!--                    -->
-<!--                    <p th:if="${eventDetail.organization.address != null}">-->
-<!--                        <i class="lni-map-marker"></i>-->
-<!--                        <span th:text="${eventDetail.organization.address}">Address</span>-->
-<!--                    </p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
-<!-- Organizer Section End -->
 
 <!-- Blog Section Start -->
 <section id="blog" class="section-padding">

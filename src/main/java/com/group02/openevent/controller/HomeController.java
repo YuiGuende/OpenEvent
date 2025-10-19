@@ -64,6 +64,8 @@ public class HomeController {
         }
     }
 
+
+    //use for dropdown user in header
     @GetMapping("/api/current-user")
     public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");

@@ -264,29 +264,380 @@
         font-size: 14px;
     }
 
-    /* Event cards - horizontal layout */
-    .event-card--horizontal {
+    /* Layout Toggle */
+    .layout-toggle {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 4px;
+        margin-left: auto;
+        gap: 4px;
+    }
+
+    .layout-btn {
+        padding: 8px 16px;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #666;
+    }
+
+    .layout-btn.active {
+        background: #ff6b35;
+        color: white;
+        box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    }
+
+    /* ===== MARKETPLACE LAYOUT (Tối giản) ===== */
+    .marketplace-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .event-card--marketplace {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        border: 1px solid #f0f0f0;
+    }
+
+    .event-card--marketplace:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .marketplace-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        position: relative;
+    }
+
+    .marketplace-content {
+        padding: 1.25rem;
+    }
+
+    .marketplace-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+        margin: 0 0 12px 0;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .marketplace-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .marketplace-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .marketplace-meta-icon {
+        font-size: 16px;
+        width: 16px;
+        text-align: center;
+    }
+
+    .marketplace-type {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        align-self: flex-start;
+    }
+
+    .marketplace-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .marketplace-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ff6b35;
+    }
+
+    .marketplace-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .marketplace-btn:hover {
+        background: #e55a2b;
+        transform: translateY(-1px);
+    }
+
+    /* ===== PREMIUM LAYOUT (Chi tiết) ===== */
+    .premium-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .event-card--premium {
         display: flex;
         flex-direction: row;
         gap: 1.5rem;
         background: #fff;
         border: 1px solid #e5e5e5;
-        border-radius: 8px;
-        padding: 1.5rem;
+        border-radius: 16px;
+        padding: 0;
         margin-bottom: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
         align-items: stretch;
         text-decoration: none;
         color: inherit;
         cursor: pointer;
+        overflow: hidden;
     }
 
-    .event-card--horizontal:hover {
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        transform: translateY(-2px);
+    .event-card--premium:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        transform: translateY(-3px);
         text-decoration: none;
         color: inherit;
+    }
+
+    .premium-image-section {
+        position: relative;
+        flex: 0 0 40%;
+        min-height: 250px;
+        overflow: hidden;
+    }
+
+    .premium-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .event-card--premium:hover .premium-image {
+        transform: scale(1.05);
+    }
+
+    .premium-content-section {
+        flex: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .premium-header {
+        margin-bottom: 1rem;
+    }
+
+    .premium-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        color: #333;
+        line-height: 1.3;
+    }
+
+    .premium-badges {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .premium-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .premium-badge.featured {
+        background: #e8f5e8;
+        color: #2d5a2d;
+    }
+
+    .premium-badge.genius {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .premium-badge.deal {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .premium-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .premium-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #ff6b35;
+    }
+
+    .premium-meta-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+
+    .premium-type-tag {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .premium-type-tag span:last-child {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #bbdefb;
+    }
+
+    .premium-benefits {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #28a745;
+    }
+
+    .premium-organizer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 16px;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #6c757d;
+    }
+
+    .premium-footer {
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .premium-availability {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .premium-availability-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .premium-progress {
+        width: 100%;
+        height: 8px;
+        background: #e5e5e5;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 8px 0;
+    }
+
+    .premium-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #34ce57);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    .premium-price-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .premium-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ff6b35;
+    }
+
+    .premium-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .premium-btn:hover {
+        background: #e55a2b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
     }
 
     /* Image Section */
@@ -888,7 +1239,67 @@
         .search-sidebar {
             position: static;
         }
-        
+
+        /* Marketplace Layout Mobile */
+        .marketplace-layout {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .event-card--marketplace {
+            margin-bottom: 1rem;
+        }
+
+        .marketplace-content {
+            padding: 1rem;
+        }
+
+        .marketplace-title {
+            font-size: 16px;
+        }
+
+        .marketplace-footer {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .marketplace-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Premium Layout Mobile */
+        .event-card--premium {
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .premium-image-section {
+            flex: none;
+            min-height: 200px;
+        }
+
+        .premium-content-section {
+            padding: 1rem;
+        }
+
+        .premium-title {
+            font-size: 20px;
+        }
+
+        .premium-price-section {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .premium-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Legacy horizontal layout mobile */
         .event-card--horizontal {
             flex-direction: column;
             padding: 1rem;
@@ -944,7 +1355,7 @@
             align-items: flex-start;
         }
 
-        .view-toggle {
+        .layout-toggle {
             align-self: flex-end;
         }
     }
@@ -1068,141 +1479,118 @@
                             <option>Guest rating</option>
                         </select>
                         
-                        <div class="view-toggle">
-                            <button class="view-btn active">List</button>
-                            <button class="view-btn">Grid</button>
+                        <div class="layout-toggle">
+                            <button class="layout-btn active" data-layout="marketplace">Marketplace</button>
+                            <button class="layout-btn" data-layout="premium">Premium</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 🔹 Event List -->
-                <div class="event-list" th:if="${!#lists.isEmpty(results)}">
-                    <a class="event-card event-card--horizontal" 
+                <!-- 🔹 Marketplace Layout (Tối giản) -->
+                <div class="marketplace-layout" id="marketplace-layout" th:if="${!#lists.isEmpty(results)}">
+                    <a class="event-card--marketplace" 
                        th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
                        th:each="event : ${results}">
-                        <!-- Image Section (Left) -->
-                        <div class="event-image-section">
-                        <img class="event-cover" th:src="${event.imageUrl}" th:alt="${event.title}" />
-                            <button class="event-favorite">♡</button>
-                            <!-- Image dots indicator -->
-                            <div class="image-dots">
-                                <span class="dot active"></span>
-                                <span class="dot"></span>
-                                <span class="dot"></span>
-                                <span class="dot"></span>
+                        
+                        <img class="marketplace-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
+                        
+                        <div class="marketplace-content">
+                            <h3 class="marketplace-title" th:text="${event.title}">Event title</h3>
+                            
+                            <div class="marketplace-meta">
+                                <div class="marketplace-meta-item">
+                                    <span class="marketplace-meta-icon">📅</span>
+                                    <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">20/09/2025 09:00</span>
+                                </div>
+                                
+                                <div class="marketplace-meta-item">
+                                    <span class="marketplace-meta-icon">📍</span>
+                                    <span th:text="${event.city}">Ho Chi Minh City</span>
+                                </div>
+                                
+                                <div class="marketplace-type" th:text="${event.eventType.name()}">Workshop</div>
                             </div>
                             
-                            <!-- Countdown Timer -->
-                            <div class="countdown-timer" th:if="${event.enrollDeadline != null}">
-                                <div class="countdown-label">Registration closes in:</div>
-                                <div class="countdown-display">
-                                    <div class="countdown-item" th:if="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) > 0}">
-                                        <span class="countdown-number" th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline)}">5</span>
-                                        <span class="countdown-unit">days</span>
-                                    </div>
-                                    <div class="countdown-item" th:if="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) <= 0}">
-                                        <span class="countdown-expired">Registration Closed</span>
-                                    </div>
-                                </div>
+                            <div class="marketplace-footer">
+                                <div class="marketplace-price" th:text="${event.priceLabel}">Free</div>
+                                <button class="marketplace-btn">Get Tickets</button>
                             </div>
                         </div>
+                    </a>
+                </div>
 
-                        <!-- Content Section (Right) -->
-                        <div class="event-content-section">
-                            <!-- Badges -->
-                            <div class="event-badges">
-                                <span class="badge badge-featured" th:if="${event.id % 3 == 0}">Featured</span>
-                                <span class="badge badge-genius" th:if="${event.id % 5 == 0}">Genius</span>
-                                <span class="badge badge-deal" th:if="${event.id % 7 == 0}">Limited-time Deal</span>
+                <!-- 🔹 Premium Layout (Chi tiết) -->
+                <div class="premium-layout" id="premium-layout" style="display: none;" th:if="${!#lists.isEmpty(results)}">
+                    <a class="event-card--premium" 
+                       th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
+                       th:each="event : ${results}">
+                        
+                        <!-- Image Section (40%) -->
+                        <div class="premium-image-section">
+                            <img class="premium-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
+                        </div>
+                        
+                        <!-- Content Section (60%) -->
+                        <div class="premium-content-section">
+                            <div class="premium-header">
+                                <h3 class="premium-title" th:text="${event.title}">Event title</h3>
+                                
+                                <div class="premium-badges">
+                                    <span class="premium-badge featured" th:if="${event.id % 3 == 0}">Featured</span>
+                                    <span class="premium-badge genius" th:if="${event.id % 5 == 0}">Genius</span>
+                                    <span class="premium-badge deal" th:if="${event.id % 7 == 0}">Limited-time Deal</span>
+                                </div>
                             </div>
-
-                            <!-- Title -->
-                            <h3 class="event-title" th:text="${event.title}">Event title</h3>
-
-                            <!-- Date & Time -->
-                            <div class="event-datetime">
-                                <span class="datetime-icon">📅</span>
-                                <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">20/09/2025 09:00</span>
-                                <span th:if="${event.endsAt != event.startsAt}">
-                                    → <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}">22/09/2025 17:00</span>
-                                </span>
+                            
+                            <div class="premium-meta">
+                                <div class="premium-meta-item">
+                                    <span class="premium-meta-icon">📅</span>
+                                    <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">20/09/2025 09:00</span>
+                                    <span th:if="${event.endsAt != event.startsAt}">
+                                        → <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}">22/09/2025 17:00</span>
+                                    </span>
+                                </div>
+                                
+                                <div class="premium-meta-item">
+                                    <span class="premium-meta-icon">📍</span>
+                                    <span th:text="${event.city}">Ho Chi Minh City</span>
+                                    <span th:text="' • ' + ((event.id % 10) + 1) + ' km from center'"> • 2.3 km from center</span>
+                                </div>
                             </div>
-
-                            <!-- Location -->
-                            <div class="event-location">
-                                <span th:text="${event.city}">Ho Chi Minh</span> •
-                                <span>Show on map</span> •
-                                <span th:text="${(event.id % 10) + 1} + ' km from center'">2.3 km from center</span>
-                            </div>
-
-                            <!-- Event Type Tag -->
-                            <div class="event-type-tag">
-                                <span class="tag-icon">🏷️</span>
+                            
+                            <div class="premium-type-tag">
+                                <span>🏷️</span>
                                 <span th:text="${event.eventType.name()}">Workshop</span>
                             </div>
-
-                            <!-- Benefits -->
-                            <div class="event-benefits" th:if="${event.benefits != null and !event.benefits.isEmpty()}">
-                                <span class="benefits-icon">🎁</span>
+                            
+                            <div class="premium-benefits" th:if="${event.benefits != null and !event.benefits.isEmpty()}">
+                                <span>🎁</span>
                                 <span th:text="${event.benefits}">Free lunch, Certificate, Networking</span>
                             </div>
-
-                            <!-- Organizer -->
-                            <div class="event-organizer">
-                                <span class="organizer-icon">👤</span>
+                            
+                            <div class="premium-organizer">
+                                <span>👤</span>
                                 <span th:text="'Organizer: ' + event.organizer">Organizer: Event Organizer</span>
                             </div>
-
-                            <!-- Availability Warning -->
-                            <div class="availability-warning" th:if="${!event.isSoldOut() and (event.capacity - event.registered) <= 10}">
-                                <span th:text="'Only ' + (event.capacity - event.registered) + ' tickets left at this price'">Only 3 tickets left at this price</span>
+                        </div>
+                        
+                        <div class="premium-footer">
+                            <div class="premium-availability">
+                                <div class="premium-availability-info">
+                                    <span>🎫</span>
+                                    <span th:text="${(event.capacity - event.registered) + ' tickets left'}" 
+                                          th:if="${!event.isSoldOut()}">50 tickets left</span>
+                                    <span th:text="'Sold Out'" th:if="${event.isSoldOut()}" class="sold-out">Sold Out</span>
+                                </div>
                             </div>
-
-                            <!-- Availability & Price Section -->
-                            <div class="availability-price-section">
-                                <div class="availability-bar">
-                                    <div class="availability-info">
-                                        <span class="availability-label">🎫</span>
-                                        <span th:text="${(event.capacity - event.registered) + ' tickets left'}" 
-                                              th:if="${!event.isSoldOut()}">50 tickets left</span>
-                                        <span th:text="'Sold Out'" th:if="${event.isSoldOut()}" class="sold-out">Sold Out</span>
-                                    </div>
-                                    
-                                    <!-- Dual Progress Bar -->
-                                    <div class="dual-progress-container">
-                                        <!-- Time Progress Bar -->
-                                        <div class="progress-section" th:if="${event.enrollDeadline != null}">
-                                            <div class="progress-label">Time Left</div>
-                                            <div class="progress-bar">
-                                                <div class="progress-fill time-progress" 
-                                                     th:style="|width: ${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) > 0 ? (T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), event.enrollDeadline) * 100 / 30) : 0}%|"></div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Ticket Progress Bar -->
-                                        <div class="progress-section">
-                                            <div class="progress-label">Tickets</div>
-                                            <div class="progress-bar">
-                                                <div class="progress-fill ticket-progress" 
-                                                     th:style="|width: ${event.registrationPercentage}%|"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="price-section">
-                                    <div class="price-info">
-                                        <div class="price-range" th:if="${event.minPrice != null and event.maxPrice != null and event.minPrice != event.maxPrice}">
-                                            <span class="price-min" th:text="${event.minPrice == 0 ? 'Free' : (event.minPrice + 'k')}">Free</span>
-                                            <span class="price-separator">-</span>
-                                            <span class="price-max" th:text="${event.maxPrice + 'k'}">400k</span>
-                                        </div>
-                                        <div class="price-single" th:if="${event.minPrice == null or event.maxPrice == null or event.minPrice == event.maxPrice}">
-                                            <span class="price-current" th:text="${event.priceLabel}">Free</span>
-                                        </div>
-                                        <div class="price-note">Includes taxes and fees</div>
-                                    </div>
-                                </div>
+                            
+                            <div class="premium-progress">
+                                <div class="premium-progress-fill" th:style="|width: ${event.registrationPercentage}%|"></div>
+                            </div>
+                            
+                            <div class="premium-price-section">
+                                <div class="premium-price" th:text="${event.priceLabel}">Free</div>
+                                <button class="premium-btn">Get Tickets</button>
                             </div>
                         </div>
                     </a>
@@ -1221,5 +1609,48 @@
 
 <div th:replace="fragments/footer :: siteFooter()"></div>
 <script th:src="@{/js/main.js}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const layoutToggle = document.querySelector('.layout-toggle');
+    const layoutButtons = document.querySelectorAll('.layout-btn');
+    const marketplaceLayout = document.getElementById('marketplace-layout');
+    const premiumLayout = document.getElementById('premium-layout');
+    
+    // Layout switching functionality
+    layoutButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const layout = this.dataset.layout;
+            
+            // Update button states
+            layoutButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show/hide layouts
+            if (layout === 'marketplace') {
+                marketplaceLayout.style.display = 'grid';
+                premiumLayout.style.display = 'none';
+            } else if (layout === 'premium') {
+                marketplaceLayout.style.display = 'none';
+                premiumLayout.style.display = 'flex';
+            }
+        });
+    });
+    
+    // Prevent default link behavior for buttons inside cards
+    document.querySelectorAll('.marketplace-btn, .premium-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Get the parent link and navigate to it
+            const cardLink = this.closest('a');
+            if (cardLink) {
+                window.location.href = cardLink.href;
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

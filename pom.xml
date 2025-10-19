@@ -118,12 +118,11 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Xóa dependency tự tham chiếu này vì nó gây vấn đề -->
-        <!-- <dependency>
-            <groupId>com.group02</groupId>
-            <artifactId>openevent</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency> -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -157,8 +156,46 @@
                             <artifactId>lombok-mapstruct-binding</artifactId>
                             <version>0.2.0</version>
                         </path>
-            </annotationProcessorPaths>
-        </configuration>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version> <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>report</id>
+                    <phase>test</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>jacoco-check</id>
+                    <goals>
+                        <goal>check</goal>
+                    </goals>
+                    <configuration>
+                        <rules>
+                            <rule>
+                                <element>BUNDLE</element>
+                                <limits>
+                                    <limit>
+                                        <counter>LINE</counter>
+                                        <value>COVEREDRATIO</value>
+                                        <minimum>0.80</minimum>
+                                    </limit>
+                                </limits>
+                            </rule>
+                        </rules>
+                    </configuration>
+                </execution>
+            </executions>
             </plugin>
         </plugins>
     </build>

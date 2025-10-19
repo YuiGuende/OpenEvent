@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="sidebar">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="sidebar">
 <style>
     .sidebar {
         min-height: 100vh;
-        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        background: #000000;
         position: fixed;
         left: 0;
         top: 0;
@@ -47,14 +47,14 @@
                    th:classappend="${#strings.contains(currentUri, '/events')} ? 'active' : ''"
                    th:href="@{/department/events}">
                     <i class="bi bi-calendar-event"></i>
-                    Sự kiện
+                    Events
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${#strings.contains(currentUri, '/orders')} ? 'active' : ''"
                    th:href="@{/department/orders}">
                     <i class="bi bi-receipt"></i>
-                    Đơn hàng
+                    Orders
                 </a>
             </li>
             <li class="nav-item">
@@ -62,7 +62,7 @@
                    th:classappend="${#strings.contains(currentUri, '/requests')} ? 'active' : ''"
                    th:href="@{/department/requests}">
                     <i class="bi bi-inbox"></i>
-                    Yêu cầu duyệt
+                    Approval Requests
                 </a>
             </li>
             <li class="nav-item">
@@ -70,7 +70,7 @@
                    th:classappend="${#strings.contains(currentUri, '/articles')} ? 'active' : ''"
                    th:href="@{/department/articles}">
                     <i class="bi bi-newspaper"></i>
-                    Bài viết
+                    Articles
                 </a>
             </li>
         </ul>

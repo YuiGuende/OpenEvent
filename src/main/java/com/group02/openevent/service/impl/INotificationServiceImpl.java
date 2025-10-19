@@ -9,6 +9,8 @@ import com.group02.openevent.repository.INotificationRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.INotificationService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class INotificationServiceImpl implements INotificationService {
-
+    private Logger logger = LoggerFactory.getLogger(INotificationServiceImpl.class);
     private IOrderRepo orderRepo;
 
     private IAccountRepo accountRepo;
@@ -39,6 +41,7 @@ public class INotificationServiceImpl implements INotificationService {
 
         if (receiverAccountIds.isEmpty()) {
             // Không có người tham gia nào để gửi thông báo
+            logger.error("receiverAccountIds is empty");
             return null;
         }
 

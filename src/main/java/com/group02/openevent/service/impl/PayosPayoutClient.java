@@ -1,6 +1,8 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.model.payment.PayoutRequest;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import vn.payos.PayOS;
 import vn.payos.model.v1.payouts.Payout;
@@ -14,7 +16,7 @@ public class PayosPayoutClient {
     private static final Logger logger = LoggerFactory.getLogger(PayosPayoutClient.class);
     private final PayOS payOS;
 
-    public PayosPayoutClient(PayOS payOS) {
+    public PayosPayoutClient(@Qualifier("payOSPayout")PayOS payOS) {
         this.payOS = payOS;
     }
 
@@ -33,7 +35,7 @@ public class PayosPayoutClient {
                 .amount(request.getAmount().longValue())
                 .toBin(request.getBankCode())
                 .toAccountNumber(request.getBankAccountNumber())
-                .description("Rut tien Host #" + request.getPayosOrderCode())
+                .description("Rut tien Host id: #" + request.getHost().getId())
                 .build();
 
         try {

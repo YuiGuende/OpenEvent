@@ -11,11 +11,11 @@
 <div class="container">
 
     <div class="form-box login">
-        <form id="loginForm" th:action="@{/login}" method="post">
+        <form id="loginForm" th:action="@{/perform_login}" method="post">
             <input type="hidden" name="redirectUrl" th:value="${redirectUrl}" th:if="${redirectUrl != null}">
             <h1>Đăng nhập</h1>
             <div class="input-box">
-                <input type="email" id="loginEmail" name="email" placeholder="Email" required>
+                <input type="email" id="loginEmail" name="username" placeholder="Email" required>
                 <i class='bx bx-customer'></i>
             </div>
             <div class="input-box">

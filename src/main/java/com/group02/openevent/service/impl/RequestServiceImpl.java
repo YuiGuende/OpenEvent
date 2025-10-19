@@ -1,9 +1,12 @@
 package com.group02.openevent.service.impl;
 
 
+import com.group02.openevent.dto.notification.RequestFormDTO;
+import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.repository.IAccountRepo;
+import com.group02.openevent.repository.IDepartmentRepo;
 import com.group02.openevent.repository.IRequestRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.RequestService;
@@ -34,7 +37,30 @@ public class RequestServiceImpl implements RequestService {
     private final IRequestRepo requestRepo;
     private final EventService eventService;
     private final CloudinaryUtil cloudinaryUtil;
-    private final IAccountRepo  accountRepo;
+    private final IAccountRepo accountRepo;
+    private final IDepartmentRepo departmentRepository;
+
+    public RequestFormDTO getRequestFormData(Long eventId) throws Exception {
+        List<Department> departments = departmentRepository.findAll();
+
+        List<RequestFormDTO.DepartmentDTO> departmentDTOs = departments.stream()
+                .map(dept -> RequestFormDTO.DepartmentDTO.builder()
+                        .id(dept.getAccountId())
+                        .name(dept.getDepartmentName())
+                        .build())
+                .collect(Collectors.toList());
+        Optional<Event> event = eventService.getEventById(eventId);
+        if (event.isEmpty()) {
+            throw new Exception("event not found!");
+        }
+
+        return RequestFormDTO.builder()
+                .eventId(eventId)
+                .eventName(event.get().getTitle())
+                .departments(departmentDTOs)
+                .build();
+    }
+
     @Override
     @Transactional
     public Request approveRequest(Long requestId, String responseMessage) {

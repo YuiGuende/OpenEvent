@@ -1,6 +1,9 @@
 package com.group02.openevent.controller.request;
 
 
+import com.group02.openevent.annotation.RequireEventHost;
+import com.group02.openevent.controller.payout.PayoutController;
+import com.group02.openevent.dto.notification.RequestFormDTO;
 import com.group02.openevent.dto.requestApproveEvent.ApproveRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.CreateRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
@@ -8,28 +11,33 @@ import com.group02.openevent.model.request.RequestStatus;
 import com.group02.openevent.model.request.RequestType;
 import com.group02.openevent.service.RequestService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/api/requests")
 @RequiredArgsConstructor
 public class RequestController {
-    
+    private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
     private final RequestService requestService;
     
     /**
      * Create a new request (e.g., event approval request)
      */
     @PostMapping(consumes = {"application/json"})
+    @ResponseBody
     public ResponseEntity<RequestDTO> createRequestJson(@RequestBody CreateRequestDTO createRequestDTO) {
         try {
             RequestDTO createdRequest = requestService.createRequest(createRequestDTO);
@@ -38,10 +46,25 @@ public class RequestController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
-    
+    @GetMapping("/form")
+    public String showRequestForm(
+            @RequestParam Long eventId,
+            Model model) {
+        RequestFormDTO formData = new RequestFormDTO();
+        try{
+            formData =requestService.getRequestFormData(eventId);
+        }catch (Exception e){
+            logger.error(e.getMessage());
+        }
+        model.addAttribute("formData", formData);
+        return "fragments/request-form";
+    }
     @PostMapping(consumes = {"multipart/form-data"})
+    @ResponseBody
+    @RequireEventHost(eventIdParamName = "eventId", userIdParamName = "senderId")
     public ResponseEntity<RequestDTO> createRequestWithFile(
-            @RequestParam("senderId") Long senderId,
+            @SessionAttribute("ACCOUNT_ID") Long senderId,
+//            @RequestParam("senderId") Long senderId,
             @RequestParam("receiverId") Long receiverId,
             @RequestParam("type") RequestType type,
             @RequestParam(value = "eventId", required = false) Long eventId,
@@ -59,7 +82,7 @@ public class RequestController {
                     .message(message)
                     .targetUrl(targetUrl)
                     .build();
-            
+            System.out.println("received request"+createRequestDTO);
             RequestDTO createdRequest = requestService.createRequestWithFile(createRequestDTO, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
         } catch (Exception e) {
@@ -71,6 +94,7 @@ public class RequestController {
      * Approve a request
      */
     @PutMapping("/{requestId}/approve")
+    @ResponseBody
     public ResponseEntity<RequestDTO> approveRequest(
             @PathVariable Long requestId,
             @RequestBody ApproveRequestDTO approveRequestDTO) {
@@ -86,6 +110,7 @@ public class RequestController {
      * Reject a request
      */
     @PutMapping("/{requestId}/reject")
+    @ResponseBody
     public ResponseEntity<RequestDTO> rejectRequest(
             @PathVariable Long requestId,
             @RequestBody ApproveRequestDTO approveRequestDTO) {
@@ -101,6 +126,7 @@ public class RequestController {
      * Get request by ID
      */
     @GetMapping("/{requestId}")
+    @ResponseBody
     public ResponseEntity<RequestDTO> getRequestById(@PathVariable Long requestId) {
         return requestService.getRequestById(requestId)
                 .map(ResponseEntity::ok)
@@ -111,6 +137,7 @@ public class RequestController {
      * Get all requests with optional filters
      */
     @GetMapping
+    @ResponseBody
     public ResponseEntity<List<RequestDTO>> getAllRequests(
             @RequestParam(required = false) RequestStatus status,
             @RequestParam(required = false) RequestType type) {
@@ -132,6 +159,7 @@ public class RequestController {
      * Get requests with pagination
      */
     @GetMapping("/paginated")
+    @ResponseBody
     public ResponseEntity<Page<RequestDTO>> getRequestsPaginated(
             @RequestParam(required = false) RequestStatus status,
             @RequestParam(required = false) RequestType type,
@@ -153,6 +181,7 @@ public class RequestController {
      * Get requests by sender ID
      */
     @GetMapping("/sender/{senderId}")
+    @ResponseBody
     public ResponseEntity<List<RequestDTO>> getRequestsBySender(@PathVariable Long senderId) {
         List<RequestDTO> requests = requestService.getRequestsBySenderId(senderId);
         return ResponseEntity.ok(requests);
@@ -162,6 +191,7 @@ public class RequestController {
      * Get requests by receiver ID
      */
     @GetMapping("/receiver/{receiverId}")
+    @ResponseBody
     public ResponseEntity<List<RequestDTO>> getRequestsByReceiver(@PathVariable Long receiverId) {
         List<RequestDTO> requests = requestService.getRequestsByReceiverId(receiverId);
         return ResponseEntity.ok(requests);
@@ -171,6 +201,7 @@ public class RequestController {
      * Get requests by event ID
      */
     @GetMapping("/event/{eventId}")
+    @ResponseBody
     public ResponseEntity<List<RequestDTO>> getRequestsByEvent(@PathVariable Long eventId) {
         List<RequestDTO> requests = requestService.getRequestsByEventId(eventId);
         return ResponseEntity.ok(requests);

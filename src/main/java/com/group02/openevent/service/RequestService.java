@@ -1,6 +1,7 @@
 package com.group02.openevent.service;
 
 
+import com.group02.openevent.dto.notification.RequestFormDTO;
 import com.group02.openevent.dto.requestApproveEvent.ApproveRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.CreateRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
@@ -32,7 +33,7 @@ public interface RequestService {
     List<RequestDTO> getRequestsBySenderId(Long senderId);
     List<RequestDTO> getRequestsByReceiverId(Long receiverId);
     List<RequestDTO> getRequestsByEventId(Long eventId);
-    
+     RequestFormDTO getRequestFormData(Long eventId) throws Exception;
     // Pageable
     Page<RequestDTO> listRequests(RequestStatus status, RequestType type, Pageable pageable);
     Page<RequestDTO> listRequestsByReceiver(Long receiverId, Pageable pageable);

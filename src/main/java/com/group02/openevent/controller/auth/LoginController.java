@@ -24,36 +24,36 @@ public class LoginController {
         return "security/login";
     }
 
-    @PostMapping("/login")
-    public String handleLogin(@RequestParam String email, 
-                            @RequestParam String password,
-                            @RequestParam(required = false) String redirectUrl,
-                            HttpSession session, 
-                            Model model) {
-        try {
-            LoginRequest loginRequest = new LoginRequest();
-            loginRequest.setEmail(email);
-            loginRequest.setPassword(password);
-            
-            var response = authService.login(loginRequest);
-            
-            // Store in session
-            session.setAttribute("ACCOUNT_ID", response.getAccountId());
-            session.setAttribute("ACCOUNT_ROLE", response.getRole());
-            
-            // Redirect to original URL if provided, otherwise go to home
-            if (redirectUrl != null && !redirectUrl.isEmpty()) {
-                return "redirect:" + redirectUrl;
-            }
-            return "redirect:/";
-        } catch (Exception e) {
-            model.addAttribute("error", "Đăng nhập thất bại: " + e.getMessage());
-            if (redirectUrl != null && !redirectUrl.isEmpty()) {
-                model.addAttribute("redirectUrl", redirectUrl);
-            }
-            return "security/login";
-        }
-    }
+//    @PostMapping("/login")
+//    public String handleLogin(@RequestParam String email,
+//                            @RequestParam String password,
+//                            @RequestParam(required = false) String redirectUrl,
+//                            HttpSession session,
+//                            Model model) {
+//        try {
+//            LoginRequest loginRequest = new LoginRequest();
+//            loginRequest.setEmail(email);
+//            loginRequest.setPassword(password);
+//
+//            var response = authService.login(loginRequest);
+//
+//            // Store in session
+//            session.setAttribute("ACCOUNT_ID", response.getAccountId());
+//            session.setAttribute("ACCOUNT_ROLE", response.getRole());
+//
+//            // Redirect to original URL if provided, otherwise go to home
+//            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+//                return "redirect:" + redirectUrl;
+//            }
+//            return "redirect:/";
+//        } catch (Exception e) {
+//            model.addAttribute("error", "Đăng nhập thất bại: " + e.getMessage());
+//            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+//                model.addAttribute("redirectUrl", redirectUrl);
+//            }
+//            return "security/login";
+//        }
+//    }
 
     @PostMapping("/register")
     public String handleRegister(@RequestParam String email,

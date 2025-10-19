@@ -52,6 +52,7 @@ public class PayoutServiceImpl implements IPayoutService {
         
         // 2. Trừ tiền Host (Tạm thời trừ số dư khả dụng)
         String description = "Yeu cau rut tien #" + payosOrderCode;
+        System.out.println("4");
         walletService.deductBalance(hostId, requestDto.getAmount(), payosOrderCode, description);
         
         // 3. Ghi log Yêu cầu Payout vào DB
@@ -64,13 +65,16 @@ public class PayoutServiceImpl implements IPayoutService {
         payout.setStatus(PayoutStatus.PENDING);
         payout.setRequestedAt(LocalDateTime.now());
         payoutRepository.save(payout);
-        
+        System.out.println("3");
         String payosPayoutId;
         try {
+            System.out.println("0");
             // 4. Gọi API Payout của PayOS (Client xử lý Checksum)
-            payosPayoutId = payosPayoutClient.sendPayout(payout); 
-            
-            payout.setPayosTransactionId(payosPayoutId); 
+            payosPayoutId = payosPayoutClient.sendPayout(payout);
+            System.out.println("1");
+
+            payout.setPayosTransactionId(payosPayoutId);
+            System.out.println("payosPayoutId"+payosPayoutId);
             payoutRepository.save(payout);
 
             logger.info("Payout request sent to PayOS successfully. Payout ID: {}", payosPayoutId);

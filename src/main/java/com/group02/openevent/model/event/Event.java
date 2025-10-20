@@ -210,23 +210,28 @@ public class Event {
     }
 
     public double getMaxTicketPice() {
-        double maxTicketPice = 0;
+        if (ticketTypes == null || ticketTypes.isEmpty()) {
+            return 0;
+        }
+        double maxTicketPice = ticketTypes.get(0).getPrice().doubleValue();
         for (TicketType ticketType : ticketTypes) {
             if (ticketType.getPrice().doubleValue() > maxTicketPice) {
                 maxTicketPice = ticketType.getPrice().doubleValue();
             }
         }
         return maxTicketPice;
-
     }
+    
     public double getMinTicketPice() {
-        double minTicketPice = 0;
+        if (ticketTypes == null || ticketTypes.isEmpty()) {
+            return 0;
+        }
+        double minTicketPice = ticketTypes.get(0).getPrice().doubleValue();
         for (TicketType ticketType : ticketTypes) {
             if (ticketType.getPrice().doubleValue() < minTicketPice) {
                 minTicketPice = ticketType.getPrice().doubleValue();
             }
         }
         return minTicketPice;
-
     }
 }

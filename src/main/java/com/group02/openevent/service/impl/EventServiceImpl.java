@@ -106,10 +106,10 @@ public class EventServiceImpl implements EventService {
 
         LocalDateTime fromDateTime = (startDate != null)
                 ? startDate.atStartOfDay()
-                : LocalDateTime.MIN;
+                : null;
         LocalDateTime toDateTime = (endDate != null)
                 ? endDate.atTime(23, 59, 59)
-                : LocalDateTime.MAX;
+                : null;
 
         EventType eventType = null;
         if (type != null && !type.isBlank()) {

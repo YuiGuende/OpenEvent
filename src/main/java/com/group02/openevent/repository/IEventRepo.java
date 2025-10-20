@@ -47,8 +47,8 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     SELECT e FROM Event e
     WHERE (:keyword IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
       AND (:type IS NULL OR e.eventType = :type)
-      AND e.startsAt >= :fromDateTime
-      AND e.endsAt <= :toDateTime
+      AND (:fromDateTime IS NULL OR e.startsAt >= :fromDateTime)
+      AND (:toDateTime IS NULL OR e.startsAt <= :toDateTime)
 """)
     List<Event> searchEvents(@Param("keyword") String keyword,
                              @Param("type") EventType type,

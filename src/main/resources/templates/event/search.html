@@ -7,32 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
     <style>
         /* Chỉnh lại bố cục thanh tìm kiếm cho đều */
-        .event-search {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1.5fr auto;
-            gap: 1rem;
-            align-items: end;
-        }
-        
-        .es-submit {
-            min-width: 140px;
-            white-space: nowrap;
-            margin-left: 1rem;
-        }
-        
-        /* Responsive cho mobile */
-        @media (max-width: 768px) {
-            .event-search {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-            
-            .es-submit {
-                min-width: auto;
-                width: 100%;
-                margin-left: 0;
-            }
-        }
+        /* moved to fragments/searchbar.html */
     </style>
 </head>
 
@@ -292,48 +267,299 @@
         box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
     }
 
-    /* ===== MARKETPLACE LAYOUT (Tối giản) ===== */
-    .marketplace-layout {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* ===== LIST LAYOUT (Horizontal - Default) ===== */
+    .list-layout {
+        display: flex;
+        flex-direction: column;
         gap: 1.5rem;
     }
 
-    .event-card--marketplace {
+    .event-card--list {
+        display: flex;
         background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        align-items: stretch;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .event-card--list:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .list-image-section {
+        position: relative;
+        flex: 0 0 280px;
+        height: 200px;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .list-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .event-card--list:hover .list-image {
+        transform: scale(1.05);
+    }
+
+    .list-favorite {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #666;
+    }
+
+    .list-content-section {
+        flex: 1;
+        padding: 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .list-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0;
+        color: #333;
+        line-height: 1.3;
+        flex: 1;
+    }
+
+    .list-rating {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 16px;
+    }
+
+    .rating-score {
+        background: #1976d2;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .rating-text {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .list-location {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .location-text {
+        color: #1976d2;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .location-distance {
+        color: #666;
+    }
+
+    .list-type {
+        margin-bottom: 12px;
+    }
+
+    .type-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #bbdefb;
+    }
+
+    .list-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .list-datetime {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .datetime-icon {
+        font-size: 16px;
+    }
+
+    .list-capacity {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .list-price-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        min-width: 120px;
+    }
+
+    .price-info {
+        text-align: right;
+        margin-bottom: 12px;
+    }
+
+    .list-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ff6b35;
+        margin-bottom: 4px;
+    }
+
+    .price-note {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .list-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .list-btn:hover {
+        background: #e55a2b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    }
+
+    /* ===== GRID LAYOUT (Vertical - Booking.com style) ===== */
+    .grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .event-card--grid {
+        background: #fff;
+        border: 1px solid #e5e5e5;
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         transition: all 0.3s ease;
         text-decoration: none;
         color: inherit;
         cursor: pointer;
-        border: 1px solid #f0f0f0;
+        display: flex;
+        flex-direction: column;
     }
 
-    .event-card--marketplace:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    .event-card--grid:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
         text-decoration: none;
         color: inherit;
     }
 
-    .marketplace-image {
+    .grid-image-section {
+        position: relative;
         width: 100%;
         height: 200px;
+        overflow: hidden;
+    }
+
+    .grid-image {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        position: relative;
+        transition: transform 0.3s ease;
     }
 
-    .marketplace-content {
-        padding: 1.25rem;
+    .event-card--grid:hover .grid-image {
+        transform: scale(1.05);
     }
 
-    .marketplace-title {
+    .grid-favorite {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #666;
+    }
+
+    .grid-content-section {
+        padding: 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .grid-title {
         font-size: 18px;
         font-weight: 700;
-        color: #333;
         margin: 0 0 12px 0;
+        color: #333;
         line-height: 1.3;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -342,52 +568,92 @@
         overflow: hidden;
     }
 
-    .marketplace-meta {
+    .grid-location {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .location-text {
+        color: #1976d2;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .grid-type {
+        margin-bottom: 12px;
+    }
+
+    .type-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #bbdefb;
+    }
+
+    .grid-details {
         display: flex;
         flex-direction: column;
         gap: 8px;
         margin-bottom: 16px;
     }
 
-    .marketplace-meta-item {
+    .grid-datetime {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 14px;
-        color: #666;
+        color: #555;
     }
 
-    .marketplace-meta-icon {
+    .datetime-icon {
         font-size: 16px;
-        width: 16px;
-        text-align: center;
     }
 
-    .marketplace-type {
-        background: #e3f2fd;
-        color: #1976d2;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-        align-self: flex-start;
+    .grid-capacity {
+        font-size: 14px;
+        color: #555;
     }
 
-    .marketplace-footer {
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .grid-price-section {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding-top: 12px;
+        align-items: flex-end;
+        margin-top: auto;
+        padding-top: 16px;
         border-top: 1px solid #f0f0f0;
+        gap: 16px;
     }
 
-    .marketplace-price {
+    .price-info {
+        text-align: left;
+        flex: 1;
+    }
+
+    .grid-price {
         font-size: 20px;
         font-weight: 700;
         color: #ff6b35;
+        margin-bottom: 4px;
     }
 
-    .marketplace-btn {
+    .price-note {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .grid-btn {
         background: #ff6b35;
         color: white;
         border: none;
@@ -397,11 +663,14 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        flex-shrink: 0;
     }
 
-    .marketplace-btn:hover {
+    .grid-btn:hover {
         background: #e55a2b;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
     }
 
     /* ===== PREMIUM LAYOUT (Chi tiết) ===== */
@@ -1240,61 +1509,79 @@
             position: static;
         }
 
-        /* Marketplace Layout Mobile */
-        .marketplace-layout {
-            grid-template-columns: 1fr;
+        /* List Layout Mobile */
+        .list-layout {
             gap: 1rem;
         }
 
-        .event-card--marketplace {
-            margin-bottom: 1rem;
-        }
-
-        .marketplace-content {
+        .event-card--list {
+            flex-direction: column;
             padding: 1rem;
         }
 
-        .marketplace-title {
-            font-size: 16px;
+        .list-image-section {
+            flex: none;
+            width: 100%;
+            height: 200px;
         }
 
-        .marketplace-footer {
+        .list-content-section {
+            padding: 1rem 0 0 0;
+        }
+
+        .list-title {
+            font-size: 18px;
+        }
+
+        .list-header {
             flex-direction: column;
-            gap: 12px;
-            align-items: stretch;
+            align-items: flex-start;
+            gap: 8px;
         }
 
-        .marketplace-btn {
+        .list-rating {
+            margin-left: 0;
+        }
+
+        .list-price-section {
+            align-items: stretch;
+            margin-top: 16px;
+        }
+
+        .list-btn {
             width: 100%;
             text-align: center;
         }
 
-        /* Premium Layout Mobile */
-        .event-card--premium {
-            flex-direction: column;
-            padding: 0;
+        /* Grid Layout Mobile */
+        .grid-layout {
+            grid-template-columns: 1fr;
+            gap: 1rem;
         }
 
-        .premium-image-section {
-            flex: none;
-            min-height: 200px;
+        .event-card--grid {
+            margin-bottom: 1rem;
         }
 
-        .premium-content-section {
-            padding: 1rem;
+        .grid-content-section {
+            padding: 0.75rem;
         }
 
-        .premium-title {
-            font-size: 20px;
+        .grid-title {
+            font-size: 16px;
         }
 
-        .premium-price-section {
+        .grid-price-section {
             flex-direction: column;
             gap: 12px;
             align-items: stretch;
         }
 
-        .premium-btn {
+        .price-info {
+            text-align: center;
+        }
+
+        .grid-btn {
             width: 100%;
             text-align: center;
         }
@@ -1362,41 +1649,7 @@
 </style>
 
 <main>
-    <!-- 🔍 Search Bar -->
-    <section class="section search-bar">
-        <div class="container">
-            <form class="event-search" th:action="@{/search}" method="get" role="search">
-                <label class="es-field es-grow">
-                    <span class="es-label">Search</span>
-                    <input class="es-input" type="text" name="q" placeholder="Search events, clubs, topics…"
-                           th:value="${query}" />
-                </label>
-
-                <label class="es-field">
-                    <span class="es-label">Type</span>
-                    <select class="es-select" name="type">
-                        <option value="">All</option>
-                        <option value="Music" th:selected="${param.type == 'Music'}">Music</option>
-                        <option value="Workshop" th:selected="${param.type == 'Workshop'}">Workshop</option>
-                        <option value="Festival" th:selected="${param.type == 'Festival'}">Festival</option>
-                        <option value="Competition" th:selected="${param.type == 'Competition'}">Competition</option>
-                        <option value="Other" th:selected="${param.type == 'Other'}">Other</option>
-                    </select>
-                </label>
-
-                <div class="es-field">
-                    <span class="es-label">Time</span>
-                    <div class="es-inline">
-                        <input class="es-input" type="date" name="from" th:value="${param.from}" />
-                        <span class="es-sep">–</span>
-                        <input class="es-input" type="date" name="to" th:value="${param.to}" />
-                    </div>
-                </div>
-
-                <button class="btn btn-primary es-submit" type="submit">Search Events</button>
-            </form>
-        </div>
-    </section>
+    <div th:replace="fragments/searchbar :: searchBar"></div>
 
     <!-- 🧭 Layout: Filter + Results -->
     <section class="section search-results">
@@ -1480,118 +1733,114 @@
                         </select>
                         
                         <div class="layout-toggle">
-                            <button class="layout-btn active" data-layout="marketplace">Marketplace</button>
-                            <button class="layout-btn" data-layout="premium">Premium</button>
+                            <button class="layout-btn active" data-layout="list">List</button>
+                            <button class="layout-btn" data-layout="grid">Grid</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 🔹 Marketplace Layout (Tối giản) -->
-                <div class="marketplace-layout" id="marketplace-layout" th:if="${!#lists.isEmpty(results)}">
-                    <a class="event-card--marketplace" 
+                <!-- 🔹 List Layout (Horizontal - Default) -->
+                <div class="list-layout" id="list-layout" th:if="${!#lists.isEmpty(results)}">
+                    <a class="event-card--list" 
                        th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
                        th:each="event : ${results}">
                         
-                        <img class="marketplace-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
-                        
-                        <div class="marketplace-content">
-                            <h3 class="marketplace-title" th:text="${event.title}">Event title</h3>
-                            
-                            <div class="marketplace-meta">
-                                <div class="marketplace-meta-item">
-                                    <span class="marketplace-meta-icon">📅</span>
-                                    <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">20/09/2025 09:00</span>
-                                </div>
-                                
-                                <div class="marketplace-meta-item">
-                                    <span class="marketplace-meta-icon">📍</span>
-                                    <span th:text="${event.city}">Ho Chi Minh City</span>
-                                </div>
-                                
-                                <div class="marketplace-type" th:text="${event.eventType.name()}">Workshop</div>
-                            </div>
-                            
-                            <div class="marketplace-footer">
-                                <div class="marketplace-price" th:text="${event.priceLabel}">Free</div>
-                                <button class="marketplace-btn">Get Tickets</button>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- 🔹 Premium Layout (Chi tiết) -->
-                <div class="premium-layout" id="premium-layout" style="display: none;" th:if="${!#lists.isEmpty(results)}">
-                    <a class="event-card--premium" 
-                       th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
-                       th:each="event : ${results}">
-                        
-                        <!-- Image Section (40%) -->
-                        <div class="premium-image-section">
-                            <img class="premium-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
-                        </div>
-                        
-                        <!-- Content Section (60%) -->
-                        <div class="premium-content-section">
-                            <div class="premium-header">
-                                <h3 class="premium-title" th:text="${event.title}">Event title</h3>
-                                
-                                <div class="premium-badges">
-                                    <span class="premium-badge featured" th:if="${event.id % 3 == 0}">Featured</span>
-                                    <span class="premium-badge genius" th:if="${event.id % 5 == 0}">Genius</span>
-                                    <span class="premium-badge deal" th:if="${event.id % 7 == 0}">Limited-time Deal</span>
-                                </div>
-                            </div>
-                            
-                            <div class="premium-meta">
-                                <div class="premium-meta-item">
-                                    <span class="premium-meta-icon">📅</span>
-                                    <span th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')}">20/09/2025 09:00</span>
-                                    <span th:if="${event.endsAt != event.startsAt}">
-                                        → <span th:text="${#temporals.format(event.endsAt, 'dd/MM/yyyy HH:mm')}">22/09/2025 17:00</span>
-                                    </span>
-                                </div>
-                                
-                                <div class="premium-meta-item">
-                                    <span class="premium-meta-icon">📍</span>
-                                    <span th:text="${event.city}">Ho Chi Minh City</span>
-                                    <span th:text="' • ' + ((event.id % 10) + 1) + ' km from center'"> • 2.3 km from center</span>
-                                </div>
-                            </div>
-                            
-                            <div class="premium-type-tag">
-                                <span>🏷️</span>
-                                <span th:text="${event.eventType.name()}">Workshop</span>
-                            </div>
-                            
-                            <div class="premium-benefits" th:if="${event.benefits != null and !event.benefits.isEmpty()}">
-                                <span>🎁</span>
-                                <span th:text="${event.benefits}">Free lunch, Certificate, Networking</span>
-                            </div>
-                            
-                            <div class="premium-organizer">
-                                <span>👤</span>
-                                <span th:text="'Organizer: ' + event.organizer">Organizer: Event Organizer</span>
+                        <div class="list-image-section">
+                            <img class="list-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
+                            <div class="list-favorite">
+                                <span>♡</span>
                             </div>
                         </div>
                         
-                        <div class="premium-footer">
-                            <div class="premium-availability">
-                                <div class="premium-availability-info">
-                                    <span>🎫</span>
+                        <div class="list-content-section">
+                            <div class="list-header">
+                                <h3 class="list-title" th:text="${event.title}">Event title</h3>
+                            </div>
+                            
+                            <div class="list-location" th:if="${event.city != null and !event.city.isEmpty() and event.city != 'TBA'}">
+                                <span class="location-text" th:text="${event.city}">Ho Chi Minh City</span>
+                            </div>
+                            <div class="list-location" th:if="${event.city == null or event.city.isEmpty() or event.city == 'TBA'}">
+                                <span class="location-text">Venue TBA</span>
+                            </div>
+                            
+                            <div class="list-type" th:if="${event.eventType != null}">
+                                <span class="type-badge" th:text="${event.eventType.name()}">FESTIVAL</span>
+                            </div>
+                            
+                            <div class="list-details">
+                                <div class="list-datetime" th:if="${event.dateLabel != null and !event.dateLabel.isEmpty()}">
+                                    <span class="datetime-icon">📅</span>
+                                    <span th:text="${event.dateLabel + (event.durationLabel != null and !event.durationLabel.isEmpty() ? ' • ' + event.durationLabel : '')}">15/10/2025 • 3h</span>
+                                </div>
+                                
+                                <div class="list-capacity" th:if="${event.capacity != null and event.registered != null}">
                                     <span th:text="${(event.capacity - event.registered) + ' tickets left'}" 
                                           th:if="${!event.isSoldOut()}">50 tickets left</span>
                                     <span th:text="'Sold Out'" th:if="${event.isSoldOut()}" class="sold-out">Sold Out</span>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="list-price-section">
+                            <div class="price-info">
+                                <div class="list-price" th:text="${event.priceLabel}">Free</div>
+                                <div class="price-note">per ticket</div>
+                            </div>
+                            <button class="list-btn">Get Tickets</button>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 🔹 Grid Layout (Vertical - Booking.com style) -->
+                <div class="grid-layout" id="grid-layout" style="display: none;" th:if="${!#lists.isEmpty(results)}">
+                    <a class="event-card--grid" 
+                       th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
+                       th:each="event : ${results}">
+                        
+                        <!-- Image Section (Top) -->
+                        <div class="grid-image-section">
+                            <img class="grid-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
+                            <div class="grid-favorite">
+                                <span>♡</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Content Section (Bottom) -->
+                        <div class="grid-content-section">
+                            <h3 class="grid-title" th:text="${event.title}">Event title</h3>
                             
-                            <div class="premium-progress">
-                                <div class="premium-progress-fill" th:style="|width: ${event.registrationPercentage}%|"></div>
+                            <div class="grid-location" th:if="${event.city != null and !event.city.isEmpty() and event.city != 'TBA'}">
+                                <span class="location-text" th:text="${event.city}">Ho Chi Minh City</span>
+                            </div>
+                            <div class="grid-location" th:if="${event.city == null or event.city.isEmpty() or event.city == 'TBA'}">
+                                <span class="location-text">Venue TBA</span>
                             </div>
                             
-                            <div class="premium-price-section">
-                                <div class="premium-price" th:text="${event.priceLabel}">Free</div>
-                                <button class="premium-btn">Get Tickets</button>
+                            <div class="grid-type" th:if="${event.eventType != null}">
+                                <span class="type-badge" th:text="${event.eventType.name()}">FESTIVAL</span>
                             </div>
+                            
+                            <div class="grid-details">
+                                <div class="grid-datetime" th:if="${event.dateLabel != null and !event.dateLabel.isEmpty()}">
+                                    <span class="datetime-icon">📅</span>
+                                    <span th:text="${event.dateLabel + (event.durationLabel != null and !event.durationLabel.isEmpty() ? ' • ' + event.durationLabel : '')}">15/10/2025 • 3h</span>
+                                </div>
+                                
+                                <div class="grid-capacity" th:if="${event.capacity != null and event.registered != null}">
+                                    <span th:text="${(event.capacity - event.registered) + ' tickets left'}" 
+                                          th:if="${!event.isSoldOut()}">50 tickets left</span>
+                                    <span th:text="'Sold Out'" th:if="${event.isSoldOut()}" class="sold-out">Sold Out</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid-price-section">
+                            <div class="price-info">
+                                <div class="grid-price" th:text="${event.priceLabel}">Free</div>
+                                <div class="price-note">per ticket</div>
+                            </div>
+                            <button class="grid-btn">Get Tickets</button>
                         </div>
                     </a>
                 </div>
@@ -1614,8 +1863,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const layoutToggle = document.querySelector('.layout-toggle');
     const layoutButtons = document.querySelectorAll('.layout-btn');
-    const marketplaceLayout = document.getElementById('marketplace-layout');
-    const premiumLayout = document.getElementById('premium-layout');
+    const listLayout = document.getElementById('list-layout');
+    const gridLayout = document.getElementById('grid-layout');
     
     // Layout switching functionality
     layoutButtons.forEach(button => {
@@ -1627,18 +1876,18 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             
             // Show/hide layouts
-            if (layout === 'marketplace') {
-                marketplaceLayout.style.display = 'grid';
-                premiumLayout.style.display = 'none';
-            } else if (layout === 'premium') {
-                marketplaceLayout.style.display = 'none';
-                premiumLayout.style.display = 'flex';
+            if (layout === 'list') {
+                listLayout.style.display = 'flex';
+                gridLayout.style.display = 'none';
+            } else if (layout === 'grid') {
+                listLayout.style.display = 'none';
+                gridLayout.style.display = 'grid';
             }
         });
     });
     
     // Prevent default link behavior for buttons inside cards
-    document.querySelectorAll('.marketplace-btn, .premium-btn').forEach(btn => {
+    document.querySelectorAll('.list-btn, .grid-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();

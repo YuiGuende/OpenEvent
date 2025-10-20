@@ -199,6 +199,9 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                     && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
                     && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
             
+            boolean isSaleActive = ticketType.isSalePeriodActive();
+            boolean isSoldOut = ticketType.getAvailableQuantity() <= 0;
+
             TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
                     .ticketTypeId(ticketType.getTicketTypeId())
                     .eventId(ticketType.getEvent().getId())
@@ -215,6 +218,8 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                     .startSaleDate(ticketType.getStartSaleDate())
                     .endSaleDate(ticketType.getEndSaleDate())
                     .isAvailable(isAvailable)
+                    .isSaleActive(isSaleActive)
+                    .isSoldOut(isSoldOut)
                     .build();
             return ticketTypeDTO;
         } catch (Exception e) {

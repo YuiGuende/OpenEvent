@@ -2854,6 +2854,14 @@
                                 150,000 VND
                             </span>
                         </div>
+                        <p th:if="${ticket.saleNotStarted}"
+                           class="sale-countdown" style="margin-top:6px;color:#ff9800;font-weight:600;">
+                            <span th:text="${'Sale starts in ' + ticket.saleStartCountdownText}">Sale starts in 2 days</span>
+                        </p>
+                        <p th:if="${ticket.saleOverdue}"
+                           class="sale-overdue" style="margin-top:6px;color:#e53935;font-weight:700;">
+                            Sale Overdue
+                        </p>
                         <h2 th:if="${!ticket.isSaleActive() or ticket.getSalePercentage() == 0}"
                             th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Price</h2>
                         <p>
@@ -2882,11 +2890,11 @@
                         Sold Out
                     </a>
 
-                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}"
+                    <a th:if="${ticket.saleOverdue and !ticket.isSoldOut()}"
                        href="#"
                        class="btn btn-common disabled"
                        style="background-color: #999; cursor: not-allowed;">
-                        Sale Not Active
+                        Sale Overdue
                     </a>
                 </div>
             </div>

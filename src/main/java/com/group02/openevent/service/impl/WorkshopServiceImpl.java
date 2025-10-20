@@ -10,6 +10,9 @@ import com.group02.openevent.service.IWorkshopService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Duration;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +99,43 @@ public class WorkshopServiceImpl implements IWorkshopService {
 
                     // 🔹 TicketTypes
                     List<TicketTypeDTO> ticketDTOs = ticketTypeRepo.findByEventId(workshopEvent.getId()).stream()
-                            .map(ticket -> new TicketTypeDTO(ticket.getTicketTypeId(),ticket.getEvent().getId(),ticket.getEvent().getTitle(),ticket.getEvent().getImageUrl(), ticket.getName(), ticket.getDescription(), ticket.getPrice(),ticket.getSale(),ticket.getFinalPrice(),ticket.getTotalQuantity(),ticket.getSoldQuantity(), ticket.getAvailableQuantity(), ticket.getStartSaleDate(), ticket.getEndSaleDate(), ticket.isSalePeriodActive(), ticket.isSalePeriodActive(), !ticket.isAvailable()))
+                            .map(ticket -> {
+                                LocalDateTime now = LocalDateTime.now();
+                                boolean isSaleActive = ticket.isSalePeriodActive();
+                                boolean saleNotStarted = ticket.getStartSaleDate() != null && now.isBefore(ticket.getStartSaleDate());
+                                boolean saleOverdue = ticket.getEndSaleDate() != null && now.isAfter(ticket.getEndSaleDate());
+                                boolean isSoldOut = ticket.getAvailableQuantity() <= 0;
+                                String countdown = null;
+                                if (saleNotStarted) {
+                                    long days = Duration.between(now, ticket.getStartSaleDate()).toDays();
+                                    if (days < 0) days = 0;
+                                    countdown = days + (days == 1 ? " day" : " days");
+                                }
+                                return TicketTypeDTO.builder()
+                                        .ticketTypeId(ticket.getTicketTypeId())
+                                        .eventId(ticket.getEvent().getId())
+                                        .eventTitle(ticket.getEvent().getTitle())
+                                        .eventImageUrl(ticket.getEvent().getImageUrl())
+                                        .name(ticket.getName())
+                                        .description(ticket.getDescription())
+                                        .price(ticket.getPrice())
+                                        .sale(ticket.getSale() != null ? ticket.getSale() : BigDecimal.ZERO)
+                                        .finalPrice(ticket.getFinalPrice())
+                                        .totalQuantity(ticket.getTotalQuantity())
+                                        .soldQuantity(ticket.getSoldQuantity())
+                                        .availableQuantity(ticket.getAvailableQuantity())
+                                        .startSaleDate(ticket.getStartSaleDate())
+                                        .endSaleDate(ticket.getEndSaleDate())
+                                        .isAvailable(ticket.getAvailableQuantity() > 0
+                                                && (ticket.getStartSaleDate() == null || now.isAfter(ticket.getStartSaleDate()))
+                                                && (ticket.getEndSaleDate() == null || now.isBefore(ticket.getEndSaleDate())))
+                                        .isSaleActive(isSaleActive)
+                                        .isSoldOut(isSoldOut)
+                                        .saleNotStarted(saleNotStarted)
+                                        .saleStartCountdownText(countdown)
+                                        .saleOverdue(saleOverdue)
+                                        .build();
+                            })
                             .collect(Collectors.toList());
                     dto.setTicketTypes(ticketDTOs);
 

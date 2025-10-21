@@ -1393,7 +1393,7 @@
             border: 2px solid var(--neon-magenta) !important;
             border-radius: 25px !important;
             padding: 40px 40px 60px !important; /* extra bottom padding to keep rows inside */
-            margin: 20px 0 !important;
+            margin: 20px 0 60px 0 !important; /* add space below to separate from next section */
             box-shadow: 0 0 35px rgba(233, 30, 99, 0.3),
             inset 0 0 25px rgba(233, 30, 99, 0.1) !important;
             backdrop-filter: blur(10px) !important;
@@ -1463,17 +1463,18 @@
             text-shadow: 0 0 10px rgba(255, 110, 64, 0.6) !important;
         }
 
+        /* Generic contact list (legacy) */
         .contact-items {
             display: flex !important;
             flex-direction: column !important;
-            gap: 15px !important;
+            gap: 8px !important; /* tighter spacing between rows */
         }
 
         .contact-item {
             display: flex !important;
             align-items: center !important;
             gap: 15px !important;
-            padding: 12px 15px !important;
+            padding: 10px 12px !important; /* more compact row height */
             background: rgba(0, 0, 0, 0.2) !important;
             border-radius: 12px !important;
             border: 1px solid rgba(233, 30, 99, 0.2) !important;
@@ -1489,8 +1490,8 @@
 
         .contact-icon {
             flex-shrink: 0 !important;
-            width: 30px !important;
-            height: 30px !important;
+            width: 28px !important;
+            height: 28px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -1502,7 +1503,7 @@
 
         .contact-icon i {
             color: var(--neon-orange) !important;
-            font-size: 18px !important;
+            font-size: 16px !important;
             text-shadow: 0 0 10px rgba(255, 110, 64, 0.8) !important;
             opacity: 1 !important;
             visibility: visible !important;
@@ -1510,10 +1511,39 @@
             width: 100% !important;
             height: 100% !important;
             text-align: center !important;
-            line-height: 30px !important;
+            line-height: 28px !important;
             margin: 0 !important;
             padding: 0 !important;
         }
+
+        /* Namespaced styles to avoid conflicts */
+        #organizer-details .org-contact-list {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+        #organizer-details .org-contact-item {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 10px 12px !important;
+            background: rgba(0, 0, 0, 0.25) !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(233, 30, 99, 0.25) !important;
+        }
+        #organizer-details .org-contact-icon {
+            flex-shrink: 0 !important;
+            width: 28px !important;
+            height: 28px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 110, 64, 0.1) !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(255, 110, 64, 0.3) !important;
+        }
+        #organizer-details .org-contact-icon i { line-height: 28px !important; font-size: 16px !important; color: var(--neon-orange) !important; }
+        #organizer-details .org-contact-text { flex: 1 !important; }
 
         .contact-text {
             flex: 1 !important;
@@ -1855,6 +1885,9 @@
             border: 2px solid var(--neon-orange) !important;
             box-shadow: 0 0 40px rgba(255, 110, 64, 0.3),
             inset 0 0 30px rgba(255, 110, 64, 0.1) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .subscribe-title {
@@ -1868,9 +1901,7 @@
             display: block !important;
         }
 
-        .subscribe-inner {
-            text-align: center !important;
-        }
+        .subscribe-inner { text-align: center !important; margin: 0 auto !important; max-width: 720px !important; }
 
         .subscribe-inner .form-control {
             background: var(--dark-bg) !important;
@@ -2898,21 +2929,9 @@
         /* ==========================================================================
    Organizer Details Section CSS
    ========================================================================== */
-        #organizer-details {
-            background-color: #f8f9fa; /* Màu nền nhẹ để tách biệt section */
-        }
+        #organizer-details { background: transparent !important; }
 
-        .organizer-details-card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            margin-top: 20px;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px; /* Khoảng cách giữa các phần tử bên trong card */
-        }
+        .organizer-details-card { background: linear-gradient(145deg, #161a2b 0%, #0f1323 100%) !important; border: 2px solid #00e5ff !important; border-radius: 18px !important; box-shadow: 0 0 40px rgba(0, 229, 255, 0.25), inset 0 0 20px rgba(0, 229, 255, 0.08) !important; color: #e6ecf1 !important; overflow: hidden !important; margin-top: 20px !important; margin-bottom: 24px !important; padding: 56px 44px !important; display: flex !important; flex-direction: column !important; gap: 28px !important; }
         
         /* Fix layout alignment and overflow for Organizer block */
         #organizer-details .container {
@@ -2967,72 +2986,27 @@
         /* Fix potential container padding cropping inner rows */
         #organizer-details .row { margin-left: 0; margin-right: 0; }
 
-        .organizer-header {
-            display: flex;
-            align-items: center;
-            gap: 30px; /* Khoảng cách giữa logo và text */
-        }
+        .organizer-header { display: flex !important; align-items: center !important; gap: 24px !important; }
 
         .organizer-logo-wrapper {
             flex-shrink: 0; /* Đảm bảo logo không bị co lại */
         }
 
-        .organizer-logo {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid #ff6e40; /* Màu cam chủ đạo của theme */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+        .organizer-logo { width: 120px !important; height: 120px !important; border-radius: 50% !important; object-fit: cover !important; border: 4px solid #ff4d8d !important; box-shadow: 0 0 20px rgba(255, 77, 141, 0.4) !important; }
 
-        .organizer-info h2 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #333;
-        }
+        .organizer-info h2 { font-size: 32px !important; font-weight: 800 !important; margin: 0 0 8px 0 !important; color: #ffffff !important; }
 
-        .organizer-info p.description {
-            font-size: 16px;
-            line-height: 1.7;
-            color: #555;
-            margin-bottom: 0;
-        }
+        .organizer-info p.description { font-size: 16px !important; line-height: 1.7 !important; color: #c8d2dc !important; margin-bottom: 0 !important; }
 
-        .organizer-contact-details {
-            padding-top: 30px;
-            border-top: 1px solid #e9ecef; /* Đường kẻ ngang phân cách */
-            list-style: none;
-            padding-left: 0;
-            margin: 0;
-        }
+        .organizer-contact-details { box-sizing: border-box !important; width: 100% !important; padding: 0 !important; border-top: 1px solid rgba(0, 229, 255, 0.25) !important; list-style: none !important; margin: 0 !important; background: transparent !important; border: none !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
 
-        .organizer-contact-details li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
+        .organizer-contact-details li { display: flex !important; align-items: center !important; gap: 12px !important; font-size: 16px !important; background: rgba(0,0,0,0.35) !important; border: 1px solid rgba(0,229,255,0.2) !important; border-radius: 12px !important; padding: 12px 16px !important; }
 
-        .organizer-contact-details i {
-            font-size: 20px;
-            color: #ff6e40;
-            margin-right: 15px;
-            width: 25px; /* Căn chỉnh icon cho thẳng hàng */
-            text-align: center;
-        }
+        .organizer-contact-details i { font-size: 18px !important; color: #00e5ff !important; margin-right: 6px !important; width: 22px !important; text-align: center !important; flex-shrink: 0 !important; }
 
-        .organizer-contact-details a {
-            color: #ff6e40;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
+        .organizer-contact-details a { color: #ff6e40 !important; text-decoration: none !important; transition: color 0.3s ease !important; }
 
-        .organizer-contact-details a:hover {
-            color: #333;
-        }
+        .organizer-contact-details a:hover { color: #ff9f7a !important; }
     </style>
 </head>
 
@@ -4032,67 +4006,45 @@
         </div>
         <div class="row justify-content-center">
             <div class="col-lg-10 col-md-12">
-                <!-- Beautiful Organizer Display Box -->
-                <div class="organizer-display-box wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="organizer-content">
-                        <!-- Organization Header -->
-                        <div class="organizer-header-section">
-                            <div class="organizer-logo" th:if="${eventDetail.organization.imageUrl != null}">
-                                <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo">
-                            </div>
-                            <div class="organizer-info">
-                                <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>
-                                <p class="organizer-description" th:if="${eventDetail.organization.description != null}"
-                                   th:text="${eventDetail.organization.description}">
-                                    Organization description goes here.
-                                </p>
-                            </div>
+                <!-- Organizer Card (aligned with competition page styles) -->
+                <div class="organizer-details-card wow fadeInUp" data-wow-delay="0.3s">
+
+                    <div class="organizer-header">
+                        <div class="organizer-logo-wrapper">
+                            <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo"
+                                 class="organizer-logo">
                         </div>
-
-                        <!-- Contact Details -->
-                        <div class="organizer-contact-section">
-                            <h3>Contact Information</h3>
-                            <div class="contact-items">
-                                <div class="contact-item" th:if="${eventDetail.organization.website != null}">
-                                    <div class="contact-icon">
-                                        <i class="lni-world"></i>
-                                    </div>
-                                    <div class="contact-text">
-                                        <a th:href="${eventDetail.organization.website}" target="_blank"
-                                           th:text="${eventDetail.organization.website}">www.organizer-website.com</a>
-                                    </div>
-                                </div>
-
-                                <div class="contact-item" th:if="${eventDetail.organization.email != null}">
-                                    <div class="contact-icon">
-                                        <i class="lni-envelope"></i>
-                                    </div>
-                                    <div class="contact-text">
-                                        <a th:href="${'mailto:' + eventDetail.organization.email}"
-                                           th:text="${eventDetail.organization.email}">contact@organizer.com</a>
-                                    </div>
-                                </div>
-
-                                <div class="contact-item" th:if="${eventDetail.organization.phone != null}">
-                                    <div class="contact-icon">
-                                        <i class="lni-phone-handset"></i>
-                                    </div>
-                                    <div class="contact-text">
-                                        <span th:text="${eventDetail.organization.phone}">+123 456 7890</span>
-                                    </div>
-                                </div>
-
-                                <div class="contact-item" th:if="${eventDetail.organization.address != null}">
-                                    <div class="contact-icon">
-                                        <i class="lni-map-marker"></i>
-                                    </div>
-                                    <div class="contact-text">
-                                        <span th:text="${eventDetail.organization.address}">123 Event Street, City, Country</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="organizer-info">
+                            <h2 th:text="${eventDetail.organization.orgName}">Organization Name</h2>
+                            <p class="description" th:if="${eventDetail.organization.description != null}"
+                               th:text="${eventDetail.organization.description}">
+                                Organization description goes here. This text provides more details about the
+                                organizer's mission and vision.
+                            </p>
                         </div>
                     </div>
+
+                    <ul class="organizer-contact-details">
+                        <li th:if="${eventDetail.organization.website != null}">
+                            <i class="lni-world"></i>
+                            <a th:href="${eventDetail.organization.website}" target="_blank"
+                               th:text="${eventDetail.organization.website}">www.organizer-website.com</a>
+                        </li>
+                        <li th:if="${eventDetail.organization.email != null}">
+                            <i class="lni-envelope"></i>
+                            <a th:href="${'mailto:' + eventDetail.organization.email}"
+                               th:text="${eventDetail.organization.email}">contact@organizer.com</a>
+                        </li>
+                        <li th:if="${eventDetail.organization.phone != null}">
+                            <i class="lni-phone-handset"></i>
+                            <span th:text="${eventDetail.organization.phone}">+123 456 7890</span>
+                        </li>
+                        <li th:if="${eventDetail.organization.address != null}">
+                            <i class="lni-map-marker"></i>
+                            <span th:text="${eventDetail.organization.address}">123 Event Street, City, Country</span>
+                        </li>
+                    </ul>
+
                 </div>
             </div>
         </div>

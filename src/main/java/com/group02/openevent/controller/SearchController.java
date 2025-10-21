@@ -29,6 +29,9 @@ public class SearchController {
         List<EventCardDTO> results = eventService.searchEvents(q, type, from, to);
         model.addAttribute("results", results);
         model.addAttribute("query", q);
+        model.addAttribute("selectedType", type);
+        model.addAttribute("selectedFrom", from);
+        model.addAttribute("selectedTo", to);
         return "event/search";
     }
 }

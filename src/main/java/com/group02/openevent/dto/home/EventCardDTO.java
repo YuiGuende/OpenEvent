@@ -49,12 +49,19 @@ public class EventCardDTO {
         long hours = duration.toHours();
         long minutes = duration.toMinutes() % 60;
         
+        // Nếu duration quá dài (> 24h) thì có thể là dữ liệu sai
+        if (hours > 24) {
+            return "Multi-day event";
+        }
+        
         if (hours > 0 && minutes > 0) {
-            return hours + "h" + minutes + "m";
+            return hours + "h " + minutes + "m";
         } else if (hours > 0) {
             return hours + "h";
-        } else {
+        } else if (minutes > 0) {
             return minutes + "m";
+        } else {
+            return "1h"; // Default fallback
         }
     }
 

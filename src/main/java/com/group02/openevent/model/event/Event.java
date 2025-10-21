@@ -147,6 +147,7 @@ public class Event {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private List<TicketType> ticketTypes = new ArrayList<>();
+
     @Column(name = "venue_address", length = 500)
     private String venueAddress;
 
@@ -156,7 +157,8 @@ public class Event {
     public Event() {
     }
 
-    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+
+    public Event(Long id, boolean poster, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages, Organization organization, String venueAddress, String guidelines) {
         this.id = id;
         this.poster = poster;
         this.parentEvent = parentEvent;
@@ -209,7 +211,10 @@ public class Event {
     }
 
     public double getMaxTicketPice() {
-        double maxTicketPice = 0;
+        if (ticketTypes == null || ticketTypes.isEmpty()) {
+            return 0;
+        }
+        double maxTicketPice = ticketTypes.get(0).getPrice().doubleValue();
         for (TicketType ticketType : ticketTypes) {
             if (ticketType.getPrice().doubleValue() > maxTicketPice) {
                 maxTicketPice = ticketType.getPrice().doubleValue();
@@ -218,9 +223,11 @@ public class Event {
         return maxTicketPice;
 
     }
-
     public double getMinTicketPice() {
-        double minTicketPice = 0;
+        if (ticketTypes == null || ticketTypes.isEmpty()) {
+            return 0;
+        }
+        double minTicketPice = ticketTypes.get(0).getPrice().doubleValue();
         for (TicketType ticketType : ticketTypes) {
             if (ticketType.getPrice().doubleValue() < minTicketPice) {
                 minTicketPice = ticketType.getPrice().doubleValue();

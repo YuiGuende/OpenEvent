@@ -27,13 +27,10 @@
             <a class="btn btn-ghost" href="create-event.html" th:href="@{/events?create=true}">Create Event</a>
             <a id="loginLink" class="btn btn-primary" href="login.html" th:href="@{/login}">Log in</a>
             <div id="userMenu" class="user-menu" style="display:none; position: relative;">
-                <button id="userBtn" class="btn btn-primary user-trigger" type="button"
-                        style="display:inline-flex; align-items:center; gap:10px; border-radius:999px; padding:8px 14px; height:40px; line-height:24px;">
-                    <span id="userAvatar" class="avatar"
-                          style="width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.25); color:#ffffff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;">U</span>
-                    <span id="userName"
-                          style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#ffffff;">User</span>
-                    <span style="display:inline-block; transform: translateY(1px); color:#ffffff;">▾</span>
+                <button id="userBtn" class="btn btn-primary user-trigger user-button" type="button">
+                    <span id="userAvatar" class="avatar user-avatar">U</span>
+                    <span id="userName" class="user-name">User</span>
+                    <span class="dropdown-arrow user-arrow">▾</span>
                 </button>
                 <div id="userDropdown" class="dropdown"
                      style="display:none; position:absolute; right:0; top:50px; min-width:220px; background:#fff; border:1px solid #e5e7eb; box-shadow:0 8px 24px rgba(0,0,0,0.12); border-radius:12px; overflow:hidden; z-index:1000;">
@@ -97,6 +94,17 @@
                     });
                 }
 
+                // Function to format user display name
+                function formatUserDisplay(email, accountId) {
+                    if (email) {
+                        // Extract username part (before @) and limit to 6 characters
+                        var username = email.split('@')[0];
+                        var shortName = username.length > 6 ? username.substring(0, 6) : username;
+                        return 'Hello, ' + shortName + '...';
+                    }
+                    return 'User #' + (accountId || '');
+                }
+
                 // Fetch current user once
                 fetch('/api/current-user').then(function (r) {
                     return r.ok ? r.json() : {authenticated: false};
@@ -105,9 +113,12 @@
                         if (data && data.authenticated) {
                             if (login) login.style.display = 'none';
                             if (menu) menu.style.display = '';
-                            var display = data.email || ('User #' + (data.accountId || ''));
+                            var display = formatUserDisplay(data.email, data.accountId);
                             if (nameEl) nameEl.textContent = display;
-                            if (av) av.textContent = (display || 'U').trim().charAt(0).toUpperCase();
+                            if (av) {
+                                var initial = data.email ? data.email.split('@')[0].charAt(0) : 'U';
+                                av.textContent = initial.toUpperCase();
+                            }
                         } else {
                             if (login) login.style.display = '';
                             if (menu) menu.style.display = 'none';
@@ -117,5 +128,115 @@
                     });
             });
         </script>
+
+        <style>
+            /* Ensure Create Event button keeps original style */
+            .customer-actions .btn-ghost {
+                /* Keep original Create Event button style intact */
+                display: inline-block !important;
+            }
+
+            /* User button base styles */
+            .user-button {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                border-radius: 999px !important;
+                padding: 8px 12px !important;
+                height: 40px !important;
+                line-height: 24px !important;
+                min-width: auto !important;
+            }
+
+            .user-avatar {
+                width: 24px !important;
+                height: 24px !important;
+                border-radius: 50% !important;
+                background: rgba(255, 255, 255, 0.25) !important;
+                color: #ffffff !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-weight: 700 !important;
+                font-size: 12px !important;
+                flex-shrink: 0 !important;
+            }
+
+            .user-name {
+                max-width: 120px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                color: #ffffff !important;
+                font-size: 14px !important;
+                font-weight: 500 !important;
+            }
+
+            .user-arrow {
+                display: inline-block !important;
+                transform: translateY(1px) !important;
+                color: #ffffff !important;
+                font-size: 12px !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Responsive breakpoints */
+            @media (max-width: 768px) {
+                .user-button {
+                    gap: 6px !important;
+                    padding: 6px 8px !important;
+                }
+
+                .user-name {
+                    max-width: 80px !important;
+                    font-size: 13px !important;
+                }
+
+                .user-avatar {
+                    width: 20px !important;
+                    height: 20px !important;
+                    font-size: 11px !important;
+                }
+
+                .user-arrow {
+                    font-size: 10px !important;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .user-button {
+                    gap: 4px !important;
+                    padding: 5px 6px !important;
+                }
+
+                .user-name {
+                    max-width: 50px !important;
+                    font-size: 12px !important;
+                }
+
+                .user-avatar {
+                    width: 18px !important;
+                    height: 18px !important;
+                    font-size: 10px !important;
+                }
+            }
+
+            @media (max-width: 360px) {
+                .user-name {
+                    display: none !important;
+                }
+
+                .user-button {
+                    padding: 6px !important;
+                    gap: 0 !important;
+                    min-width: 32px !important;
+                    justify-content: center !important;
+                }
+
+                .user-arrow {
+                    display: none !important;
+                }
+            }
+        </style>
     </div>
 </header>

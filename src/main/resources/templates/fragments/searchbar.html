@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<body>
+<div th:fragment="searchBar">
+    <style>
+        /* Search Bar Styles (shared) */
+        .event-search {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .es-submit {
+            min-width: 140px;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+
+        /* Responsive for mobile */
+        @media (max-width: 768px) {
+            .event-search {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .es-submit {
+                min-width: auto;
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
+
+    <section class="section search-bar">
+        <div class="container">
+            <form class="event-search" th:action="@{/search}" method="get" role="search">
+                <label class="es-field es-grow">
+                    <span class="es-label">Search</span>
+                    <input class="es-input" type="text" name="q" placeholder="Search events, clubs, topics…"
+                           th:value="${query}" />
+                </label>
+
+                <label class="es-field">
+                    <span class="es-label">Type</span>
+                    <select class="es-select" name="type">
+                        <option value="" th:selected="${selectedType == null or selectedType == ''}">All</option>
+                        <option value="Music" th:selected="${selectedType == 'Music'}">Music</option>
+                        <option value="Workshop" th:selected="${selectedType == 'Workshop'}">Workshop</option>
+                        <option value="Festival" th:selected="${selectedType == 'Festival'}">Festival</option>
+                        <option value="Competition" th:selected="${selectedType == 'Competition'}">Competition</option>
+                        <!-- <option value="Other" th:selected="${selectedType == 'Other'}">Other</option> -->
+                    </select>
+                </label>
+
+                <div class="es-field">
+                    <span class="es-label">Time</span>
+                    <div class="es-inline">
+                        <input class="es-input" type="date" name="from" th:value="${selectedFrom}" />
+                        <span class="es-sep">–</span>
+                        <input class="es-input" type="date" name="to" th:value="${selectedTo}" />
+                    </div>
+                </div>
+
+                <button class="btn btn-primary es-submit" type="submit">Search Events</button>
+            </form>
+        </div>
+    </section>
+</div>
+</body>
+</html>
+
+

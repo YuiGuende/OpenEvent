@@ -80,84 +80,8 @@
 
     <section class="section section-compact search-hero">
         <div class="container">
-            <form class="event-search" th:action="@{/search}" method="get" role="search">
-                <label class="es-field es-grow">
-                    <span class="es-label">Search</span>
-                    <input class="es-input" type="text" name="q" placeholder="Search events, clubs, topics..." />
-                </label>
+            <div th:replace="fragments/searchbar :: searchBar"></div>
 
-                <label class="es-field">
-                    <span class="es-label">Type</span>
-                    <select class="es-select" name="type">
-                        <option value="">All</option>
-                        <option value="Music">Music</option>
-                        <option value="Workshop">Workshop</option>
-                        <option value="Festival">Festival</option>
-                        <option value="Competition">Competition</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </label>
-
-                <div class="es-field">
-                    <span class="es-label">Time</span>
-                    <div class="es-inline">
-                        <input class="es-input" type="date" name="from" />
-                        <span class="es-sep">–</span>
-                        <input class="es-input" type="date" name="to" />
-                        <label class="es-check">
-                            <input type="checkbox" name="freeOnly" value="true" />
-                            <span>Free Only</span>
-                        </label>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary es-submit" type="submit">Search Events</button>
-            </form>
-
-            <!--            <form class="event-search" th:action="@{/events}" method="get" role="search">-->
-<!--                <label class="es-field es-grow">-->
-<!--                    <span class="es-label">Tìm kiếm</span>-->
-<!--                    <input class="es-input" type="text" name="q" placeholder="Tìm sự kiện, CLB, chủ đề…"/>-->
-<!--                </label>-->
-<!--                <label class="es-field">-->
-<!--                    <span class="es-label">Loại</span>-->
-<!--                    <select class="es-select" name="type">-->
-<!--                        <option value="">Tất cả</option>-->
-<!--                        <option>Music</option>-->
-<!--                        <option>Workshop</option>-->
-<!--                        <option>Festival</option>-->
-<!--                        <option>Competition</option>-->
-<!--                        <option>Other</option>-->
-<!--                    </select>-->
-<!--                </label>-->
-
-<!--                <label class="es-field">-->
-<!--                    <span class="es-label">Campus</span>-->
-<!--                    <select class="es-select" name="city">-->
-<!--                        <option value="">Bất kỳ</option>-->
-<!--                        <option>Hà Nội</option>-->
-<!--                        <option>HCM</option>-->
-<!--                        <option>Đà Nẵng</option>-->
-<!--                        <option>Cần Thơ</option>-->
-<!--                        <option>Quy Nhơn</option>-->
-<!--                    </select>-->
-<!--                </label>-->
-
-<!--                <div class="es-field">-->
-<!--                    <span class="es-label">Thời gian</span>-->
-<!--                    <div class="es-inline">-->
-<!--                        <input class="es-input" type="date" name="from"/>-->
-<!--                        <span class="es-sep">–</span>-->
-<!--                        <input class="es-input" type="date" name="to"/>-->
-<!--                        <label class="es-check">-->
-<!--                            <input type="checkbox" name="freeOnly" value="true"/>-->
-<!--                            <span>Chỉ Free</span>-->
-<!--                        </label>-->
-<!--                    </div>-->
-<!--                </div>-->
-
-<!--                <button class="btn btn-primary es-submit" type="submit">Tìm sự kiện</button>-->
-<!--            </form>-->
 
             <div class="chip-row">
                 <a class="chip is-active" th:href="@{/events(reco='for-you')}">For you</a>

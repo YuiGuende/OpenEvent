@@ -1675,6 +1675,26 @@
             display: flex; /* Make card a flex container */
             flex-direction: column; /* Arrange items vertically */
         }
+        /* Discount badge and sale price styles */
+        #pricing .price-block-wrapper .discount-badge {
+            position: absolute !important;
+            top: 8px !important;
+            right: 10px !important;
+            padding: 6px 10px !important;
+            background: linear-gradient(135deg, #ff4d4f, #ff7875) !important;
+            color: #ffffff !important;
+            border-radius: 10px !important;
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            letter-spacing: .5px !important;
+            box-shadow: 0 6px 18px rgba(255,77,79,.35), inset 0 0 8px rgba(255,255,255,.15) !important;
+            transform: rotate(8deg) !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,.45) !important;
+            pointer-events: none !important;
+            z-index: 9 !important;
+        }
+        #pricing .price .final-price { display:block !important; font-size:36px !important; font-weight:900 !important; color:#ffb37a !important; line-height:1.1 !important; }
+        #pricing .price .original-price { display:block !important; margin-top:4px !important; font-size:14px !important; color:#d1d5db !important; opacity:.9 !important; text-decoration:line-through !important; }
 
         #pricing .price-block-wrapper:hover {
             transform: translateY(-10px) !important;
@@ -2815,6 +2835,8 @@
                  th:classappend="${iter.index == 0} ? ' wow fadeInLeft' : (${iter.index == 1} ? ' wow fadeInUp' : ' wow fadeInRight')"
                  th:data-wow-delay="'0.' + ${iter.index + 2} + 's'">
                 <div class="price-block-wrapper">
+                    <div class="discount-badge" th:if="${ticket.isSaleActive() and ticket.getSalePercentage() > 0}"
+                         th:text="${'-' + ticket.getSalePercentage() + '%'}">-15%</div>
                     <div class="icon">
                         <i th:class="${iter.index == 0} ? 'lni-write' : (${iter.index == 1} ? 'lni-layers' : 'lni-leaf')"></i>
                     </div>
@@ -2822,8 +2844,26 @@
                         <h5 th:text="${ticket.name}">Ticket Name</h5>
                     </div>
                     <div class="price">
-                        <h2 th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                            Price</h2>
+                        <div th:if="${ticket.isSaleActive() and ticket.getSalePercentage() > 0}">
+                            <span class="final-price"
+                                  th:text="${#numbers.formatDecimal((ticket.finalPrice != null ? ticket.finalPrice : (ticket.getFinalPrice() != null ? ticket.getFinalPrice() : ticket.price)), 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                120,000 VND
+                            </span>
+                            <span class="original-price"
+                                  th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                150,000 VND
+                            </span>
+                        </div>
+                        <p th:if="${ticket.saleNotStarted}"
+                           class="sale-countdown" style="margin-top:6px;color:#ff9800;font-weight:600;">
+                            <span th:text="${'Sale starts in ' + ticket.saleStartCountdownText}">Sale starts in 2 days</span>
+                        </p>
+                        <p th:if="${ticket.saleOverdue}"
+                           class="sale-overdue" style="margin-top:6px;color:#e53935;font-weight:700;">
+                            Sale Overdue
+                        </p>
+                        <h2 th:if="${!ticket.isSaleActive() or ticket.getSalePercentage() == 0}"
+                            th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Price</h2>
                         <p>
                             <span th:text="${ticket.availableQuantity}"></span> Tickets Available
                         </p>
@@ -2839,7 +2879,10 @@
                     </div>
 
                     <!-- Buy button based on ticket availability and sale status -->
-                    s
+                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut()}"
+                       th:href="@{'/ticket/' + ${eventDetail.getId()}}"
+                       class="btn btn-common">Buy Ticket</a>
+
                     <a th:if="${ticket.isSoldOut()}"
                        href="#"
                        class="btn btn-common disabled"
@@ -2847,11 +2890,11 @@
                         Sold Out
                     </a>
 
-                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}"
+                    <a th:if="${ticket.saleOverdue and !ticket.isSoldOut()}"
                        href="#"
                        class="btn btn-common disabled"
                        style="background-color: #999; cursor: not-allowed;">
-                        Sale Not Active
+                        Sale Overdue
                     </a>
                 </div>
             </div>

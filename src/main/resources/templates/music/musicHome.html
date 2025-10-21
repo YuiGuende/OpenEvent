@@ -1392,12 +1392,14 @@
             background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9)) !important;
             border: 2px solid var(--neon-magenta) !important;
             border-radius: 25px !important;
-            padding: 30px !important;
+            padding: 40px 40px 60px !important; /* extra bottom padding to keep rows inside */
             margin: 20px 0 !important;
             box-shadow: 0 0 35px rgba(233, 30, 99, 0.3),
             inset 0 0 25px rgba(233, 30, 99, 0.1) !important;
             backdrop-filter: blur(10px) !important;
             transition: all 0.3s ease !important;
+            position: relative !important;
+            z-index: 1 !important;
         }
 
         .organizer-display-box:hover {
@@ -2921,6 +2923,9 @@
             box-sizing: border-box;
             margin-left: auto;
             margin-right: auto;
+            overflow: visible; /* allow full content to be seen */
+            padding-bottom: 20px; /* extra space inside card */
+            margin-bottom: 40px; /* spacing from next section */
         }
         #organizer-details .contact-items {
             width: 100%;
@@ -3900,8 +3905,8 @@
                         </ul>
                     </div>
 
-                    <!-- Buy button based on ticket availability and sale status -->
-                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut()}"
+                    <!-- Buy button: purchasable whenever not sold out -->
+                    <a th:if="${!ticket.isSoldOut()}"
                        th:href="@{'/ticket/' + ${eventDetail.getId()}}"
                        class="btn btn-common">Buy Ticket</a>
 
@@ -3912,12 +3917,7 @@
                         Sold Out
                     </a>
 
-                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}"
-                       href="#"
-                       class="btn btn-common disabled"
-                       style="background-color: #999; cursor: not-allowed;">
-                        Sale Not Active
-                    </a>
+                    
                 </div>
             </div>
         </div>
@@ -4068,7 +4068,7 @@
                                         <i class="lni-envelope"></i>
                                     </div>
                                     <div class="contact-text">
-                                        <a th:href="'mailto:' + ${eventDetail.organization.email}"
+                                        <a th:href="${'mailto:' + eventDetail.organization.email}"
                                            th:text="${eventDetail.organization.email}">contact@organizer.com</a>
                                     </div>
                                 </div>

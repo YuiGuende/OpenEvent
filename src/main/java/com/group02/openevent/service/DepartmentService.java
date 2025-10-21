@@ -35,4 +35,13 @@ public interface DepartmentService {
     List<FeaturedEventDTO> getFeaturedEvents(Long departmentId, int limit);
 
     Page<OrderDTO> getOrdersByDepartment(Long departmentId, OrderStatus status, Pageable pageable);
+
+    Double getAverageApprovalTime(Long departmentId);
+
+    Map<String, Object> getApprovalTrendData(Long departmentId);
+
+    Map<String, Object> getRevenueTrendData(Long departmentId);
+
+    Map<String, Object> getOrderStatusDistribution(Long departmentId);
+
 }

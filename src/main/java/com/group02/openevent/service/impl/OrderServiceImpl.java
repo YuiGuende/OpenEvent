@@ -46,7 +46,6 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(CreateOrderRequest request) {
         Event event = eventRepo.findById(request.getEventId())
                 .orElseThrow(() -> new IllegalArgumentException("Event not found: " + request.getEventId()));
-
         Order order = new Order();
         order.setEvent(event);
         order.setParticipantName(request.getParticipantName());

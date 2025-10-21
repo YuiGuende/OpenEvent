@@ -17,7 +17,8 @@ public class DepartmentStatsDTO {
     private long pendingRequests;
     private long ongoingEvents;
     private long totalParticipants;
-
+    private Double revenueChangePercent;
+    private Double cancellationRateChangePercent;
     private BigDecimal totalRevenue;
     private BigDecimal avgOrderValue;
     private double cancellationRate;

@@ -28,7 +28,6 @@ public interface OrderService {
     Optional<Order> getPendingOrderForEvent(Long customerId, Long eventId);
     Integer countUniqueParticipantsByEventId( Long eventId);
     List<Event> findConfirmedEventsByCustomerId(Long customerId);
-
     // New: DTO-based retrieval for customer order listing
     List<UserOrderDTO> getOrderDTOsByCustomerId(Long customerId, OrderStatus status);
     List<UserOrderDTO> getOrderDTOsByCustomer(Customer customer, OrderStatus status);

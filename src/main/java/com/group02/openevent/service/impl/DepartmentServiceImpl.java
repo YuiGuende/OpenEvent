@@ -11,6 +11,7 @@ import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.request.Request;
 import com.group02.openevent.model.request.RequestStatus;
 import com.group02.openevent.repository.*;
 import com.group02.openevent.service.DepartmentService;
@@ -63,6 +64,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         long totalParticipants = departmentOrders.stream()
                 .filter(o -> o.getStatus() == OrderStatus.PAID)
                 .count();
+        Double revenueChangePercent = calculateRevenueChangePercent(departmentOrders);
+        Double cancellationRateChangePercent = calculateCancellationRateChangePercent(departmentOrders);
+        cancellationRateChangePercent = cancellationRateChangePercent == null ? 0 : cancellationRateChangePercent;
 
         // Calculate total revenue from confirmed orders
         BigDecimal totalRevenue = departmentOrders.stream()
@@ -151,6 +155,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .draftArticles(draftArticles)
                 .monthlyStats(monthlyStats)
                 .eventTypeDistribution(eventTypeDistribution)
+                .revenueChangePercent(revenueChangePercent)
+                .cancellationRateChangePercent(cancellationRateChangePercent)
                 .build();
     }
 
@@ -208,7 +214,72 @@ public class DepartmentServiceImpl implements DepartmentService {
         result.put("data", data);
         return result;
     }
+    private Double calculateRevenueChangePercent(List<Order> orders) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime currentMonthStart = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime previousMonthStart = currentMonthStart.minusMonths(1);
+        LocalDateTime previousMonthEnd = currentMonthStart;
 
+        BigDecimal currentMonthRevenue = orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PAID)
+                .filter(o -> o.getCreatedAt() != null)
+                .filter(o -> !o.getCreatedAt().isBefore(currentMonthStart))
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal previousMonthRevenue = orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PAID)
+                .filter(o -> o.getCreatedAt() != null)
+                .filter(o -> !o.getCreatedAt().isBefore(previousMonthStart) && o.getCreatedAt().isBefore(previousMonthEnd))
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (previousMonthRevenue.compareTo(BigDecimal.ZERO) == 0) {
+            return currentMonthRevenue.compareTo(BigDecimal.ZERO) > 0 ? 100.0 : 0.0;
+        }
+
+        return currentMonthRevenue.subtract(previousMonthRevenue)
+                .divide(previousMonthRevenue, 4, BigDecimal.ROUND_HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .doubleValue();
+    }
+
+    private Double calculateCancellationRateChangePercent(List<Order> orders) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime currentMonthStart = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime previousMonthStart = currentMonthStart.minusMonths(1);
+        LocalDateTime previousMonthEnd = currentMonthStart;
+
+        // Current month cancellation rate
+        long currentMonthTotal = orders.stream()
+                .filter(o -> o.getCreatedAt() != null)
+                .filter(o -> !o.getCreatedAt().isBefore(currentMonthStart))
+                .count();
+
+        long currentMonthCancelled = orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CANCELLED)
+                .filter(o -> o.getCreatedAt() != null)
+                .filter(o -> !o.getCreatedAt().isBefore(currentMonthStart))
+                .count();
+
+        double currentMonthRate = currentMonthTotal > 0 ? (currentMonthCancelled * 100.0 / currentMonthTotal) : 0.0;
+
+        // Previous month cancellation rate
+        long previousMonthTotal = orders.stream()
+                .filter(o -> o.getCreatedAt() != null)
+                .filter(o -> !o.getCreatedAt().isBefore(previousMonthStart) && o.getCreatedAt().isBefore(previousMonthEnd))
+                .count();
+
+        long previousMonthCancelled = orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CANCELLED)
+                .filter(o -> o.getCreatedAt() != null)
+                .filter(o -> !o.getCreatedAt().isBefore(previousMonthStart) && o.getCreatedAt().isBefore(previousMonthEnd))
+                .count();
+
+        double previousMonthRate = previousMonthTotal > 0 ? (previousMonthCancelled * 100.0 / previousMonthTotal) : 0.0;
+
+        return currentMonthRate - previousMonthRate;
+    }
     @Override
     public Map<String, Object> getEventsByType(Long departmentId) {
         Department department = departmentRepo.findById(departmentId)
@@ -358,5 +429,141 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .ticketTypeName(order.getTicketType().getName())
                 .createdAt(order.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    public Double getAverageApprovalTime(Long departmentId) {
+        List<Request> approvedRequests = requestRepo.findByReceiver_AccountIdAndStatusOrderByUpdatedAtDesc(
+                departmentId, RequestStatus.APPROVED);
+
+        if (approvedRequests.isEmpty()) {
+            return 0.0;
+        }
+
+        double totalHours = approvedRequests.stream()
+                .mapToDouble(req -> {
+                    if (req.getCreatedAt() != null && req.getUpdatedAt() != null) {
+                        long minutes = java.time.temporal.ChronoUnit.MINUTES.between(req.getCreatedAt(), req.getUpdatedAt());
+                        return minutes / 60.0;
+                    }
+                    return 0.0;
+                })
+                .sum();
+
+        return totalHours / approvedRequests.size();
+    }
+
+    @Override
+    public Map<String, Object> getApprovalTrendData(Long departmentId) {
+        List<Request> allRequests = requestRepo.findByReceiver_AccountId(departmentId);
+        LocalDateTime now = LocalDateTime.now();
+
+        List<String> labels = new ArrayList<>();
+        List<Long> approvedData = new ArrayList<>();
+        List<Long> rejectedData = new ArrayList<>();
+        List<Long> pendingData = new ArrayList<>();
+
+        for (int i = 3; i >= 0; i--) {
+            LocalDateTime weekStart = now.minusWeeks(i).with(java.time.temporal.ChronoField.DAY_OF_WEEK, 1)
+                    .withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime weekEnd = weekStart.plusWeeks(1);
+
+            long approved = allRequests.stream()
+                    .filter(r -> r.getStatus() == RequestStatus.APPROVED)
+                    .filter(r -> r.getUpdatedAt() != null)
+                    .filter(r -> !r.getUpdatedAt().isBefore(weekStart) && r.getUpdatedAt().isBefore(weekEnd))
+                    .count();
+
+            long rejected = allRequests.stream()
+                    .filter(r -> r.getStatus() == RequestStatus.REJECTED)
+                    .filter(r -> r.getUpdatedAt() != null)
+                    .filter(r -> !r.getUpdatedAt().isBefore(weekStart) && r.getUpdatedAt().isBefore(weekEnd))
+                    .count();
+
+            long pending = allRequests.stream()
+                    .filter(r -> r.getStatus() == RequestStatus.PENDING)
+                    .filter(r -> r.getCreatedAt() != null)
+                    .filter(r -> !r.getCreatedAt().isBefore(weekStart) && r.getCreatedAt().isBefore(weekEnd))
+                    .count();
+
+            labels.add("Tuần " + (4 - i));
+            approvedData.add(approved);
+            rejectedData.add(rejected);
+            pendingData.add(pending);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("labels", labels);
+        result.put("approved", approvedData);
+        result.put("rejected", rejectedData);
+        result.put("pending", pendingData);
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getRevenueTrendData(Long departmentId) {
+        List<Order> orders = orderRepo.findByDepartmentId(departmentId);
+        LocalDateTime now = LocalDateTime.now();
+
+        List<String> labels = new ArrayList<>();
+        List<Double> data = new ArrayList<>();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDateTime monthStart = now.minusMonths(i).withDayOfMonth(1)
+                    .withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime monthEnd = monthStart.plusMonths(1);
+
+            BigDecimal monthRevenue = orders.stream()
+                    .filter(o -> o.getStatus() == OrderStatus.PAID)
+                    .filter(o -> o.getCreatedAt() != null)
+                    .filter(o -> !o.getCreatedAt().isBefore(monthStart) && o.getCreatedAt().isBefore(monthEnd))
+                    .map(Order::getTotalAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            labels.add("Tháng " + monthStart.getMonthValue());
+            data.add(monthRevenue.doubleValue() / 1_000_000); // Convert to millions
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("labels", labels);
+        result.put("data", data);
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getOrderStatusDistribution(Long departmentId) {
+        List<Order> orders = orderRepo.findByDepartmentId(departmentId);
+
+        // Count orders by status
+        Map<OrderStatus, Long> statusCount = orders.stream()
+                .collect(Collectors.groupingBy(Order::getStatus, Collectors.counting()));
+
+        List<String> labels = new ArrayList<>();
+        List<Long> data = new ArrayList<>();
+        List<String> backgroundColor = new ArrayList<>();
+
+        // Define colors for each status
+        Map<OrderStatus, String> statusColors = new HashMap<>();
+        statusColors.put(OrderStatus.PENDING, "rgba(245, 158, 11, 0.8)");      // Amber
+        statusColors.put(OrderStatus.PAID, "rgba(16, 185, 129, 0.8)");         // Blue
+        statusColors.put(OrderStatus.CANCELLED, "rgba(239, 68, 68, 0.8)");     // Red
+        statusColors.put(OrderStatus.EXPIRED, "rgba(107, 114, 128, 0.8)");     // Gray
+        statusColors.put(OrderStatus.REFUNDED, "rgba(168, 85, 247, 0.8)");     // Purple
+
+        // Add data for each status
+        for (OrderStatus status : OrderStatus.values()) {
+            long count = statusCount.getOrDefault(status, 0L);
+            if (count > 0) {
+                labels.add(status.toString());
+                data.add(count);
+                backgroundColor.add(statusColors.get(status));
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("labels", labels);
+        result.put("data", data);
+        result.put("backgroundColor", backgroundColor);
+        return result;
     }
 }

@@ -47,4 +47,6 @@ public interface EventService {
     Page<Event> getEventsByDepartment(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
 
     List<EventCardDTO> searchEvents(String keyword, String type, LocalDate startDate, LocalDate endDate);
+
+    long countUniqueParticipantsByEventId(Long id);
 }

@@ -14,7 +14,6 @@ import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.request.Request;
 import com.group02.openevent.model.request.RequestStatus;
 import com.group02.openevent.service.*;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,11 +25,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import org.springframework.web.bind.annotation.*;
 
 
 @Controller
@@ -58,7 +56,7 @@ public class DepartmentController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(HttpSession session, Model model, HttpServletRequest request) {
+    public String dashboard(HttpSession session, Model model) {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
@@ -70,7 +68,7 @@ public class DepartmentController {
         model.addAttribute("pendingRequests", stats.getPendingRequests());
         model.addAttribute("ongoingEvents", stats.getOngoingEvents());
         model.addAttribute("totalParticipants", stats.getTotalParticipants());
-        model.addAttribute("currentUri", request.getRequestURI());//ko hieu lam nhe
+
         return "department/dashboard";
     }
 
@@ -277,6 +275,64 @@ public class DepartmentController {
         return ResponseEntity.ok(data);
     }
 
+    @GetMapping("/api/stats/pending-requests")
+    @ResponseBody
+    public ResponseEntity<?> getPendingRequests(HttpSession session) {
+        Long accountId = getDepartmentAccountId(session);
+
+        Pageable pageable = PageRequest.of(0, 3, Sort.by("createdAt").descending());
+        Page<Request> requests = requestService.getRequestsByReceiver(accountId, RequestStatus.PENDING, pageable);
+
+        List<Map<String, Object>> result = requests.getContent().stream()
+                .map(req -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("requestId", req.getRequestId());
+                    map.put("eventId", req.getEvent().getId());
+                    map.put("eventTitle", req.getEvent().getTitle());
+                    map.put("eventImageUrl", req.getEvent().getImageUrl());
+                    map.put("eventType", req.getEvent().getEventType());
+                    map.put("organizer", req.getEvent().getHost() != null ?
+                            req.getEvent().getHost().getHostName() :
+                            req.getEvent().getOrganization().getOrgName());
+                    map.put("createdAt", req.getCreatedAt());
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/api/stats/upcoming-events")
+    @ResponseBody
+    public ResponseEntity<?> getUpcomingEvents(HttpSession session) {
+        Long accountId = getDepartmentAccountId(session);
+        Department department = departmentService.getDepartmentByAccountId(accountId);
+
+        List<Event> upcomingEvents = department.getEvents().stream()
+                .filter(e -> e.getStatus() == EventStatus.PUBLIC || e.getStatus() == EventStatus.ONGOING)
+                .filter(e -> e.getStartsAt() != null && e.getStartsAt().isAfter(java.time.LocalDateTime.now()))
+                .sorted((a, b) -> a.getStartsAt().compareTo(b.getStartsAt()))
+                .limit(3)
+                .collect(java.util.stream.Collectors.toList());
+
+        List<Map<String, Object>> result = upcomingEvents.stream()
+                .map(event -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", event.getId());
+                    map.put("title", event.getTitle());
+                    map.put("description", event.getDescription());
+                    map.put("imageUrl", event.getImageUrl());
+                    map.put("eventType", event.getEventType());
+                    map.put("startsAt", event.getStartsAt());
+                    map.put("capacity", event.getCapacity());
+                    map.put("registered", eventService.countUniqueParticipantsByEventId(event.getId()));
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/orders")
     public String orders(
             HttpSession session,
@@ -305,7 +361,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Map<String, Object> data = departmentService.getRevenueTrend(department.getAccountId());
+        Map<String, Object> data = departmentService.getRevenueTrendData(department.getAccountId());
         return ResponseEntity.ok(data);
     }
 
@@ -317,5 +373,43 @@ public class DepartmentController {
 
         List<FeaturedEventDTO> featuredEvents = departmentService.getFeaturedEvents(department.getAccountId(), 5);
         return ResponseEntity.ok(featuredEvents);
+    }
+
+    @GetMapping("/api/stats/average-approval-time")
+    @ResponseBody
+    public ResponseEntity<?> getAverageApprovalTime(HttpSession session) {
+        Long accountId = getDepartmentAccountId(session);
+        Department department = departmentService.getDepartmentByAccountId(accountId);
+
+        Double averageHours = departmentService.getAverageApprovalTime(department.getAccountId());
+        long averageMinutes = Math.round((averageHours % 1) * 60);
+        long hours = averageHours.longValue();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("averageHours", hours);
+        result.put("averageMinutes", averageMinutes);
+        result.put("averageTotal", String.format("%.1f", averageHours));
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/api/stats/approval-trend")
+    @ResponseBody
+    public ResponseEntity<?> getApprovalTrend(HttpSession session) {
+        Long accountId = getDepartmentAccountId(session);
+        Department department = departmentService.getDepartmentByAccountId(accountId);
+
+        Map<String, Object> data = departmentService.getApprovalTrendData(department.getAccountId());
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/api/stats/order-status-distribution")
+    @ResponseBody
+    public ResponseEntity<?> getOrderStatusDistribution(HttpSession session) {
+        Long accountId = getDepartmentAccountId(session);
+        Department department = departmentService.getDepartmentByAccountId(accountId);
+
+        Map<String, Object> data = departmentService.getOrderStatusDistribution(department.getAccountId());
+        return ResponseEntity.ok(data);
     }
 }

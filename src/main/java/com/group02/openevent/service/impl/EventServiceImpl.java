@@ -272,10 +272,10 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
-
-
-
-
+    @Override
+    public long countUniqueParticipantsByEventId(Long id) {
+      return  orderService.countUniqueParticipantsByEventId(id);
+    }
 
 
     @Override

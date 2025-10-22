@@ -1,5 +1,64 @@
 // ================== Event Form Management ==================
 
+// Function to handle event type selection (called from HTML onclick)
+window.selectEventType = function(eventType) {
+    console.log('selectEventType called with:', eventType);
+    
+    // Remove active class from all tabs
+    const typeTabs = document.querySelectorAll('.event-type-tab');
+    typeTabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Add active class to clicked tab
+    const clickedTab = Array.from(typeTabs).find(tab => {
+        const tabText = tab.textContent.trim();
+        switch(eventType) {
+            case 'MUSIC': return tabText === 'Music';
+            case 'WORKSHOP': return tabText === 'Workshop';
+            case 'FESTIVAL': return tabText === 'Festival';
+            case 'COMPETITION': return tabText === 'Competition';
+            case 'OTHER': return tabText === 'Other';
+            default: return false;
+        }
+    });
+    
+    if (clickedTab) {
+        clickedTab.classList.add('active');
+    }
+    
+    // Toggle fields based on event type
+    const toggleField = (id, show) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = show ? 'block' : 'none';
+    };
+    
+    // Hide all fields first
+    toggleField('musicFields', false);
+    toggleField('festivalFields', false);
+    toggleField('competitionFields', false);
+    toggleField('workshopFields', false);
+    
+    // Show relevant fields based on event type
+    switch(eventType) {
+        case 'MUSIC':
+            toggleField('musicFields', true);
+            break;
+        case 'FESTIVAL':
+            toggleField('festivalFields', true);
+            break;
+        case 'COMPETITION':
+            toggleField('competitionFields', true);
+            break;
+        case 'WORKSHOP':
+            toggleField('workshopFields', true);
+            break;
+        case 'OTHER':
+            // No specific fields for OTHER type
+            break;
+    }
+    
+    console.log('Tab clicked:', eventType);
+};
+
 // Function to initialize event type tabs (for both create and update pages)
 window.initializeEventTypeTabs = function() {
     console.log('Initializing event type tabs...');
@@ -12,38 +71,52 @@ window.initializeEventTypeTabs = function() {
         return;
     }
     
-    const toggleField = (id, show) => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = show ? 'block' : 'none';
-    };
-
     // Set initial state based on active tab
     const setInitialTabState = () => {
         const activeTab = document.querySelector('.event-type-tab.active');
         if (activeTab) {
             const type = activeTab.textContent.trim();
             console.log('Setting initial state for tab:', type);
-            toggleField('musicFields', type === 'Music');
-            toggleField('festivalFields', type === 'Festival');
-            toggleField('competitionFields', type === 'Competition');
-            toggleField('workshopFields', type === 'Workshop');
+            
+            // Convert tab text to event type and call selectEventType
+            let eventType = '';
+            switch(type) {
+                case 'Music': eventType = 'MUSIC'; break;
+                case 'Workshop': eventType = 'WORKSHOP'; break;
+                case 'Festival': eventType = 'FESTIVAL'; break;
+                case 'Competition': eventType = 'COMPETITION'; break;
+                case 'Other': eventType = 'OTHER'; break;
+            }
+            
+            if (eventType) {
+                // Call selectEventType to set up the fields
+                window.selectEventType(eventType);
+            }
         }
     };
 
     // Set initial state immediately
     setInitialTabState();
 
+    // Add click listeners that use selectEventType
     typeTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            typeTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
             const type = tab.textContent.trim();
             console.log('Tab clicked:', type);
-            toggleField('musicFields', type === 'Music');
-            toggleField('festivalFields', type === 'Festival');
-            toggleField('competitionFields', type === 'Competition');
-            toggleField('workshopFields', type === 'Workshop');
+            
+            // Convert tab text to event type and call selectEventType
+            let eventType = '';
+            switch(type) {
+                case 'Music': eventType = 'MUSIC'; break;
+                case 'Workshop': eventType = 'WORKSHOP'; break;
+                case 'Festival': eventType = 'FESTIVAL'; break;
+                case 'Competition': eventType = 'COMPETITION'; break;
+                case 'Other': eventType = 'OTHER'; break;
+            }
+            
+            if (eventType) {
+                window.selectEventType(eventType);
+            }
         });
     });
 };
@@ -117,42 +190,10 @@ function initializeCreateEventFormListeners() {
         });
     }
 
-    // Event type tabs
-    const typeTabs = document.querySelectorAll('.event-type-tab');
-    const toggleField = (id, show) => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = show ? 'block' : 'none';
-    };
-
-    // Set initial state based on active tab
-    const setInitialTabState = () => {
-        const activeTab = document.querySelector('.event-type-tab.active');
-        if (activeTab) {
-            const type = activeTab.textContent.trim();
-            console.log('Setting initial state for tab:', type);
-            toggleField('musicFields', type === 'Music');
-            toggleField('festivalFields', type === 'Festival');
-            toggleField('competitionFields', type === 'Competition');
-            toggleField('workshopFields', type === 'Workshop');
-        }
-    };
-
-    // Set initial state immediately
-    setInitialTabState();
-
-    typeTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            typeTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            const type = tab.textContent.trim();
-            console.log('Tab clicked:', type);
-            toggleField('musicFields', type === 'Music');
-            toggleField('festivalFields', type === 'Festival');
-            toggleField('competitionFields', type === 'Competition');
-            toggleField('workshopFields', type === 'Workshop');
-        });
-    });
+    // Event type tabs - use the centralized function
+    if (typeof window.initializeEventTypeTabs === 'function') {
+        window.initializeEventTypeTabs();
+    }
 
     // Lineup functionality
     const addLineupBtn = document.getElementById('addLineupBtn');

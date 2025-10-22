@@ -167,6 +167,28 @@
     <main class="order-container">
         <h1>Quản lý đơn hàng</h1>
 
+        <!-- Filters & Sorting -->
+        <div class="order-filters" style="display:flex; gap:12px; align-items:center; margin:12px 0 20px; flex-wrap: wrap;">
+            <div>
+                <label for="statusFilter" style="margin-right:6px; font-weight:500;">Trạng thái:</label>
+                <select id="statusFilter">
+                    <option value="ALL">Tất cả</option>
+                    <option value="PENDING">Chờ thanh toán</option>
+                    <option value="PAID">Đã thanh toán</option>
+                    <option value="CANCELLED">Đã hủy</option>
+                </select>
+            </div>
+            <div>
+                <label for="sortSelect" style="margin-right:6px; font-weight:500;">Sắp xếp:</label>
+                <select id="sortSelect">
+                    <option value="NEWEST">Mới nhất</option>
+                    <option value="OLDEST">Cũ nhất</option>
+                    <option value="PRICE_HIGH">Giá cao nhất</option>
+                    <option value="PRICE_LOW">Giá thấp nhất</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Order Creation Form -->
         <div class="order-form">
             <h2>Tạo đơn hàng mới</h2>
@@ -222,6 +244,15 @@
         <!-- Orders List -->
         <div id="ordersContainer">
             <!-- Orders will be loaded dynamically -->
+        </div>
+        
+        <!-- Order Detail Modal -->
+        <div id="orderDetailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+            <div style="background:#fff; max-width:700px; margin:60px auto; padding:20px; border-radius:8px; position:relative;">
+                <button data-close-modal style="position:absolute; top:10px; right:10px; background:#eee; border:none; border-radius:4px; padding:6px 10px; cursor:pointer;">Đóng</button>
+                <h3 style="margin-top:0;">Chi tiết đơn hàng</h3>
+                <div id="orderDetailBody"></div>
+            </div>
         </div>
     </main>
 

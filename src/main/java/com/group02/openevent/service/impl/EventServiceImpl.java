@@ -154,9 +154,54 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        // 🟢 Places - Handle places from JSON data
-        if (request.getPlaces() != null) {
-            log.info("Processing {} places for event {}", request.getPlaces().size(), id);
+        // 🟢 Places - Handle places from JSON data with proper deletion support
+        if (request.getPlaceUpdateRequests() != null && !request.getPlaceUpdateRequests().isEmpty()) {
+            log.info("Processing {} place update requests for event {}", request.getPlaceUpdateRequests().size(), id);
+
+            // Clear existing places relationship
+            event.getPlaces().clear();
+
+            // Process each place update request
+            for (PlaceUpdateRequest placeUpdateRequest : request.getPlaceUpdateRequests()) {
+                // Skip deleted places
+                if (Boolean.TRUE.equals(placeUpdateRequest.getIsDeleted())) {
+                    log.info("Skipping deleted place: {}", placeUpdateRequest.getPlaceName());
+                    continue;
+                }
+
+                Place place;
+
+                if (placeUpdateRequest.getId() != null) {
+                    // Existing place - find by ID
+                    place = placeRepo.findById(placeUpdateRequest.getId())
+                            .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeUpdateRequest.getId()));
+                    
+                    // Update existing place if needed
+                    if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) || 
+                        !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {
+                        place.setPlaceName(placeUpdateRequest.getPlaceName());
+                        place.setBuilding(placeUpdateRequest.getBuilding());
+                        place = placeRepo.save(place);
+                    }
+                } else {
+                    // New place - create new
+                    place = new Place();
+                    place.setPlaceName(placeUpdateRequest.getPlaceName());
+                    place.setBuilding(placeUpdateRequest.getBuilding());
+                    place = placeRepo.save(place);
+                    log.info("Created new place: {}", place.getPlaceName());
+                }
+
+                // Add to event's places
+                event.getPlaces().add(place);
+                log.info("Added place to event: {} (ID: {})", place.getPlaceName(), place.getId());
+            }
+
+            log.info("Updated event with {} places", event.getPlaces().size());
+            log.info("Event places after update: {}", event.getPlaces().stream().map(p -> p.getPlaceName() + "(ID:" + p.getId() + ")").collect(Collectors.joining(", ")));
+        } else if (request.getPlaces() != null) {
+            // Fallback to old logic if placeUpdateRequests is not available
+            log.info("Processing {} places for event {} (fallback mode)", request.getPlaces().size(), id);
 
             // Clear existing places relationship
             event.getPlaces().clear();
@@ -167,7 +212,7 @@ public class EventServiceImpl implements EventService {
 
                 if (placeRequest.getId() != null) {
                     // Existing place - find by ID
-                    place = placeRepo.findById(Long.parseLong(placeRequest.getId().toString()))
+                    place = placeRepo.findById(placeRequest.getId())
                             .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeRequest.getId()));
                 } else {
                     // New place - create new
@@ -181,10 +226,13 @@ public class EventServiceImpl implements EventService {
                 event.getPlaces().add(place);
             }
 
-            log.info("Updated event with {} places", event.getPlaces().size());
+            log.info("Updated event with {} places (fallback mode)", event.getPlaces().size());
         }
         // ✅ Save cuối cùng
+        log.info("Saving event with {} places to database", event.getPlaces().size());
         Event saved = eventRepo.saveAndFlush(event);
+        log.info("Event saved successfully with ID: {}", saved.getId());
+        log.info("Saved event has {} places", saved.getPlaces().size());
         return eventMapper.toEventResponse(saved);
     }
 

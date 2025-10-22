@@ -900,14 +900,37 @@
     const tickets = document.querySelectorAll(".ticket");
     const orderList = document.getElementById("order-list");
     const totalDisplay = document.getElementById("total");
-    
+    const selectedTicketId = /*[[${selectedTicketId}]]*/ null;
     // Load host discount from server
     const hostDiscountElement = document.querySelector('.host-discount-info');
     if (hostDiscountElement) {
         const discountText = hostDiscountElement.querySelector('.discount-text strong').textContent;
         hostDiscountPercent = parseInt(discountText.replace('%', ''));
     }
+    document.addEventListener('DOMContentLoaded', () => {
 
+        // (C) Kiểm tra xem có ID nào được gửi qua không
+        if (selectedTicketId) {
+
+            // (D) Tìm phần tử div của vé đó dựa trên data-ticket-id
+            const ticketElement = document.querySelector(`.ticket[data-ticket-id='${selectedTicketId}']`);
+
+            if (ticketElement) {
+                // (E) Nếu tìm thấy, thêm class CSS để làm nổi bật
+                ticketElement.classList.add('selected');
+
+                // (F) Tự động cuộn màn hình đến vé đó
+                ticketElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center' // Căn vé vào giữa màn hình
+                });
+
+                // (G) [TÙY CHỌN] Nếu bạn muốn tự động thêm vào giỏ hàng:
+                // Bạn có thể gọi hàm JavaScript thêm giỏ hàng (nếu có) tại đây.
+                updateSummary(ticketElement);
+            }
+        }
+    });
     // chọn ticket
     tickets.forEach(ticket => {
         ticket.addEventListener("click", () => {

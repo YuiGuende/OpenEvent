@@ -8,7 +8,7 @@ CREATE TABLE account
     email         VARCHAR(100) NOT NULL UNIQUE,
     phone_number VARCHAR(20),
     password_hash VARCHAR(255) NOT NULL,
-    role          ENUM('ADMIN','CUSTOMER','HOST') NOT NULL
+    role          ENUM('ADMIN','CUSTOMER','HOST','DEPARTMENT') NOT NULL
 );
 
 CREATE TABLE organization

@@ -1,0 +1,304 @@
+
+<div class="container" th:fragment="content">
+    <style>
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+
+        .modal {
+            z-index: 1050 !important;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-paid {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-expired {
+            background-color: #e2e3e5;
+            color: #6c757d;
+        }
+
+        .status-refunded {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-option.active {
+            background-color: var(--orange-primary) !important;
+            color: white !important;
+            border-color: var(--orange-primary) !important;
+        }
+
+        /* Modal close button fix */
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: 0.5;
+            cursor: pointer;
+        }
+
+        .btn-close:hover {
+            opacity: 0.75;
+        }
+
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+    </style>
+    <!-- Using Bootstrap card component -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <!-- Search and Filter Bar using Bootstrap flex utilities -->
+            <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+                <!-- Search Input with Bootstrap input-group -->
+                <div class="flex-grow-1" style="min-width: 300px;">
+                    <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                            </span>
+                        <input
+                                type="text"
+                                class="form-control border-start-0 ps-0"
+                                id="searchInput"
+                                placeholder="Tìm kiếm theo tên, email, hoặc mã đơn hàng #"
+                        />
+                    </div>
+                </div>
+
+                <!-- Sort Dropdown using Bootstrap select -->
+                <select class="form-select" id="sortDropdown" style="width: auto; min-width: 150px;">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="amount-high">Giá cao nhất</option>
+                    <option value="amount-low">Giá thấp nhất</option>
+                </select>
+
+                <!-- Status Filter Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
+                    </svg>
+                        <span id="statusFilterText">Tất cả trạng thái</span>
+                </button>
+                    <ul class="dropdown-menu" aria-labelledby="statusFilterDropdown">
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="" onclick="selectStatusFilter(this)">Tất cả</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="PENDING" onclick="selectStatusFilter(this)">Chờ xử lý</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="PAID" onclick="selectStatusFilter(this)">Đã thanh toán</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="CANCELLED" onclick="selectStatusFilter(this)">Đã hủy</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="EXPIRED" onclick="selectStatusFilter(this)">Hết hạn</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="REFUNDED" onclick="selectStatusFilter(this)">Hoàn tiền</a></li>
+                    </ul>
+                </div>
+
+                <!-- Export Button with custom gradient -->
+                <button class="btn bg-gradient-green text-white d-flex align-items-center gap-2 btn-export" id="exportBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Xuất
+                </button>
+            </div>
+
+            <!-- Orders Table using Bootstrap table classes -->
+            <div th:if="${orders.hasContent()}">
+                <div class="table-responsive">
+                    <table class="table table-hover orders-table mb-4">
+                        <thead>
+                        <tr>
+                            <th class="py-3">Mã đơn</th>
+                            <th class="py-3">Sự kiện</th>
+                            <th class="py-3">Loại vé</th>
+                            <th class="py-3">Người tham gia</th>
+                            <th class="py-3">Trạng thái</th>
+                            <th class="py-3">Tổng tiền</th>
+                            <th class="py-3">Ngày tạo</th>
+                            <th class="py-3">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="order : ${orders.content}">
+                            <td>
+                                <span class="fw-semibold text-secondary">#<span th:text="${order.orderId}"></span></span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img
+                                            th:src="${order.eventImageUrl != null ? order.eventImageUrl : '/images/default-event.jpg'}"
+                                            alt="Event"
+                                            class="rounded"
+                                            style="width: 50px; height: 50px; object-fit: cover;"
+                                    />
+                                    <span class="fw-medium text-truncate" style="max-width: 200px;" th:text="${order.eventTitle}"></span>
+                                </div>
+                            </td>
+                            <td th:text="${order.ticketTypeName}"></td>
+                            <td th:text="${order.participantName}"></td>
+                            <td>
+                                        <span
+                                                class="status-badge"
+                                                th:classappend="${'status-' + #strings.toLowerCase(order.status)}"
+                                                th:text="${order.status}"
+                                        ></span>
+                            </td>
+                            <td>
+                                <span class="fw-bold fs-6" style="color: var(--orange-primary);" th:text="${order.formattedAmount}"></span>
+                            </td>
+                            <td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td>
+                                <button
+                                        class="btn btn-sm btn-outline-primary"
+                                        style="border-color: var(--orange-primary); color: var(--orange-primary);"
+                                        th:attr="data-order-id=${order.orderId}"
+                                        onclick="viewOrderDetail(this)"
+                                >
+                                    Xem chi tiết
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination using Bootstrap pagination -->
+                <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                    <div class="text-muted small">
+                        Hiển thị <span th:text="${orders.numberOfElements}"></span> trong tổng số <span th:text="${orders.totalElements}"></span> đơn hàng
+                    </div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/fragments/orders(page=${orders.number - 1}, size=${orders.size}, status=${selectedStatus})}">
+                                    Trước
+                                </a>
+                            </li>
+
+                            <li
+                                    class="page-item"
+                                    th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}"
+                                    th:classappend="${i == orders.number} ? 'active'"
+                            >
+                                <a class="page-link" th:href="@{/fragments/orders(page=${i}, size=${orders.size}, status=${selectedStatus})}" th:text="${i + 1}"></a>
+                            </li>
+
+                            <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/fragments/orders(page=${orders.number + 1}, size=${orders.size}, status=${selectedStatus})}">
+                                    Sau
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Empty State using Bootstrap utilities -->
+            <div th:unless="${orders.hasContent()}" class="text-center py-5">
+                <svg class="mx-auto mb-4 opacity-50" width="120" height="120" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="40" y="60" width="120" height="100" rx="8" stroke="#9ca3af" stroke-width="3" fill="none"/>
+                    <path d="M40 80 L160 80" stroke="#9ca3af" stroke-width="3"/>
+                    <circle cx="70" cy="110" r="8" fill="#9ca3af"/>
+                    <line x1="90" y1="110" x2="140" y2="110" stroke="#9ca3af" stroke-width="3"/>
+                    <circle cx="70" cy="135" r="8" fill="#9ca3af"/>
+                    <line x1="90" y1="135" x2="140" y2="135" stroke="#9ca3af" stroke-width="3"/>
+                    <path d="M50 40 Q50 20 70 20 L130 20 Q150 20 150 40" stroke="#9ca3af" stroke-width="3" fill="none"/>
+                    <circle cx="100" cy="30" r="15" fill="#e5e7eb"/>
+                    <text x="100" y="38" text-anchor="middle" font-size="20" fill="#6b7280">$</text>
+                </svg>
+                <h3 class="h5 fw-semibold text-secondary mb-2">Không có đơn hàng nào để hiển thị</h3>
+                <p class="text-muted small">Đơn hàng của bạn sẽ xuất hiện ở đây sau khi chúng bắt đầu tham gia.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal using Bootstrap modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header modal-header-gradient border-0">
+                    <h5 class="modal-title fw-semibold">Chi tiết đơn hàng #<span id="detailOrderId"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Event Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Thông tin sự kiện</h6>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Tên sự kiện</span>
+                            <span class="fw-medium text-end" id="detailEventTitle"></span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Loại vé</span>
+                            <span class="fw-medium" id="detailTicketType"></span>
+                        </div>
+                    </div>
+
+                    <!-- Participant Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Thông tin người tham gia</h6>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Họ và tên</span>
+                            <span class="fw-medium" id="detailParticipantName"></span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Email</span>
+                            <span class="fw-medium" id="detailCustomerEmail"></span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div class="mb-3">
+                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Thông tin thanh toán</h6>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Trạng thái</span>
+                            <span id="detailStatus"></span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Ngày tạo</span>
+                            <span class="fw-medium" id="detailCreatedAt"></span>
+                        </div>
+                        <div class="bg-light rounded p-3 mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold fs-6">Tổng tiền</span>
+                                <span class="fw-bold fs-4" style="color: var(--orange-primary);" id="detailTotalAmount"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/orders.js"></script>
+</div>

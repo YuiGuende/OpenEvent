@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group02.openevent.model.enums.Building;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,7 +18,7 @@ public class Place {
 
     @ManyToMany(mappedBy = "places", fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Event> events;
+    private List<Event> events = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

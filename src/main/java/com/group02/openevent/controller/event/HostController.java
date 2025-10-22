@@ -1,8 +1,12 @@
 package com.group02.openevent.controller.event;
 
+import com.group02.openevent.dto.department.OrderDTO;
 import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import jakarta.servlet.http.HttpSession;
@@ -10,10 +14,15 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +66,8 @@ public class HostController {
 
     @GetMapping("/fragment/dashboard")
     public String dashboard(Model model, HttpSession session) {
-        Long id = getHostAccountId(session);
+//        getHostAccountId(session);
+        Long id = Long.parseLong("1");
         List<Event> eventResponses = eventService.getEventByHostId(id);
         model.addAttribute("events", eventResponses);
         return "fragments/dashboard :: content";
@@ -65,7 +75,7 @@ public class HostController {
 
     @GetMapping("/fragment/events")
     public String events(Model model, HttpSession session) {
-        Long id = getHostAccountId(session);
+        Long id = Long.parseLong("1");
         EventCreationRequest request = new EventCreationRequest();
         model.addAttribute("eventForm", request);
         List<Event> eventResponses = eventService.getEventByHostId(id);
@@ -80,6 +90,8 @@ public class HostController {
     public String settings(Model model) {
         return "fragments/settings :: content";
     }
+
+
 
 //    @GetMapping("/event/manage/{id}")
 //    public String manageEvent(@PathVariable Long id, Model model) {

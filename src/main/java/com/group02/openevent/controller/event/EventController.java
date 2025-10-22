@@ -97,8 +97,10 @@ public class EventController {
                              @RequestParam(value = "placesJson", required = false) String placesJson,
                              @RequestParam(value = "ticketsJson", required = false) String ticketsJson,
                              Model model){
-        log.info("Controller Update Event with ID: {}", id);
-        log.info("Event Type: {}", request.getEventType());
+        log.info("🔍 EventController: updateEvent called with ID: {}", id);
+        log.info("🔍 EventController: Event Type: {}", request.getEventType());
+        log.info("🔍 EventController: placesJson received: {}", placesJson);
+        log.info("🔍 EventController: ticketsJson received: {}", ticketsJson);
 
         try {
             // Process places from JSON if provided
@@ -109,20 +111,23 @@ public class EventController {
                         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
                 List<PlaceUpdateRequest> placeRequests = objectMapper.readValue(placesJson, new TypeReference<List<PlaceUpdateRequest>>() {});
 
-                // Convert PlaceUpdateRequest to Place entities
+                // Convert PlaceUpdateRequest to Place entities (keep all places, including deleted ones)
                 List<Place> places = placeRequests.stream()
-                    .filter(pr -> !Boolean.TRUE.equals(pr.getIsDeleted())) // Filter out deleted places
                     .map(pr -> {
                         Place place = new Place();
                         place.setId(pr.getId());
                         place.setPlaceName(pr.getPlaceName());
                         place.setBuilding(pr.getBuilding());
+                        // Store isDeleted flag in a custom field or handle it in service layer
                         return place;
                     })
                     .collect(Collectors.toList());
 
+                // Store the original PlaceUpdateRequest list for service layer to process deletions
                 request.setPlaces(places);
-                log.info("Parsed {} places from JSON (after filtering deleted)", places.size());
+                // Also store the original requests to handle deletions properly
+                request.setPlaceUpdateRequests(placeRequests);
+                log.info("Parsed {} places from JSON (including deleted places)", places.size());
             }
 
             // Process tickets from JSON if provided
@@ -183,8 +188,10 @@ public class EventController {
                 log.info("Processed {} tickets from JSON", ticketRequests.size());
             }
 
+        log.info("🔍 EventController: About to call eventService.updateEvent()");
         EventResponse updated = eventService.updateEvent(id, request);
-            log.info("Event updated successfully with type: {}", updated.getEventType());
+        log.info("🔍 EventController: eventService.updateEvent() completed");
+        log.info("Event updated successfully with type: {}", updated.getEventType());
 
         model.addAttribute("updated", updated);
         model.addAttribute("message", "Cập nhật thành công!");

@@ -1,82 +1,82 @@
-<!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-	<meta charset="UTF-8">
-	<title>User Events - OpenEvent</title>
-	<link rel="stylesheet" th:href="@{/css/main.css}" />
-</head>
-<body>
+<!--<!DOCTYPE html>-->
+<!--<html lang="vi" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--	<meta charset="UTF-8">-->
+<!--	<title>User Events - OpenEvent</title>-->
+<!--	<link rel="stylesheet" th:href="@{/css/main.css}" />-->
+<!--</head>-->
+<!--<body>-->
 
-<!-- Header -->
-<header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
+<!--&lt;!&ndash; Header &ndash;&gt;-->
+<!--<header th:replace="~{fragments/header :: siteHeader('customer')}"></header>-->
 
-<main class="page-main">
-<section class="section">
-  <div class="container section--raised">
+<!--<main class="page-main">-->
+<!--<section class="section">-->
+<!--  <div class="container section&#45;&#45;raised">-->
 
-    <div class="section-head">
-      <h2>Yours Events</h2>
-      <a class="link" th:href="@{/events}">Xem tất cả</a>
-    </div>
+<!--    <div class="section-head">-->
+<!--      <h2>Yours Events</h2>-->
+<!--      <a class="link" th:href="@{/events}">Xem tất cả</a>-->
+<!--    </div>-->
 
-    <!-- Render when myEvents exists -->
-    <div class="grid grid-3" th:if="${#ctx.containsVariable('myEvents')}">
-      <article th:each="ev : ${myEvents}"
-               th:replace="fragments/event-card :: eventCard(ev=${ev})"></article>
-    </div>
+<!--    &lt;!&ndash; Render when myEvents exists &ndash;&gt;-->
+<!--    <div class="grid grid-3" th:if="${#ctx.containsVariable('myEvents')}">-->
+<!--      <article th:each="ev : ${myEvents}"-->
+<!--               th:replace="fragments/event-card :: eventCard(ev=${ev})"></article>-->
+<!--    </div>-->
 
-    <!-- Fallback demo when myEvents is absent -->
-    <div class="grid grid-3"
-         th:unless="${#ctx.containsVariable('myEvents')}"
-         th:with="
-           ev1=${#maps.map(
-             'title','Tên sự kiện',
-             'coverUrl', @{/img/event1.jpg},
-             'city','HCM',
-             'dateLabel','17/09/2025',
-             'capacity',200, 'registered',120,
-             'organizer','FPT Club', 'priceLabel','Free', 'durationLabel','2h',
-             'tags', #lists.arrayList('Music'),
-             'isLive', false, 'soldOut', false
-           )},
-           ev2=${#maps.map(
-             'title','Tên sự kiện',
-             'coverUrl', @{/img/event2.jpg},
-             'city','Hà Nội',
-             'dateLabel','20/09/2025',
-             'capacity',300, 'registered',290,
-             'organizer','GDSC', 'priceLabel','50k', 'durationLabel','3h',
-             'tags', #lists.arrayList('Workshop'),
-             'isLive', false, 'soldOut', false
-           )},
-           ev3=${#maps.map(
-             'title','Tên sự kiện',
-             'coverUrl', @{/img/event3.jpg},
-             'city','Đà Nẵng',
-             'dateLabel','22/09/2025',
-             'capacity',150, 'registered',150,
-             'organizer','Biz Club', 'priceLabel','Free', 'durationLabel','1.5h',
-             'tags', #lists.arrayList('Conference'),
-             'isLive', false, 'soldOut', true
-           )}">
-      <article th:replace="fragments/event-card :: eventCard(ev=${ev1})"></article>
-      <article th:replace="fragments/event-card :: eventCard(ev=${ev2})"></article>
-      <article th:replace="fragments/event-card :: eventCard(ev=${ev3})"></article>
-    </div>
+<!--    &lt;!&ndash; Fallback demo when myEvents is absent &ndash;&gt;-->
+<!--    <div class="grid grid-3"-->
+<!--         th:unless="${#ctx.containsVariable('myEvents')}"-->
+<!--         th:with="-->
+<!--           ev1=${#maps.map(-->
+<!--             'title','Tên sự kiện',-->
+<!--             'coverUrl', @{/img/event1.jpg},-->
+<!--             'city','HCM',-->
+<!--             'dateLabel','17/09/2025',-->
+<!--             'capacity',200, 'registered',120,-->
+<!--             'organizer','FPT Club', 'priceLabel','Free', 'durationLabel','2h',-->
+<!--             'tags', #lists.arrayList('Music'),-->
+<!--             'isLive', false, 'soldOut', false-->
+<!--           )},-->
+<!--           ev2=${#maps.map(-->
+<!--             'title','Tên sự kiện',-->
+<!--             'coverUrl', @{/img/event2.jpg},-->
+<!--             'city','Hà Nội',-->
+<!--             'dateLabel','20/09/2025',-->
+<!--             'capacity',300, 'registered',290,-->
+<!--             'organizer','GDSC', 'priceLabel','50k', 'durationLabel','3h',-->
+<!--             'tags', #lists.arrayList('Workshop'),-->
+<!--             'isLive', false, 'soldOut', false-->
+<!--           )},-->
+<!--           ev3=${#maps.map(-->
+<!--             'title','Tên sự kiện',-->
+<!--             'coverUrl', @{/img/event3.jpg},-->
+<!--             'city','Đà Nẵng',-->
+<!--             'dateLabel','22/09/2025',-->
+<!--             'capacity',150, 'registered',150,-->
+<!--             'organizer','Biz Club', 'priceLabel','Free', 'durationLabel','1.5h',-->
+<!--             'tags', #lists.arrayList('Conference'),-->
+<!--             'isLive', false, 'soldOut', true-->
+<!--           )}">-->
+<!--      <article th:replace="fragments/event-card :: eventCard(ev=${ev1})"></article>-->
+<!--      <article th:replace="fragments/event-card :: eventCard(ev=${ev2})"></article>-->
+<!--      <article th:replace="fragments/event-card :: eventCard(ev=${ev3})"></article>-->
+<!--    </div>-->
 
-    <div class="pager">
-      <button class="icon-btn" aria-label="Prev">‹</button>
-      <span>1 / 5</span>
-      <button class="icon-btn" aria-label="Next">›</button>
-    </div>
+<!--    <div class="pager">-->
+<!--      <button class="icon-btn" aria-label="Prev">‹</button>-->
+<!--      <span>1 / 5</span>-->
+<!--      <button class="icon-btn" aria-label="Next">›</button>-->
+<!--    </div>-->
 
-  </div>
-</section>
-</main>
+<!--  </div>-->
+<!--</section>-->
+<!--</main>-->
 
-<!-- Footer -->
-<footer th:replace="~{fragments/footer :: siteFooter()}"></footer>
+<!--&lt;!&ndash; Footer &ndash;&gt;-->
+<!--<footer th:replace="~{fragments/footer :: siteFooter()}"></footer>-->
 
-<script th:src="@{/js/main.js}"></script>
-</body>
-</html>
+<!--<script th:src="@{/js/main.js}"></script>-->
+<!--</body>-->
+<!--</html>-->

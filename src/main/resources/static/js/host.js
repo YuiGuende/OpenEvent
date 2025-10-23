@@ -6,16 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
 const HostDashboard = {
     // Initialize dashboard
     init() {
+        this.mainContent = document.querySelector('.main-content');
         this.setupEventListeners();
-        this.loadDashboardData();
         this.setupResponsiveBehavior();
+        this.loadInitialPage();
     },
 
     // Setup all event listeners
     setupEventListeners() {
         this.setupNavigation();
         this.setupHeaderActions();
-        this.setupEventActions();
         this.setupUtilityButtons();
         this.setupSidebarTooltips();
         this.setupMobileMenu();
@@ -23,22 +23,6 @@ const HostDashboard = {
     },
 
     // Navigation handling
-    setupNavigation() {
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', () => this.handleNavigation(item));
-        });
-
-        // Route bindings
-        // const navEvents = document.getElementById('nav-events');
-        // if (navEvents) navEvents.addEventListener('click', () => {
-        //     window.location.href = 'api/events/event';
-        // });
-        const navHost = document.getElementById('nav-host');
-        if (navHost) navHost.addEventListener('click', () => {
-            window.location.href = '/host';
-        });
-    },
 
     // Header actions (live status, share, user menu)
     setupHeaderActions() {
@@ -68,23 +52,6 @@ const HostDashboard = {
     },
 
     // Event-specific actions
-    setupEventActions() {
-        const actionBtns = document.querySelectorAll('.action-btn');
-        actionBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showEventActions(btn);
-            });
-        });
-
-        // Click on event card navigates to events page
-        // const eventCards = document.querySelectorAll('.event-card');
-        // eventCards.forEach(card => {
-        //     card.addEventListener('click', () => {
-        //         window.location.href = '/events';
-        //     });
-        // });
-    },
 
     // Utility buttons (FAB, collapse sidebar)
     setupUtilityButtons() {
@@ -142,30 +109,137 @@ const HostDashboard = {
         
         if (sidebarToggleBtn && sidebar) {
             sidebarToggleBtn.addEventListener('click', () => {
-                sidebar.classList.remove('collapsed');
-                document.body.classList.remove('sidebar-collapsed');
-                mainContent.style.marginLeft = '280px';
-                mainContent.style.width = 'calc(100% - 280px)';
-                this.showNotification('Sidebar đã được mở', 'info');
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('collapsed');
+                    document.body.classList.remove('sidebar-collapsed');
+                    mainContent.style.marginLeft = '280px';
+                    mainContent.style.width = 'calc(100% - 280px)';
+                    this.showNotification('Sidebar đã được mở', 'info');
+                } else {
+                    sidebar.classList.add('open');
+                }
             });
         }
+    },
+    setupNavigation() {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => this.handleNavigation(item));
+        });
     },
 
     // Handle navigation between menu items
     handleNavigation(navItem) {
+        // Xóa active hiện tại
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(nav => nav.classList.remove('active'));
         navItem.classList.add('active');
 
-        const navText = navItem.querySelector('span').textContent;
-        this.updatePageTitle(navText);
-        this.showLoadingState();
+        // Xác định URL
+        let url = "";
+        let fragmentUrl = "";
+        switch (navItem.id) {
+            case "nav-host":
+                url = "/dashboard";
+                fragmentUrl = "/fragment/dashboard";
+                break;
+            case "nav-events":
+                url = "/events";
+                fragmentUrl = "/fragment/events";
+                break;
+            case "nav-settings":
+                url = "/settings";
+                fragmentUrl = "/fragment/settings";
+                break;
+        }
 
-        // Simulate navigation delay
-        setTimeout(() => this.hideLoadingState(), 500);
+        if (fragmentUrl) {
+            this.loadFragment(fragmentUrl, url);
+        }
+
+        const navText = navItem.querySelector("span")?.textContent || "Open.events";
+        this.updatePageTitle(navText);
+    },
+    attachDynamicEvents() {
+        // Xử lý nút Tạo sự kiện
+        const createBtn = document.querySelector(".btn-create-event");
+        const modal = document.getElementById("createEventModal");
+        const closeBtn = modal?.querySelector(".close");
+
+        if (createBtn && modal) {
+            createBtn.addEventListener("click", () => {
+                modal.style.display = "flex";
+            });
+        }
+
+        if (closeBtn && modal) {
+            closeBtn.addEventListener("click", () => {
+                modal.style.display = "none";
+            });
+        }
+
+        // Click bên ngoài để đóng modal
+        window.addEventListener("click", (e) => {
+            if (modal && e.target === modal) {
+                modal.style.display = "none";
+            }
+        });
     },
 
-    // Update page title based on navigation
+    loadFragment(fragmentUrl, newUrl) {
+        this.showLoadingState();
+        fetch(fragmentUrl)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.text();
+            })
+            .then(html => {
+                if (this.mainContent) this.mainContent.innerHTML = html;
+                this.attachDynamicEvents();
+                if (newUrl) history.pushState(null, "", newUrl);
+
+            })
+            .catch(err => {
+                console.error("Lỗi load fragment:", err);
+                if (this.mainContent)
+                    this.mainContent.innerHTML = `<div class="error">Không thể tải nội dung.</div>`;
+            })
+            .finally(() => this.hideLoadingState());
+    },
+    loadInitialPage() {
+        const currentPath = window.location.pathname;
+        let fragmentUrl = "";
+        let activeId = "";
+        switch (currentPath) {
+            case "/":
+            case "/dashboard":
+                fragmentUrl = "/fragment/dashboard";
+                activeId = "nav-host";
+                break;
+            case "/events":
+                fragmentUrl = "/fragment/events";
+                activeId = "nav-events";
+                break;
+            case "/settings":
+                fragmentUrl = "/fragment/settings";
+                activeId = "nav-settings";
+                break;
+            default:
+                fragmentUrl = "/fragment/dashboard";
+                activeId = "nav-host";
+        }
+
+        this.loadFragment(fragmentUrl);
+        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        const activeNav = document.getElementById(activeId);
+        if (activeNav) activeNav.classList.add('active');
+    },
+
+
+
+
+
+    //Update page title based on navigation
     updatePageTitle(navText) {
         const pageTitle = document.querySelector('.page-title');
         if (!pageTitle) return;
@@ -289,13 +363,6 @@ const HostDashboard = {
         }, 100);
     },
 
-    // Show event actions
-    showEventActions(button) {
-        const eventCard = button.closest('.event-card');
-        const eventTitle = eventCard.querySelector('.event-title').textContent;
-        this.showNotification(`Thao tác với sự kiện: ${eventTitle}`, 'info');
-    },
-
     // Show help modal
     showHelpModal() {
         const modal = this.createModal('Trợ giúp', `
@@ -314,6 +381,7 @@ const HostDashboard = {
         this.setupModalClose(modal);
     },
 
+
     // Create modal
     createModal(title, content) {
         const modal = document.createElement('div');
@@ -330,76 +398,7 @@ const HostDashboard = {
             </div>
         `;
 
-        // Add modal styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .help-modal {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 2000;
-            }
-            .modal-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .modal-content {
-                background: white;
-                border-radius: 15px;
-                max-width: 500px;
-                width: 90%;
-                max-height: 80vh;
-                overflow-y: auto;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            }
-            .modal-header {
-                padding: 1.5rem;
-                border-bottom: 1px solid #eee;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .modal-header h3 {
-                margin: 0;
-                color: #333;
-                font-weight: 600;
-            }
-            .close-btn {
-                background: none;
-                border: none;
-                font-size: 1.5rem;
-                cursor: pointer;
-                color: #666;
-                transition: color 0.3s;
-            }
-            .close-btn:hover {
-                color: #333;
-            }
-            .modal-body {
-                padding: 1.5rem;
-            }
-            .modal-body h4 {
-                color: #333;
-                margin-bottom: 0.5rem;
-                font-weight: 600;
-            }
-            .modal-body ul {
-                margin-bottom: 1.5rem;
-            }
-            .modal-body li {
-                margin-bottom: 0.5rem;
-            }
-        `;
-        document.head.appendChild(style);
+
 
         return modal;
     },
@@ -420,18 +419,24 @@ const HostDashboard = {
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');
 
-        sidebar.classList.toggle('collapsed');
-        document.body.classList.toggle('sidebar-collapsed');
+        if (window.innerWidth > 768) {
+            // Desktop behavior
+            sidebar.classList.toggle('collapsed');
+            document.body.classList.toggle('sidebar-collapsed');
 
-        // Xử lý width và margin cho main content
-        if (sidebar.classList.contains('collapsed')) {
-            mainContent.style.marginLeft = '0';
-            mainContent.style.width = '100%';
-            this.showNotification('Sidebar đã được thu gọn', 'info');
+            // Xử lý width và margin cho main content
+            if (sidebar.classList.contains('collapsed')) {
+                mainContent.style.marginLeft = '0';
+                mainContent.style.width = '100%';
+                this.showNotification('Sidebar đã được thu gọn', 'info');
+            } else {
+                mainContent.style.marginLeft = '280px';
+                mainContent.style.width = 'calc(100% - 280px)';
+                this.showNotification('Sidebar đã được mở rộng', 'info');
+            }
         } else {
-            mainContent.style.marginLeft = '280px';
-            mainContent.style.width = 'calc(100% - 280px)';
-            this.showNotification('Sidebar đã được mở rộng', 'info');
+            // Mobile behavior
+            sidebar.classList.toggle('open');
         }
     },
 
@@ -520,13 +525,15 @@ const HostDashboard = {
 
     // Show/hide loading states
     showLoadingState() {
-        const mainContent = document.querySelector('.main-content');
-        mainContent.classList.add('loading');
+        if (this.mainContent) {
+            this.mainContent.classList.add('loading');
+        }
     },
 
     hideLoadingState() {
-        const mainContent = document.querySelector('.main-content');
-        mainContent.classList.remove('loading');
+        if (this.mainContent) {
+            this.mainContent.classList.remove('loading');
+        }
     },
 
     // Setup responsive behavior
@@ -536,13 +543,17 @@ const HostDashboard = {
             const mainContent = document.querySelector('.main-content');
 
             if (window.innerWidth <= 768) {
-                sidebar.classList.remove('open');
+                // Mobile behavior
+                sidebar.classList.remove('collapsed', 'open');
                 sidebar.style.transform = 'translateX(-100%)';
                 mainContent.style.marginLeft = '0';
                 mainContent.style.width = '100%';
+                document.body.classList.remove('sidebar-collapsed');
             } else {
+                // Desktop behavior
                 sidebar.classList.remove('open');
                 sidebar.style.transform = 'translateX(0)';
+                
                 if (sidebar.classList.contains('collapsed')) {
                     mainContent.style.marginLeft = '0';
                     mainContent.style.width = '100%';
@@ -624,6 +635,41 @@ const HostDashboard = {
         }).format(date);
     }
 };
+document.addEventListener('DOMContentLoaded', function() {
+    const actionButtons = document.querySelectorAll('.action-btn');
+
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            // Ngăn chặn sự kiện click lan ra ngoài
+            event.stopPropagation();
+
+            // Tìm menu dropdown tương ứng
+            const dropdownMenu = this.parentNode.querySelector('.dropdown-menu');
+
+            // Ẩn tất cả các menu khác
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu !== dropdownMenu) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            // Chuyển đổi trạng thái hiển thị của menu hiện tại
+            if (dropdownMenu.style.display === 'block') {
+                dropdownMenu.style.display = 'none';
+            } else {
+                dropdownMenu.style.display = 'block';
+            }
+        });
+    });
+
+    // Ẩn menu khi click bất cứ nơi nào ngoài menu
+    document.addEventListener('click', function(event) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    });
+});
+
 
 // Export for external use
 window.HostDashboard = HostDashboard;

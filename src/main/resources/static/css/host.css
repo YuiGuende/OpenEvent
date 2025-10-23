@@ -11,10 +11,11 @@ html {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+    background-color: #f7f7fb; /* nền sáng nhẹ */
     color: #333;
     line-height: 1.6;
-    overflow-x: hidden;
+    overflow: hidden;
+    height: 100vh;
 }
 
 /* Header */
@@ -30,7 +31,7 @@ body {
     left: 0;
     right: 0;
     z-index: 1000;
-    height: 70px;
+    height: 60px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
@@ -40,6 +41,7 @@ body {
     width: 0;
     overflow: hidden;
     transition: width 0.3s ease;
+    transform: translateX(-100%);
 }
 
 /* Ẩn chữ khi sidebar thu gọn */
@@ -92,16 +94,23 @@ body {
     visibility: visible;
 }
 
-/* Dời main content khi sidebar thay đổi */
+/* Main Content */
 .main-content {
     margin-left: 280px;
-    transition: margin-left 0.3s ease;
+    margin-top: 60px;
+    padding: 2rem;
+    transition: all 0.3s ease;
     width: calc(100% - 280px);
+    height: calc(100vh - 60px);
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
-.sidebar.collapsed~.main-content {
-    margin-left: 0;
-    width: 100%;
+/* When sidebar is collapsed */
+.sidebar.collapsed ~ .main-content,
+body.sidebar-collapsed .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
 }
 
 /* Xoay icon mũi tên khi thu gọn */
@@ -221,14 +230,14 @@ body {
     background: linear-gradient(180deg, #ff7e5f, #783402);
     color: white;
     width: 280px;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 60px);
     position: fixed;
-    top: 70px;
+    top: 60px;
     left: 0;
     padding: 2rem 0;
     overflow-y: auto;
-    z-index: 999;
-    transition: width 0.3s ease, transform 0.3s ease;
+    z-index: 998;
+    transition: all 0.3s ease;
 }
 
 .nav-menu {
@@ -327,15 +336,7 @@ body {
     text-align: center;
 }
 
-/* Main Content */
-.main-content {
-    margin-left: 280px;
-    margin-top: 70px;
-    padding: 2rem;
-    min-height: calc(100vh - 70px);
-    width: calc(100% - 280px);
-    transition: all 0.3s ease;
-}
+/* Main Content - Remove duplicate, already defined above */
 
 /* Page Header */
 .page-header {
@@ -547,6 +548,67 @@ body {
     gap: 1rem;
     transition: all 0.3s ease;
     border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+.event-actions {
+    position: absolute;
+    top: 15px; /* Điều chỉnh vị trí từ trên xuống */
+    right: 15px; /* Điều chỉnh vị trí từ phải sang */
+    z-index: 10; /* Đảm bảo menu nằm trên các thành phần khác */
+}
+
+/* Nút bấm */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    color: #333;
+}
+
+/* Menu chính */
+.dropdown-menu {
+    position: absolute;
+    top: 100%; /* Đặt menu bên dưới nút */
+    right: 0;
+    min-width: 180px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 5px 0;
+    list-style: none;
+}
+
+/* Danh sách trong menu */
+.dropdown-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Mục trong menu */
+.dropdown-menu li a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+/* Hover effect */
+.dropdown-menu li a:hover {
+    background-color: #f5f5f5;
+    color: #007bff; /* Màu xanh khi hover */
+}
+
+/* Icon */
+.dropdown-menu li i {
+    margin-right: 10px;
+    width: 15px; /* Cố định chiều rộng icon */
+    text-align: center;
 }
 
 .event-card:hover {
@@ -678,6 +740,7 @@ body {
     padding: 0.5rem;
     border-radius: 6px;
     transition: background-color 0.3s ease;
+    margin-right: 0.5rem;
 }
 
 .mobile-menu-btn:hover {
@@ -710,7 +773,7 @@ body {
     background: rgba(255, 255, 255, 0.15);
 }
 
-.sidebar.collapsed~.main-content .sidebar-toggle-btn,
+/* Show sidebar toggle button when sidebar is collapsed */
 body.sidebar-collapsed .sidebar-toggle-btn {
     display: flex;
 }
@@ -748,6 +811,10 @@ body.sidebar-collapsed .sidebar-toggle-btn {
         display: block;
     }
 
+    .sidebar-toggle-btn {
+        display: none;
+    }
+
     .sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
@@ -771,8 +838,8 @@ body.sidebar-collapsed .sidebar-toggle-btn {
     }
 
     .main-content {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 0 !important;
+        width: 100% !important;
         padding: 1rem;
     }
 
@@ -835,6 +902,7 @@ body.sidebar-collapsed .sidebar-toggle-btn {
         padding: 1rem;
         flex-direction: column;
         text-align: center;
+        position: relative;
     }
 
     .event-image {

@@ -26,7 +26,11 @@ public class TicketTypeDTO {
     private LocalDateTime startSaleDate;
     private LocalDateTime endSaleDate;
     private boolean isAvailable;
-
+    private boolean isSaleActive;
+    private boolean isSoldOut;
+    private boolean saleNotStarted;
+    private String saleStartCountdownText;
+    private boolean saleOverdue;
     // Computed fields for display
     public String getFormattedPrice() {
         return String.format("%,.0f", price);

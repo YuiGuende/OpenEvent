@@ -56,4 +56,16 @@ public class CloudinaryUtil {
         return (String) uploadResult.get("secure_url");
     }
 
+    public String uploadFile(MultipartFile file) throws IOException {
+        File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
+        file.transferTo(tempFile);
+
+        Map uploadResult = cloudinary.uploader().upload(tempFile, ObjectUtils.asMap(
+                "resource_type", "auto" // Auto-detect file type
+        ));
+
+        tempFile.delete();
+        return (String) uploadResult.get("secure_url");
+    }
+
 }

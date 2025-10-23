@@ -1,5 +1,6 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -12,11 +13,14 @@ public class EventImage {
     private Long id;
 
     private String url;
+    
+    private String alt;
 
     private int orderIndex;
 
-    private boolean mainPoster = false;
+    private boolean mainPoster;
     @ManyToOne
+    @JsonBackReference
     private Event event;
 
     public EventImage() {
@@ -58,6 +62,14 @@ public class EventImage {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getAlt() {
+        return alt;
+    }
+
+    public void setAlt(String alt) {
+        this.alt = alt;
     }
 
     public int getOrderIndex() {

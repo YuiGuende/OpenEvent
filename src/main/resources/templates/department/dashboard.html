@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PHÒNG CÔNG TÁC SINH VIÊN</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-orange: #e65100;
+            --primary-blue: #4A90E2;
+            --dark-bg: #000000;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--light-bg);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            min-height: 100vh;
+            background: var(--dark-bg);
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            background: var(--primary-orange);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1.25rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: rgba(230, 81, 0, 0.2);
+            color: var(--primary-orange);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        /* Section Headers */
+        .section-header {
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, rgba(230, 81, 0, 0.1), rgba(230, 81, 0, 0.05));
+            border: 1px solid rgba(230, 81, 0, 0.2);
+        }
+
+        .section-header.performance {
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(74, 144, 226, 0.05));
+            border: 1px solid rgba(74, 144, 226, 0.2);
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.orange {
+            background: rgba(230, 81, 0, 0.1);
+            color: var(--primary-orange);
+        }
+
+        .stat-icon.blue {
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .stat-change.success {
+            color: #10b981;
+        }
+
+        .stat-change.warning {
+            color: #f59e0b;
+        }
+
+        .stat-change.info {
+            color: #3b82f6;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+            height: 350px;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 250px;
+        }
+
+        /* Action Table */
+        .action-table {
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .action-table-header {
+            background: rgba(249, 250, 251, 0.5);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .action-table-row {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.2s;
+        }
+
+        .action-table-row:last-child {
+            border-bottom: none;
+        }
+
+        .action-table-row:hover {
+            background-color: rgba(249, 250, 251, 0.5);
+        }
+
+        .event-image {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 0.375rem;
+        }
+
+        .btn-action {
+            padding: 0.375rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+
+        .btn-orange {
+            background-color: var(--primary-orange);
+            color: white;
+            border: none;
+        }
+
+        .btn-orange:hover {
+            background-color: #d84700;
+            color: white;
+        }
+
+        .btn-blue {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+        }
+
+        .btn-blue:hover {
+            background-color: #3a7bc8;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <div class="d-flex align-items-center gap-3">
+            <div class="sidebar-logo">
+                <i class="bi bi-building text-white" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+                <h5 class="text-white mb-0">Department Panel</h5>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav flex-column px-3 py-3">
+        <li class="nav-item">
+            <a class="nav-link active" href="/department/dashboard">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/department/events">
+                <i class="bi bi-calendar-event me-2"></i>
+                Events
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/department/orders">
+                <i class="bi bi-receipt me-2"></i>
+                Orders
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/department/requests">
+                <i class="bi bi-inbox me-2"></i>
+                Approval Requests
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/department/articles">
+                <i class="bi bi-newspaper me-2"></i>
+                Articles
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="fw-bold mb-1" th:text="${department.departmentName}">PHÒNG CÔNG TÁC SINH VIÊN</h1>
+                <p class="text-muted mb-0">Dashboard Overview</p>
+            </div>
+            <div class="text-muted">
+                <small>Last updated: <span id="currentTime"></span></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="row g-4">
+        <!-- Section A: Oversight & Compliance -->
+        <div class="col-xl-6">
+            <div class="section-header">
+                <h2 class="h4 fw-bold mb-2">Oversight & Compliance</h2>
+                <p class="text-muted mb-0 small">Giám sát & Tuân thủ - Quản lý phê duyệt toàn hệ thống</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon orange mb-3">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-label">Sự kiện Chờ Duyệt</div>
+                        <div class="stat-value" th:text="${stats.pendingRequests}">0</div>
+                        <div class="stat-change warning">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Cần xử lý ngay
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon orange mb-3">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="stat-label">Yêu cầu Hoàn tiền</div>
+                        <div class="stat-value">5</div>
+                        <div class="stat-change info">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            Đang chờ xem xét
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon orange mb-3">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="stat-label">Thời gian Duyệt TB</div>
+                        <div class="stat-value" id="avgApprovalTime">0h</div>
+                        <div class="stat-change success">
+                            <i class="bi bi-arrow-down me-1"></i>
+                            <span id="avgApprovalChange">Đang tính toán...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon orange mb-3">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div class="stat-label">Sự kiện Sắp diễn ra</div>
+                        <div class="stat-value" th:text="${stats.ongoingEvents}">0</div>
+                        <div class="stat-change warning">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            Trong 7 ngày tới
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart: Approval Trend -->
+            <div class="chart-container">
+                <h3 class="chart-title">Xu hướng Phê duyệt (30 ngày)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="approvalTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Action Table -->
+            <div class="action-table">
+                <div class="action-table-header">
+                    <h3 class="h6 fw-semibold mb-0">Tác vụ Duyệt Ưu tiên</h3>
+                </div>
+
+                <div id="pendingRequestsContainer">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section B: Department's Event Performance -->
+        <div class="col-xl-6">
+            <div class="section-header performance">
+                <h2 class="h4 fw-bold mb-2">Department's Event Performance</h2>
+                <p class="text-muted mb-0 small">Hiệu suất Sự kiện Nội bộ - Các sự kiện do Phòng tổ chức</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue mb-3">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <div class="stat-label">Tổng Doanh thu Nội bộ</div>
+                        <div class="stat-value"
+                             th:text="${#numbers.formatDecimal(stats.totalRevenue, 0, 'COMMA', 0, 'POINT')} + 'VND'">0M
+                        </div>
+                        <div class="stat-change"
+                             th:classappend="${stats.revenueChangePercent >= 0 ? 'success' : 'warning'}">
+                            <i th:class="${stats.revenueChangePercent >= 0 ? 'bi bi-arrow-up me-1' : 'bi bi-arrow-down me-1'}"
+                            ></i>
+                            <span th:text="${#numbers.formatDecimal(stats.revenueChangePercent, 1, 'COMMA', 1, 'POINT')} + '% so với tháng trước'">0% so với tháng trước</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue mb-3">
+                            <i class="bi bi-calendar3"></i>
+                        </div>
+                        <div class="stat-label">Tổng Sự kiện Nội bộ</div>
+                        <div class="stat-value" th:text="${stats.totalEvents}">0</div>
+                        <div class="stat-change">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            Đã tổ chức trong tháng này
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue mb-3">
+                            <i class="bi bi-ticket-perforated"></i>
+                        </div>
+                        <div class="stat-label">Tổng Vé Đã bán</div>
+                        <div class="stat-value" th:text="${stats.totalParticipants}">0</div>
+                        <div class="stat-change success">
+                            <i class="bi bi-graph-up me-1"></i>
+                            Trung bình <span
+                                th:text="${stats.totalEvents > 0 ? stats.totalParticipants / stats.totalEvents : 0}">0</span>
+                            vé/sự kiện
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon blue mb-3">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="stat-label">Tỷ lệ Hủy Đơn</div>
+                        <div class="stat-value"
+                             th:text="${#numbers.formatDecimal(stats.cancellationRate, 1, 'COMMA', 1, 'POINT')} + '%'">
+                            0%
+                        </div>
+                        <div class="stat-change"
+                             th:with="changePercent=${stats.cancellationRateChangePercent ?: 0}">
+
+                            <div class="stat-change" th:classappend="${changePercent <= 0 ? 'success' : 'warning'}">
+
+                                <i th:class="${changePercent <= 0 ? 'bi bi-arrow-down me-1' : 'bi bi-arrow-up me-1'}"></i>
+
+                                <span th:text="${changePercent <= 0 ? 'Giảm' : 'Tăng'} + ' ' +
+                       ${#numbers.formatDecimal(T(java.lang.Math).abs(changePercent), 1, 'COMMA', 1, 'POINT')} +
+                       '% so với tháng trước'">Giảm 0% so với tháng trước</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart: Revenue Trend -->
+            <div class="chart-container">
+                <h3 class="chart-title">Doanh thu Theo Tháng (6 tháng)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Phân bố Trạng thái Đơn hàng</h3>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+            <!-- Action Table -->
+            <div class="action-table">
+                <div class="action-table-header">
+                    <h3 class="h6 fw-semibold mb-0">Sự kiện Nội bộ Sắp tới</h3>
+                </div>
+
+                <div id="upcomingEventsContainer">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        document.getElementById('currentTime').textContent = timeString;
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    fetch('/department/api/stats/average-approval-time')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('avgApprovalTime').textContent = data.averageHours + 'h';
+            document.getElementById('avgApprovalChange').textContent = 'Trung bình ' + data.averageMinutes + ' phút';
+        })
+        .catch(err => console.error('Error loading approval time:', err));
+
+    fetch('/department/api/stats/approval-trend')
+        .then(res => res.json())
+        .then(data => {
+            const approvalCtx = document.getElementById('approvalTrendChart').getContext('2d');
+            new Chart(approvalCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Sự kiện được duyệt',
+                            data: data.approved,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Sự kiện bị từ chối',
+                            data: data.rejected,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Đang chờ xử lý',
+                            data: data.pending,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 5
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(err => console.error('Error loading approval trend:', err));
+
+    fetch('/department/api/stats/revenue-trend')
+        .then(res => res.json())
+        .then(data => {
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Doanh thu (triệu VNĐ)',
+                        data: data.data,
+                        backgroundColor: data.data.map((val, idx) =>
+                            idx === data.data.length - 1 ? 'rgba(74, 144, 226, 1)' : 'rgba(74, 144, 226, 0.8)'
+                        ),
+                        borderColor: '#4A90E2',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '₫' + value + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(err => console.error('Error loading revenue trend:', err));
+    fetch('/department/api/stats/order-status-distribution')
+        .then(res => res.json())
+        .then(data => {
+            const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+            new Chart(orderStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.data,
+                        backgroundColor: data.backgroundColor,
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(err => console.error('Error loading order status distribution:', err));
+
+    // Load pending requests
+    fetch('/department/api/stats/pending-requests')
+        .then(res => res.json())
+        .then(requests => {
+            const container = document.getElementById('pendingRequestsContainer');
+            if (requests.length === 0) {
+                container.innerHTML = '<div class="action-table-row text-center text-muted">Không có yêu cầu chờ duyệt</div>';
+                return;
+            }
+
+            container.innerHTML = requests.slice(0, 3).map(req => `
+                <div class="action-table-row d-flex align-items-center gap-3">
+                    <img src="${req.eventImageUrl || '/placeholder.svg?height=50&width=80'}" alt="${req.eventTitle}" class="event-image">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">${req.eventTitle}</div>
+                        <div class="small text-muted">Hosted by: ${req.organizer}</div>
+                        <div class="small text-muted">Gửi: ${new Date(req.createdAt).toLocaleDateString('vi-VN')}</div>
+                    </div>
+                    <a href="/${req.eventType.toLowerCase()}/${req.eventId}" class="btn btn-orange btn-action">Xử lý</a>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Error loading pending requests:', err));
+
+    // Load upcoming events
+    fetch('/department/api/stats/upcoming-events')
+        .then(res => res.json())
+        .then(events => {
+            const container = document.getElementById('upcomingEventsContainer');
+            if (events.length === 0) {
+                container.innerHTML = '<div class="action-table-row text-center text-muted">Không có sự kiện sắp tới</div>';
+                return;
+            }
+
+            container.innerHTML = events.slice(0, 3).map(event => `
+                <div class="action-table-row d-flex align-items-center gap-3">
+                    <img src="${event.imageUrl || '/placeholder.svg?height=50&width=80'}" alt="${event.title}" class="event-image">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">${event.title}</div>
+                        <div class="small text-muted">${event.description}</div>
+                        <div class="small text-muted mt-1">
+                            <i class="bi bi-calendar3 me-1"></i>${new Date(event.startsAt).toLocaleDateString('vi-VN')}
+                            <span class="mx-2">•</span>
+                            <i class="bi bi-ticket me-1"></i>${event.registered}/${event.capacity}
+                        </div>
+                    </div>
+                    <a href="/${event.eventType.toLowerCase()}/${event.id}" class="btn btn-blue btn-action">Quản lý</a>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Error loading upcoming events:', err));
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -3,10 +3,14 @@ package com.group02.openevent.model.organization;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "organization")
 public class Organization {
@@ -26,6 +30,8 @@ public class Organization {
 
 	@Column(name = "email", length = 100)
 	private String email;
+
+    private String imageUrl;
 
 	@Column(name = "phone", length = 20)
 	private String phone;
@@ -133,5 +139,13 @@ public class Organization {
 
     public void setEvents(List<Event> events) {
         this.events = events;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

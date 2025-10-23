@@ -14,9 +14,19 @@ public class EventSchedule {
     @JoinColumn(name = "event_id", nullable = false)
     @JsonIgnore
     private Event event;
+
     private String activity;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public EventSchedule() {
     }

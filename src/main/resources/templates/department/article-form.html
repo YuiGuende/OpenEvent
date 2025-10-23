@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${article.articleId != null ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}">Tạo bài viết</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            width: 250px;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar -->
+<div th:replace="~{department/layout :: sidebar}"></div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 th:text="${article.articleId != null ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}">Tạo bài viết mới</h2>
+                <p class="text-muted mb-0">Điền thông tin bài viết của bạn</p>
+            </div>
+            <a th:href="@{/department/articles}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+        </div>
+
+        <!-- Form -->
+        <div class="form-card">
+            <form th:action="@{/department/articles/save}" method="post" enctype="multipart/form-data" th:object="${article}">
+                <!-- Hidden ID field for edit mode -->
+                <input type="hidden" th:field="*{articleId}" th:if="${article.articleId != null}">
+
+                <!-- Title -->
+                <div class="mb-4">
+                    <label for="title" class="form-label fw-bold">
+                        Tiêu đề <span class="text-danger">*</span>
+                    </label>
+                    <input type="text"
+                           class="form-control form-control-lg"
+                           id="title"
+                           th:field="*{title}"
+                           placeholder="Nhập tiêu đề bài viết"
+                           required>
+                </div>
+
+                <!-- Content -->
+                <div class="mb-4">
+                    <label for="content" class="form-label fw-bold">
+                        Nội dung <span class="text-danger">*</span>
+                    </label>
+                    <textarea class="form-control"
+                              id="content"
+                              th:field="*{content}"
+                              rows="12"
+                              placeholder="Nhập nội dung bài viết..."
+                              required></textarea>
+                    <div class="form-text">Hỗ trợ định dạng văn bản cơ bản</div>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="mb-4">
+                    <label for="imageFile" class="form-label fw-bold">
+                        Ảnh đại diện
+                    </label>
+                    <input type="file"
+                           class="form-control"
+                           id="imageFile"
+                           name="imageFile"
+                           accept="image/*"
+                           onchange="previewImage(event)">
+                    <div class="form-text">Chọn ảnh đại diện cho bài viết (JPG, PNG, GIF)</div>
+
+                    <!-- Current image preview (for edit mode) -->
+                    <div th:if="${article.imageUrl != null}" class="mt-3">
+                        <p class="text-muted mb-2">Ảnh hiện tại:</p>
+                        <img th:src="${article.imageUrl}" alt="Current image" class="img-thumbnail" style="max-height: 200px;">
+                    </div>
+
+                    <!-- New image preview -->
+                    <img id="imagePreview" class="image-preview img-thumbnail" alt="Preview">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <a th:href="@{/department/articles}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Hủy
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i>
+                        <span th:text="${article.articleId != null ? 'Cập nhật' : 'Tạo bài viết'}">Tạo bài viết</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('imagePreview');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>

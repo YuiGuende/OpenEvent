@@ -13,15 +13,32 @@ import java.util.List;
 
 @Repository
 public interface IRequestRepo extends JpaRepository<Request, Long> {
-    
     List<Request> findByStatus(RequestStatus status);
+
     List<Request> findByType(RequestType type);
-    List<Request> findByHostId(Long hostId);
-    List<Request> findByEventId(Long eventId);
-    
+
+    List<Request> findBySenderAccountId(Long senderId);
+
+    List<Request> findByReceiver_AccountId(Long receiverId);
+
+    List<Request> findByEvent_Id(Long eventId);
+
     // Pageable listing
     Page<Request> findAll(Pageable pageable);
+
     Page<Request> findByStatus(RequestStatus status, Pageable pageable);
+
     Page<Request> findByType(RequestType type, Pageable pageable);
+
     Page<Request> findByStatusAndType(RequestStatus status, RequestType type, Pageable pageable);
+
+    Page<Request> findByReceiver_AccountId(Long receiverId, Pageable pageable);
+
+    long countByReceiverAccountIdAndStatus(Long accountId, RequestStatus requestStatus);
+
+    Page<Request> findByReceiver_AccountIdAndStatus(Long receiverAccountId, RequestStatus status, Pageable pageable);
+
+    long countByReceiver_AccountIdAndStatus(Long receiverId, RequestStatus status);
+
+    List<Request> findByReceiver_AccountIdAndStatusOrderByUpdatedAtDesc(Long receiverId, RequestStatus status);
 }

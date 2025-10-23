@@ -29,7 +29,7 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         try {
-            
+
             // Get poster events for hero slider
             List<EventCardDTO> posterEvents = eventService.getPosterEvents();
             model.addAttribute("posterEvents", posterEvents != null ? posterEvents : List.of());
@@ -46,7 +46,7 @@ public class HomeController {
                 System.err.println("Error loading customer events: " + e.getMessage());
                 model.addAttribute("myEvents", List.of());
             }
-            
+
             // Get recommended events
             List<EventCardDTO> recommendedEvents = eventService.getRecommendedEvents(6);
             model.addAttribute("recommendedEvents", recommendedEvents != null ? recommendedEvents : List.of());
@@ -64,6 +64,8 @@ public class HomeController {
         }
     }
 
+
+    //use for dropdown user in header
     @GetMapping("/api/current-user")
     public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");

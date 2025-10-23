@@ -86,21 +86,21 @@ public class TicketTypeServiceImpl implements TicketTypeService {
         if (ticketTypeOpt.isEmpty()) {
             return false;
         }
-        return ticketTypeOpt.get().canPurchase(quantity);
+        return ticketTypeOpt.get().canPurchase();
     }
 
     @Override
     @Transactional
-    public void reserveTickets(Long ticketTypeId, Integer quantity) {
+    public void reserveTickets(Long ticketTypeId) {
         TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)
                 .orElse(null);
 
         assert ticketType != null;
-        if (!ticketType.canPurchase(quantity)) {
-            throw new IllegalStateException("Cannot reserve " + quantity + " tickets for ticket type: " + ticketTypeId);
+        if (!ticketType.canPurchase()) {
+            throw new IllegalStateException("Cannot reserve tickets for ticket type: " + ticketTypeId);
         }
 
-        ticketType.increaseSoldQuantity(quantity);
+        ticketType.increaseSoldQuantity();
         ticketTypeRepo.save(ticketType);
     }
 
@@ -199,6 +199,19 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                     && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
                     && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
             
+            boolean isSaleActive = ticketType.isSalePeriodActive();
+            boolean isSoldOut = ticketType.getAvailableQuantity() <= 0;
+            boolean saleNotStarted = ticketType.getStartSaleDate() != null && now.isBefore(ticketType.getStartSaleDate());
+            boolean saleOverdue = ticketType.getEndSaleDate() != null && now.isAfter(ticketType.getEndSaleDate());
+
+            String saleStartCountdownText = null;
+            if (saleNotStarted) {
+                LocalDateTime start = ticketType.getStartSaleDate();
+                long days = java.time.Duration.between(now, start).toDays();
+                if (days < 0) days = 0;
+                saleStartCountdownText = days + (days == 1 ? " day" : " days");
+            }
+
             TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
                     .ticketTypeId(ticketType.getTicketTypeId())
                     .eventId(ticketType.getEvent().getId())
@@ -215,6 +228,11 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                     .startSaleDate(ticketType.getStartSaleDate())
                     .endSaleDate(ticketType.getEndSaleDate())
                     .isAvailable(isAvailable)
+                    .isSaleActive(isSaleActive)
+                    .isSoldOut(isSoldOut)
+                    .saleNotStarted(saleNotStarted)
+                    .saleStartCountdownText(saleStartCountdownText)
+                    .saleOverdue(saleOverdue)
                     .build();
             return ticketTypeDTO;
         } catch (Exception e) {

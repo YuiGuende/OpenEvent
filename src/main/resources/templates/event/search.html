@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Kết quả tìm kiếm | OpenEvent</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <style>
+        /* Chỉnh lại bố cục thanh tìm kiếm cho đều */
+        /* moved to fragments/searchbar.html */
+    </style>
+</head>
+
+<body class="page-bg">
+<div th:replace="fragments/header :: siteHeader('search')"></div>
+<style>
+    /* Layout 3 cột như booking.com */
+    .search-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Sidebar chứa map và filters */
+    .search-sidebar {
+        background: #fff;
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        height: fit-content;
+        position: sticky;
+        top: 2rem;
+    }
+
+    /* Map section */
+    .map-section {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .map-container {
+        width: 100%;
+        height: 200px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .map-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+    }
+
+    .search-sidebar .map-pin {
+        width: 20px;
+        height: 20px;
+        background: #ff6b35;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        margin-bottom: 8px;
+        position: relative;
+    }
+
+    .map-pin::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .search-sidebar .show-on-map-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    /* Filter sections */
+    .filter-section {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+
+    .filter-title {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .filter-subtitle {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .filter-group {
+        margin-bottom: 16px;
+    }
+
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .filter-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .filter-list li {
+        margin-bottom: 6px;
+    }
+
+    .filter-list label {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+    }
+
+    .filter-list input[type="checkbox"] {
+        margin-right: 8px;
+        width: 16px;
+        height: 16px;
+    }
+
+    .filter-count {
+        color: #666;
+        font-size: 12px;
+        margin-left: 4px;
+    }
+
+    /* Price range slider */
+    .price-range {
+        margin-top: 8px;
+    }
+
+    .price-range input[type="range"] {
+        width: 100%;
+        margin: 8px 0;
+    }
+
+    .price-display {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+    }
+
+    /* Results panel */
+    .results-panel {
+        background: #fff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .results-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+    }
+
+    .view-toggle {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 6px;
+        padding: 2px;
+    }
+
+    .view-btn {
+        padding: 8px 16px;
+        border: none;
+        background: transparent;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .results-panel .view-btn.active {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .sort-dropdown {
+        margin-left: auto;
+        margin-right: 1rem;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        font-size: 14px;
+    }
+
+    /* Layout Toggle */
+    .layout-toggle {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 4px;
+        margin-left: auto;
+        gap: 4px;
+    }
+
+    .layout-btn {
+        padding: 8px 16px;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #666;
+    }
+
+    .layout-btn.active {
+        background: #ff6b35;
+        color: white;
+        box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    }
+
+    /* ===== LIST LAYOUT (Horizontal - Default) ===== */
+    .list-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .event-card--list {
+        display: flex;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        align-items: stretch;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .event-card--list:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .list-image-section {
+        position: relative;
+        flex: 0 0 280px;
+        height: 200px;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .list-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .event-card--list:hover .list-image {
+        transform: scale(1.05);
+    }
+
+    .list-favorite {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #666;
+    }
+
+    .list-content-section {
+        flex: 1;
+        padding: 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .list-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0;
+        color: #333;
+        line-height: 1.3;
+        flex: 1;
+    }
+
+    .list-rating {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 16px;
+    }
+
+    .rating-score {
+        background: #1976d2;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .rating-text {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .list-location {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .location-text {
+        color: #1976d2;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .location-distance {
+        color: #666;
+    }
+
+    .list-type {
+        margin-bottom: 12px;
+    }
+
+    .type-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #bbdefb;
+    }
+
+    .list-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .list-datetime {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .datetime-icon {
+        font-size: 16px;
+    }
+
+    .list-capacity {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .list-price-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        min-width: 120px;
+    }
+
+    .price-info {
+        text-align: right;
+        margin-bottom: 12px;
+    }
+
+    .list-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ff6b35;
+        margin-bottom: 4px;
+    }
+
+    .price-note {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .list-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .list-btn:hover {
+        background: #e55a2b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    }
+
+    /* ===== GRID LAYOUT (Vertical - Booking.com style) ===== */
+    .grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .event-card--grid {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card--grid:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .grid-image-section {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .grid-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .event-card--grid:hover .grid-image {
+        transform: scale(1.05);
+    }
+
+    .grid-favorite {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #666;
+    }
+
+    .grid-content-section {
+        padding: 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .grid-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        color: #333;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .grid-location {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .location-text {
+        color: #1976d2;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .grid-type {
+        margin-bottom: 12px;
+    }
+
+    .type-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #bbdefb;
+    }
+
+    .grid-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .grid-datetime {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .datetime-icon {
+        font-size: 16px;
+    }
+
+    .grid-capacity {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .grid-price-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f0;
+        gap: 16px;
+    }
+
+    .price-info {
+        text-align: left;
+        flex: 1;
+    }
+
+    .grid-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ff6b35;
+        margin-bottom: 4px;
+    }
+
+    .price-note {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .grid-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        flex-shrink: 0;
+    }
+
+    .grid-btn:hover {
+        background: #e55a2b;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    }
+
+    /* ===== PREMIUM LAYOUT (Chi tiết) ===== */
+    .premium-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .event-card--premium {
+        display: flex;
+        flex-direction: row;
+        gap: 1.5rem;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 16px;
+        padding: 0;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        align-items: stretch;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .event-card--premium:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        transform: translateY(-3px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .premium-image-section {
+        position: relative;
+        flex: 0 0 40%;
+        min-height: 250px;
+        overflow: hidden;
+    }
+
+    .premium-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .event-card--premium:hover .premium-image {
+        transform: scale(1.05);
+    }
+
+    .premium-content-section {
+        flex: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .premium-header {
+        margin-bottom: 1rem;
+    }
+
+    .premium-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        color: #333;
+        line-height: 1.3;
+    }
+
+    .premium-badges {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .premium-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .premium-badge.featured {
+        background: #e8f5e8;
+        color: #2d5a2d;
+    }
+
+    .premium-badge.genius {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .premium-badge.deal {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .premium-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .premium-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #ff6b35;
+    }
+
+    .premium-meta-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+
+    .premium-type-tag {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .premium-type-tag span:last-child {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #bbdefb;
+    }
+
+    .premium-benefits {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #28a745;
+    }
+
+    .premium-organizer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 16px;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #6c757d;
+    }
+
+    .premium-footer {
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .premium-availability {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .premium-availability-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .premium-progress {
+        width: 100%;
+        height: 8px;
+        background: #e5e5e5;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 8px 0;
+    }
+
+    .premium-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #34ce57);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    .premium-price-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .premium-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ff6b35;
+    }
+
+    .premium-btn {
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .premium-btn:hover {
+        background: #e55a2b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    }
+
+    /* Image Section */
+    .event-image-section {
+        position: relative;
+        flex-shrink: 0;
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .event-cover {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
+
+    .image-dots {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+    }
+
+    /* Countdown Timer */
+    .countdown-timer {
+        background: linear-gradient(135deg, #ff6b35, #e55a2b);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .countdown-label {
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        opacity: 0.9;
+    }
+
+    .countdown-display {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .countdown-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .countdown-number {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .countdown-unit {
+        font-size: 10px;
+        font-weight: 500;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .countdown-expired {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffebee;
+        background: rgba(220, 53, 69, 0.2);
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.5);
+        transition: all 0.2s;
+    }
+
+    .dot.active {
+        background: white;
+        width: 20px;
+        border-radius: 3px;
+    }
+
+    /* Content Section */
+    .event-content-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .event-favorite {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    /* Event Title */
+    .event-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 8px 0 8px 0;
+        color: #ff6b35;
+        line-height: 1.3;
+    }
+
+    /* Date & Time */
+    .event-datetime {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #ff6b35;
+    }
+
+    .datetime-icon {
+        font-size: 16px;
+    }
+
+
+    /* Event Location */
+    .event-location {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .event-location span {
+        color: #0066cc;
+        cursor: pointer;
+    }
+
+    /* Event Type Tag */
+    .event-type-tag {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .tag-icon {
+        font-size: 14px;
+    }
+
+    .event-type-tag span:last-child {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #bbdefb;
+    }
+
+    .event-badges {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-featured {
+        background: #e8f5e8;
+        color: #2d5a2d;
+    }
+
+    .badge-genius {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .badge-deal {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .card-meta {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .event-location {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    /* Benefits */
+    .event-benefits {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #555;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #28a745;
+    }
+
+    .benefits-icon {
+        font-size: 16px;
+    }
+
+    /* Organizer */
+    .event-organizer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #6c757d;
+    }
+
+    .organizer-icon {
+        font-size: 16px;
+    }
+
+    /* Availability Warning */
+    .availability-warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 12px;
+        border-left: 4px solid #ffc107;
+    }
+
+    .event-availability {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .availability-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .price-section {
+        text-align: right;
+    }
+
+    .price-label {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    /* Availability & Price Section */
+    .availability-price-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: auto;
+    }
+
+    .availability-bar {
+        flex: 1;
+        margin-right: 1rem;
+    }
+
+    .availability-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .availability-label {
+        font-size: 16px;
+    }
+
+    .sold-out {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    /* Dual Progress Container */
+    .dual-progress-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .progress-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .progress-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e5e5e5;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        position: relative;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    .time-progress {
+        background: linear-gradient(90deg, #ff6b35, #ff8c42);
+        box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    }
+
+    .ticket-progress {
+        background: linear-gradient(90deg, #28a745, #34ce57);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .price-section {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    .price-info {
+        text-align: right;
+    }
+
+    .price-range {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .price-min,
+    .price-max {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .price-separator {
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .price-single .price-current {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .price-note {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    .capacity-row {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .bar {
+        width: 100%;
+        height: 4px;
+        background: #e5e5e5;
+        border-radius: 2px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+    .results-panel .fill {
+        height: 100%;
+        background: #ff6b35;
+        transition: width 0.3s;
+    }
+
+    .event-tags {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .tag {
+        padding: 4px 8px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .badge-live {
+        background: #ff4444;
+        color: white;
+    }
+
+    /* Chỉ áp dụng cho các nút trong trang search, không ảnh hưởng header */
+    .search-results .btn,
+    .results-panel .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .search-results .btn-primary,
+    .results-panel .btn-primary {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .search-results .btn-primary:hover,
+    .results-panel .btn-primary:hover {
+        background: #e55a2b;
+    }
+
+    /* Empty state */
+    .empty-results {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #666;
+    }
+
+    .empty-image {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Breadcrumb styling */
+    .breadcrumb {
+        margin-bottom: 1rem;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .breadcrumb span:not(:last-child)::after {
+        content: " > ";
+        margin: 0 4px;
+    }
+
+    /* Additional improvements */
+    .event-card--horizontal .event-cover {
+        position: relative;
+    }
+
+    .event-card--horizontal .event-cover::after {
+        content: "";
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 2px;
+    }
+
+    .event-card--horizontal .event-cover::before {
+        content: "● ● ● ●";
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255,255,255,0.7);
+        font-size: 8px;
+        letter-spacing: 2px;
+    }
+
+    /* Rating display */
+    .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .results-panel .rating-score {
+        background: #ff6b35;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .rating-text {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .rating-reviews {
+        font-size: 12px;
+        color: #666;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .search-layout {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .search-sidebar {
+            position: static;
+        }
+
+        /* List Layout Mobile */
+        .list-layout {
+            gap: 1rem;
+        }
+
+        .event-card--list {
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .list-image-section {
+            flex: none;
+            width: 100%;
+            height: 200px;
+        }
+
+        .list-content-section {
+            padding: 1rem 0 0 0;
+        }
+
+        .list-title {
+            font-size: 18px;
+        }
+
+        .list-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .list-rating {
+            margin-left: 0;
+        }
+
+        .list-price-section {
+            align-items: stretch;
+            margin-top: 16px;
+        }
+
+        .list-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Grid Layout Mobile */
+        .grid-layout {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .event-card--grid {
+            margin-bottom: 1rem;
+        }
+
+        .grid-content-section {
+            padding: 0.75rem;
+        }
+
+        .grid-title {
+            font-size: 16px;
+        }
+
+        .grid-price-section {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .price-info {
+            text-align: center;
+        }
+
+        .grid-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Legacy horizontal layout mobile */
+        .event-card--horizontal {
+            flex-direction: column;
+            padding: 1rem;
+        }
+        
+        .event-image-section {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .countdown-timer {
+            margin-top: 12px;
+        }
+        
+        .event-cover {
+            width: 100%;
+            height: 200px;
+        }
+
+        .image-dots {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .availability-price-section {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .availability-bar {
+            margin-right: 0;
+        }
+
+        .dual-progress-container {
+            gap: 6px;
+        }
+
+        .progress-bar {
+            height: 6px;
+        }
+
+        .price-section {
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .results-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .layout-toggle {
+            align-self: flex-end;
+        }
+    }
+</style>
+
+<main>
+    <div th:replace="fragments/searchbar :: searchBar"></div>
+
+    <!-- 🧭 Layout: Filter + Results -->
+    <section class="section search-results">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <div style="margin-bottom: 1rem; font-size: 14px; color: #666;">
+                <span>Home</span> > <span>Vietnam</span> > <span>Ho Chi Minh City</span> > <span>Search results</span>
+            </div>
+            
+            <div class="search-layout">
+
+            <!-- Sidebar Filters -->
+            <aside class="search-sidebar">
+                    <!-- Map Section -->
+                    <div class="map-section">
+                        <div class="map-container">
+                            <div class="map-placeholder">
+                                <div class="map-pin"></div>
+                                <div>Hồ Chí Minh</div>
+                                <button class="show-on-map-btn">Show on map</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter by section -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">Filter by:</h3>
+
+                    <div class="filter-group">
+                            <span class="filter-subtitle">Your previous filters</span>
+                        <ul class="filter-list">
+                                <li><label><input type="checkbox" /> All deals <span class="filter-count">(381)</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="filter-group">
+                            <span class="filter-subtitle">Your budget (per ticket)</span>
+                            <div class="price-range">
+                                <div class="price-display">₫ 0 – ₫ 200+</div>
+                                <input type="range" min="0" max="200" value="200" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deals section -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">Deals</h3>
+                        <ul class="filter-list">
+                            <li><label><input type="checkbox" /> All deals <span class="filter-count">(381)</span></label></li>
+                        </ul>
+                    </div>
+
+                    <!-- Popular filters -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">Popular filters</h3>
+                        <ul class="filter-list">
+                            <li><label><input type="checkbox" /> Free cancellation <span class="filter-count">(636)</span></label></li>
+                            <li><label><input type="checkbox" /> Music events <span class="filter-count">(438)</span></label></li>
+                            <li><label><input type="checkbox" /> Workshop <span class="filter-count">(94)</span></label></li>
+                            <li><label><input type="checkbox" /> Festival <span class="filter-count">(641)</span></label></li>
+                            <li><label><input type="checkbox" /> Competition <span class="filter-count">(498)</span></label></li>
+                            <li><label><input type="checkbox" /> Excellent: 9+ <span class="filter-count">(295)</span></label></li>
+                            <li><label><input type="checkbox" /> Free tickets <span class="filter-count">(313)</span></label></li>
+                        </ul>
+                </div>
+            </aside>
+
+            <!-- Search Results -->
+            <div class="results-panel">
+
+                <div class="results-header">
+                    <h2 class="results-title" th:text="${#lists.size(results)} + ' events found'">1,163 events found</h2>
+                    
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <select class="sort-dropdown">
+                            <option>Our top picks</option>
+                            <option>Price (lowest first)</option>
+                            <option>Price (highest first)</option>
+                            <option>Distance from center</option>
+                            <option>Guest rating</option>
+                        </select>
+                        
+                        <div class="layout-toggle">
+                            <button class="layout-btn active" data-layout="list">List</button>
+                            <button class="layout-btn" data-layout="grid">Grid</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🔹 List Layout (Horizontal - Default) -->
+                <div class="list-layout" id="list-layout" th:if="${!#lists.isEmpty(results)}">
+                    <a class="event-card--list" 
+                       th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
+                       th:each="event : ${results}">
+                        
+                        <div class="list-image-section">
+                            <img class="list-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
+                            <div class="list-favorite">
+                                <span>♡</span>
+                            </div>
+                        </div>
+                        
+                        <div class="list-content-section">
+                            <div class="list-header">
+                                <h3 class="list-title" th:text="${event.title}">Event title</h3>
+                            </div>
+                            
+                            <div class="list-location" th:if="${event.city != null and !event.city.isEmpty() and event.city != 'TBA'}">
+                                <span class="location-text" th:text="${event.city}">Ho Chi Minh City</span>
+                            </div>
+                            <div class="list-location" th:if="${event.city == null or event.city.isEmpty() or event.city == 'TBA'}">
+                                <span class="location-text">Venue TBA</span>
+                            </div>
+                            
+                            <div class="list-type" th:if="${event.eventType != null}">
+                                <span class="type-badge" th:text="${event.eventType.name()}">FESTIVAL</span>
+                            </div>
+                            
+                            <div class="list-details">
+                                <div class="list-datetime" th:if="${event.dateLabel != null and !event.dateLabel.isEmpty()}">
+                                    <span class="datetime-icon">📅</span>
+                                    <span th:text="${event.dateLabel + (event.durationLabel != null and !event.durationLabel.isEmpty() ? ' • ' + event.durationLabel : '')}">15/10/2025 • 3h</span>
+                                </div>
+                                
+                                <div class="list-capacity" th:if="${event.capacity != null and event.registered != null}">
+                                    <span th:text="${(event.capacity - event.registered) + ' tickets left'}" 
+                                          th:if="${!event.isSoldOut()}">50 tickets left</span>
+                                    <span th:text="'Sold Out'" th:if="${event.isSoldOut()}" class="sold-out">Sold Out</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="list-price-section">
+                            <div class="price-info">
+                                <div class="list-price" th:text="${event.priceLabel}">Free</div>
+                                <div class="price-note">per ticket</div>
+                            </div>
+                            <button class="list-btn">Get Tickets</button>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 🔹 Grid Layout (Vertical - Booking.com style) -->
+                <div class="grid-layout" id="grid-layout" style="display: none;" th:if="${!#lists.isEmpty(results)}">
+                    <a class="event-card--grid" 
+                       th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
+                       th:each="event : ${results}">
+                        
+                        <!-- Image Section (Top) -->
+                        <div class="grid-image-section">
+                            <img class="grid-image" th:src="${event.imageUrl}" th:alt="${event.title}" />
+                            <div class="grid-favorite">
+                                <span>♡</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Content Section (Bottom) -->
+                        <div class="grid-content-section">
+                            <h3 class="grid-title" th:text="${event.title}">Event title</h3>
+                            
+                            <div class="grid-location" th:if="${event.city != null and !event.city.isEmpty() and event.city != 'TBA'}">
+                                <span class="location-text" th:text="${event.city}">Ho Chi Minh City</span>
+                            </div>
+                            <div class="grid-location" th:if="${event.city == null or event.city.isEmpty() or event.city == 'TBA'}">
+                                <span class="location-text">Venue TBA</span>
+                            </div>
+                            
+                            <div class="grid-type" th:if="${event.eventType != null}">
+                                <span class="type-badge" th:text="${event.eventType.name()}">FESTIVAL</span>
+                            </div>
+                            
+                            <div class="grid-details">
+                                <div class="grid-datetime" th:if="${event.dateLabel != null and !event.dateLabel.isEmpty()}">
+                                    <span class="datetime-icon">📅</span>
+                                    <span th:text="${event.dateLabel + (event.durationLabel != null and !event.durationLabel.isEmpty() ? ' • ' + event.durationLabel : '')}">15/10/2025 • 3h</span>
+                                </div>
+                                
+                                <div class="grid-capacity" th:if="${event.capacity != null and event.registered != null}">
+                                    <span th:text="${(event.capacity - event.registered) + ' tickets left'}" 
+                                          th:if="${!event.isSoldOut()}">50 tickets left</span>
+                                    <span th:text="'Sold Out'" th:if="${event.isSoldOut()}" class="sold-out">Sold Out</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid-price-section">
+                            <div class="price-info">
+                                <div class="grid-price" th:text="${event.priceLabel}">Free</div>
+                                <div class="price-note">per ticket</div>
+                            </div>
+                            <button class="grid-btn">Get Tickets</button>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Fallback -->
+                <div class="empty-results" th:if="${#lists.isEmpty(results)}">
+                    <img src="/img/empty-state.svg" alt="No results" class="empty-image"/>
+                    <p>No events found matching your search criteria.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="fragments/footer :: siteFooter()"></div>
+<script th:src="@{/js/main.js}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const layoutToggle = document.querySelector('.layout-toggle');
+    const layoutButtons = document.querySelectorAll('.layout-btn');
+    const listLayout = document.getElementById('list-layout');
+    const gridLayout = document.getElementById('grid-layout');
+    
+    // Layout switching functionality
+    layoutButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const layout = this.dataset.layout;
+            
+            // Update button states
+            layoutButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show/hide layouts
+            if (layout === 'list') {
+                listLayout.style.display = 'flex';
+                gridLayout.style.display = 'none';
+            } else if (layout === 'grid') {
+                listLayout.style.display = 'none';
+                gridLayout.style.display = 'grid';
+            }
+        });
+    });
+    
+    // Prevent default link behavior for buttons inside cards
+    document.querySelectorAll('.list-btn, .grid-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Get the parent link and navigate to it
+            const cardLink = this.closest('a');
+            if (cardLink) {
+                window.location.href = cardLink.href;
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

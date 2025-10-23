@@ -169,7 +169,7 @@ public class PaymentServiceImpl implements PaymentService {
             logger.info("Payment status updated to PAID");
 
             // Update order status
-            order.setStatus(OrderStatus.CONFIRMED);
+            order.setStatus(OrderStatus.PAID);
             order.setUpdatedAt(LocalDateTime.now());
             orderRepo.save(order);
             logger.info("Order status updated to CONFIRMED");

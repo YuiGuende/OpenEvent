@@ -2,6 +2,7 @@ package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
+import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
@@ -74,33 +75,30 @@ public class OrderServiceImpl implements OrderService {
             Event event = eventRepo.findById(request.getEventId())
                     .orElseThrow(() -> new IllegalArgumentException("Event not found: " + request.getEventId()));
 
-            // Get the ticket type ID from the request
+            // For simplicity, we'll take the first ticket type from the request
+            // In a real scenario, you might want to handle multiple ticket types differently
             if (request.getTicketTypeId() == null) {
-                throw new IllegalArgumentException("Ticket type ID must be specified");
+                throw new IllegalArgumentException("At least one ticket type must be specified");
             }
 
-            Long ticketTypeId = request.getTicketTypeId();
-            
             // Validate ticket type exists and is available
-            TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)
-                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + ticketTypeId));
+            TicketType ticketType = ticketTypeRepo.findById(request.getTicketTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + request.getTicketTypeId()));
 
-            // Check if ticket type can be purchased (default quantity = 1)
-            int quantity = 1;
-            if (!ticketTypeService.canPurchaseTickets(ticketTypeId, quantity)) {
+            // Check if ticket type can be purchased (always quantity 1 for simplified order)
+            if (!ticketTypeService.canPurchaseTickets(request.getTicketTypeId(), 1)) {
                 throw new IllegalStateException("Cannot purchase ticket of type: " + ticketType.getName() + 
                     " (Available: " + ticketType.getAvailableQuantity() + ")");
             }
 
-            // Reserve tickets
-            ticketTypeService.reserveTickets(ticketTypeId, quantity);
+            // Reserve tickets (always quantity 1 for simplified order)
+            ticketTypeService.reserveTickets(request.getTicketTypeId());
 
             // Create order
             Order order = new Order();
             order.setCustomer(customer);
             order.setEvent(event);
             order.setTicketType(ticketType);
-            order.setQuantity(quantity);
             order.setParticipantName(request.getParticipantName());
             order.setParticipantEmail(request.getParticipantEmail());
             order.setParticipantPhone(request.getParticipantPhone());
@@ -152,6 +150,40 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UserOrderDTO> getOrderDTOsByCustomerId(Long customerId, OrderStatus status) {
+        List<Order> orders = orderRepo.findByCustomerId(customerId);
+        if (status != null) {
+            orders = orders.stream()
+                    .filter(o -> o.getStatus() == status)
+                    .toList();
+        }
+        orders.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        return orders.stream().map(this::mapToUserOrderDTO).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserOrderDTO> getOrderDTOsByCustomer(Customer customer, OrderStatus status) {
+        return getOrderDTOsByCustomerId(customer.getCustomerId(), status);
+    }
+
+    private UserOrderDTO mapToUserOrderDTO(Order order) {
+        return UserOrderDTO.builder()
+                .orderId(order.getOrderId())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .eventId(order.getEvent() != null ? order.getEvent().getId() : null)
+                .eventTitle(order.getEvent() != null ? order.getEvent().getTitle() : null)
+                .eventImageUrl(order.getEvent() != null ? order.getEvent().getImageUrl() : null)
+                .eventStartsAt(order.getEvent() != null ? order.getEvent().getStartsAt() : null)
+                .ticketTypeId(order.getTicketType() != null ? order.getTicketType().getTicketTypeId() : null)
+                .ticketTypeName(order.getTicketType() != null ? order.getTicketType().getName() : null)
+                .totalAmount(order.getTotalAmount())
+                .build();
+    }
+
+    @Override
     @Transactional
     public void cancelOrder(Long orderId) {
         Order order = orderRepo.findById(orderId)
@@ -187,7 +219,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Update order status
-        order.setStatus(OrderStatus.CONFIRMED);
+        order.setStatus(OrderStatus.PAID);
         orderRepo.save(order);
     }
 
@@ -208,8 +240,7 @@ public class OrderServiceImpl implements OrderService {
         // PENDING orders (unpaid) are not counted as registered
         return orders.stream()
                 .anyMatch(order -> order.getEvent().getId().equals(eventId) && 
-                         (order.getStatus() == OrderStatus.CONFIRMED || 
-                          order.getStatus() == OrderStatus.PAID));
+                         (order.getStatus() == OrderStatus.PAID));
     }
 
     @Override

@@ -11,7 +11,7 @@
 <div class="container">
 
     <div class="form-box login">
-        <form id="loginForm" th:action="@{/login}" method="post">
+        <form id="loginForm" th:action="@{/perform_login}" method="post">
             <input type="hidden" name="redirectUrl" th:value="${redirectUrl}" th:if="${redirectUrl != null}">
             <input type="hidden" name="checkinEventId" th:value="${param.eventId[0]}" th:if="${param.eventId != null}">
             <input type="hidden" name="checkinAction" th:value="${param.action[0]}" th:if="${param.action != null}">
@@ -27,7 +27,7 @@
                 </div>
             </div>
             <div class="input-box">
-                <input type="email" id="loginEmail" name="email" placeholder="Email" required>
+                <input type="email" id="loginEmail" name="username" placeholder="Email" required>
                 <i class='bx bx-customer'></i>
             </div>
             <div class="input-box">

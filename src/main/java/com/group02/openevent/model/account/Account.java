@@ -25,6 +25,15 @@ public class Account {
     @Column(name = "role", nullable = false, length = 20)
     private Role role;
 
+    public Account() {
+    }
+
+    public Account(Long accountId, String email, String passwordHash) {
+        this.accountId = accountId;
+        this.email = email;
+        this.passwordHash = passwordHash;
+    }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -64,4 +73,15 @@ public class Account {
     public void setRole(Role role) {
         this.role = role;
     }
-} 
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "accountId=" + accountId +
+                ", email='" + email + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", role=" + role +
+                '}';
+    }
+}

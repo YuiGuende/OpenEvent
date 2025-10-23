@@ -1,4 +1,5 @@
 package com.group02.openevent.model.ticket;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group02.openevent.model.event.Event;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public class TicketType {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_tickettype_event"))
+    @JsonIgnore
     private Event event;
 
     @Column(name = "name", length = 100, nullable = false)
@@ -83,16 +85,16 @@ public class TicketType {
         return afterStart && beforeEnd;
     }
 
-    public boolean canPurchase(Integer requestQuantity) {
+    public boolean canPurchase() {
         // For now, ignore sale period for testing - only check availability and quantity
-        return isAvailable() && requestQuantity <= getAvailableQuantity();
+        return isAvailable() && 1 <= getAvailableQuantity();
     }
 
-    public synchronized void increaseSoldQuantity(Integer quantity) {
-        if (quantity + soldQuantity > totalQuantity) {
+    public synchronized void increaseSoldQuantity() {
+        if (1 + soldQuantity > totalQuantity) {
             throw new IllegalArgumentException("Không đủ vé còn lại");
         }
-        this.soldQuantity += quantity;
+        this.soldQuantity += 1;
     }
 
     public synchronized void decreaseSoldQuantity(Integer quantity) {

@@ -67,7 +67,7 @@ public class EventDetailController {
 			} else {
 				eventData.put("hostDiscountPercent", 0);
 			}
-			
+
 			// Add event-specific data based on type
 			String eventType = event.getEventType().toString();
 			if ("MUSIC".equals(eventType)) {
@@ -84,6 +84,11 @@ public class EventDetailController {
 				eventData.put("prizePool", competitionEvent.getPrizePool());
 				eventData.put("competitionType", competitionEvent.getCompetitionType());
 				eventData.put("rules", competitionEvent.getRules());
+//			} else if ("ConferenceEvent".equals(eventType)) {
+//				com.group02.openevent.model.event.ConferenceEvent conferenceEvent = (com.group02.openevent.model.event.ConferenceEvent) event;
+//				eventData.put("conferenceType", conferenceEvent.getConferenceType());
+//				eventData.put("maxAttendees", conferenceEvent.getMaxAttendees());
+//				eventData.put("agenda", conferenceEvent.getAgenda());
 			}
 
 			return ResponseEntity.ok(eventData);

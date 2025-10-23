@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${event.title} + ' - Check-in'">Event Check-in</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .qr-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .qr-section.checkin {
+            border-top: 5px solid #28a745;
+        }
+        
+        .qr-section.checkout {
+            border-top: 5px solid #dc3545;
+        }
+        
+        .qr-section h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .qr-section.checkin h2 {
+            color: #28a745;
+        }
+        
+        .qr-section.checkout h2 {
+            color: #dc3545;
+        }
+        
+        .qr-code-wrapper {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        .qr-code-wrapper img {
+            width: 280px;
+            height: 280px;
+            display: block;
+        }
+        
+        .instruction {
+            color: #666;
+            font-size: 14px;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+        
+        .action-btn {
+            display: inline-block;
+            padding: 15px 40px;
+            margin-top: 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .checkin-btn {
+            background: #28a745;
+            color: white;
+        }
+        
+        .checkout-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .qr-code-wrapper img {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 th:text="${event.title}">Live Music Night</h1>
+            <p th:if="${event.startsAt != null}" 
+               th:text="${#temporals.format(event.startsAt, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#temporals.format(event.endsAt, 'HH:mm')}">
+                15/11/2025 19:00 - 22:00
+            </p>
+        </div>
+        
+        <!-- Check-in Section -->
+        <div class="qr-section checkin">
+            <h2>🟢 CHECK-IN</h2>
+            <div class="qr-code-wrapper">
+                <!-- Generate QR on-the-fly - redirect to login -->
+                <img th:src="@{'/events/qr-code/generate?url=' + ${checkinUrl}}" 
+                     alt="Check-in QR Code">
+            </div>
+            <p class="instruction">
+                📱 Quét mã QR để đăng nhập và check-in tự động<br>
+                Hoặc nhấn nút bên dưới để điền form thủ công
+            </p>
+            <a th:href="@{'/events/' + ${event.id} + '/checkin-form'}" 
+               class="action-btn checkin-btn">
+                ✅ Điền form Check-in
+            </a>
+        </div>
+        
+        <!-- Check-out Section -->
+        <div class="qr-section checkout">
+            <h2>🔴 CHECK-OUT</h2>
+            <div class="qr-code-wrapper">
+                <img th:src="@{'/events/qr-code/generate?url=' + ${checkoutUrl}}" 
+                     alt="Check-out QR Code">
+            </div>
+            <p class="instruction">
+                📱 Quét mã QR để đăng nhập và check-out tự động<br>
+                Hoặc nhấn nút bên dưới để điền form thủ công
+            </p>
+            <a th:href="@{'/events/' + ${event.id} + '/checkout-form'}" 
+               class="action-btn checkout-btn">
+                🚪 Điền form Check-out
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+

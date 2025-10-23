@@ -74,32 +74,33 @@ public class OrderServiceImpl implements OrderService {
             Event event = eventRepo.findById(request.getEventId())
                     .orElseThrow(() -> new IllegalArgumentException("Event not found: " + request.getEventId()));
 
-            // For simplicity, we'll take the first ticket type from the request
-            // In a real scenario, you might want to handle multiple ticket types differently
-            if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
-                throw new IllegalArgumentException("At least one ticket type must be specified");
+            // Get the ticket type ID from the request
+            if (request.getTicketTypeId() == null) {
+                throw new IllegalArgumentException("Ticket type ID must be specified");
             }
 
-            CreateOrderWithTicketTypeRequest.OrderItemRequest firstItem = request.getOrderItems().get(0);
+            Long ticketTypeId = request.getTicketTypeId();
             
             // Validate ticket type exists and is available
-            TicketType ticketType = ticketTypeRepo.findById(firstItem.getTicketTypeId())
-                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + firstItem.getTicketTypeId()));
+            TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)
+                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + ticketTypeId));
 
-            // Check if ticket type can be purchased (always quantity 1 for simplified order)
-            if (!ticketTypeService.canPurchaseTickets(firstItem.getTicketTypeId(), 1)) {
+            // Check if ticket type can be purchased (default quantity = 1)
+            int quantity = 1;
+            if (!ticketTypeService.canPurchaseTickets(ticketTypeId, quantity)) {
                 throw new IllegalStateException("Cannot purchase ticket of type: " + ticketType.getName() + 
                     " (Available: " + ticketType.getAvailableQuantity() + ")");
             }
 
-            // Reserve tickets (always quantity 1 for simplified order)
-            ticketTypeService.reserveTickets(firstItem.getTicketTypeId(), 1);
+            // Reserve tickets
+            ticketTypeService.reserveTickets(ticketTypeId, quantity);
 
             // Create order
             Order order = new Order();
             order.setCustomer(customer);
             order.setEvent(event);
             order.setTicketType(ticketType);
+            order.setQuantity(quantity);
             order.setParticipantName(request.getParticipantName());
             order.setParticipantEmail(request.getParticipantEmail());
             order.setParticipantPhone(request.getParticipantPhone());

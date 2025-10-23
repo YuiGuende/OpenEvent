@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,7 +29,11 @@ public class MusicController {
     }
 
     @GetMapping("/music/{id}")
-    public String getMusicEventDetail(@PathVariable("id") Long id, Model model) {
+    public String getMusicEventDetail(@PathVariable("id") Long id, 
+                                     @RequestParam(required = false) String error,
+                                     @RequestParam(required = false) String success,
+                                     @RequestParam(required = false) String message,
+                                     Model model) {
         try {
             MusicEventDetailDTO event = musicService.getMusicEventById(id);
             List<EventImage> eventImages = musicService.getEventImages(id);
@@ -36,6 +41,7 @@ public class MusicController {
             List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEventId(id);
 
             model.addAttribute("event", event); // truyền 1 object duy nhất
+            model.addAttribute("eventId", id); // thêm eventId cho feedback form
             model.addAttribute("eventImages", eventImages);
             model.addAttribute("tickets", ticketTypes);
 
@@ -52,7 +58,16 @@ public class MusicController {
             model.addAttribute("schedulesByDay", schedulesByDay);
             model.addAttribute("scheduleEntries", scheduleEntries);
             
-            // Debug info
+            // Pass error/success messages to the view
+            if (error != null) {
+                model.addAttribute("errorMessage", getErrorMessage(error));
+            }
+            if (success != null) {
+                model.addAttribute("successMessage", getSuccessMessage(success));
+            }
+            if (message != null) {
+                model.addAttribute("detailMessage", message);
+            }
             
         } catch (Exception e) {
             System.err.println("Error loading event: " + e.getMessage());
@@ -60,5 +75,23 @@ public class MusicController {
             model.addAttribute("error", "Không thể tải dữ liệu sự kiện: " + e.getMessage());
         }
         return "music/musicHome"; // file musicHome.html
+    }
+    
+    private String getErrorMessage(String error) {
+        return switch (error) {
+            case "form_creation_failed" -> "Failed to create feedback form. Please try again.";
+            case "no_form_found" -> "No feedback form found for this event.";
+            case "submission_failed" -> "Failed to submit feedback. Please try again.";
+            case "missing_event_id" -> "Invalid event ID.";
+            default -> "An error occurred. Please try again.";
+        };
+    }
+    
+    private String getSuccessMessage(String success) {
+        return switch (success) {
+            case "form_created" -> "Feedback form created successfully!";
+            case "feedback_submitted" -> "Thank you for your feedback!";
+            default -> "Operation completed successfully.";
+        };
     }
 }

@@ -40,6 +40,9 @@ public class Order {
     @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity = 1;
+
     // Pricing fields
     @Column(name = "original_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal originalPrice;
@@ -94,7 +97,8 @@ public class Order {
     // Business Logic Methods
     public void calculateTotalAmount() {
         if (ticketType != null) {
-            this.originalPrice = ticketType.getPrice();
+            // Calculate original price for the quantity
+            this.originalPrice = ticketType.getPrice().multiply(new BigDecimal(quantity));
             
             // Calculate host discount amount
             if (hostDiscountPercent != null && hostDiscountPercent.compareTo(BigDecimal.ZERO) > 0) {
@@ -188,4 +192,10 @@ public class Order {
 
     public String getVoucherCode() { return voucherCode; }
     public void setVoucherCode(String voucherCode) { this.voucherCode = voucherCode; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { 
+        this.quantity = quantity; 
+        calculateTotalAmount();
+    }
 }

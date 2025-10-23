@@ -127,34 +127,52 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResult handlePaymentWebhook(PayOSWebhookData webhookData) {
+        logger.info("=== PAYMENT WEBHOOK PROCESSING ===");
+        logger.info("Webhook data received: {}", webhookData);
+        
         try {
             if (!verifyWebhook(webhookData)) {
+                logger.error("Invalid webhook signature");
                 return PaymentResult.failure("Invalid webhook signature");
             }
 
             Long paymentLinkId = webhookData.getData().getPaymentLinkId();
+            logger.info("Payment link ID from webhook: {}", paymentLinkId);
+            
             if (paymentLinkId == null) {
+                logger.error("Missing payment link ID in webhook");
                 return PaymentResult.failure("Missing payment link ID in webhook");
             }
 
             // Find payment by PayOS payment link ID (as String)
+            logger.info("Searching for payment with PayOS ID: {}", paymentLinkId);
             Optional<Payment> paymentOpt = paymentRepo.findByPaymentLinkId(String.valueOf(paymentLinkId));
+            
             if (paymentOpt.isEmpty()) {
+                logger.error("Payment not found for PayOS ID: {}", paymentLinkId);
+                // Log all existing payments for debugging
+                List<Payment> allPayments = paymentRepo.findAll();
+                logger.error("Available payments: {}", allPayments.stream()
+                    .map(p -> "ID: " + p.getPaymentId() + ", PayOS ID: " + p.getPaymentLinkId())
+                    .collect(Collectors.toList()));
                 return PaymentResult.failure("Payment not found for PayOS ID: " + paymentLinkId);
             }
 
             Payment payment = paymentOpt.get();
             Order order = payment.getOrder();
+            logger.info("Found payment: {} for order: {}", payment.getPaymentId(), order.getOrderId());
 
             // Update payment status
             payment.setStatus(PaymentStatus.PAID);
             payment.setUpdatedAt(LocalDateTime.now());
             paymentRepo.save(payment);
+            logger.info("Payment status updated to PAID");
 
             // Update order status
             order.setStatus(OrderStatus.CONFIRMED);
             order.setUpdatedAt(LocalDateTime.now());
             orderRepo.save(order);
+            logger.info("Order status updated to CONFIRMED");
 
             logger.info("Payment webhook processed successfully for order: {}", order.getOrderId());
             return PaymentResult.success("Payment processed successfully");
@@ -168,6 +186,60 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResult handlePaymentWebhookFromPayOS(PayOSWebhookData webhookData) {
         return handlePaymentWebhook(webhookData);
+    }
+
+    @Override
+    public PaymentResult handlePaymentWebhookDirectly(vn.payos.model.webhooks.WebhookData webhookData) {
+        logger.info("=== PROCESSING WEBHOOK DIRECTLY ===");
+        logger.info("Webhook data: {}", webhookData);
+        
+        try {
+            // Extract data from PayOS SDK WebhookData
+            String code = webhookData.getCode();
+            String desc = webhookData.getDesc();
+            
+            logger.info("Webhook code: {}, desc: {}", code, desc);
+            
+            // Check if payment was successful
+            if (!"00".equals(code)) {
+                logger.warn("Payment failed with code: {} - {}", code, desc);
+                return PaymentResult.failure("Payment failed: " + desc);
+            }
+            
+            // Try to get payment link ID from webhook data
+            // We need to examine the actual structure of WebhookData
+            logger.info("Webhook data class: {}", webhookData.getClass().getName());
+            logger.info("Webhook data toString: {}", webhookData.toString());
+            
+            // Use reflection to get all available methods
+            try {
+                java.lang.reflect.Method[] methods = webhookData.getClass().getMethods();
+                logger.info("Available methods on WebhookData:");
+                for (java.lang.reflect.Method method : methods) {
+                    if (method.getName().startsWith("get") && method.getParameterCount() == 0) {
+                        try {
+                            Object value = method.invoke(webhookData);
+                            logger.info("{}: {}", method.getName(), value);
+                        } catch (Exception e) {
+                            logger.debug("Could not invoke {}: {}", method.getName(), e.getMessage());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Could not inspect WebhookData methods: {}", e.getMessage());
+            }
+            
+            // For now, we'll need to find the payment by other means
+            // This is a temporary solution - we need to understand the WebhookData structure
+            logger.warn("Cannot extract payment link ID from webhook data");
+            logger.warn("This is the main issue - we need to get the actual payment link ID");
+            
+            return PaymentResult.failure("Cannot extract payment link ID from webhook data");
+            
+        } catch (Exception e) {
+            logger.error("Error processing webhook directly: ", e);
+            return PaymentResult.failure("Error processing webhook: " + e.getMessage());
+        }
     }
 
     @Override

@@ -31,6 +31,25 @@
 
 </head>
 <body>
+<!-- Success/Error Messages -->
+<div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert" 
+     style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;">
+    <strong>Success!</strong> <span th:text="${successMessage}"></span>
+    <span th:if="${detailMessage}" th:text="' - ' + ${detailMessage}"></span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert" 
+     style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;">
+    <strong>Error!</strong> <span th:text="${errorMessage}"></span>
+    <span th:if="${detailMessage}" th:text="' - ' + ${detailMessage}"></span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
 <!-- Banner, in ra ảnh -->
 <section class="hero hero--slider hero--compact">
     <div class="hero-track" id="heroTrack">
@@ -76,6 +95,7 @@
                     <a href="pricing.html" class="btn btn-common wow fadeInUp" data-wow-delay="0.3s">
                         Add to My Calendar
                     </a>
+                    
                 </div>
 
                 <!-- Decorative separator -->
@@ -1306,6 +1326,15 @@
 <script th:src="@{/music/assets/js/jquery-min.js}"></script>
 <script th:src="@{/music/assets/js/popper.min.js}"></script>
 <script th:src="@{/music/assets/js/bootstrap.min.js}"></script>
+
+<!-- Auto-hide alerts after 5 seconds -->
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    });
+</script>
 <script th:src="@{/music/assets/js/jquery.countdown.min.js}"></script>
 <script th:src="@{/music/assets/js/jquery.nav.js}"></script>
 <script th:src="@{/music/assets/js/jquery.easing.min.js}"></script>

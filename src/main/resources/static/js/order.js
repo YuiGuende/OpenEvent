@@ -17,17 +17,7 @@ class OrderManager {
             orderForm.addEventListener('submit', (e) => this.handleCreateOrder(e));
         }
 
-        // Bind ticket type selection
-        const ticketTypeSelects = document.querySelectorAll('.ticket-type-select');
-        ticketTypeSelects.forEach(select => {
-            select.addEventListener('change', (e) => this.handleTicketTypeChange(e));
-        });
-
-        // Bind quantity inputs
-        const quantityInputs = document.querySelectorAll('.quantity-input');
-        quantityInputs.forEach(input => {
-            input.addEventListener('change', (e) => this.updateOrderTotal());
-        });
+        // Note: Ticket type and quantity handling is now done in HTML directly
 
         // Bind payment buttons
         const paymentButtons = document.querySelectorAll('.btn-payment');
@@ -80,7 +70,6 @@ class OrderManager {
     createOrderCard(order) {
         const statusClass = this.getStatusClass(order.status);
         const statusText = this.getStatusText(order.status);
-        const orderItems = order.orderItems || [];
 
         return `
             <div class="order-card" data-order-id="${order.orderId}">
@@ -95,13 +84,11 @@ class OrderManager {
                 </div>
                 <div class="order-items">
                     <h4>Chi tiết vé:</h4>
-                    ${orderItems.map(item => `
-                        <div class="order-item">
-                            <span>${item.ticketType?.name || 'N/A'}</span>
-                            <span>x${item.quantity}</span>
-                            <span>${this.formatCurrency(item.subtotal)}</span>
-                        </div>
-                    `).join('')}
+                    <div class="order-item">
+                        <span>${order.ticketType?.name || 'N/A'}</span>
+                        <span>x${order.quantity || 1}</span>
+                        <span>${this.formatCurrency(order.totalAmount)}</span>
+                    </div>
                 </div>
                 <div class="order-actions">
                     ${this.getOrderActions(order)}
@@ -202,23 +189,19 @@ class OrderManager {
             participantPhone: formData.get('participantPhone'),
             participantOrganization: formData.get('participantOrganization'),
             notes: formData.get('notes'),
-            orderItems: []
+            order: null
         };
 
-        // Collect ticket type selections
-        const ticketTypeSelects = document.querySelectorAll('.ticket-type-select');
-        ticketTypeSelects.forEach(select => {
-            const ticketTypeId = select.value;
-            const quantityInput = select.closest('.ticket-type-row').querySelector('.quantity-input');
-            const quantity = parseInt(quantityInput.value) || 0;
+        // Collect the selected ticket type and quantity
+        const ticketTypeId = formData.get('ticketTypeId');
+        const quantity = parseInt(formData.get('quantity')) || 0;
 
-            if (ticketTypeId && quantity > 0) {
-                orderData.orderItems.push({
-                    ticketTypeId: parseInt(ticketTypeId),
-                    quantity: quantity
-                });
-            }
-        });
+        if (ticketTypeId && quantity > 0) {
+            orderData.order = {
+                ticketTypeId: parseInt(ticketTypeId),
+                quantity: quantity
+            };
+        }
 
         return orderData;
     }
@@ -273,45 +256,7 @@ class OrderManager {
         }
     }
 
-    handleTicketTypeChange(event) {
-        const select = event.target;
-        const row = select.closest('.ticket-type-row');
-        const priceElement = row.querySelector('.ticket-type-price');
-        const quantityInput = row.querySelector('.quantity-input');
-        const maxQuantity = select.selectedOptions[0]?.dataset.maxQuantity || 0;
-
-        if (select.value) {
-            const price = select.selectedOptions[0].dataset.price || 0;
-            priceElement.textContent = this.formatCurrency(price);
-            quantityInput.max = maxQuantity;
-            quantityInput.disabled = false;
-        } else {
-            priceElement.textContent = '--';
-            quantityInput.value = 0;
-            quantityInput.disabled = true;
-        }
-
-        this.updateOrderTotal();
-    }
-
-    updateOrderTotal() {
-        let total = 0;
-        const quantityInputs = document.querySelectorAll('.quantity-input');
-        
-        quantityInputs.forEach(input => {
-            const row = input.closest('.ticket-type-row');
-            const select = row.querySelector('.ticket-type-select');
-            const price = parseFloat(select.selectedOptions[0]?.dataset.price || 0);
-            const quantity = parseInt(input.value) || 0;
-            
-            total += price * quantity;
-        });
-
-        const totalElement = document.getElementById('orderTotal');
-        if (totalElement) {
-            totalElement.textContent = this.formatCurrency(total);
-        }
-    }
+    // Note: Ticket type change and total calculation are now handled in HTML directly
 
     bindOrderEvents() {
         // Re-bind events for dynamically created elements

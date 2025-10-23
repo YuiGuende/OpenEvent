@@ -291,6 +291,7 @@ CREATE TABLE orders
     customer_id              BIGINT NOT NULL,
     event_id                 BIGINT NOT NULL,
     ticket_type_id           BIGINT NOT NULL,
+    quantity                 INT NOT NULL DEFAULT 1,
     status                   ENUM('PENDING','CONFIRMED','PAID','CANCELLED','EXPIRED','REFUNDED') NOT NULL DEFAULT 'PENDING',
     
     -- Pricing fields
@@ -364,7 +365,61 @@ CREATE TABLE payments
 
 -- Migration completed: Simplified Order system (no OrderItem, no Ticket)
 
--- 7. Reports / Notifications / Requests
+-- 8. Event Attendance (Check-in/Check-out System)
+CREATE TABLE event_attendance
+(
+    attendance_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Link to order (if customer bought ticket)
+    order_id        BIGINT DEFAULT NULL,
+    
+    -- Event info
+    event_id        BIGINT NOT NULL,
+    
+    -- Customer info (if logged in)
+    customer_id     BIGINT DEFAULT NULL,
+    
+    -- Self-filled info (for walk-ins or manual check-in)
+    full_name       VARCHAR(200) NOT NULL,
+    email           VARCHAR(200),
+    phone           VARCHAR(50),
+    organization    VARCHAR(200),
+    
+    -- Check-in/out timestamps
+    check_in_time   DATETIME(6) DEFAULT NULL,
+    check_out_time  DATETIME(6) DEFAULT NULL,
+    
+    -- Status
+    status          ENUM('PENDING','CHECKED_IN','CHECKED_OUT') NOT NULL DEFAULT 'PENDING',
+    
+    -- Metadata
+    created_at      DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at      DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    
+    -- Foreign Keys
+    CONSTRAINT fk_attendance_order 
+        FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL,
+    
+    CONSTRAINT fk_attendance_event 
+        FOREIGN KEY (event_id) REFERENCES event(id) ON DELETE CASCADE,
+    
+    CONSTRAINT fk_attendance_customer 
+        FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE SET NULL,
+    
+    -- Constraints: 1 email chỉ check-in 1 lần cho 1 event
+    UNIQUE KEY uk_email_event (event_id, email),
+    
+    -- Indexes for performance
+    INDEX idx_event_status (event_id, status),
+    INDEX idx_checkin_time (check_in_time)
+);
+
+-- Add QR tokens to event table for check-in/check-out
+ALTER TABLE event 
+ADD COLUMN checkin_qr_token VARCHAR(255) UNIQUE DEFAULT NULL,
+ADD COLUMN checkout_qr_token VARCHAR(255) UNIQUE DEFAULT NULL;
+
+-- 9. Reports / Notifications / Requests
 CREATE TABLE reports
 (
     report_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -686,5 +741,53 @@ INSERT INTO orders (customer_id, event_id, ticket_type_id, status, original_pric
 INSERT INTO voucher_usage (voucher_id, order_id, discount_applied, used_at) VALUES
 (1, 6, 50000.00, NOW()),
 (2, 8, 20000.00, NOW());
+
+-- 14. Feedback Form System
+-- Bảng lưu form feedback của từng event
+CREATE TABLE event_forms (
+    form_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id BIGINT NOT NULL,
+    form_title VARCHAR(200) NOT NULL,
+    form_description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_eventform_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+-- Bảng lưu các câu hỏi trong form
+CREATE TABLE form_questions (
+    question_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    form_id BIGINT NOT NULL,
+    question_text VARCHAR(500) NOT NULL,
+    question_type ENUM('TEXT', 'EMAIL', 'PHONE', 'SELECT', 'CHECKBOX', 'RADIO', 'TEXTAREA') NOT NULL,
+    is_required BOOLEAN DEFAULT FALSE,
+    question_options TEXT, -- JSON cho SELECT, CHECKBOX, RADIO
+    question_order INT DEFAULT 1,
+    created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_question_form FOREIGN KEY (form_id) REFERENCES event_forms (form_id) ON DELETE CASCADE
+);
+
+-- Bảng lưu câu trả lời của user
+CREATE TABLE form_responses (
+    response_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    form_id BIGINT NOT NULL,
+    customer_id BIGINT NOT NULL,
+    question_id BIGINT NOT NULL,
+    response_value TEXT NOT NULL,
+    submitted_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_response_form FOREIGN KEY (form_id) REFERENCES event_forms (form_id) ON DELETE CASCADE,
+    CONSTRAINT fk_response_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON DELETE CASCADE,
+    CONSTRAINT fk_response_question FOREIGN KEY (question_id) REFERENCES form_questions (question_id) ON DELETE CASCADE
+);
+
+-- Indexes for Feedback Form System
+CREATE INDEX idx_eventforms_event_id ON event_forms (event_id);
+CREATE INDEX idx_eventforms_active ON event_forms (is_active);
+CREATE INDEX idx_formquestions_form_id ON form_questions (form_id);
+CREATE INDEX idx_formquestions_order ON form_questions (form_id, question_order);
+CREATE INDEX idx_formresponses_form_id ON form_responses (form_id);
+CREATE INDEX idx_formresponses_customer_id ON form_responses (customer_id);
+CREATE INDEX idx_formresponses_question_id ON form_responses (question_id);
+CREATE INDEX idx_formresponses_submitted_at ON form_responses (submitted_at);
 
 SELECT 'Sample data inserted successfully!' as status;

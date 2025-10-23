@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{host/layout}">
+<head>
+    <title>Quản lý điểm danh</title>
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-checked-in {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-checked-out {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .export-btn {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .export-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h1 th:text="'Quản lý điểm danh - ' + ${event.title}">Quản lý điểm danh</h1>
+        
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <div class="value" th:text="${stats.totalAttendees}">0</div>
+                <div class="label">Tổng số người</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <div class="value" th:text="${stats.totalCheckedIn}">0</div>
+                <div class="label">Đã check-in</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">👥</div>
+                <div class="value" th:text="${stats.currentlyPresent}">0</div>
+                <div class="label">Đang tham gia</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">🚪</div>
+                <div class="value" th:text="${stats.totalCheckedOut}">0</div>
+                <div class="label">Đã check-out</div>
+            </div>
+        </div>
+        
+        <!-- Export Button -->
+        <button class="export-btn" onclick="exportToCSV()">
+            📥 Xuất Excel
+        </button>
+        
+        <!-- Attendance Table -->
+        <div class="table-container">
+            <table class="table" id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Tổ chức</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Thời gian</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="attendance, iterStat : ${attendances}">
+                        <td th:text="${iterStat.count}">1</td>
+                        <td th:text="${attendance.fullName}">Nguyễn Văn A</td>
+                        <td th:text="${attendance.email}">email@example.com</td>
+                        <td th:text="${attendance.phone}">0123456789</td>
+                        <td th:text="${attendance.organization ?: '-'}">FPT University</td>
+                        <td th:text="${attendance.checkInTime != null ? #temporals.format(attendance.checkInTime, 'HH:mm dd/MM') : '-'}">
+                            09:30 15/11
+                        </td>
+                        <td th:text="${attendance.checkOutTime != null ? #temporals.format(attendance.checkOutTime, 'HH:mm dd/MM') : '-'}">
+                            16:45 15/11
+                        </td>
+                        <td>
+                            <span th:if="${attendance.checkInTime != null and attendance.checkOutTime != null}">
+                                <span th:with="duration=${T(java.time.Duration).between(attendance.checkInTime, attendance.checkOutTime)}">
+                                    <span th:text="${duration.toHours()} + 'h ' + ${duration.toMinutes() % 60} + 'm'">5h 15m</span>
+                                </span>
+                            </span>
+                            <span th:unless="${attendance.checkInTime != null and attendance.checkOutTime != null}">-</span>
+                        </td>
+                        <td>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + #strings.toLowerCase(attendance.status)}"
+                                  th:text="${attendance.status == T(com.group02.openevent.model.attendance.EventAttendance.AttendanceStatus).CHECKED_IN ? 'Đang tham gia' : 
+                                           (attendance.status == T(com.group02.openevent.model.attendance.EventAttendance.AttendanceStatus).CHECKED_OUT ? 'Đã rời đi' : 'Chưa check-in')}">
+                                Đang tham gia
+                            </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(attendances)}">
+                        <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+                            Chưa có ai check-in
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script layout:fragment="scripts">
+        function exportToCSV() {
+            const table = document.getElementById('attendanceTable');
+            let csv = [];
+            
+            // Header
+            const headers = Array.from(table.querySelectorAll('thead th'))
+                .map(th => th.textContent.trim());
+            csv.push(headers.join(','));
+            
+            // Rows
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td'))
+                    .map(td => '"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                if (cells.length > 1) { // Skip empty rows
+                    csv.push(cells.join(','));
+                }
+            });
+            
+            // Download
+            const csvContent = '\uFEFF' + csv.join('\n'); // UTF-8 BOM
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'attendance_' + new Date().getTime() + '.csv';
+            link.click();
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+

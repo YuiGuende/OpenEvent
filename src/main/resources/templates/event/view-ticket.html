@@ -1025,10 +1025,9 @@
         }
 
         try {
-            const ticketData = {ticketTypeId: parseInt(selectedTicket.dataset.ticketId), quantity: 1};
             const orderData = {
-                eventId: eventId, 
-                orderItems: [ticketData],
+                eventId: eventId,
+                ticketTypeId: parseInt(selectedTicket.dataset.ticketId),
                 voucherCode: appliedVoucher ? appliedVoucher.code : null
             };
 

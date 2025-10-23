@@ -19,20 +19,22 @@ public class CreateOrderWithTicketTypeRequest {
     private String notes;
     private String voucherCode;
     
-    @Valid
-    @NotNull(message = "Order items are required")
-    private List<OrderItemRequest> orderItems;
+//    @Valid
+//    @NotNull(message = "Order items are required")
+//    private List<OrderItemRequest> orderItems;
+
+    @NotNull(message = "Ticket type ID is required")
+    private Long ticketTypeId;
 
     // Constructors
     public CreateOrderWithTicketTypeRequest() {}
 
-    public CreateOrderWithTicketTypeRequest(Long eventId, Long userId, List<OrderItemRequest> orderItems) {
+    public CreateOrderWithTicketTypeRequest(Long eventId, Long userId, Long ticketTypeId) {
         this.eventId = eventId;
         this.userId = userId;
-        this.orderItems = orderItems;
+        this.ticketTypeId = ticketTypeId;
     }
 
-    // Getters and Setters
     public Long getEventId() {
         return eventId;
     }
@@ -97,12 +99,12 @@ public class CreateOrderWithTicketTypeRequest {
         this.voucherCode = voucherCode;
     }
 
-    public List<OrderItemRequest> getOrderItems() {
-        return orderItems;
+    public Long getTicketTypeId() {
+        return ticketTypeId;
     }
 
-    public void setOrderItems(List<OrderItemRequest> orderItems) {
-        this.orderItems = orderItems;
+    public void setTicketTypeId(Long ticketTypeId) {
+        this.ticketTypeId = ticketTypeId;
     }
 
     // Inner class for order items
@@ -149,18 +151,5 @@ public class CreateOrderWithTicketTypeRequest {
         }
     }
 
-    @Override
-    public String toString() {
-        return "CreateOrderWithTicketTypeRequest{" +
-                "eventId=" + eventId +
-                ", userId=" + userId +
-                ", participantName='" + participantName + '\'' +
-                ", participantEmail='" + participantEmail + '\'' +
-                ", participantPhone='" + participantPhone + '\'' +
-                ", participantOrganization='" + participantOrganization + '\'' +
-                ", notes='" + notes + '\'' +
-                ", voucherCode='" + voucherCode + '\'' +
-                ", orderItems=" + orderItems +
-                '}';
-    }
+
 }

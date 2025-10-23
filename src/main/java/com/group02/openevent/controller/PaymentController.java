@@ -39,6 +39,7 @@ public class PaymentController {
     @PostMapping("/webhook")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> handleWebhook(@RequestBody Object webhookBody) {
+        System.out.println("webhook is called");
         try {
             // Verify webhook using PayOS SDK
             WebhookData data = payOS.webhooks().verify(webhookBody);

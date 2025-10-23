@@ -85,16 +85,16 @@ public class TicketType {
         return afterStart && beforeEnd;
     }
 
-    public boolean canPurchase(Integer requestQuantity) {
+    public boolean canPurchase() {
         // For now, ignore sale period for testing - only check availability and quantity
-        return isAvailable() && requestQuantity <= getAvailableQuantity();
+        return isAvailable() && 1 <= getAvailableQuantity();
     }
 
-    public synchronized void increaseSoldQuantity(Integer quantity) {
-        if (quantity + soldQuantity > totalQuantity) {
+    public synchronized void increaseSoldQuantity() {
+        if (1 + soldQuantity > totalQuantity) {
             throw new IllegalArgumentException("Không đủ vé còn lại");
         }
-        this.soldQuantity += quantity;
+        this.soldQuantity += 1;
     }
 
     public synchronized void decreaseSoldQuantity(Integer quantity) {

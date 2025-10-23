@@ -18,7 +18,7 @@ public interface TicketTypeService {
     List<TicketType> getTicketTypesByEventId(Long eventId);
     List<TicketType> getAvailableTicketTypesByEventId(Long eventId);
     boolean canPurchaseTickets(Long ticketTypeId, Integer quantity);
-    void reserveTickets(Long ticketTypeId, Integer quantity);
+    void reserveTickets(Long ticketTypeId);
     void releaseTickets(Long ticketTypeId, Integer quantity);
     void confirmPurchase(Long ticketTypeId, Integer quantity);
     Page<TicketType> getTicketTypesPageable(Pageable pageable);

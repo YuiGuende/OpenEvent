@@ -76,24 +76,22 @@ public class OrderServiceImpl implements OrderService {
 
             // For simplicity, we'll take the first ticket type from the request
             // In a real scenario, you might want to handle multiple ticket types differently
-            if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+            if (request.getTicketTypeId() == null) {
                 throw new IllegalArgumentException("At least one ticket type must be specified");
             }
 
-            CreateOrderWithTicketTypeRequest.OrderItemRequest firstItem = request.getOrderItems().get(0);
-            
             // Validate ticket type exists and is available
-            TicketType ticketType = ticketTypeRepo.findById(firstItem.getTicketTypeId())
-                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + firstItem.getTicketTypeId()));
+            TicketType ticketType = ticketTypeRepo.findById(request.getTicketTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + request.getTicketTypeId()));
 
             // Check if ticket type can be purchased (always quantity 1 for simplified order)
-            if (!ticketTypeService.canPurchaseTickets(firstItem.getTicketTypeId(), 1)) {
+            if (!ticketTypeService.canPurchaseTickets(request.getTicketTypeId(), 1)) {
                 throw new IllegalStateException("Cannot purchase ticket of type: " + ticketType.getName() + 
                     " (Available: " + ticketType.getAvailableQuantity() + ")");
             }
 
             // Reserve tickets (always quantity 1 for simplified order)
-            ticketTypeService.reserveTickets(firstItem.getTicketTypeId(), 1);
+            ticketTypeService.reserveTickets(request.getTicketTypeId());
 
             // Create order
             Order order = new Order();

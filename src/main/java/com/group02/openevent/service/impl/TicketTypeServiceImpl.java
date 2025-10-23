@@ -86,21 +86,21 @@ public class TicketTypeServiceImpl implements TicketTypeService {
         if (ticketTypeOpt.isEmpty()) {
             return false;
         }
-        return ticketTypeOpt.get().canPurchase(quantity);
+        return ticketTypeOpt.get().canPurchase();
     }
 
     @Override
     @Transactional
-    public void reserveTickets(Long ticketTypeId, Integer quantity) {
+    public void reserveTickets(Long ticketTypeId) {
         TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)
                 .orElse(null);
 
         assert ticketType != null;
-        if (!ticketType.canPurchase(quantity)) {
-            throw new IllegalStateException("Cannot reserve " + quantity + " tickets for ticket type: " + ticketTypeId);
+        if (!ticketType.canPurchase()) {
+            throw new IllegalStateException("Cannot reserve tickets for ticket type: " + ticketTypeId);
         }
 
-        ticketType.increaseSoldQuantity(quantity);
+        ticketType.increaseSoldQuantity();
         ticketTypeRepo.save(ticketType);
     }
 

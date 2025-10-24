@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.service.impl</a> &gt; <span class="el_source">OrderServiceImpl.java</span></div><h1>OrderServiceImpl.java</h1><pre class="source lang-java linenums">package com.group02.openevent.service.impl;
+
+import com.group02.openevent.dto.order.CreateOrderRequest;
+import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
+import com.group02.openevent.dto.user.UserOrderDTO;
+import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.TicketTypeService;
+import com.group02.openevent.service.VoucherService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class OrderServiceImpl implements OrderService {
+
+    private final IOrderRepo orderRepo;
+    private final IEventRepo eventRepo;
+    private final ITicketTypeRepo ticketTypeRepo;
+    private final TicketTypeService ticketTypeService;
+    private final VoucherService voucherService;
+
+    public OrderServiceImpl(IOrderRepo orderRepo, IEventRepo eventRepo, 
+                           ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService,
+<span class="fc" id="L36">                           VoucherService voucherService) {</span>
+<span class="fc" id="L37">        this.orderRepo = orderRepo;</span>
+<span class="fc" id="L38">        this.eventRepo = eventRepo;</span>
+<span class="fc" id="L39">        this.ticketTypeRepo = ticketTypeRepo;</span>
+<span class="fc" id="L40">        this.ticketTypeService = ticketTypeService;</span>
+<span class="fc" id="L41">        this.voucherService = voucherService;</span>
+<span class="fc" id="L42">    }</span>
+
+    @Override
+    @Transactional
+    public Order createOrder(CreateOrderRequest request) {
+<span class="nc" id="L47">        Event event = eventRepo.findById(request.getEventId())</span>
+<span class="nc" id="L48">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Event not found: &quot; + request.getEventId()));</span>
+
+<span class="nc" id="L50">        Order order = new Order();</span>
+<span class="nc" id="L51">        order.setEvent(event);</span>
+<span class="nc" id="L52">        order.setParticipantName(request.getParticipantName());</span>
+<span class="nc" id="L53">        order.setParticipantEmail(request.getParticipantEmail());</span>
+<span class="nc" id="L54">        order.setParticipantPhone(request.getParticipantPhone());</span>
+<span class="nc" id="L55">        order.setParticipantOrganization(request.getParticipantOrganization());</span>
+<span class="nc" id="L56">        order.setNotes(request.getNotes());</span>
+<span class="nc" id="L57">        return orderRepo.save(order);</span>
+    }
+
+    @Override
+    public Optional&lt;Order&gt; getById(Long orderId) {
+<span class="nc" id="L62">        return orderRepo.findById(orderId);</span>
+    }
+
+    @Override
+    public Page&lt;Order&gt; list(Pageable pageable) {
+<span class="nc" id="L67">        return orderRepo.findAll(pageable);</span>
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Order createOrderWithTicketTypes(CreateOrderWithTicketTypeRequest request, Customer customer) {
+        try {
+            // Validate event exists
+<span class="fc" id="L75">            Event event = eventRepo.findById(request.getEventId())</span>
+<span class="fc" id="L76">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Event not found: &quot; + request.getEventId()));</span>
+
+            // For simplicity, we'll take the first ticket type from the request
+            // In a real scenario, you might want to handle multiple ticket types differently
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            if (request.getTicketTypeId() == null) {</span>
+<span class="fc" id="L81">                throw new IllegalArgumentException(&quot;At least one ticket type must be specified&quot;);</span>
+            }
+
+            // Validate ticket type exists and is available
+<span class="fc" id="L85">            TicketType ticketType = ticketTypeRepo.findById(request.getTicketTypeId())</span>
+<span class="fc" id="L86">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Ticket type not found: &quot; + request.getTicketTypeId()));</span>
+
+            // Check if ticket type can be purchased (always quantity 1 for simplified order)
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (!ticketTypeService.canPurchaseTickets(request.getTicketTypeId(), 1)) {</span>
+<span class="fc" id="L90">                throw new IllegalStateException(&quot;Cannot purchase ticket of type: &quot; + ticketType.getName() + </span>
+<span class="fc" id="L91">                    &quot; (Available: &quot; + ticketType.getAvailableQuantity() + &quot;)&quot;);</span>
+            }
+
+            // Reserve tickets (always quantity 1 for simplified order)
+<span class="fc" id="L95">            ticketTypeService.reserveTickets(request.getTicketTypeId());</span>
+
+            // Create order
+<span class="fc" id="L98">            Order order = new Order();</span>
+<span class="fc" id="L99">            order.setCustomer(customer);</span>
+<span class="fc" id="L100">            order.setEvent(event);</span>
+<span class="fc" id="L101">            order.setTicketType(ticketType);</span>
+<span class="fc" id="L102">            order.setParticipantName(request.getParticipantName());</span>
+<span class="fc" id="L103">            order.setParticipantEmail(request.getParticipantEmail());</span>
+<span class="fc" id="L104">            order.setParticipantPhone(request.getParticipantPhone());</span>
+<span class="fc" id="L105">            order.setParticipantOrganization(request.getParticipantOrganization());</span>
+<span class="fc" id="L106">            order.setNotes(request.getNotes());</span>
+<span class="fc" id="L107">            order.setStatus(OrderStatus.PENDING);</span>
+
+            // Set host discount from event
+<span class="pc bpc" id="L110" title="2 of 4 branches missed.">            if (event.getHost() != null &amp;&amp; event.getHost().getHostDiscountPercent() != null) {</span>
+<span class="fc" id="L111">                order.setHostDiscountPercent(event.getHost().getHostDiscountPercent());</span>
+            }
+
+            // Calculate total amount first
+<span class="fc" id="L115">            order.calculateTotalAmount();</span>
+
+            // Save order first to get ID
+<span class="fc" id="L118">            Order savedOrder = orderRepo.save(order);</span>
+
+            // Process voucher code if provided (after order is saved)
+<span class="fc bfc" id="L121" title="All 4 branches covered.">            if (request.getVoucherCode() != null &amp;&amp; !request.getVoucherCode().trim().isEmpty()) {</span>
+                try {
+                    // Apply voucher to saved order
+<span class="fc" id="L124">                    voucherService.applyVoucherToOrder(request.getVoucherCode(), savedOrder);</span>
+                    
+                    // Recalculate total amount after voucher
+<span class="fc" id="L127">                    savedOrder.calculateTotalAmount();</span>
+<span class="fc" id="L128">                    savedOrder = orderRepo.save(savedOrder);</span>
+<span class="fc" id="L129">                } catch (Exception e) {</span>
+<span class="fc" id="L130">                    e.printStackTrace();</span>
+                    // Continue without voucher if it fails
+<span class="fc" id="L132">                }</span>
+            }
+            
+<span class="fc" id="L135">            return savedOrder;</span>
+            
+<span class="fc" id="L137">        } catch (Exception e) {</span>
+<span class="fc" id="L138">            throw e;</span>
+        }
+    }
+
+    @Override
+    public List&lt;Order&gt; getOrdersByCustomer(Customer customer) {
+<span class="nc" id="L144">        return orderRepo.findByCustomer(customer);</span>
+    }
+
+    @Override
+    public List&lt;Order&gt; getOrdersByCustomerId(Long customerId) {
+<span class="nc" id="L149">        return orderRepo.findByCustomerId(customerId);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;UserOrderDTO&gt; getOrderDTOsByCustomerId(Long customerId, OrderStatus status) {
+<span class="nc" id="L155">        List&lt;Order&gt; orders = orderRepo.findByCustomerId(customerId);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (status != null) {</span>
+<span class="nc" id="L157">            orders = orders.stream()</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">                    .filter(o -&gt; o.getStatus() == status)</span>
+<span class="nc" id="L159">                    .toList();</span>
+        }
+<span class="nc" id="L161">        orders.sort((a, b) -&gt; b.getCreatedAt().compareTo(a.getCreatedAt()));</span>
+<span class="nc" id="L162">        return orders.stream().map(this::mapToUserOrderDTO).toList();</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;UserOrderDTO&gt; getOrderDTOsByCustomer(Customer customer, OrderStatus status) {
+<span class="nc" id="L168">        return getOrderDTOsByCustomerId(customer.getCustomerId(), status);</span>
+    }
+
+    private UserOrderDTO mapToUserOrderDTO(Order order) {
+<span class="nc" id="L172">        return UserOrderDTO.builder()</span>
+<span class="nc" id="L173">                .orderId(order.getOrderId())</span>
+<span class="nc" id="L174">                .status(order.getStatus())</span>
+<span class="nc" id="L175">                .createdAt(order.getCreatedAt())</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                .eventId(order.getEvent() != null ? order.getEvent().getId() : null)</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                .eventTitle(order.getEvent() != null ? order.getEvent().getTitle() : null)</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">                .eventImageUrl(order.getEvent() != null ? order.getEvent().getImageUrl() : null)</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                .eventStartsAt(order.getEvent() != null ? order.getEvent().getStartsAt() : null)</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                .ticketTypeId(order.getTicketType() != null ? order.getTicketType().getTicketTypeId() : null)</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">                .ticketTypeName(order.getTicketType() != null ? order.getTicketType().getName() : null)</span>
+<span class="nc" id="L182">                .totalAmount(order.getTotalAmount())</span>
+<span class="nc" id="L183">                .build();</span>
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(Long orderId) {
+<span class="nc" id="L189">        Order order = orderRepo.findById(orderId)</span>
+<span class="nc" id="L190">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Order not found: &quot; + orderId));</span>
+
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (order.getStatus() != OrderStatus.PENDING) {</span>
+<span class="nc" id="L193">            throw new IllegalStateException(&quot;Cannot cancel order with status: &quot; + order.getStatus());</span>
+        }
+
+        // Release reserved tickets
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (order.getTicketType() != null) {</span>
+<span class="nc" id="L198">            ticketTypeService.releaseTickets(order.getTicketType().getTicketTypeId(), 1);</span>
+        }
+
+        // Update order status
+<span class="nc" id="L202">        order.setStatus(OrderStatus.CANCELLED);</span>
+<span class="nc" id="L203">        orderRepo.save(order);</span>
+<span class="nc" id="L204">    }</span>
+
+    @Override
+    @Transactional
+    public void confirmOrder(Long orderId) {
+<span class="nc" id="L209">        Order order = orderRepo.findById(orderId)</span>
+<span class="nc" id="L210">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Order not found: &quot; + orderId));</span>
+
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (order.getStatus() != OrderStatus.PENDING) {</span>
+<span class="nc" id="L213">            throw new IllegalStateException(&quot;Cannot confirm order with status: &quot; + order.getStatus());</span>
+        }
+
+        // Confirm purchase for the ticket type
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (order.getTicketType() != null) {</span>
+<span class="nc" id="L218">            ticketTypeService.confirmPurchase(order.getTicketType().getTicketTypeId(), 1);</span>
+        }
+
+        // Update order status
+<span class="nc" id="L222">        order.setStatus(OrderStatus.PAID);</span>
+<span class="nc" id="L223">        orderRepo.save(order);</span>
+<span class="nc" id="L224">    }</span>
+
+    @Override
+    public void delete(Long orderId) {
+<span class="nc" id="L228">        orderRepo.deleteById(orderId);</span>
+<span class="nc" id="L229">    }</span>
+
+    @Override
+    public Order save(Order order) {
+<span class="nc" id="L233">        return orderRepo.save(order);</span>
+    }
+
+    @Override
+    public boolean hasCustomerRegisteredForEvent(Long customerId, Long eventId) {
+<span class="fc" id="L238">        List&lt;Order&gt; orders = orderRepo.findByCustomerId(customerId);</span>
+        // Only count as registered if order is CONFIRMED or PAID (payment successful)
+        // PENDING orders (unpaid) are not counted as registered
+<span class="fc" id="L241">        return orders.stream()</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">                .anyMatch(order -&gt; order.getEvent().getId().equals(eventId) &amp;&amp; </span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">                         (order.getStatus() == OrderStatus.PAID));</span>
+    }
+
+    @Override
+    public Optional&lt;Order&gt; getPendingOrderForEvent(Long customerId, Long eventId) {
+<span class="nc" id="L248">        List&lt;Order&gt; orders = orderRepo.findByCustomerId(customerId);</span>
+<span class="nc" id="L249">        return orders.stream()</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">                .filter(order -&gt; order.getEvent().getId().equals(eventId) &amp;&amp; </span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">                               order.getStatus() == OrderStatus.PENDING)</span>
+<span class="nc" id="L252">                .findFirst();</span>
+    }
+
+    @Override
+    public Integer countUniqueParticipantsByEventId(Long eventId) {
+<span class="nc" id="L257">        return orderRepo.countConfirmedParticipantsByEventId(eventId);</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; findConfirmedEventsByCustomerId(Long customerId) {
+<span class="nc" id="L262">        return orderRepo.findEventsByCustomerId(customerId);</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

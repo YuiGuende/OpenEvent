@@ -77,6 +77,7 @@ Dưới đây là bảng tổng hợp độ bao phủ (coverage) cho **chỉ nh�
 -----
 
 ## Phân tích và Tính toán Trung bình
+**_Xem minh chứng bằng cách run html trong /test/site/index.html_**
 
 Dựa trên các phương thức *thực sự được kiểm thử* (như trong bảng trên), đây là độ bao phủ trung bình tổng hợp:
 

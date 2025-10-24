@@ -1,0 +1,9 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+OpenEvent,com.group02.openevent.controller,PaymentController,468,569,40,34,102,132,27,19,5,4
+OpenEvent,com.group02.openevent.controller,OrderController,364,198,21,15,69,45,21,10,10,3
+OpenEvent,com.group02.openevent.controller,VoucherController,0,115,0,8,0,28,0,7,0,3
+OpenEvent,com.group02.openevent.service.impl,VoucherServiceImpl,0,175,0,12,0,44,0,16,0,10
+OpenEvent,com.group02.openevent.service.impl,PaymentServiceImpl,485,117,28,0,124,31,25,5,11,5
+OpenEvent,com.group02.openevent.service.impl,OrderServiceImpl,324,195,31,13,62,45,38,11,21,6
+OpenEvent,com.group02.openevent.model.order,Order,48,199,1,7,17,56,15,32,14,29
+OpenEvent,com.group02.openevent.model.order,OrderStatus,0,33,0,0,0,6,0,1,0,1

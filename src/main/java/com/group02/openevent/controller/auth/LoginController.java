@@ -62,6 +62,7 @@ public class LoginController {
                                @RequestParam(required = false) String redirectUrl,
                                HttpSession session,
                                Model model) {
+        System.out.println("register is called");
         try {
             // Create register request
             var registerRequest = new com.group02.openevent.dto.request.RegisterRequest();

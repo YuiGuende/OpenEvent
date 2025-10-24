@@ -30,8 +30,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Map<String, String> error = new HashMap<>();
         log.error(e.getMessage(), e);
         error.put("error", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
+        error.put("message", e.getMessage());
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .badRequest()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(error);
     }

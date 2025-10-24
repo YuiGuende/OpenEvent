@@ -11,6 +11,7 @@ import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.VoucherService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/api/orders")
+@Slf4j
 public class OrderController {
 
     private final OrderService orderService;
@@ -152,6 +154,7 @@ public class OrderController {
      */
     @GetMapping("/check-registration/{eventId}")
     public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest) {
+        log.info(">>> Entered checkRegistration");
         Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));

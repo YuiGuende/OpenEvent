@@ -44,7 +44,7 @@ public class PaymentController {
     public ResponseEntity<Map<String, Object>> handleWebhook(@RequestBody(required = false) Map<String, Object> webhookBody) {
         System.out.println("=== WEBHOOK RECEIVED ===");
         System.out.println("Webhook body: " + webhookBody);
-
+        
         // Handle PayOS test webhook (empty or minimal body)
         if (webhookBody == null || webhookBody.isEmpty()) {
             System.out.println("Empty webhook body - PayOS test request");
@@ -54,15 +54,15 @@ public class PaymentController {
             response.put("data", null);
             return ResponseEntity.ok(response);
         }
-
+        
         try {
             // Extract data from webhook body directly
             String code = (String) webhookBody.get("code");
             String desc = (String) webhookBody.get("desc");
-
+            
             @SuppressWarnings("unchecked")
             Map<String, Object> dataMap = (Map<String, Object>) webhookBody.get("data");
-
+            
             if (dataMap == null) {
                 System.out.println("No data in webhook");
                 Map<String, Object> response = new HashMap<>();
@@ -71,11 +71,11 @@ public class PaymentController {
                 response.put("data", null);
                 return ResponseEntity.ok(response);
             }
-
+            
             System.out.println("Webhook code: " + code);
             System.out.println("Webhook desc: " + desc);
             System.out.println("Payment data: " + dataMap);
-
+            
             // Extract payment information
             String paymentLinkId = (String) dataMap.get("paymentLinkId");
             Object orderCodeObj = dataMap.get("orderCode");
@@ -83,21 +83,21 @@ public class PaymentController {
             Object amountObj = dataMap.get("amount");
             Integer amount = amountObj instanceof Integer ? (Integer) amountObj : ((Number) amountObj).intValue();
             String description = (String) dataMap.get("description");
-
+            
             System.out.println("Payment Link ID: " + paymentLinkId);
             System.out.println("Order Code: " + orderCode);
             System.out.println("Amount: " + amount);
             System.out.println("Description: " + description);
-
+            
             // Find payment directly by orderId from description or by orderCode
             Long orderId = extractOrderIdFromDescription(description);
             Optional<Payment> paymentOpt = Optional.empty();
-
+            
             if (orderId != null) {
                 System.out.println("Extracted order ID from description: " + orderId);
                 paymentOpt = paymentService.getPaymentByOrderId(orderId);
             }
-
+            
             // If not found by orderId, try finding by orderCode
             if (paymentOpt.isEmpty() && orderCode != null) {
                 System.out.println("Searching for payment by orderCode: " + orderCode);
@@ -106,26 +106,26 @@ public class PaymentController {
                     paymentOpt = paymentService.getPaymentByOrder(orderOpt.get());
                 }
             }
-
+            
             if (paymentOpt.isEmpty()) {
                 System.out.println("Payment not found!");
                 Map<String, Object> response = new HashMap<>();
                 response.put("error", 0);
                 response.put("message", "ok");
                 response.put("data", Map.of(
-                        "success", false,
-                        "message", "Payment not found"
+                    "success", false,
+                    "message", "Payment not found"
                 ));
                 return ResponseEntity.ok(response);
             }
-
+            
             // Update payment and order status directly
             Payment payment = paymentOpt.get();
             Order order = payment.getOrder();
-
+            
             System.out.println("Current payment status: " + payment.getStatus());
             System.out.println("Current order status: " + order.getStatus());
-
+            
             // Allow updating even if payment was CANCELLED or EXPIRED
             // PayOS webhook confirms user has paid, so we should update
             if (payment.getStatus() == PaymentStatus.PAID) {
@@ -134,40 +134,40 @@ public class PaymentController {
                 payment.setStatus(PaymentStatus.PAID);
                 payment.setUpdatedAt(java.time.LocalDateTime.now());
                 paymentService.updatePaymentStatus(payment, PaymentStatus.PAID, null);
-
+                
                 order.setStatus(OrderStatus.PAID);
                 order.setUpdatedAt(java.time.LocalDateTime.now());
                 orderService.save(order);
-
+                
                 System.out.println("Payment and Order updated to PAID");
             }
-
+            
             PaymentResult result = PaymentResult.success("Payment processed successfully");
-
+            
             System.out.println("Webhook processing result: " + result.isSuccess());
             System.out.println("Result message: " + result.getMessage());
-
+            
             Map<String, Object> response = new HashMap<>();
             response.put("error", 0);
             response.put("message", "ok");
             response.put("data", Map.of(
-                    "success", result.isSuccess(),
-                    "message", result.getMessage()
+                "success", result.isSuccess(),
+                "message", result.getMessage()
             ));
-
+            
             return ResponseEntity.ok(response);
-
+            
         } catch (Exception e) {
             System.out.println("Webhook processing error: " + e.getMessage());
             e.printStackTrace();
-
+            
             // PayOS expects success response even for test webhooks
             Map<String, Object> response = new HashMap<>();
             response.put("error", 0);
             response.put("message", "ok");
             response.put("data", Map.of(
-                    "success", false,
-                    "error", e.getMessage()
+                "success", false,
+                "error", e.getMessage()
             ));
             return ResponseEntity.ok(response);
         }
@@ -194,13 +194,13 @@ public class PaymentController {
     public ResponseEntity<Map<String, Object>> testWebhookWithData(@RequestBody Map<String, Object> testData) {
         System.out.println("=== TEST WEBHOOK WITH DATA ===");
         System.out.println("Test data: " + testData);
-
+        
         try {
             // Tạo PayOSWebhookData giả để test
             PayOSWebhookData webhookData = new PayOSWebhookData();
             webhookData.setCode(0);
             webhookData.setDesc("Test webhook");
-
+            
             PayOSWebhookData.Data data = new PayOSWebhookData.Data();
             data.setOrderCode(12345L);
             data.setAmount(100000);
@@ -208,24 +208,24 @@ public class PaymentController {
             data.setPaymentLinkId(999L);
             data.setCode("00");
             data.setDesc("Test webhook");
-
+            
             webhookData.setData(data);
-
+            
             // Test webhook processing
             PaymentResult result = paymentService.handlePaymentWebhookFromPayOS(webhookData);
-
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Test webhook processed");
             response.put("result", result.isSuccess());
             response.put("resultMessage", result.getMessage());
-
+            
             return ResponseEntity.ok(response);
-
+            
         } catch (Exception e) {
             System.out.println("Test webhook error: " + e.getMessage());
             e.printStackTrace();
-
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "Test webhook failed: " + e.getMessage());
@@ -261,13 +261,13 @@ public class PaymentController {
             Long accountId = (Long) request.getAttribute("currentUserId");
             if (accountId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "User not logged in"
+                    "success", false,
+                    "message", "User not logged in"
                 ));
             }
 
             var payments = paymentService.getPaymentsByCustomerId(accountId);
-
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("payments", payments);
@@ -276,13 +276,13 @@ public class PaymentController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
+                "success", false,
+                "message", e.getMessage()
             ));
         }
     }
 
-
+    
     /**
      * Convert PayOS SDK WebhookData to PayOSWebhookData
      */
@@ -291,14 +291,14 @@ public class PaymentController {
         System.out.println("WebhookData: " + webhookData);
         System.out.println("Code: " + webhookData.getCode());
         System.out.println("Desc: " + webhookData.getDesc());
-
+        
         PayOSWebhookData payOSWebhookData = new PayOSWebhookData();
         payOSWebhookData.setCode(Integer.valueOf(webhookData.getCode()));
         payOSWebhookData.setDesc(webhookData.getDesc());
-
+        
         // Create data structure with actual webhook data
         PayOSWebhookData.Data data = new PayOSWebhookData.Data();
-
+        
         // Try to extract actual data from webhook
         try {
             // Use reflection to get data from webhook
@@ -308,7 +308,7 @@ public class PaymentController {
                     try {
                         Object value = method.invoke(webhookData);
                         System.out.println("Method " + method.getName() + ": " + value);
-
+                        
                         // Map specific fields
                         if (method.getName().equals("getOrderCode") && value != null) {
                             data.setOrderCode(Long.valueOf(value.toString()));
@@ -327,18 +327,18 @@ public class PaymentController {
         } catch (Exception e) {
             System.out.println("Error extracting webhook data: " + e.getMessage());
         }
-
+        
         // Set default values if not found
         if (data.getOrderCode() == null) data.setOrderCode(0L);
         if (data.getAmount() == null) data.setAmount(0);
         if (data.getDescription() == null) data.setDescription("Webhook from PayOS SDK");
         if (data.getPaymentLinkId() == null) data.setPaymentLinkId(0L);
-
+        
         data.setCode(webhookData.getCode());
         data.setDesc(webhookData.getDesc());
-
+        
         payOSWebhookData.setData(data);
-
+        
         System.out.println("Converted PayOSWebhookData: " + payOSWebhookData);
         return payOSWebhookData;
     }
@@ -353,8 +353,8 @@ public class PaymentController {
             Long accountId = (Long) request.getAttribute("currentUserId");
             if (accountId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "User not logged in"
+                    "success", false,
+                    "message", "User not logged in"
                 ));
             }
 
@@ -362,16 +362,16 @@ public class PaymentController {
             Order order = orderService.getById(orderId).orElse(null);
             if (order == null) {
                 return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Order not found"
+                    "success", false,
+                    "message", "Order not found"
                 ));
             }
 
             // Check if order belongs to current customer
             if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
                 return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Order does not belong to current user"
+                    "success", false,
+                    "message", "Order does not belong to current user"
                 ));
             }
 
@@ -395,7 +395,7 @@ public class PaymentController {
             // Create payment link using PaymentService only
             String returnUrl = "http://localhost:8080/payment/success?orderId=" + orderId;
             String cancelUrl = "http://localhost:8080/payment/cancel?orderId=" + orderId;
-
+            
             // Create payment record and PayOS link
             Payment payment = paymentService.createPaymentLinkForOrder(order, returnUrl, cancelUrl);
 
@@ -411,8 +411,8 @@ public class PaymentController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
+                "success", false,
+                "message", e.getMessage()
             ));
         }
     }
@@ -427,18 +427,18 @@ public class PaymentController {
             Order order = orderService.getById(orderId).orElse(null);
             if (order == null) {
                 return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Order not found"
+                    "success", false,
+                    "message", "Order not found"
                 ));
             }
 
             Optional<Payment> paymentOpt = paymentService.getPaymentByOrder(order);
-
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("orderId", orderId);
             response.put("orderStatus", order.getStatus().name());
-
+            
             if (paymentOpt.isPresent()) {
                 Payment payment = paymentOpt.get();
                 response.put("paymentStatus", payment.getStatus().name());
@@ -450,112 +450,8 @@ public class PaymentController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * Hủy payment cho order
-     */
-    @PostMapping("/cancel/order/{orderId}")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> cancelPaymentForOrder(@PathVariable Long orderId) {
-        try {
-            Order order = orderService.getById(orderId).orElse(null);
-            if (order == null) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Order not found"
-                ));
-            }
-
-            Optional<Payment> paymentOpt = paymentService.getPaymentByOrder(order);
-
-            if (paymentOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Payment not found"
-                ));
-            }
-
-            Payment payment = paymentOpt.get();
-            boolean cancelled = paymentService.cancelPayment(payment);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", cancelled);
-            response.put("message", cancelled ? "Payment cancelled successfully" : "Cannot cancel payment");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * Manual endpoint để test webhook và update order status
-     * ONLY FOR TESTING - Remove in production
-     */
-    @PostMapping("/manual-complete/{orderId}")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> manualCompleteOrder(@PathVariable Long orderId) {
-        try {
-            System.out.println("=== MANUAL ORDER COMPLETION ===");
-            System.out.println("Order ID: " + orderId);
-
-            Order order = orderService.getById(orderId).orElse(null);
-            if (order == null) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Order not found"
-                ));
-            }
-
-            Optional<Payment> paymentOpt = paymentService.getPaymentByOrder(order);
-
-            if (paymentOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Payment not found for this order"
-                ));
-            }
-
-            Payment payment = paymentOpt.get();
-
-            // Update payment status
-            payment.setStatus(PaymentStatus.PAID);
-            payment.setUpdatedAt(java.time.LocalDateTime.now());
-
-            // Update order status
-            order.setStatus(com.group02.openevent.model.order.OrderStatus.PAID);
-            order.setUpdatedAt(java.time.LocalDateTime.now());
-
-            // Save both
-            paymentService.updatePaymentStatus(payment, PaymentStatus.PAID, null);
-            orderService.save(order);
-
-            System.out.println("Order and Payment status updated to PAID");
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Order and Payment manually completed");
-            response.put("orderId", orderId);
-            response.put("orderStatus", order.getStatus().name());
-            response.put("paymentStatus", payment.getStatus().name());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            System.out.println("Error in manual completion: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
+                "success", false,
+                "message", e.getMessage()
             ));
         }
     }

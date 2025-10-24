@@ -17,6 +17,30 @@
     
     <button id="joinEventBtn" onclick="joinEvent()">Join Event</button>
     
+    <!-- Feedback Form Buttons -->
+    <div class="mt-3">
+        <!-- Host: Create Feedback Form Button -->
+        <a th:href="@{'/forms/create/' + ${eventId}}" 
+           class="btn btn-warning mr-2" 
+           style="background-color: #ff6b35; border-color: #ff6b35; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+            📝 Create Feedback Form
+        </a>
+        
+        <!-- User: Submit Feedback Button -->
+        <a th:href="@{'/forms/feedback/' + ${eventId}}" 
+           class="btn btn-info mr-2" 
+           style="background-color: #17a2b8; border-color: #17a2b8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+            💬 Submit Feedback
+        </a>
+        
+        <!-- Host: View Responses Button -->
+        <a th:href="@{'/forms/responses/' + ${eventId}}" 
+           class="btn btn-success" 
+           style="background-color: #28a745; border-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            📊 View Responses
+        </a>
+    </div>
+    
     <p><a href="/">Back to Home</a></p>
 
     <script>

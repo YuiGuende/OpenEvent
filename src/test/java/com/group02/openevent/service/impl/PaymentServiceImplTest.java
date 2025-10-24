@@ -16,7 +16,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vn.payos.PayOS;
+import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
+import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
 
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -782,4 +785,7 @@ class PaymentServiceImplTest {
             verify(paymentRepo).findByOrder(validOrder);
         }
     }
+    /**
+     * F. createPaymentLinkForOrder - Happy Path (100% Coverage)
+     */
 }

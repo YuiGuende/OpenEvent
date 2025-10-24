@@ -22,7 +22,8 @@ public class EventDetailController {
 	}
 
 	@GetMapping("/event/{eventId}")
-	public String eventDetail(@PathVariable Long eventId) {
+	public String eventDetail(@PathVariable Long eventId, org.springframework.ui.Model model) {
+		model.addAttribute("eventId", eventId);
 		return "event/event-detail";
 	}
 

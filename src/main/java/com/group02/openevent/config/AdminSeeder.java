@@ -35,4 +35,4 @@ public class AdminSeeder {
 			adminRepo.save(admin);
 		};
 	}
-} 
+}

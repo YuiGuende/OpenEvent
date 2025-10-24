@@ -23,7 +23,7 @@ public class Host {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organize_id",
-            foreignKey = @ForeignKey(name = "fk_host_org"))
+            foreignKey = @ForeignKey(name = "fk_host_organization"))
     private Organization organization;
 
     // Removed bidirectional mapping to prevent circular reference
@@ -32,7 +32,7 @@ public class Host {
 
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_host_customer"))
+            foreignKey = @ForeignKey(name = "fk_host_customer_jpa"))
     private Customer customer;
 
     @Column(name = "host_discount_percent", precision = 5, scale = 2)

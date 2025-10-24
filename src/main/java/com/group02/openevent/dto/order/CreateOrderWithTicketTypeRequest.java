@@ -1,9 +1,7 @@
 package com.group02.openevent.dto.order;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import java.util.List;
 
 public class CreateOrderWithTicketTypeRequest {
     

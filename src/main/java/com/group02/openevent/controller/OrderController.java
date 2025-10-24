@@ -27,15 +27,11 @@ public class OrderController {
 
     private final OrderService orderService;
     private final ICustomerRepo customerRepo;
-    private final IEventRepo eventRepo;
-    private final ITicketTypeRepo ticketTypeRepo;
     private final VoucherService voucherService;
 
-    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IEventRepo eventRepo, ITicketTypeRepo ticketTypeRepo, VoucherService voucherService) {
+    public OrderController(OrderService orderService, ICustomerRepo customerRepo, VoucherService voucherService) {
         this.orderService = orderService;
         this.customerRepo = customerRepo;
-        this.eventRepo = eventRepo;
-        this.ticketTypeRepo = ticketTypeRepo;
         this.voucherService = voucherService;
     }
 
@@ -84,8 +80,8 @@ public class OrderController {
             // Check if customer already registered (paid) for this event
             if (orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
                 return ResponseEntity.badRequest().body(Map.of(
-                    "success", false, 
-                    "message", "You have already registered for this event"
+                        "success", false,
+                        "message", "You have already registered for this event"
                 ));
             }
 
@@ -93,35 +89,35 @@ public class OrderController {
             Optional<Order> pendingOrder = orderService.getPendingOrderForEvent(customer.getCustomerId(), request.getEventId());
             if (pendingOrder.isPresent()) {
                 Order existingOrder = pendingOrder.get();
-                
+
                 // Cancel the old pending order
                 orderService.cancelOrder(existingOrder.getOrderId());
-                
+
                 // Log the cancellation
             }
 
             Order order = orderService.createOrderWithTicketTypes(request, customer);
-            
+
             // Return simplified response to avoid JSON serialization issues
             Map<String, Object> response = Map.of(
-                "success", true, 
-                "orderId", order.getOrderId(),
-                "totalAmount", order.getTotalAmount(),
-                "status", order.getStatus().toString()
+                    "success", true,
+                    "orderId", order.getOrderId(),
+                    "totalAmount", order.getTotalAmount(),
+                    "status", order.getStatus().toString()
             );
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
-            
+
             String errorMessage = e.getMessage();
             if (errorMessage == null || errorMessage.trim().isEmpty()) {
                 errorMessage = "Order creation failed: " + e.getClass().getSimpleName();
             }
-            
+
             return ResponseEntity.badRequest().body(Map.of(
-                "success", false, 
-                "message", errorMessage
+                    "success", false,
+                    "message", errorMessage
             ));
         }
     }
@@ -151,21 +147,28 @@ public class OrderController {
      */
     @GetMapping("/check-registration/{eventId}")
     public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest) {
-        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
-        if (accountId == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
-        }
+        try {
+            Long accountId = (Long) httpRequest.getAttribute("currentUserId");
+            if (accountId == null) {
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
+            }
 
-        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
-        if (customer == null) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
-        }
+            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+            if (customer == null) {
+                return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
+            }
 
-        boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "isRegistered", isRegistered
-        ));
+            boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "isRegistered", isRegistered
+            ));
+        } catch (Exception e) { // <-- THÊM CATCH Ở ĐÂY
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage() // Sẽ trả về "DB error" như test mong đợi
+            ));
+        }
     }
 
     /**
@@ -221,7 +224,7 @@ public class OrderController {
             }
 
             Order order = orderOpt.get();
-            
+
             // Kiểm tra quyền sở hữu order
             if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
                 return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied"));
@@ -232,10 +235,10 @@ public class OrderController {
             orderService.save(order);
 
             return ResponseEntity.ok(Map.of(
-                "success", true, 
-                "message", "Voucher applied successfully",
-                "discountAmount", order.getVoucherDiscountAmount(),
-                "newTotalAmount", order.getTotalAmount()
+                    "success", true,
+                    "message", "Voucher applied successfully",
+                    "discountAmount", order.getVoucherDiscountAmount(),
+                    "newTotalAmount", order.getTotalAmount()
             ));
 
         } catch (Exception e) {
@@ -276,10 +279,10 @@ public class OrderController {
             if (isAvailable) {
                 var voucher = voucherService.getVoucherByCode(voucherCode);
                 return ResponseEntity.ok(Map.of(
-                    "success", true, 
-                    "available", true,
-                    "discountAmount", voucher.get().getDiscountAmount(),
-                    "description", voucher.get().getDescription()
+                        "success", true,
+                        "available", true,
+                        "discountAmount", voucher.get().getDiscountAmount(),
+                        "description", voucher.get().getDescription()
                 ));
             } else {
                 return ResponseEntity.ok(Map.of("success", true, "available", false));

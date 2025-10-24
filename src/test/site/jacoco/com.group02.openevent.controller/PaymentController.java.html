@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaymentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.controller</a> &gt; <span class="el_source">PaymentController.java</span></div><h1>PaymentController.java</h1><pre class="source lang-java linenums">package com.group02.openevent.controller;
+
+import com.group02.openevent.model.payment.Payment;
+import com.group02.openevent.model.payment.PaymentStatus;
+import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.service.PaymentService;
+import com.group02.openevent.service.OrderService;
+import com.group02.openevent.dto.payment.PaymentResult;
+import com.group02.openevent.dto.payment.PayOSWebhookData;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import vn.payos.PayOS;
+import vn.payos.model.webhooks.WebhookData;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@Controller
+@RequestMapping(&quot;/api/payments&quot;)
+public class PaymentController {
+
+    private final PaymentService paymentService;
+    private final OrderService orderService;
+    private final PayOS payOS;
+
+<span class="fc" id="L30">    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS) {</span>
+<span class="fc" id="L31">        this.paymentService = paymentService;</span>
+<span class="fc" id="L32">        this.orderService = orderService;</span>
+<span class="fc" id="L33">        this.payOS = payOS;</span>
+<span class="fc" id="L34">    }</span>
+
+
+
+
+    /**
+     * Webhook endpoint cho PayOS - Xử lý trực tiếp không qua SDK
+     */
+    @PostMapping(&quot;/webhook&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleWebhook(@RequestBody(required = false) Map&lt;String, Object&gt; webhookBody) {
+<span class="fc" id="L45">        System.out.println(&quot;=== WEBHOOK RECEIVED ===&quot;);</span>
+<span class="fc" id="L46">        System.out.println(&quot;Webhook body: &quot; + webhookBody);</span>
+        
+        // Handle PayOS test webhook (empty or minimal body)
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">        if (webhookBody == null || webhookBody.isEmpty()) {</span>
+<span class="fc" id="L50">            System.out.println(&quot;Empty webhook body - PayOS test request&quot;);</span>
+<span class="fc" id="L51">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L52">            response.put(&quot;error&quot;, 0);</span>
+<span class="fc" id="L53">            response.put(&quot;message&quot;, &quot;ok&quot;);</span>
+<span class="fc" id="L54">            response.put(&quot;data&quot;, null);</span>
+<span class="fc" id="L55">            return ResponseEntity.ok(response);</span>
+        }
+        
+        try {
+            // Extract data from webhook body directly
+<span class="fc" id="L60">            String code = (String) webhookBody.get(&quot;code&quot;);</span>
+<span class="fc" id="L61">            String desc = (String) webhookBody.get(&quot;desc&quot;);</span>
+            
+            @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L64">            Map&lt;String, Object&gt; dataMap = (Map&lt;String, Object&gt;) webhookBody.get(&quot;data&quot;);</span>
+            
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (dataMap == null) {</span>
+<span class="fc" id="L67">                System.out.println(&quot;No data in webhook&quot;);</span>
+<span class="fc" id="L68">                Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L69">                response.put(&quot;error&quot;, 0);</span>
+<span class="fc" id="L70">                response.put(&quot;message&quot;, &quot;ok&quot;);</span>
+<span class="fc" id="L71">                response.put(&quot;data&quot;, null);</span>
+<span class="fc" id="L72">                return ResponseEntity.ok(response);</span>
+            }
+            
+<span class="fc" id="L75">            System.out.println(&quot;Webhook code: &quot; + code);</span>
+<span class="fc" id="L76">            System.out.println(&quot;Webhook desc: &quot; + desc);</span>
+<span class="fc" id="L77">            System.out.println(&quot;Payment data: &quot; + dataMap);</span>
+            
+            // Extract payment information
+<span class="fc" id="L80">            String paymentLinkId = (String) dataMap.get(&quot;paymentLinkId&quot;);</span>
+<span class="fc" id="L81">            Object orderCodeObj = dataMap.get(&quot;orderCode&quot;);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">            Long orderCode = orderCodeObj instanceof Integer ? ((Integer) orderCodeObj).longValue() : (Long) orderCodeObj;</span>
+<span class="fc" id="L83">            Object amountObj = dataMap.get(&quot;amount&quot;);</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">            Integer amount = amountObj instanceof Integer ? (Integer) amountObj : ((Number) amountObj).intValue();</span>
+<span class="fc" id="L85">            String description = (String) dataMap.get(&quot;description&quot;);</span>
+            
+<span class="fc" id="L87">            System.out.println(&quot;Payment Link ID: &quot; + paymentLinkId);</span>
+<span class="fc" id="L88">            System.out.println(&quot;Order Code: &quot; + orderCode);</span>
+<span class="fc" id="L89">            System.out.println(&quot;Amount: &quot; + amount);</span>
+<span class="fc" id="L90">            System.out.println(&quot;Description: &quot; + description);</span>
+            
+            // Find payment directly by orderId from description or by orderCode
+<span class="fc" id="L93">            Long orderId = extractOrderIdFromDescription(description);</span>
+<span class="fc" id="L94">            Optional&lt;Payment&gt; paymentOpt = Optional.empty();</span>
+            
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (orderId != null) {</span>
+<span class="fc" id="L97">                System.out.println(&quot;Extracted order ID from description: &quot; + orderId);</span>
+<span class="fc" id="L98">                paymentOpt = paymentService.getPaymentByOrderId(orderId);</span>
+            }
+            
+            // If not found by orderId, try finding by orderCode
+<span class="pc bpc" id="L102" title="1 of 4 branches missed.">            if (paymentOpt.isEmpty() &amp;&amp; orderCode != null) {</span>
+<span class="fc" id="L103">                System.out.println(&quot;Searching for payment by orderCode: &quot; + orderCode);</span>
+<span class="fc" id="L104">                Optional&lt;Order&gt; orderOpt = orderService.getById(orderCode);</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">                if (orderOpt.isPresent()) {</span>
+<span class="fc" id="L106">                    paymentOpt = paymentService.getPaymentByOrder(orderOpt.get());</span>
+                }
+            }
+            
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            if (paymentOpt.isEmpty()) {</span>
+<span class="fc" id="L111">                System.out.println(&quot;Payment not found!&quot;);</span>
+<span class="fc" id="L112">                Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L113">                response.put(&quot;error&quot;, 0);</span>
+<span class="fc" id="L114">                response.put(&quot;message&quot;, &quot;ok&quot;);</span>
+<span class="fc" id="L115">                response.put(&quot;data&quot;, Map.of(</span>
+<span class="fc" id="L116">                    &quot;success&quot;, false,</span>
+                    &quot;message&quot;, &quot;Payment not found&quot;
+                ));
+<span class="fc" id="L119">                return ResponseEntity.ok(response);</span>
+            }
+            
+            // Update payment and order status directly
+<span class="fc" id="L123">            Payment payment = paymentOpt.get();</span>
+<span class="fc" id="L124">            Order order = payment.getOrder();</span>
+            
+<span class="fc" id="L126">            System.out.println(&quot;Current payment status: &quot; + payment.getStatus());</span>
+<span class="fc" id="L127">            System.out.println(&quot;Current order status: &quot; + order.getStatus());</span>
+            
+            // Allow updating even if payment was CANCELLED or EXPIRED
+            // PayOS webhook confirms user has paid, so we should update
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            if (payment.getStatus() == PaymentStatus.PAID) {</span>
+<span class="fc" id="L132">                System.out.println(&quot;Payment already marked as PAID, skipping update&quot;);</span>
+            } else {
+<span class="fc" id="L134">                payment.setStatus(PaymentStatus.PAID);</span>
+<span class="fc" id="L135">                payment.setUpdatedAt(java.time.LocalDateTime.now());</span>
+<span class="fc" id="L136">                paymentService.updatePaymentStatus(payment, PaymentStatus.PAID, null);</span>
+                
+<span class="fc" id="L138">                order.setStatus(OrderStatus.PAID);</span>
+<span class="fc" id="L139">                order.setUpdatedAt(java.time.LocalDateTime.now());</span>
+<span class="fc" id="L140">                orderService.save(order);</span>
+                
+<span class="fc" id="L142">                System.out.println(&quot;Payment and Order updated to PAID&quot;);</span>
+            }
+            
+<span class="fc" id="L145">            PaymentResult result = PaymentResult.success(&quot;Payment processed successfully&quot;);</span>
+            
+<span class="fc" id="L147">            System.out.println(&quot;Webhook processing result: &quot; + result.isSuccess());</span>
+<span class="fc" id="L148">            System.out.println(&quot;Result message: &quot; + result.getMessage());</span>
+            
+<span class="fc" id="L150">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L151">            response.put(&quot;error&quot;, 0);</span>
+<span class="fc" id="L152">            response.put(&quot;message&quot;, &quot;ok&quot;);</span>
+<span class="fc" id="L153">            response.put(&quot;data&quot;, Map.of(</span>
+<span class="fc" id="L154">                &quot;success&quot;, result.isSuccess(),</span>
+<span class="fc" id="L155">                &quot;message&quot;, result.getMessage()</span>
+            ));
+            
+<span class="fc" id="L158">            return ResponseEntity.ok(response);</span>
+            
+<span class="fc" id="L160">        } catch (Exception e) {</span>
+<span class="fc" id="L161">            System.out.println(&quot;Webhook processing error: &quot; + e.getMessage());</span>
+<span class="fc" id="L162">            e.printStackTrace();</span>
+            
+            // PayOS expects success response even for test webhooks
+<span class="fc" id="L165">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L166">            response.put(&quot;error&quot;, 0);</span>
+<span class="fc" id="L167">            response.put(&quot;message&quot;, &quot;ok&quot;);</span>
+<span class="fc" id="L168">            response.put(&quot;data&quot;, Map.of(</span>
+<span class="fc" id="L169">                &quot;success&quot;, false,</span>
+<span class="fc" id="L170">                &quot;error&quot;, e.getMessage()</span>
+            ));
+<span class="fc" id="L172">            return ResponseEntity.ok(response);</span>
+        }
+    }
+
+    /**
+     * Test endpoint để kiểm tra webhook có hoạt động không
+     */
+    @GetMapping(&quot;/webhook/test&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; testWebhook() {
+<span class="nc" id="L182">        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L183">        response.put(&quot;success&quot;, true);</span>
+<span class="nc" id="L184">        response.put(&quot;message&quot;, &quot;Webhook endpoint is accessible&quot;);</span>
+<span class="nc" id="L185">        response.put(&quot;timestamp&quot;, System.currentTimeMillis());</span>
+<span class="nc" id="L186">        return ResponseEntity.ok(response);</span>
+    }
+
+    /**
+     * Test webhook với data giả để kiểm tra logic
+     */
+    @PostMapping(&quot;/webhook/test-data&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; testWebhookWithData(@RequestBody Map&lt;String, Object&gt; testData) {
+<span class="nc" id="L195">        System.out.println(&quot;=== TEST WEBHOOK WITH DATA ===&quot;);</span>
+<span class="nc" id="L196">        System.out.println(&quot;Test data: &quot; + testData);</span>
+        
+        try {
+            // Tạo PayOSWebhookData giả để test
+<span class="nc" id="L200">            PayOSWebhookData webhookData = new PayOSWebhookData();</span>
+<span class="nc" id="L201">            webhookData.setCode(0);</span>
+<span class="nc" id="L202">            webhookData.setDesc(&quot;Test webhook&quot;);</span>
+            
+<span class="nc" id="L204">            PayOSWebhookData.Data data = new PayOSWebhookData.Data();</span>
+<span class="nc" id="L205">            data.setOrderCode(12345L);</span>
+<span class="nc" id="L206">            data.setAmount(100000);</span>
+<span class="nc" id="L207">            data.setDescription(&quot;Test payment&quot;);</span>
+<span class="nc" id="L208">            data.setPaymentLinkId(999L);</span>
+<span class="nc" id="L209">            data.setCode(&quot;00&quot;);</span>
+<span class="nc" id="L210">            data.setDesc(&quot;Test webhook&quot;);</span>
+            
+<span class="nc" id="L212">            webhookData.setData(data);</span>
+            
+            // Test webhook processing
+<span class="nc" id="L215">            PaymentResult result = paymentService.handlePaymentWebhookFromPayOS(webhookData);</span>
+            
+<span class="nc" id="L217">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L218">            response.put(&quot;success&quot;, true);</span>
+<span class="nc" id="L219">            response.put(&quot;message&quot;, &quot;Test webhook processed&quot;);</span>
+<span class="nc" id="L220">            response.put(&quot;result&quot;, result.isSuccess());</span>
+<span class="nc" id="L221">            response.put(&quot;resultMessage&quot;, result.getMessage());</span>
+            
+<span class="nc" id="L223">            return ResponseEntity.ok(response);</span>
+            
+<span class="nc" id="L225">        } catch (Exception e) {</span>
+<span class="nc" id="L226">            System.out.println(&quot;Test webhook error: &quot; + e.getMessage());</span>
+<span class="nc" id="L227">            e.printStackTrace();</span>
+            
+<span class="nc" id="L229">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L230">            response.put(&quot;success&quot;, false);</span>
+<span class="nc" id="L231">            response.put(&quot;message&quot;, &quot;Test webhook failed: &quot; + e.getMessage());</span>
+<span class="nc" id="L232">            return ResponseEntity.badRequest().body(response);</span>
+        }
+    }
+
+    /**
+     * Helper method to extract order ID from description
+     * Description format: &quot;CSUO5KESD48 Order 17&quot;
+     */
+    private Long extractOrderIdFromDescription(String description) {
+        try {
+<span class="fc bfc" id="L242" title="All 4 branches covered.">            if (description != null &amp;&amp; description.contains(&quot;Order &quot;)) {</span>
+<span class="fc" id="L243">                String[] parts = description.split(&quot;Order &quot;);</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">                if (parts.length &gt; 1) {</span>
+<span class="fc" id="L245">                    return Long.parseLong(parts[1].trim());</span>
+                }
+            }
+<span class="nc" id="L248">        } catch (Exception e) {</span>
+<span class="nc" id="L249">            System.out.println(&quot;Error extracting order ID from description: &quot; + e.getMessage());</span>
+<span class="fc" id="L250">        }</span>
+<span class="fc" id="L251">        return null;</span>
+    }
+
+    /**
+     * Lấy lịch sử payments của user
+     */
+    @GetMapping(&quot;/history&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getPaymentHistory(HttpServletRequest request) {
+        try {
+<span class="nc" id="L261">            Long accountId = (Long) request.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">            if (accountId == null) {</span>
+<span class="nc" id="L263">                return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="nc" id="L264">                    &quot;success&quot;, false,</span>
+                    &quot;message&quot;, &quot;User not logged in&quot;
+                ));
+            }
+
+<span class="nc" id="L269">            var payments = paymentService.getPaymentsByCustomerId(accountId);</span>
+            
+<span class="nc" id="L271">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L272">            response.put(&quot;success&quot;, true);</span>
+<span class="nc" id="L273">            response.put(&quot;payments&quot;, payments);</span>
+
+<span class="nc" id="L275">            return ResponseEntity.ok(response);</span>
+
+<span class="nc" id="L277">        } catch (Exception e) {</span>
+<span class="nc" id="L278">            return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="nc" id="L279">                &quot;success&quot;, false,</span>
+<span class="nc" id="L280">                &quot;message&quot;, e.getMessage()</span>
+            ));
+        }
+    }
+
+    
+    /**
+     * Convert PayOS SDK WebhookData to PayOSWebhookData
+     */
+    private PayOSWebhookData convertWebhookData(WebhookData webhookData) {
+<span class="nc" id="L290">        System.out.println(&quot;=== CONVERTING WEBHOOK DATA ===&quot;);</span>
+<span class="nc" id="L291">        System.out.println(&quot;WebhookData: &quot; + webhookData);</span>
+<span class="nc" id="L292">        System.out.println(&quot;Code: &quot; + webhookData.getCode());</span>
+<span class="nc" id="L293">        System.out.println(&quot;Desc: &quot; + webhookData.getDesc());</span>
+        
+<span class="nc" id="L295">        PayOSWebhookData payOSWebhookData = new PayOSWebhookData();</span>
+<span class="nc" id="L296">        payOSWebhookData.setCode(Integer.valueOf(webhookData.getCode()));</span>
+<span class="nc" id="L297">        payOSWebhookData.setDesc(webhookData.getDesc());</span>
+        
+        // Create data structure with actual webhook data
+<span class="nc" id="L300">        PayOSWebhookData.Data data = new PayOSWebhookData.Data();</span>
+        
+        // Try to extract actual data from webhook
+        try {
+            // Use reflection to get data from webhook
+<span class="nc" id="L305">            java.lang.reflect.Method[] methods = webhookData.getClass().getMethods();</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">            for (java.lang.reflect.Method method : methods) {</span>
+<span class="nc bnc" id="L307" title="All 4 branches missed.">                if (method.getName().startsWith(&quot;get&quot;) &amp;&amp; method.getParameterCount() == 0) {</span>
+                    try {
+<span class="nc" id="L309">                        Object value = method.invoke(webhookData);</span>
+<span class="nc" id="L310">                        System.out.println(&quot;Method &quot; + method.getName() + &quot;: &quot; + value);</span>
+                        
+                        // Map specific fields
+<span class="nc bnc" id="L313" title="All 4 branches missed.">                        if (method.getName().equals(&quot;getOrderCode&quot;) &amp;&amp; value != null) {</span>
+<span class="nc" id="L314">                            data.setOrderCode(Long.valueOf(value.toString()));</span>
+<span class="nc bnc" id="L315" title="All 4 branches missed.">                        } else if (method.getName().equals(&quot;getAmount&quot;) &amp;&amp; value != null) {</span>
+<span class="nc" id="L316">                            data.setAmount(Integer.valueOf(value.toString()));</span>
+<span class="nc bnc" id="L317" title="All 4 branches missed.">                        } else if (method.getName().equals(&quot;getDescription&quot;) &amp;&amp; value != null) {</span>
+<span class="nc" id="L318">                            data.setDescription(value.toString());</span>
+<span class="nc bnc" id="L319" title="All 4 branches missed.">                        } else if (method.getName().equals(&quot;getPaymentLinkId&quot;) &amp;&amp; value != null) {</span>
+<span class="nc" id="L320">                            data.setPaymentLinkId(Long.valueOf(value.toString()));</span>
+                        }
+<span class="nc" id="L322">                    } catch (Exception e) {</span>
+<span class="nc" id="L323">                        System.out.println(&quot;Could not invoke &quot; + method.getName() + &quot;: &quot; + e.getMessage());</span>
+<span class="nc" id="L324">                    }</span>
+                }
+            }
+<span class="nc" id="L327">        } catch (Exception e) {</span>
+<span class="nc" id="L328">            System.out.println(&quot;Error extracting webhook data: &quot; + e.getMessage());</span>
+<span class="nc" id="L329">        }</span>
+        
+        // Set default values if not found
+<span class="nc bnc" id="L332" title="All 2 branches missed.">        if (data.getOrderCode() == null) data.setOrderCode(0L);</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        if (data.getAmount() == null) data.setAmount(0);</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        if (data.getDescription() == null) data.setDescription(&quot;Webhook from PayOS SDK&quot;);</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        if (data.getPaymentLinkId() == null) data.setPaymentLinkId(0L);</span>
+        
+<span class="nc" id="L337">        data.setCode(webhookData.getCode());</span>
+<span class="nc" id="L338">        data.setDesc(webhookData.getDesc());</span>
+        
+<span class="nc" id="L340">        payOSWebhookData.setData(data);</span>
+        
+<span class="nc" id="L342">        System.out.println(&quot;Converted PayOSWebhookData: &quot; + payOSWebhookData);</span>
+<span class="nc" id="L343">        return payOSWebhookData;</span>
+    }
+
+    /**
+     * Tạo payment link cho Order
+     */
+    @PostMapping(&quot;/create-for-order/{orderId}&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; createPaymentForOrder(@PathVariable Long orderId, HttpServletRequest request) {
+        try {
+<span class="fc" id="L353">            Long accountId = (Long) request.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">            if (accountId == null) {</span>
+<span class="fc" id="L355">                return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="fc" id="L356">                    &quot;success&quot;, false,</span>
+                    &quot;message&quot;, &quot;User not logged in&quot;
+                ));
+            }
+
+            // Get order
+<span class="fc" id="L362">            Order order = orderService.getById(orderId).orElse(null);</span>
+<span class="fc bfc" id="L363" title="All 2 branches covered.">            if (order == null) {</span>
+<span class="fc" id="L364">                return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="fc" id="L365">                    &quot;success&quot;, false,</span>
+                    &quot;message&quot;, &quot;Order not found&quot;
+                ));
+            }
+
+            // Check if order belongs to current customer
+<span class="fc bfc" id="L371" title="All 2 branches covered.">            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {</span>
+<span class="fc" id="L372">                return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="fc" id="L373">                    &quot;success&quot;, false,</span>
+                    &quot;message&quot;, &quot;Order does not belong to current user&quot;
+                ));
+            }
+
+            // Check if payment already exists for this order
+<span class="fc" id="L379">            Optional&lt;Payment&gt; existingPayment = paymentService.getPaymentByOrder(order);</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">            if (existingPayment.isPresent()) {</span>
+<span class="fc" id="L381">                Payment payment = existingPayment.get();</span>
+<span class="fc bfc" id="L382" title="All 2 branches covered.">                if (payment.getStatus() == PaymentStatus.PENDING) {</span>
+                    // Return existing payment link
+<span class="fc" id="L384">                    Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L385">                    response.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L386">                    response.put(&quot;orderId&quot;, orderId);</span>
+<span class="fc" id="L387">                    response.put(&quot;paymentId&quot;, payment.getPaymentId());</span>
+<span class="fc" id="L388">                    response.put(&quot;checkoutUrl&quot;, payment.getCheckoutUrl());</span>
+<span class="fc" id="L389">                    response.put(&quot;qrCode&quot;, payment.getQrCode());</span>
+<span class="fc" id="L390">                    response.put(&quot;amount&quot;, payment.getAmount());</span>
+<span class="fc" id="L391">                    return ResponseEntity.ok(response);</span>
+                }
+            }
+
+            // Create payment link using PaymentService only
+<span class="fc" id="L396">            String returnUrl = &quot;http://localhost:8080/payment/success?orderId=&quot; + orderId;</span>
+<span class="fc" id="L397">            String cancelUrl = &quot;http://localhost:8080/payment/cancel?orderId=&quot; + orderId;</span>
+            
+            // Create payment record and PayOS link
+<span class="fc" id="L400">            Payment payment = paymentService.createPaymentLinkForOrder(order, returnUrl, cancelUrl);</span>
+
+<span class="fc" id="L402">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L403">            response.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L404">            response.put(&quot;orderId&quot;, orderId);</span>
+<span class="fc" id="L405">            response.put(&quot;paymentId&quot;, payment.getPaymentId());</span>
+<span class="fc" id="L406">            response.put(&quot;checkoutUrl&quot;, payment.getCheckoutUrl());</span>
+<span class="fc" id="L407">            response.put(&quot;qrCode&quot;, payment.getQrCode());</span>
+<span class="fc" id="L408">            response.put(&quot;amount&quot;, payment.getAmount());</span>
+
+<span class="fc" id="L410">            return ResponseEntity.ok(response);</span>
+
+<span class="fc" id="L412">        } catch (Exception e) {</span>
+<span class="fc" id="L413">            return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="fc" id="L414">                &quot;success&quot;, false,</span>
+<span class="fc" id="L415">                &quot;message&quot;, e.getMessage()</span>
+            ));
+        }
+    }
+
+    /**
+     * Lấy thông tin payment theo order ID
+     */
+    @GetMapping(&quot;/status/order/{orderId}&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getPaymentStatusByOrder(@PathVariable Long orderId) {
+        try {
+<span class="nc" id="L427">            Order order = orderService.getById(orderId).orElse(null);</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">            if (order == null) {</span>
+<span class="nc" id="L429">                return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="nc" id="L430">                    &quot;success&quot;, false,</span>
+                    &quot;message&quot;, &quot;Order not found&quot;
+                ));
+            }
+
+<span class="nc" id="L435">            Optional&lt;Payment&gt; paymentOpt = paymentService.getPaymentByOrder(order);</span>
+            
+<span class="nc" id="L437">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L438">            response.put(&quot;success&quot;, true);</span>
+<span class="nc" id="L439">            response.put(&quot;orderId&quot;, orderId);</span>
+<span class="nc" id="L440">            response.put(&quot;orderStatus&quot;, order.getStatus().name());</span>
+            
+<span class="nc bnc" id="L442" title="All 2 branches missed.">            if (paymentOpt.isPresent()) {</span>
+<span class="nc" id="L443">                Payment payment = paymentOpt.get();</span>
+<span class="nc" id="L444">                response.put(&quot;paymentStatus&quot;, payment.getStatus().name());</span>
+<span class="nc" id="L445">                response.put(&quot;checkoutUrl&quot;, payment.getCheckoutUrl());</span>
+<span class="nc" id="L446">                response.put(&quot;qrCode&quot;, payment.getQrCode());</span>
+            }
+
+<span class="nc" id="L449">            return ResponseEntity.ok(response);</span>
+
+<span class="nc" id="L451">        } catch (Exception e) {</span>
+<span class="nc" id="L452">            return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="nc" id="L453">                &quot;success&quot;, false,</span>
+<span class="nc" id="L454">                &quot;message&quot;, e.getMessage()</span>
+            ));
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

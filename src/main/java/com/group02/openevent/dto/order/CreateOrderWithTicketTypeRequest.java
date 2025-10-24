@@ -16,10 +16,6 @@ public class CreateOrderWithTicketTypeRequest {
     private String participantOrganization;
     private String notes;
     private String voucherCode;
-    
-//    @Valid
-//    @NotNull(message = "Order items are required")
-//    private List<OrderItemRequest> orderItems;
 
     @NotNull(message = "Ticket type ID is required")
     private Long ticketTypeId;

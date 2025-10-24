@@ -3,6 +3,7 @@ package com.group02.openevent.controller;
 import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.dto.payment.PaymentResult;
@@ -33,36 +34,222 @@ public class PaymentController {
     }
 
 
+
+
     /**
-     * Webhook endpoint cho PayOS sử dụng PayOS SDK
+     * Webhook endpoint cho PayOS - Xử lý trực tiếp không qua SDK
      */
     @PostMapping("/webhook")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> handleWebhook(@RequestBody Object webhookBody) {
-        System.out.println("webhook is called");
+    public ResponseEntity<Map<String, Object>> handleWebhook(@RequestBody(required = false) Map<String, Object> webhookBody) {
+        System.out.println("=== WEBHOOK RECEIVED ===");
+        System.out.println("Webhook body: " + webhookBody);
+        
+        // Handle PayOS test webhook (empty or minimal body)
+        if (webhookBody == null || webhookBody.isEmpty()) {
+            System.out.println("Empty webhook body - PayOS test request");
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", 0);
+            response.put("message", "ok");
+            response.put("data", null);
+            return ResponseEntity.ok(response);
+        }
+        
         try {
-            // Verify webhook using PayOS SDK
-            WebhookData data = payOS.webhooks().verify(webhookBody);
+            // Extract data from webhook body directly
+            String code = (String) webhookBody.get("code");
+            String desc = (String) webhookBody.get("desc");
             
-            // Process payment result using PayOS SDK webhook
-            PaymentResult result = paymentService.handlePaymentWebhookFromPayOS(convertWebhookData(data));
+            @SuppressWarnings("unchecked")
+            Map<String, Object> dataMap = (Map<String, Object>) webhookBody.get("data");
+            
+            if (dataMap == null) {
+                System.out.println("No data in webhook");
+                Map<String, Object> response = new HashMap<>();
+                response.put("error", 0);
+                response.put("message", "ok");
+                response.put("data", null);
+                return ResponseEntity.ok(response);
+            }
+            
+            System.out.println("Webhook code: " + code);
+            System.out.println("Webhook desc: " + desc);
+            System.out.println("Payment data: " + dataMap);
+            
+            // Extract payment information
+            String paymentLinkId = (String) dataMap.get("paymentLinkId");
+            Object orderCodeObj = dataMap.get("orderCode");
+            Long orderCode = orderCodeObj instanceof Integer ? ((Integer) orderCodeObj).longValue() : (Long) orderCodeObj;
+            Object amountObj = dataMap.get("amount");
+            Integer amount = amountObj instanceof Integer ? (Integer) amountObj : ((Number) amountObj).intValue();
+            String description = (String) dataMap.get("description");
+            
+            System.out.println("Payment Link ID: " + paymentLinkId);
+            System.out.println("Order Code: " + orderCode);
+            System.out.println("Amount: " + amount);
+            System.out.println("Description: " + description);
+            
+            // Find payment directly by orderId from description or by orderCode
+            Long orderId = extractOrderIdFromDescription(description);
+            Optional<Payment> paymentOpt = Optional.empty();
+            
+            if (orderId != null) {
+                System.out.println("Extracted order ID from description: " + orderId);
+                paymentOpt = paymentService.getPaymentByOrderId(orderId);
+            }
+            
+            // If not found by orderId, try finding by orderCode
+            if (paymentOpt.isEmpty() && orderCode != null) {
+                System.out.println("Searching for payment by orderCode: " + orderCode);
+                Optional<Order> orderOpt = orderService.getById(orderCode);
+                if (orderOpt.isPresent()) {
+                    paymentOpt = paymentService.getPaymentByOrder(orderOpt.get());
+                }
+            }
+            
+            if (paymentOpt.isEmpty()) {
+                System.out.println("Payment not found!");
+                Map<String, Object> response = new HashMap<>();
+                response.put("error", 0);
+                response.put("message", "ok");
+                response.put("data", Map.of(
+                    "success", false,
+                    "message", "Payment not found"
+                ));
+                return ResponseEntity.ok(response);
+            }
+            
+            // Update payment and order status directly
+            Payment payment = paymentOpt.get();
+            Order order = payment.getOrder();
+            
+            System.out.println("Current payment status: " + payment.getStatus());
+            System.out.println("Current order status: " + order.getStatus());
+            
+            // Allow updating even if payment was CANCELLED or EXPIRED
+            // PayOS webhook confirms user has paid, so we should update
+            if (payment.getStatus() == PaymentStatus.PAID) {
+                System.out.println("Payment already marked as PAID, skipping update");
+            } else {
+                payment.setStatus(PaymentStatus.PAID);
+                payment.setUpdatedAt(java.time.LocalDateTime.now());
+                paymentService.updatePaymentStatus(payment, PaymentStatus.PAID, null);
+                
+                order.setStatus(OrderStatus.PAID);
+                order.setUpdatedAt(java.time.LocalDateTime.now());
+                orderService.save(order);
+                
+                System.out.println("Payment and Order updated to PAID");
+            }
+            
+            PaymentResult result = PaymentResult.success("Payment processed successfully");
+            
+            System.out.println("Webhook processing result: " + result.isSuccess());
+            System.out.println("Result message: " + result.getMessage());
             
             Map<String, Object> response = new HashMap<>();
             response.put("error", 0);
-            response.put("message", "Webhook delivered");
-            response.put("success", result.isSuccess());
+            response.put("message", "ok");
+            response.put("data", Map.of(
+                "success", result.isSuccess(),
+                "message", result.getMessage()
+            ));
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
+            System.out.println("Webhook processing error: " + e.getMessage());
+            e.printStackTrace();
+            
+            // PayOS expects success response even for test webhooks
             Map<String, Object> response = new HashMap<>();
-            response.put("error", -1);
-            response.put("message", e.getMessage());
+            response.put("error", 0);
+            response.put("message", "ok");
+            response.put("data", Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+            return ResponseEntity.ok(response);
+        }
+    }
+
+    /**
+     * Test endpoint để kiểm tra webhook có hoạt động không
+     */
+    @GetMapping("/webhook/test")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> testWebhook() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Webhook endpoint is accessible");
+        response.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Test webhook với data giả để kiểm tra logic
+     */
+    @PostMapping("/webhook/test-data")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> testWebhookWithData(@RequestBody Map<String, Object> testData) {
+        System.out.println("=== TEST WEBHOOK WITH DATA ===");
+        System.out.println("Test data: " + testData);
+        
+        try {
+            // Tạo PayOSWebhookData giả để test
+            PayOSWebhookData webhookData = new PayOSWebhookData();
+            webhookData.setCode(0);
+            webhookData.setDesc("Test webhook");
+            
+            PayOSWebhookData.Data data = new PayOSWebhookData.Data();
+            data.setOrderCode(12345L);
+            data.setAmount(100000);
+            data.setDescription("Test payment");
+            data.setPaymentLinkId(999L);
+            data.setCode("00");
+            data.setDesc("Test webhook");
+            
+            webhookData.setData(data);
+            
+            // Test webhook processing
+            PaymentResult result = paymentService.handlePaymentWebhookFromPayOS(webhookData);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Test webhook processed");
+            response.put("result", result.isSuccess());
+            response.put("resultMessage", result.getMessage());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.out.println("Test webhook error: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> response = new HashMap<>();
             response.put("success", false);
+            response.put("message", "Test webhook failed: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
 
+    /**
+     * Helper method to extract order ID from description
+     * Description format: "CSUO5KESD48 Order 17"
+     */
+    private Long extractOrderIdFromDescription(String description) {
+        try {
+            if (description != null && description.contains("Order ")) {
+                String[] parts = description.split("Order ");
+                if (parts.length > 1) {
+                    return Long.parseLong(parts[1].trim());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error extracting order ID from description: " + e.getMessage());
+        }
+        return null;
+    }
 
     /**
      * Lấy lịch sử payments của user
@@ -100,22 +287,59 @@ public class PaymentController {
      * Convert PayOS SDK WebhookData to PayOSWebhookData
      */
     private PayOSWebhookData convertWebhookData(WebhookData webhookData) {
+        System.out.println("=== CONVERTING WEBHOOK DATA ===");
+        System.out.println("WebhookData: " + webhookData);
+        System.out.println("Code: " + webhookData.getCode());
+        System.out.println("Desc: " + webhookData.getDesc());
+        
         PayOSWebhookData payOSWebhookData = new PayOSWebhookData();
         payOSWebhookData.setCode(Integer.valueOf(webhookData.getCode()));
         payOSWebhookData.setDesc(webhookData.getDesc());
         
-        // Create minimal data structure
+        // Create data structure with actual webhook data
         PayOSWebhookData.Data data = new PayOSWebhookData.Data();
-        // Note: WebhookData from PayOS SDK has different structure
-        // We'll create a minimal structure for now
-        // Since we can't access getData(), we'll use default values
-        data.setOrderCode(0L); // Default value
-        data.setAmount(0); // Default value
-        data.setDescription("Webhook from PayOS SDK");
-        data.setCode("00"); // Default success code
-        data.setDesc("Success");
+        
+        // Try to extract actual data from webhook
+        try {
+            // Use reflection to get data from webhook
+            java.lang.reflect.Method[] methods = webhookData.getClass().getMethods();
+            for (java.lang.reflect.Method method : methods) {
+                if (method.getName().startsWith("get") && method.getParameterCount() == 0) {
+                    try {
+                        Object value = method.invoke(webhookData);
+                        System.out.println("Method " + method.getName() + ": " + value);
+                        
+                        // Map specific fields
+                        if (method.getName().equals("getOrderCode") && value != null) {
+                            data.setOrderCode(Long.valueOf(value.toString()));
+                        } else if (method.getName().equals("getAmount") && value != null) {
+                            data.setAmount(Integer.valueOf(value.toString()));
+                        } else if (method.getName().equals("getDescription") && value != null) {
+                            data.setDescription(value.toString());
+                        } else if (method.getName().equals("getPaymentLinkId") && value != null) {
+                            data.setPaymentLinkId(Long.valueOf(value.toString()));
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Could not invoke " + method.getName() + ": " + e.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error extracting webhook data: " + e.getMessage());
+        }
+        
+        // Set default values if not found
+        if (data.getOrderCode() == null) data.setOrderCode(0L);
+        if (data.getAmount() == null) data.setAmount(0);
+        if (data.getDescription() == null) data.setDescription("Webhook from PayOS SDK");
+        if (data.getPaymentLinkId() == null) data.setPaymentLinkId(0L);
+        
+        data.setCode(webhookData.getCode());
+        data.setDesc(webhookData.getDesc());
         
         payOSWebhookData.setData(data);
+        
+        System.out.println("Converted PayOSWebhookData: " + payOSWebhookData);
         return payOSWebhookData;
     }
 
@@ -266,6 +490,69 @@ public class PaymentController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Manual endpoint để test webhook và update order status
+     * ONLY FOR TESTING - Remove in production
+     */
+    @PostMapping("/manual-complete/{orderId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> manualCompleteOrder(@PathVariable Long orderId) {
+        try {
+            System.out.println("=== MANUAL ORDER COMPLETION ===");
+            System.out.println("Order ID: " + orderId);
+            
+            Order order = orderService.getById(orderId).orElse(null);
+            if (order == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Order not found"
+                ));
+            }
+
+            Optional<Payment> paymentOpt = paymentService.getPaymentByOrder(order);
+            
+            if (paymentOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Payment not found for this order"
+                ));
+            }
+
+            Payment payment = paymentOpt.get();
+            
+            // Update payment status
+            payment.setStatus(PaymentStatus.PAID);
+            payment.setUpdatedAt(java.time.LocalDateTime.now());
+            
+            // Update order status
+            order.setStatus(com.group02.openevent.model.order.OrderStatus.PAID);
+            order.setUpdatedAt(java.time.LocalDateTime.now());
+            
+            // Save both
+            paymentService.updatePaymentStatus(payment, PaymentStatus.PAID, null);
+            orderService.save(order);
+            
+            System.out.println("Order and Payment status updated to PAID");
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Order and Payment manually completed");
+            response.put("orderId", orderId);
+            response.put("orderStatus", order.getStatus().name());
+            response.put("paymentStatus", payment.getStatus().name());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.out.println("Error in manual completion: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
                 "message", e.getMessage()

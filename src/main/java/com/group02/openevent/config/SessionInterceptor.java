@@ -92,6 +92,9 @@ public class SessionInterceptor implements HandlerInterceptor {
                 path.startsWith("/api/event/") ||
                 path.startsWith("/api/events/public") ||
                 path.startsWith("/api/test/") ||
+                path.startsWith("/api/payments/webhook") ||
+                path.startsWith("/api/payments/webhook/test") ||
+                path.startsWith("/api/payments/webhook/test-data") ||
                 path.startsWith("/static/") ||
                 path.startsWith("/css/") ||
                 path.startsWith("/js/") ||

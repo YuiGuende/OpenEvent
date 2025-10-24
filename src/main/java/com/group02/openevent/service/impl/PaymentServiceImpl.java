@@ -172,7 +172,7 @@ public class PaymentServiceImpl implements PaymentService {
             order.setStatus(OrderStatus.PAID);
             order.setUpdatedAt(LocalDateTime.now());
             orderRepo.save(order);
-            logger.info("Order status updated to CONFIRMED");
+            logger.info("Order status updated to PAID");
 
             logger.info("Payment webhook processed successfully for order: {}", order.getOrderId());
             return PaymentResult.success("Payment processed successfully");

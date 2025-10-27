@@ -1,30 +1,33 @@
 package com.group02.openevent.controller.event;
 
-import com.group02.openevent.dto.request.update.EventUpdateRequest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.group02.openevent.dto.request.PlaceUpdateRequest;
+import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.dto.request.update.EventUpdateRequest;
 import com.group02.openevent.dto.response.ApiResponse;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.*;
-import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group02.openevent.repository.ITicketTypeRepo;
-import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import com.group02.openevent.model.event.Event;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ui.Model;
-import java.io.IOException;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -48,7 +51,6 @@ public class EventController {
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
     }
-
 
     // POST - create event
     @PostMapping("save/music")
@@ -74,7 +76,18 @@ public class EventController {
     public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
         return eventService.saveWorkshopEvent(event);
     }
+    @GetMapping("/event")
+    public String userRegistration(Model model) {
+        //Empty Userform model object to store from data
+        log.info("da vao ham nay");
+        EventCreationRequest request = new EventCreationRequest();
+        model.addAttribute("eventForm", request);
+        List<String> listTypeEvent = Arrays.asList("MUSIC", "FESTIVAL", "WORKSHOP","COMPETITION","OTHERS");
+        model.addAttribute("listTypeEvent", listTypeEvent);
+        return "host/events";
+    }
 
+    // POST - create event
     @PostMapping("/saveEvent")
     public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, Model model) {
         log.info("startsAt = {}", request.getStartsAt());
@@ -259,6 +272,11 @@ public class EventController {
         return eventService.getEventsByType(eventType);
     }
 
+    @GetMapping("/getAll")
+    public List<Event> getAllEvents() {
+        return eventService.getAllEvents();
+    }
+
     private Class<? extends Event> getEventTypeClass(String type) {
         switch (type.toUpperCase()) {
             case "MUSIC":
@@ -398,5 +416,4 @@ public class EventController {
             return ApiResponse.<Void>builder().message("Error: " + e.getMessage()).build();
         }
     }
-
 }

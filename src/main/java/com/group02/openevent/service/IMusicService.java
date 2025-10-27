@@ -9,7 +9,6 @@ import java.util.List;
 public interface IMusicService {
     List<MusicEventDetailDTO> getAllMusicEvents();
 
-
     MusicEventDetailDTO getMusicEventById(Long id);
 
 }

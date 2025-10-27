@@ -13,20 +13,20 @@
             gap: 1rem;
             align-items: end;
         }
-        
+
         .es-submit {
             min-width: 140px;
             white-space: nowrap;
             margin-left: 1rem;
         }
-        
+
         /* Responsive cho mobile */
         @media (max-width: 768px) {
             .event-search {
                 grid-template-columns: 1fr;
                 gap: 0.75rem;
             }
-            
+
             .es-submit {
                 min-width: auto;
                 width: 100%;
@@ -109,14 +109,16 @@
                         <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
                         <div class="card-body">
                             <h3 class="card-title" th:text="${ev.title}">Event title</h3>
-                            <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">City • Date • Duration</p>
+                            <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">
+                                City • Date • Duration</p>
                             <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
 
                             <div class="capacity">
                                 <div class="capacity-row">
                                     <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini" th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                    <span class="capacity-mini"
+                                          th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
@@ -232,13 +234,15 @@
                         <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
                         <div class="card-body">
                             <h3 class="card-title" th:text="${ev.title}">Event title</h3>
-                            <p class="card-meta" th:text="${ev.city + ' • Today • ' + ev.durationLabel}">City • Today • Duration</p>
+                            <p class="card-meta" th:text="${ev.city + ' • Today • ' + ev.durationLabel}">City • Today •
+                                Duration</p>
                             <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
                             <div class="capacity">
                                 <div class="capacity-row">
                                     <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini" th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                    <span class="capacity-mini"
+                                          th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
@@ -359,7 +363,8 @@
                                     <span th:text="${'Registered: ' + event.registered + ' / ' + event.capacity}">
                                         Registered: 0 / 0
                                     </span>
-                                    <span class="capacity-mini" th:text="${'Price: ' + event.priceLabel}">Price: Free</span>
+                                    <span class="capacity-mini"
+                                          th:text="${'Price: ' + event.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
@@ -558,7 +563,15 @@
 
 
 <div th:replace="fragments/footer :: siteFooter()"></div>
+<!-- Chatbot Integration -->
+<div id="openevent-chatbot-container"></div>
 
+
+<!-- Chatbot Fragment - Only for authenticated users -->
+<div th:if="${#authorization.expression('isAuthenticated()')}"
+     th:replace="~{fragments/chatbot :: chatbot(2)}">
+</div>
+<script th:src="@{/js/chatbot.js}"></script>
 <script th:src="@{/js/main.js}"></script>
 </body>
 </html>

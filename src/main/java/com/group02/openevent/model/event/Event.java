@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.department.Department;
+import com.group02.openevent.model.email.EmailReminder;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
@@ -153,6 +154,8 @@ public class Event {
 
     @Column(name = "guidelines", columnDefinition = "TEXT")
     private String guidelines;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmailReminder> emailReminders;
 
     public Event() {
     }
@@ -223,6 +226,7 @@ public class Event {
         return maxTicketPice;
 
     }
+
     public double getMinTicketPice() {
         if (ticketTypes == null || ticketTypes.isEmpty()) {
             return 0;

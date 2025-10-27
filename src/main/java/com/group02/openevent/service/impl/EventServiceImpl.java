@@ -1,21 +1,27 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.home.EventCardDTO;
-import com.group02.openevent.dto.request.*;
-import com.group02.openevent.dto.request.create.*;
-import com.group02.openevent.dto.request.update.*;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.dto.request.update.EventUpdateRequest;
 import com.group02.openevent.mapper.EventMapper;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.SpeakerRole;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.event.EventSchedule;
 import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Host;
 import com.group02.openevent.repository.*;
+import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Service;
 import com.group02.openevent.service.OrderService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,6 +45,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -196,6 +203,13 @@ public class EventServiceImpl implements EventService {
         return null;
     }
 
+    public List<Event> getEventsByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return eventRepo.findAllById(ids);
+    }
+
     @Override
     public List<EventCardDTO> getCustomerEvents(Long customerId) {
         List<Event> events = orderService.findConfirmedEventsByCustomerId(customerId);
@@ -329,6 +343,104 @@ public class EventServiceImpl implements EventService {
             return eventRepo.findAll(pageable);
         }
     }
+    @Override
+    public List<Event> isTimeConflict(LocalDateTime start, LocalDateTime end, List<Place> places) {
+        return eventRepo.findConflictedEvents(start, end, places);
+    }
+
+    @Override
+    public boolean removeEvent(Long id) {
+        if (eventRepo.existsById(id)) {
+            eventRepo.deleteById(id);
+            return true; // ✅ xóa thành công
+        } else {
+            return false; // ✅ không tìm thấy
+        }
+    }
+
+    @Override
+    public boolean deleteByTitle(String title) {
+        List<Event> events = eventRepo.findByTitle(title);
+        if (events.isEmpty()) {
+            return false; // ✅ không tìm thấy sự kiện
+        }
+        eventRepo.deleteAll(events);
+        return true; // ✅ xóa thành công
+    }
+
+    @Override
+    public List<Event> findByTitle(String title) {
+        return eventRepo.findByTitle(title);
+    }
+
+    @Override
+    public List<Event> findByTitleAndPublicStatus(String title) {
+        return eventRepo.findByTitleAndPublicStatus(title);
+    }
+
+    @Override
+    public List<Event> getAllEvents() {
+        return eventRepo.findAll();
+    }
+
+//    @Override
+//    public List<Event> getEventByUserId(Integer userId) {
+//        return eventRepo.getEventByUserId(userId);
+//    }
+
+    @Override
+    public Optional<Event> getEventByEventId(Long eventId) {
+        if (eventId == null) return Optional.empty();
+        return eventRepo.findById(eventId);
+    }
+
+    @Override
+    public Optional<Event> getFirstEventByTitle(String title) {
+        List<Event> events = eventRepo.findByTitle(title);
+        if (events.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(events.get(0)); // trả về sự kiện đầu tiên
+    }
+
+    @Override
+    public Optional<Event> getFirstPublicEventByTitle(String title) {
+        List<Event> events = eventRepo.findByTitleAndPublicStatus(title);
+        if (events.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(events.get(0)); // trả về sự kiện PUBLIC đầu tiên
+    }
+//    @Override
+//    public Optional<Event> getNextUpcomingEventByUserId(int userId) {
+//        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
+//    }
+    @Override
+    public List<Event> getEventsByPlace(Long placeId) {
+        return eventRepo.findByPlaceId(placeId);
+    }
+
+    @Override
+    public List<Event> getEventsBetween(LocalDateTime start, LocalDateTime end, Long userId) {
+        // TODO: Implement proper filtering by date range and user
+        // For now, return all events filtered by date range
+        return eventRepo.findAll().stream()
+                .filter(event -> event.getStartsAt().isAfter(start) || event.getStartsAt().isEqual(start))
+                .filter(event -> event.getEndsAt().isBefore(end) || event.getEndsAt().isEqual(end))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Optional<Event> getNextUpcomingEventByUserId(Long userId) {
+        // Gọi repository với điều kiện: sự kiện PHẢI BẮT ĐẦU sau thời điểm hiện tại
+        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
+    }
+
+    @Override
+    public List<Event> getEventByUserId(Long userId) {
+        // TODO: Implement proper user-based filtering
+        // For now, return all events
+        return eventRepo.findAll();
+    }
 
     @Override
     public Event updateEventStatus(Long eventId, EventStatus status) {
@@ -425,4 +537,3 @@ public class EventServiceImpl implements EventService {
 
 
 }
-

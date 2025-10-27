@@ -152,7 +152,7 @@ class OrderManager {
 
     async handleCreateOrder(event) {
         event.preventDefault();
-        
+
         const formData = new FormData(event.target);
         const orderData = this.collectOrderData(formData);
 
@@ -208,7 +208,7 @@ class OrderManager {
 
     async handlePayment(event) {
         const orderId = event.target.dataset.orderId;
-        
+
         try {
             const response = await fetch(`${this.apiBase}/payments/create-for-order/${orderId}`, {
                 method: 'POST',
@@ -231,7 +231,7 @@ class OrderManager {
 
     async handleCancelOrder(event) {
         const orderId = event.target.dataset.orderId;
-        
+
         if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
             return;
         }

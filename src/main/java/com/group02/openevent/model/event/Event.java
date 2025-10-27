@@ -352,6 +352,14 @@ public class Event {
         return points;
     }
 
+    public List<TicketType> getTicketTypes() {
+        return ticketTypes;
+    }
+
+    public void setTicketTypes(List<TicketType> ticketTypes) {
+        this.ticketTypes = ticketTypes;
+    }
+
     public void setPoints(Integer points) {
         this.points = points;
     }

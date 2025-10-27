@@ -1,0 +1,125 @@
+<!-- /templates/fragments/chatbot.html -->
+<div xmlns:th="http://www.thymeleaf.org"
+     th:fragment="chatbot(userId)"
+     th:attr="data-user-id=${userId}">
+
+    <!-- Floating Action Button -->
+    <button class="chatbot-toggler" id="chatbotToggler" aria-label="Mở chat">
+        <span class="material-symbols-outlined chat-icon">smart_toy</span>
+        <span class="material-symbols-outlined close-icon">close</span>
+        <span class="notification-badge" id="notificationBadge" style="display: none;">1</span>
+    </button>
+
+    <!-- Chatbot Pop-up Container -->
+    <div id="chatbotContainer" class="chatbot-container" aria-live="polite">
+        <header class="chatbot-header">
+            <div class="header-left">
+                <div class="avatar-container">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                </div>
+                <div class="header-info">
+                    <h2 class="chatbot-title">OpenEventAI</h2>
+                    <div class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Online</span>
+                    </div>
+                </div>
+            </div>
+            <button class="close-btn" id="closeBtn" aria-label="Đóng">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </header>
+
+        <div class="chatbot-body">
+            <div class="messages-container" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                    </div>
+                    <div class="message-bubble bot-bubble">
+                        <div class="message-content">
+                            <p>Xin chào! 👋 Tôi là <strong>OpenEventAI</strong>, trợ lý thông minh của bạn.</p>
+                            <p>Tôi có thể giúp bạn:</p>
+                            <ul>
+                                <li>🎫 Tìm kiếm và đặt vé sự kiện</li>
+                                <li>📅 Xem lịch trình sự kiện</li>
+                                <li>🎪 Tạo và quản lý sự kiện</li>
+                                <li>💬 Hỗ trợ 24/7</li>
+                            </ul>
+                            <p>Bạn muốn làm gì hôm nay?</p>
+                        </div>
+                        <div class="meta">Vừa xong</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display:none">
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                    </div>
+                    <div class="message-bubble bot-bubble typing-bubble">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chatbot-input">
+            <div class="input-container">
+                <textarea 
+                    id="chatInput" 
+                    class="message-input" 
+                    placeholder="Nhập tin nhắn của bạn..." 
+                    maxlength="1000"
+                    rows="1"
+                    aria-label="Tin nhắn"
+                ></textarea>
+                <button id="chatSendBtn" class="send-button" type="button" aria-label="Gửi tin nhắn">
+                    <span class="material-symbols-outlined">send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Management Popup -->
+    <div id="sessionPopup" class="session-popup" style="display: none;">
+        <div class="session-popup-content">
+            <div class="session-popup-header">
+                <h3>Quản lý phiên làm việc</h3>
+                <button class="session-popup-close" id="sessionPopupClose">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="session-popup-body">
+                <div class="session-list">
+                    <div class="session-item active" data-session-id="current">
+                        <div class="session-info">
+                            <span class="session-title">Phiên hiện tại</span>
+                            <span class="session-time">Vừa xong</span>
+                        </div>
+                        <div class="session-actions">
+                            <button class="session-action-btn" title="Sử dụng phiên này">
+                                <span class="material-symbols-outlined">play_arrow</span>
+                            </button>
+                            <button class="session-delete-btn" title="Xóa phiên này">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <button id="oeNewSessionBtn" class="new-session-btn">
+                        <span class="material-symbols-outlined">add</span>
+                        <span>Tạo phiên mới</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

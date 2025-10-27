@@ -7,6 +7,7 @@ import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.ai.service.AgentEventService;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;

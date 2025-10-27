@@ -40,7 +40,7 @@ public interface EventService {
     List<Event> getEventsByPlace(int placeId);
 
     // Methods for AI support
-    Event saveEventAgent(Event request);
+
 
     List<Event> getEventsByIds(List<Long> ids);
     List<Event> getEventsBetween(LocalDateTime start, LocalDateTime end, Long userId);
@@ -54,7 +54,7 @@ public interface EventService {
     List<EventCardDTO> getPosterEvents();
     List<EventCardDTO> getRecommendedEvents(int limit);
     EventCardDTO convertToDTO(Event event);
-    EventResponse saveEvent(EventCreationRequest event);
+    EventResponse saveEvent(EventCreationRequest eventCreationRequest);
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
     List<EventCardDTO> getCustomerEvents(Long customerId);
     List<EventCardDTO> getLiveEvents(int i);

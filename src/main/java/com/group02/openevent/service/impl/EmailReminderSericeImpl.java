@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,16 @@ public class EmailReminderSericeImpl implements EmailReminderService {
         return emailReminderRepository.findByIsSent(false);
     }
 
+    /**
+     * Tìm email reminder theo event ID và user ID
+     *
+     * @param eventId Event ID
+     * @param userId User ID
+     * @return Optional email reminder
+     */
+    public Optional<EmailReminder> findByEventIdAndUserId(Long eventId, Long userId) {
+        return emailReminderRepository.findByEventIdAndUserId(eventId, userId);
+    }
 
 }
 

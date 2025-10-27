@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IEmailReminderRepo extends JpaRepository<EmailReminder, Long> {
@@ -24,4 +25,12 @@ public interface IEmailReminderRepo extends JpaRepository<EmailReminder, Long> {
      * @return List of old reminders
      */
     List<EmailReminder> findByIsSentAndCreatedAtBefore(boolean isSent, LocalDateTime createdAt);
+    
+    /**
+     * Find email reminder by event ID and user ID
+     * @param eventId Event ID
+     * @param userId User ID
+     * @return Optional email reminder
+     */
+    Optional<EmailReminder> findByEventIdAndUserId(Long eventId, Long userId);
 }

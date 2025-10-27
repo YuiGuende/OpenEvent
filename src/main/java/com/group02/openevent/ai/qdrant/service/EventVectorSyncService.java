@@ -132,8 +132,10 @@ public class EventVectorSyncService {
                         Event e = allEvents.get(i);
                         Map<String, Object> payload = createEventPayload(e);
 
+                        String uniqueId = UUID.nameUUIDFromBytes(("event_" + e.getId()).getBytes()).toString();
+
                         Map<String, Object> point = new HashMap<>();
-                        point.put("id", String.valueOf(e.getId()));
+                        point.put("id", uniqueId);
                         point.put("vector", toFloatList(vectors.get(i)));
                         point.put("payload", payload);
 
@@ -180,7 +182,7 @@ public class EventVectorSyncService {
                 "Lịch trình hôm nay như thế nào?",
                 "Cho tôi biết sự kiện hôm nay"
         );
-        seedPrompts(intents, "prompt_summary_time");
+        seedBatch(intents, "prompt", "type", "prompt_summary_time", "prompt");
     }
 
     /**
@@ -195,7 +197,8 @@ public class EventVectorSyncService {
                 "Gửi thông báo mail trước khi sự kiện diễn ra",
                 "Làm ơn nhắc tôi bằng email khoảng 30-60 phút trước workshop này bắt đầu"
         );
-        seedPrompts(intents, "prompt_send_email");
+        seedBatch(intents, "prompt", "type", "prompt_send_email", "prompt");
+
     }
 
     /**
@@ -206,7 +209,7 @@ public class EventVectorSyncService {
                 "đá bóng", "bơi", "dã ngoại", "leo núi", "chạy bộ", "tennis", "đạp xe",
                 "chơi cầu lông", "cắm trại", "đi bộ đường dài", "đi phượt", "đi banahill"
         );
-        seedLabels(vocab, "outdoor_activities");
+        seedBatch(vocab, "label", "type", "outdoor_activities", "label");
     }
 
     /**
@@ -220,7 +223,7 @@ public class EventVectorSyncService {
                 "Tạo Event Thi Hoa Hậu vào ngày mai lúc 5h tại FPT University",
                 "Tạo cuộc thi HackAiThon"
         );
-        seedToolPrompts(intents, "ADD_EVENT");
+        seedBatch(intents, "tool_prompt", "toolName", "ADD_EVENT", "prompt");
     }
 
     /* ==================== helpers ==================== */

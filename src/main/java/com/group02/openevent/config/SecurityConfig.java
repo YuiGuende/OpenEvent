@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,11 +21,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF for API testing
-            .csrf(AbstractHttpConfigurer::disable)
+            // Disable CSRF completely
+            .csrf(csrf -> csrf.disable())
             
-            // Disable authentication and authorization
+            // Allow chat endpoints for authenticated users
             .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/api/ai/sessions/**").permitAll() // TODO: Change to authenticated() when implementing proper auth
                 .requestMatchers("/**").permitAll()
                 .anyRequest().permitAll()
             )

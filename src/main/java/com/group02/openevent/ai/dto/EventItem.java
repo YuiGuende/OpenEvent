@@ -1,10 +1,39 @@
 package com.group02.openevent.ai.dto;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.group02.openevent.dto.request.CompetitionEventCreationRequest;
+import com.group02.openevent.dto.request.FestivalEventCreationRequest;
+import com.group02.openevent.dto.request.MusicEventCreationRequest;
+import com.group02.openevent.dto.request.WorkshopEventCreationRequest;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.event.OtherEvent;
+import com.group02.openevent.model.event.Place;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "eventType",
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = MusicEventCreationRequest.class, name = "MUSIC"),
+        @JsonSubTypes.Type(value = WorkshopEventCreationRequest.class, name = "WORKSHOP"),
+        @JsonSubTypes.Type(value = FestivalEventCreationRequest.class, name = "FESTIVAL"),
+        @JsonSubTypes.Type(value = CompetitionEventCreationRequest.class, name = "COMPETITION"),
+        @JsonSubTypes.Type(value = OtherEvent.class, name = "OTHERS")
+})
 public class EventItem {
 
     private Long id;                // ID sự kiện
@@ -12,75 +41,10 @@ public class EventItem {
     private String description;        // mô tả
     private LocalDateTime startsAt;    // thời gian bắt đầu
     private LocalDateTime endsAt;
-    private String place;// thời gian kết thúc
+    private List<Place> place;// thời gian kết thúc
     private LocalDateTime enrollDeadline; // hạn đăng ký
     private LocalDateTime createdAt;   // ngày tạo
     private EventType eventType;
     private EventStatus eventStatus;
-    private String priority;
 
-    public EventItem() {}
-
-    public EventItem(Long id, String title, String description, LocalDateTime startsAt, LocalDateTime endsAt, String place, LocalDateTime enrollDeadline, LocalDateTime createdAt, EventType eventType, EventStatus eventStatus, String priority) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.startsAt = startsAt;
-        this.endsAt = endsAt;
-        this.place = place;
-        this.enrollDeadline = enrollDeadline;
-        this.createdAt = createdAt;
-        this.eventType = eventType;
-        this.eventStatus = eventStatus;
-        this.priority = priority;
-    }
-
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public LocalDateTime getStartsAt() { return startsAt; }
-    public void setStartsAt(LocalDateTime startsAt) { this.startsAt = startsAt; }
-
-    public LocalDateTime getEndsAt() { return endsAt; }
-    public void setEndsAt(LocalDateTime endsAt) { this.endsAt = endsAt; }
-
-    public String getPlace() { return place; }
-    public void setPlace(String place) { this.place = place; }
-
-    public EventType getEventType() { return eventType; }
-    public void setEventType(EventType eventType) { this.eventType = eventType; }
-
-    public String getPriority() { return priority; }
-    public void setPriority(String priority) { this.priority = priority; }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getEnrollDeadline() {
-        return enrollDeadline;
-    }
-
-    public void setEnrollDeadline(LocalDateTime enrollDeadline) {
-        this.enrollDeadline = enrollDeadline;
-    }
-
-    public EventStatus getEventStatus() {
-        return eventStatus;
-    }
-
-    public void setEventStatus(EventStatus eventStatus) {
-        this.eventStatus = eventStatus;
-    }
 }

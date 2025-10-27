@@ -1,13 +1,26 @@
 <!-- templates/layout.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragements/head :: head(${pageTitle})}"></head>
-<body>
-  <header th:replace="~{fragements/header}"></header>
-  <main class="page-main" th:fragment="content">
-    <!-- Nội dung trang sẽ được chèn ở đây -->
-  </main>
-  <footer th:replace="~{fragements/footer}"></footer>
-  <script src="/js/main.js"></script>
+<head th:replace="~{fragments/head :: head(${pageTitle})}"></head>
+<body th:data-user-id="${#authentication.principal?.id ?: 2}">
+    <header th:replace="~{fragments/header :: siteHeader('home')}"></header>
+
+    <main class="page-main" th:fragment="content">
+        <!-- Nội dung trang sẽ được chèn ở đây -->
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter()}"></footer>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/main.js}"></script>
+    
+    <!-- Chatbot Integration -->
+    <div id="openevent-chatbot-container"></div>
+    <script th:src="@{/js/chatbot.js}"></script>
+    
+    <!-- Chatbot Fragment - Only for authenticated users -->
+    <div th:if="${#authorization.expression('isAuthenticated()')}"
+         th:replace="~{fragments/chatbot :: chatbot(${#authentication.principal?.id})}">
+    </div>
 </body>
 </html>

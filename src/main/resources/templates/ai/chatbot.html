@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenEvent AI Assistant</title>
+    <link rel="stylesheet" th:href="@{/css/chatbot.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Chatbot Container -->
+    <div id="chatbot-container" class="chatbot-container">
+        <!-- Chatbot Header -->
+        <div class="chatbot-header">
+            <div class="header-content">
+                <div class="bot-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="bot-info">
+                    <h3 class="bot-name">OpenEvent AI</h3>
+                    <span class="bot-status" id="bot-status">
+                        <i class="fas fa-circle status-indicator"></i>
+                        <span class="status-text">Đang hoạt động</span>
+                    </span>
+                </div>
+                <div class="header-controls">
+                    <!-- Language Selector -->
+                    <div class="language-selector">
+                        <select id="language-select" class="language-select">
+                            <option value="auto">🌐 Tự động</option>
+                            <option value="vi" selected>🇻🇳 Tiếng Việt</option>
+                            <option value="en">🇺🇸 English</option>
+                            <option value="zh">🇨🇳 中文</option>
+                            <option value="ja">🇯🇵 日本語</option>
+                            <option value="ko">🇰🇷 한국어</option>
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="es">🇪🇸 Español</option>
+                        </select>
+                    </div>
+                    <!-- Settings Button -->
+                    <button class="settings-btn" id="settings-btn" title="Cài đặt">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <!-- Minimize Button -->
+                    <button class="minimize-btn" id="minimize-btn" title="Thu gọn">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div class="chat-messages" id="chat-messages">
+            <!-- Welcome Message -->
+            <div class="message bot-message welcome-message">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>👋 Xin chào! Tôi là AI Assistant của OpenEvent.</p>
+                        <p>Tôi có thể giúp bạn:</p>
+                        <ul>
+                            <li>🎫 Tạo và quản lý sự kiện</li>
+                            <li>🎟️ Mua vé sự kiện</li>
+                            <li>📅 Xem lịch trình</li>
+                            <li>🌍 Hỗ trợ đa ngôn ngữ</li>
+                        </ul>
+                        <p>Bạn muốn làm gì hôm nay?</p>
+                    </div>
+                    <div class="message-time" id="welcome-time"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions" id="quick-actions">
+            <button class="quick-action-btn" data-action="create-event">
+                <i class="fas fa-plus"></i>
+                <span>Tạo sự kiện</span>
+            </button>
+            <button class="quick-action-btn" data-action="buy-ticket">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Mua vé</span>
+            </button>
+            <button class="quick-action-btn" data-action="view-schedule">
+                <i class="fas fa-calendar"></i>
+                <span>Xem lịch</span>
+            </button>
+            <button class="quick-action-btn" data-action="help">
+                <i class="fas fa-question-circle"></i>
+                <span>Trợ giúp</span>
+            </button>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typing-indicator" style="display: none;">
+            <div class="typing-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="typing-content">
+                <div class="typing-bubble">
+                    <span class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <div class="input-container">
+                <button class="attach-btn" id="attach-btn" title="Đính kèm">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <div class="input-wrapper">
+                    <textarea 
+                        id="message-input" 
+                        class="message-input" 
+                        placeholder="Nhập tin nhắn của bạn..."
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <div class="input-actions">
+                        <span class="char-count" id="char-count">0/2000</span>
+                        <button class="send-btn" id="send-btn" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="voice-btn" id="voice-btn" title="Ghi âm">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Rate Limit Warning -->
+        <div class="rate-limit-warning" id="rate-limit-warning" style="display: none;">
+            <div class="warning-content">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span class="warning-text">Bạn đã vượt quá giới hạn tin nhắn. Vui lòng chờ <span id="retry-after">60</span> giây.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cài đặt AI Assistant</h3>
+                <button class="close-btn" id="close-settings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Ngôn ngữ mặc định</label>
+                    <select id="default-language" class="setting-select">
+                        <option value="vi" selected>Tiếng Việt</option>
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                        <option value="es">Español</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Âm thanh thông báo</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="sound-enabled" checked>
+                        <span class="slider"></span>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>Hiển thị thời gian tin nhắn</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="show-timestamps" checked>
+                        <span class="slider"></span>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>Chế độ tối</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="dark-mode">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="reset-settings">Đặt lại</button>
+                <button class="btn btn-primary" id="save-settings">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Chat Button -->
+    <button class="floating-chat-btn" id="floating-chat-btn">
+        <i class="fas fa-comments"></i>
+        <span class="notification-badge" id="notification-badge" style="display: none;">1</span>
+    </button>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/chatbot.js}"></script>
+    <script>
+        // Initialize chatbot
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatbot = new OpenEventChatbot({
+                apiBaseUrl: '/api/ai/chat',
+                userId: /*[[${session.userId}]]*/ null,
+                sessionId: /*[[${session.sessionId}]]*/ null
+            });
+            chatbot.init();
+        });
+    </script>
+</body>
+</html>
+

@@ -42,7 +42,7 @@ public class VectorIntentClassifier {
         System.out.println("🔍 DEBUG: Extracting event name using EventVectorSearchService for: '" + userInput + "'");
         try {
             // Gọi service chuyên dụng để tìm kiếm sự kiện, chỉ lấy 1 kết quả tốt nhất
-            List<Event> foundEvents = eventVectorSearchService.searchEvents(userInput, 0, 1); // userId=0 vì chưa cần lọc
+            List<Event> foundEvents = eventVectorSearchService.searchEvents(userInput, 0L, 1); // userId=0 vì chưa cần lọc
 
             if (foundEvents != null && !foundEvents.isEmpty()) {
                 // Lấy tên từ sự kiện đầu tiên (khớp nhất)

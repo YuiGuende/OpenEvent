@@ -51,7 +51,6 @@ async function handleLogin(e) {
             credentials: 'include',
             body: JSON.stringify(payload)
         });
-<<<<<<< HEAD
         
         const resultEl = document.getElementById('loginResult');
         
@@ -73,24 +72,13 @@ async function handleLogin(e) {
             }
         } else {
             // Handle success response
-            try {
-                const json = await res.json();
-                if (json.redirectPath) {
-                    if (resultEl) {
-                        resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
-                        resultEl.style.color = 'green';
-                    }
-                    setTimeout(() => {
-                        window.location.href = json.redirectPath;
-                    }, 1000);
-                    return;
-                }
-            } catch (parseError) {
-                if (resultEl) {
-                    resultEl.textContent = 'Đăng nhập thành công!';
-                    resultEl.style.color = 'green';
-                }
+            if (resultEl) {
+                resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
+                resultEl.style.color = 'green';
             }
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
         }
     } catch (err) {
         const resultEl = document.getElementById('loginResult');
@@ -98,23 +86,6 @@ async function handleLogin(e) {
             resultEl.textContent = 'Lỗi kết nối: ' + err.message;
             resultEl.style.color = 'red';
         }
-=======
-        const text = await res.text();
-        if (!res.ok) {
-            document.getElementById('loginResult').textContent = 'Lỗi đăng nhập (' + res.status + '):\n' + text;
-        } else {
-            try {
-                const json = JSON.parse(text);
-                if (json.redirectPath) {
-                    window.location.href = json.redirectPath;
-                    return;
-                }
-            } catch (_) {}
-            document.getElementById('loginResult').textContent = text;
-        }
-    } catch (err) {
-        document.getElementById('loginResult').textContent = 'Lỗi: ' + err;
->>>>>>> duc
     } finally {
         document.getElementById('loginBtn').disabled = false;
     }

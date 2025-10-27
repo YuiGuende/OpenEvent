@@ -1,15 +1,19 @@
 package com.group02.openevent.ai.service;
 
 import com.group02.openevent.ai.dto.Action;
-import com.group02.openevent.dto.response.EventResponse;
+import com.group02.openevent.ai.dto.EventItem;
+import com.group02.openevent.ai.mapper.AIEventMapper;
 import com.group02.openevent.model.email.EmailReminder;
-import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.event.*;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.user.Host;
+import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IEmailReminderRepo;
 import com.group02.openevent.service.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -26,21 +30,24 @@ import java.util.Optional;
  * @author Admin
  */
 @Service
+@Slf4j
 public class AgentEventService {
     @Autowired
     private EmailReminderService emailReminderService;
     @Autowired
     private EventService eventService;
-    
+    @Autowired
+    private AIEventMapper AIEventMapper;
     @Autowired
     private CustomerService customerService;
-    
     @Autowired
     private HostService hostService;
-    
     @Autowired
     private OrganizationService organizationService;
-
+    @Autowired
+    private IEventRepo  eventRepo;
+    @Autowired
+    private IEmailReminderRepo emailReminderRepo;
     /**
      * Lưu yêu cầu nhắc nhở email vào cơ sở dữ liệu.
      * @param eventId ID sự kiện cần nhắc nhở.
@@ -64,18 +71,59 @@ public class AgentEventService {
         System.out.println("lưu được rồi e");
     }
 
+    /**
+     * Tạo hoặc cập nhật lịch nhắc nhở email mặc định cho sự kiện.
+     * @param eventId ID sự kiện cần nhắc nhở.
+     * @param remindMinutes Số phút nhắc trước thời gian bắt đầu sự kiện.
+     * @param userId ID của người dùng.
+     */
+    @Transactional
+    public void createOrUpdateEmailReminder(Long eventId, int remindMinutes, Long userId) {
+        try {
+            // Kiểm tra xem đã có lịch nhắc nhở cho sự kiện này chưa
+            Optional<EmailReminder> existingReminder = emailReminderRepo.findByEventIdAndUserId(eventId, userId);
+            
+            if (existingReminder.isPresent()) {
+                // Cập nhật lịch nhắc nhở hiện có
+                EmailReminder reminder = existingReminder.get();
+                reminder.setRemindMinutes(remindMinutes);
+                reminder.setCreatedAt(LocalDateTime.now());
+                reminder.setSent(false); // Reset trạng thái gửi
+                emailReminderRepo.save(reminder);
+                log.info("🔄 Đã cập nhật lịch nhắc nhở cho sự kiện ID: {} với {} phút trước", eventId, remindMinutes);
+            } else {
+                // Tạo lịch nhắc nhở mới
+                Event event = eventService.getEventByEventId(eventId)
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sự kiện có ID: " + eventId + " để tạo nhắc nhở."));
+
+                EmailReminder newReminder = new EmailReminder();
+                newReminder.setEvent(event);
+                newReminder.setUserId(userId);
+                newReminder.setRemindMinutes(remindMinutes);
+                newReminder.setCreatedAt(LocalDateTime.now());
+                newReminder.setSent(false);
+
+                emailReminderRepo.save(newReminder);
+                log.info("✅ Đã tạo lịch nhắc nhở mới cho sự kiện ID: {} với {} phút trước", eventId, remindMinutes);
+            }
+        } catch (Exception e) {
+            log.error("❌ Lỗi khi tạo/cập nhật lịch nhắc nhở cho sự kiện ID: {} - {}", eventId, e.getMessage(), e);
+            // Không throw exception để không ảnh hưởng đến việc xác nhận đơn hàng
+        }
+    }
+
     // ✅ Lưu sự kiện từ Action (ADD_EVENT) - New version with userId
     public void saveEventFromAction(Action action, Long userId) {
         try {
             Map<String, Object> args = action.getArgs();
 
-            Event event = new Event();
+            EventItem event = new EventItem();
             event.setTitle((String) args.get("title"));
             event.setDescription((String) args.getOrDefault("description", ""));
             event.setStartsAt(tryParseDateTime((String) args.get("start_time")));
             event.setEndsAt(tryParseDateTime((String) args.get("end_time")));
             event.setCreatedAt(LocalDateTime.now());
-            event.setStatus(EventStatus.DRAFT); // mặc định khi tạo
+            event.setEventStatus(EventStatus.DRAFT); // mặc định khi tạo
             event.setEventType(EventType.OTHERS);
 
             // Get organization_id if provided
@@ -136,7 +184,7 @@ public class AgentEventService {
 
             existing.setCreatedAt(LocalDateTime.now());
 
-            eventService.saveEventAgent(existing);
+            eventService.saveEvent(existing);
             System.out.println("🔄 Đã cập nhật sự kiện: " + existing.getTitle());
 
         } catch (Exception e) {
@@ -197,10 +245,37 @@ public class AgentEventService {
      * @param organizationId ID của organization (optional)
      * @return Event đã được lưu
      */
-    public Event createEventByCustomer(Long userId, Event draft, @Nullable Long organizationId) {
+    public Event createEventByCustomer(Long userId, EventItem draft, @Nullable Long organizationId) {
         // 1) Load or create customer
         Customer c = customerService.getOrCreateByUserId(userId);
-        
+
+        Event event;
+        log.info("Saving event {}", draft.getEventType());
+        log.info("Saving event from DTO type: {}", draft.getClass().getName());
+        switch (draft.getEventType()) {
+            case WORKSHOP:
+                event = new WorkshopEvent();
+                break;
+            case MUSIC:
+                event = new MusicEvent();
+                break;
+            case FESTIVAL:
+                event = new FestivalEvent();
+                break;
+            case COMPETITION:
+                event = new CompetitionEvent();
+                break;
+            default:
+                log.warn("Unknown or null EventType received. Defaulting to generic Event.");
+                event = new Event();
+                break;
+        }
+        log.info("Saving event {}", event.getClass().getName());
+        AIEventMapper.createEventFromRequest(draft, event);
+        final Event finalEvent = event;
+        if (event.getSubEvents() != null) {
+            event.getSubEvents().forEach(sub -> sub.setParentEvent(finalEvent));
+        }
         // 2) Find or create Host (idempotent)
         Host h = c.getHost();
         if (h == null) {
@@ -218,22 +293,38 @@ public class AgentEventService {
         }
         
         // 3) Required host
-        draft.setHost(h);
+        finalEvent.setHost(h);
         
         // 4) Optional organization
         if (organizationId != null) {
             Organization org = organizationService.findById(organizationId)
                     .orElseThrow(() -> new IllegalArgumentException("Organization không tồn tại"));
-            draft.setOrganization(org);
+            finalEvent.setOrganization(org);
         } else {
-            draft.setOrganization(null);
+            finalEvent.setOrganization(null);
         }
         
         // 5) Safe defaults
-        if (draft.getStatus() == null) draft.setStatus(EventStatus.DRAFT);
-        if (draft.getEventType() == null) draft.setEventType(EventType.OTHERS);
-        if (draft.getCreatedAt() == null) draft.setCreatedAt(LocalDateTime.now());
+        if (finalEvent.getStatus() == null) finalEvent.setStatus(EventStatus.DRAFT);
+        if (finalEvent.getEventType() == null) finalEvent.setEventType(EventType.OTHERS);
+        if (finalEvent.getCreatedAt() == null) finalEvent.setCreatedAt(LocalDateTime.now());
 
-        return eventService.saveEventAgent(draft);
+        // 6) Lưu event và tạo nhắc nhở mặc định cho host
+        Event savedEvent = eventRepo.save(event);
+        
+        // Tạo lịch nhắc nhở mặc định cho host khi tạo event
+        try {
+            createOrUpdateEmailReminder(savedEvent.getId(), 5, userId);
+            log.info("✅ Đã tạo lịch nhắc nhở mặc định cho host khi tạo event ID: {}", savedEvent.getId());
+        } catch (Exception e) {
+            log.error("❌ Lỗi khi tạo lịch nhắc nhở cho event ID: {} - {}", savedEvent.getId(), e.getMessage(), e);
+            // Không throw exception để không ảnh hưởng đến việc tạo event
+        }
+
+        return savedEvent;
     }
+
+
+
+
 }

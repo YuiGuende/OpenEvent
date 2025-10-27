@@ -1,21 +1,21 @@
 package com.group02.openevent.ai.qdrant.model;
 
-import com.group02.openevent.model.event.Event;
+import com.group02.openevent.ai.dto.EventItem;
 
 public class PendingEvent {
 
-    private Event event;
+    private EventItem eventItem;
 
-    public PendingEvent(Event event) {
-        this.event = event;
+    public PendingEvent(EventItem eventItem) {
+        this.eventItem = eventItem;
     }
 
-    public Event getEvent() {
-        return event;
+    public EventItem getEventItem() {
+        return eventItem;
     }
 
-    public void setEvent(Event event) {
-        this.event = event;
+    public void setEventItem(EventItem eventItem) {
+        this.eventItem = eventItem;
     }
 
     public PendingEvent() {

@@ -1,10 +1,10 @@
 package com.group02.openevent.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
-import com.group02.openevent.model.event.EventSchedule;
-import com.group02.openevent.model.event.Place;
-import com.group02.openevent.model.event.Speaker;
+import com.group02.openevent.model.event.*;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
@@ -12,36 +12,41 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "eventType",
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = MusicEventCreationRequest.class, name = "MUSIC"),
+        @JsonSubTypes.Type(value = WorkshopEventCreationRequest.class, name = "WORKSHOP"),
+        @JsonSubTypes.Type(value = FestivalEventCreationRequest.class, name = "FESTIVAL"),
+        @JsonSubTypes.Type(value = CompetitionEventCreationRequest.class, name = "COMPETITION"),
+        @JsonSubTypes.Type(value = OtherEvent.class, name = "OTHERS")
+})
+@SuperBuilder
 public class EventCreationRequest {
-    Integer id;
+    Long id;
     String title;
-    String imageUrl;
-
     @Enumerated(EnumType.STRING)
     EventType eventType;
-
+    Place place;
     String description;
     LocalDateTime publicDate;
     LocalDateTime enrollDeadline;
     LocalDateTime startsAt;
     LocalDateTime endsAt;
 
+
     @Enumerated(EnumType.STRING)
     EventStatus status = EventStatus.DRAFT;
 
-    String benefits;
-    String learningObjects;
-    Integer points;
-    //*************
-    List<EventSchedule> schedules;
-    List<Speaker> speakers;
-    List<Place> places;
+
 
 }

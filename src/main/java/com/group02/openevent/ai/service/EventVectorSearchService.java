@@ -27,7 +27,7 @@ public class EventVectorSearchService {
      * @param limit Giới hạn kết quả.
      * @return Danh sách các Event Entity khớp nhất.
      */
-    public List<Event> searchEvents(String description, int userId, int limit) throws Exception {
+    public List<Event> searchEvents(String description, Long userId, int limit) throws Exception {
 
         // 1. CHUẨN BỊ BỘ LỌC THỜI GIAN (Lọc sự kiện trong quá khứ)
         // Yêu cầu sự kiện PHẢI BẮT ĐẦU SAU thời điểm hiện tại.

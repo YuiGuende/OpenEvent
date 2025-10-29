@@ -442,25 +442,39 @@ class TicketManager {
 
     confirmDelete() {
         if (this.deleteId) {
-         
             const id = this.deleteId
             this.closeDeleteModal()
-            // Persist deletion immediately
-           const t = this.tickets.find(x => x.id === id)
+            const t = this.tickets.find(x => x.id === id)
+
             if (t && t.id && !isNaN(parseInt(t.id))) {
                 fetch(`/api/events/ticket/${parseInt(t.id)}`, { method: 'DELETE' })
-                    .then(() => {
-                        // Remove from client list then re-render
+                    .then(async (res) => {
+                        if (!res.ok) {
+                            // Try to parse backend error
+                            try {
+                                const data = await res.json()
+                                const msg = data?.error || data?.message || 'Không thể xóa vé'
+                                throw new Error(msg)
+                            } catch (_) {
+                                const text = await res.text()
+                                throw new Error(text || 'Không thể xóa vé')
+                            }
+                        }
+                        // Server confirmed deletion → remove locally
                         this.tickets = this.tickets.filter(x => x.id !== id)
                         this.renderTickets()
-                        if (typeof this.showNotification === 'function') this.showNotification('Đã xóa vé', 'success')
+                        if (typeof this.showNotification === 'function') {
+                            this.showNotification('Đã xóa vé', 'success')
+                        }
                     })
                     .catch(err => {
                         console.error('Delete ticket error:', err)
-                        if (typeof this.showNotification === 'function') this.showNotification('Xóa vé thất bại', 'error')
+                        if (typeof this.showNotification === 'function') {
+                            this.showNotification(err?.message || 'Xóa vé thất bại', 'error')
+                        }
                     })
             } else {
-                // New ticket (not in DB yet): remove locally
+                // Vé mới (chưa lưu DB) → xóa local
                 this.deleteTicket(id)
             }
         }

@@ -299,13 +299,25 @@ public class EventController {
     // Delete a single ticket type by id (direct hard delete)
     @DeleteMapping("/ticket/{ticketTypeId}")
     @ResponseBody
-    public ApiResponse<Void> deleteTicket(@PathVariable("ticketTypeId") Long ticketTypeId) {
+    public org.springframework.http.ResponseEntity<ApiResponse<Void>> deleteTicket(@PathVariable("ticketTypeId") Long ticketTypeId) {
         try {
-            ticketTypeRepo.deleteById(ticketTypeId);
-            return ApiResponse.<Void>builder().message("Ticket deleted").build();
+            ticketTypeService.deleteTicketType(ticketTypeId);
+            ApiResponse<Void> ok = ApiResponse.<Void>builder().message("Đã xóa vé").build();
+            return org.springframework.http.ResponseEntity.ok(ok);
+        } catch (IllegalStateException ex) {
+            // Vi phạm nghiệp vụ (ví dụ: đã có order tham chiếu)
+            ApiResponse<Void> bad = ApiResponse.<Void>builder().message(ex.getMessage()).build();
+            return org.springframework.http.ResponseEntity.badRequest().body(bad);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            // Vi phạm ràng buộc FK ở DB
+            ApiResponse<Void> bad = ApiResponse.<Void>builder()
+                    .message("Không thể xóa vé vì đã có đơn hàng tham chiếu")
+                    .build();
+            return org.springframework.http.ResponseEntity.badRequest().body(bad);
         } catch (Exception e) {
             log.error("Error deleting ticket {}", ticketTypeId, e);
-            return ApiResponse.<Void>builder().message("Error: " + e.getMessage()).build();
+            ApiResponse<Void> err = ApiResponse.<Void>builder().message("Lỗi hệ thống khi xóa vé").build();
+            return org.springframework.http.ResponseEntity.status(500).body(err);
         }
     }
 

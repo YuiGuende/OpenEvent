@@ -6,6 +6,7 @@ import com.group02.openevent.mapper.TicketMapper;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.TicketTypeService;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,6 +35,8 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Autowired
     @Lazy
     private EventService eventService;
+    @Autowired
+    private IOrderRepo orderRepo;
 
     @Override
     public TicketType createTicketType(TicketType ticketType) {
@@ -84,10 +87,16 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     public void deleteTicketType(Long id) {
         TicketType ticketType = ticketTypeRepo.findById(id)
                 .orElse(null);
-        // Kiểm tra đã bán vé chưa
         assert ticketType != null;
-        if (ticketType.getSoldQuantity() > 0) {
-            throw new IllegalStateException("Cannot delete ticket type with sold tickets");
+
+        // Nếu có đơn hàng tham chiếu đến ticket type này thì không cho xóa
+        if (orderRepo.existsByTicketType_TicketTypeId(id)) {
+            throw new IllegalStateException("Không thể xóa loại vé vì đã có đơn hàng liên quan");
+        }
+
+        // Dự phòng: nếu soldQuantity > 0 cũng không cho xóa
+        if (ticketType.getSoldQuantity() != null && ticketType.getSoldQuantity() > 0) {
+            throw new IllegalStateException("Không thể xóa loại vé đã bán");
         }
 
         ticketTypeRepo.delete(ticketType);

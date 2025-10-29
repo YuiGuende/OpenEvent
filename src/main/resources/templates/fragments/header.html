@@ -2,7 +2,7 @@
     <div class="container header-inner">
         <!-- Logo -->
         <a class="logo" href="index.html" th:href="@{/}">
-            <img src="static/img/logo.png" th:src="@{/img/logo1.png}" alt="OpenEvent"/>
+            <img th:src="@{/img/logo1.png}" alt="OpenEvent"/>
             <span>OpenEvent</span>
         </a>
         <!-- Navigation -->
@@ -100,7 +100,7 @@
                         // Extract username part (before @) and limit to 6 characters
                         var username = email.split('@')[0];
                         var shortName = username.length > 6 ? username.substring(0, 6) : username;
-                        return 'Hello, ' + shortName + '...';
+                        return 'Hello, ' + shortName;
                     }
                     return 'User #' + (accountId || '');
                 }
@@ -152,7 +152,7 @@
                 width: 24px !important;
                 height: 24px !important;
                 border-radius: 50% !important;
-                background: rgba(255, 255, 255, 0.25) !important;
+                background: rgba(255,255,255,0.25) !important;
                 color: #ffffff !important;
                 display: inline-flex !important;
                 align-items: center !important;

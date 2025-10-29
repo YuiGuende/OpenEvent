@@ -11,5 +11,4 @@ public class OpenEventApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(OpenEventApplication.class, args);
 	}
-
 }

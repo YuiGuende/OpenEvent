@@ -14,7 +14,7 @@ import com.group02.openevent.repository.ITicketTypeRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.group02.openevent.service.IPlaceService;
+import com.group02.openevent.service.PlaceService;
 import com.group02.openevent.repository.IPlaceRepo;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
@@ -27,7 +27,7 @@ public class EventManageController {
     @Autowired
     EventService eventService;
     @Autowired
-    IPlaceService placeService;
+    PlaceService placeService;
     @Autowired
     ISpeakerRepo speakerRepo;
     @Autowired

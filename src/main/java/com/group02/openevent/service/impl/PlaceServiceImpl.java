@@ -2,7 +2,6 @@ package com.group02.openevent.service.impl;
 
 import com.group02.openevent.model.event.Place;
 import com.group02.openevent.repository.IPlaceRepo;
-import com.group02.openevent.service.IPlaceService;
 import lombok.extern.slf4j.Slf4j;
 import com.group02.openevent.service.PlaceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class PlaceServiceImpl implements IPlaceService {
+public class PlaceServiceImpl implements PlaceService {
     @Autowired
     IPlaceRepo placeRepo;
 

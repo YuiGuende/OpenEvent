@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlaceService {
+    List<Place> getAllByEventId(Long id);
     Optional<Place> findPlaceById(Long placeId);
     Optional<Place> findPlaceByName(String placeName);
     List<Place> findAllPlaces();

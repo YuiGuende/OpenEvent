@@ -1,10 +1,17 @@
 package com.group02.openevent.service.impl;
 
+import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.dto.ticket.TicketTypeDTO;
+import com.group02.openevent.mapper.TicketMapper;
+import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.TicketTypeService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +29,11 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
     @Autowired
     private ITicketTypeRepo ticketTypeRepo;
+    @Autowired
+    private TicketMapper ticketMapper;
+    @Autowired
+    @Lazy
+    private EventService eventService;
 
     @Override
     public TicketType createTicketType(TicketType ticketType) {
@@ -42,19 +54,30 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     }
 
     @Override
-    public TicketType updateTicketType(Long id, TicketType updatedTicketType) {
-        return ticketTypeRepo.findById(id)
-                .map(existing -> {
-                    existing.setName(updatedTicketType.getName());
-                    existing.setDescription(updatedTicketType.getDescription());
-                    existing.setPrice(updatedTicketType.getPrice());
-                    existing.setTotalQuantity(updatedTicketType.getTotalQuantity());
-                    existing.setStartSaleDate(updatedTicketType.getStartSaleDate());
-                    existing.setEndSaleDate(updatedTicketType.getEndSaleDate());
-                    // Không update soldQuantity qua API này
-                    return ticketTypeRepo.save(existing);
-                })
-                .orElse(null);
+    public void updateTickets(Long eventId, List<TicketUpdateRequest> tickets) {
+        for (TicketUpdateRequest request : tickets) {
+            if (Boolean.TRUE.equals(request.getIsDeleted())) {
+                if (request.getTicketTypeId() != null) {
+                    ticketTypeRepo.deleteById(request.getTicketTypeId());
+                }
+                continue;
+            }
+
+            TicketType ticket = ticketMapper.toTicketType(request);
+
+            if (Boolean.TRUE.equals(request.getIsNew())) {
+                Event event = eventService.getEventById(eventId)
+                        .orElseThrow(() -> new EntityNotFoundException("Event not found"));
+                ticket.setEvent(event);
+            } else {
+                TicketType existing = ticketTypeRepo.findById(request.getTicketTypeId())
+                        .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+                BeanUtils.copyProperties(ticket, existing, "id", "event");
+                ticket = existing;
+            }
+
+            ticketTypeRepo.save(ticket);
+        }
     }
 
     @Override
@@ -198,7 +221,7 @@ public class TicketTypeServiceImpl implements TicketTypeService {
             boolean isAvailable = ticketType.getAvailableQuantity() > 0
                     && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
                     && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
-            
+
             TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
                     .ticketTypeId(ticketType.getTicketTypeId())
                     .eventId(ticketType.getEvent().getId())

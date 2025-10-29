@@ -1,5 +1,6 @@
 package com.group02.openevent.service;
 
+import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.dto.ticket.TicketTypeDTO;
 import com.group02.openevent.model.ticket.TicketType;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,7 @@ public interface TicketTypeService {
     TicketType createTicketType(TicketType ticketType);
     Optional<TicketType> getTicketTypeById(Long id);
     List<TicketType> getAllTicketTypes();
-    TicketType updateTicketType(Long id, TicketType updatedTicketType);
+    void updateTickets(Long eventId, List<TicketUpdateRequest> tickets);
     void deleteTicketType(Long id);
     List<TicketType> getTicketTypesByEventId(Long eventId);
     List<TicketType> getAvailableTicketTypesByEventId(Long eventId);

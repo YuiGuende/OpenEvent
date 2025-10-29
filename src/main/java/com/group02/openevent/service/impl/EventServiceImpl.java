@@ -22,6 +22,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AccessLevel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -45,15 +46,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EventServiceImpl implements EventService {
     @Autowired
+    @Lazy
     OrderService orderService;
-    IMusicEventRepo musicEventRepo;
-    IWorkshopEventRepo iWorkshopEventRepo;
-    IFestivalEventRepo iFestivalEventRepo;
-    ICompetitionEventRepo iCompetitionEventRepo;
     IEventRepo eventRepo;
     EventMapper eventMapper;
     IOrganizationRepo organizationRepo;
-    ITicketTypeRepo ticketTypeRepo;
     IHostRepo hostRepo;
     IPlaceRepo placeRepo;
     @PersistenceContext
@@ -96,15 +93,11 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventResponse updateEvent(Long id, EventUpdateRequest request) {
-        log.info("Request type: {}", request.getClass().getName());
-        log.info("🔍 Raw request eventType = {}", request.getEventType());
 
         Event existing = eventRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Event not found with id " + id));
 
         Event event = existing; // Dùng biến này để xử lý chung
-        Long oldId = existing.getId(); // Giữ lại ID cũ để xóa // dùng biến này để xử lý chung
-        log.info("request eventType = {}", event.getEventType());
         eventMapper.updateEventFromRequest(request, event);
 
         // 🟢 Update organization, host, parent
@@ -126,8 +119,6 @@ public class EventServiceImpl implements EventService {
             event.setParentEvent(parent);
         }
 
-
-        // 🟢 Map subclass-specific fields
         switch (String.valueOf(request.getEventType())) {
             case "COMPETITION" -> {
                 CompetitionEvent comp = (CompetitionEvent) existing;
@@ -156,27 +147,20 @@ public class EventServiceImpl implements EventService {
 
         // 🟢 Places - Handle places from JSON data with proper deletion support
         if (request.getPlaceUpdateRequests() != null && !request.getPlaceUpdateRequests().isEmpty()) {
-            log.info("Processing {} place update requests for event {}", request.getPlaceUpdateRequests().size(), id);
-
-            // Clear existing places relationship
             event.getPlaces().clear();
 
-            // Process each place update request
+
             for (PlaceUpdateRequest placeUpdateRequest : request.getPlaceUpdateRequests()) {
                 // Skip deleted places
                 if (Boolean.TRUE.equals(placeUpdateRequest.getIsDeleted())) {
-                    log.info("Skipping deleted place: {}", placeUpdateRequest.getPlaceName());
                     continue;
                 }
 
                 Place place;
 
                 if (placeUpdateRequest.getId() != null) {
-                    // Existing place - find by ID
                     place = placeRepo.findById(placeUpdateRequest.getId())
                             .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeUpdateRequest.getId()));
-                    
-                    // Update existing place if needed
                     if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) || 
                         !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {
                         place.setPlaceName(placeUpdateRequest.getPlaceName());
@@ -184,29 +168,19 @@ public class EventServiceImpl implements EventService {
                         place = placeRepo.save(place);
                     }
                 } else {
-                    // New place - create new
                     place = new Place();
                     place.setPlaceName(placeUpdateRequest.getPlaceName());
                     place.setBuilding(placeUpdateRequest.getBuilding());
                     place = placeRepo.save(place);
-                    log.info("Created new place: {}", place.getPlaceName());
                 }
 
-                // Add to event's places
                 event.getPlaces().add(place);
-                log.info("Added place to event: {} (ID: {})", place.getPlaceName(), place.getId());
+
             }
 
-            log.info("Updated event with {} places", event.getPlaces().size());
-            log.info("Event places after update: {}", event.getPlaces().stream().map(p -> p.getPlaceName() + "(ID:" + p.getId() + ")").collect(Collectors.joining(", ")));
         } else if (request.getPlaces() != null) {
-            // Fallback to old logic if placeUpdateRequests is not available
-            log.info("Processing {} places for event {} (fallback mode)", request.getPlaces().size(), id);
-
-            // Clear existing places relationship
             event.getPlaces().clear();
 
-            // Process each place from request
             for (Place placeRequest : request.getPlaces()) {
                 Place place;
 
@@ -215,14 +189,11 @@ public class EventServiceImpl implements EventService {
                     place = placeRepo.findById(placeRequest.getId())
                             .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeRequest.getId()));
                 } else {
-                    // New place - create new
                     place = new Place();
                     place.setPlaceName(placeRequest.getPlaceName());
                     place.setBuilding(placeRequest.getBuilding());
                     place = placeRepo.save(place);
                 }
-
-                // Add to event's places
                 event.getPlaces().add(place);
             }
 
@@ -231,8 +202,7 @@ public class EventServiceImpl implements EventService {
         // ✅ Save cuối cùng
         log.info("Saving event with {} places to database", event.getPlaces().size());
         Event saved = eventRepo.saveAndFlush(event);
-        log.info("Event saved successfully with ID: {}", saved.getId());
-        log.info("Saved event has {} places", saved.getPlaces().size());
+
         return eventMapper.toEventResponse(saved);
     }
 

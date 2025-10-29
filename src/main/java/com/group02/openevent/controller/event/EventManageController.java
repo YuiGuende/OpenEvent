@@ -11,6 +11,7 @@ import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.*;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.impl.CustomerServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import lombok.AccessLevel;
@@ -39,7 +40,6 @@ public class EventManageController {
     ISpeakerRepo speakerRepo;
     IEventScheduleRepo scheduleRepo;
     IEventImageRepo imageRepo;
-    IPlaceRepo placeRepo;
     ITicketTypeRepo ticketTypeRepo;
     EventMapper eventMapper;
     CustomerServiceImpl customerService;

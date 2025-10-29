@@ -13,6 +13,7 @@ import com.group02.openevent.service.IImageService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.service.TicketTypeService;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -42,11 +43,14 @@ public class EventController {
 
     private final ITicketTypeRepo ticketTypeRepo;
 
+    private  final TicketTypeService ticketTypeService;
+
     @Autowired
-    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo) {
+    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
+        this.ticketTypeService = ticketTypeService;
     }
 
 
@@ -97,10 +101,6 @@ public class EventController {
                              @RequestParam(value = "placesJson", required = false) String placesJson,
                              @RequestParam(value = "ticketsJson", required = false) String ticketsJson,
                              Model model){
-        log.info("🔍 EventController: updateEvent called with ID: {}", id);
-        log.info("🔍 EventController: Event Type: {}", request.getEventType());
-        log.info("🔍 EventController: placesJson received: {}", placesJson);
-        log.info("🔍 EventController: ticketsJson received: {}", ticketsJson);
 
         try {
             // Process places from JSON if provided
@@ -123,76 +123,12 @@ public class EventController {
                     })
                     .collect(Collectors.toList());
 
-                // Store the original PlaceUpdateRequest list for service layer to process deletions
+
                 request.setPlaces(places);
-                // Also store the original requests to handle deletions properly
                 request.setPlaceUpdateRequests(placeRequests);
                 log.info("Parsed {} places from JSON (including deleted places)", places.size());
             }
-
-            // Process tickets from JSON if provided
-            if (ticketsJson != null && !ticketsJson.trim().isEmpty()) {
-                log.info("Processing tickets JSON: {}", ticketsJson);
-                ObjectMapper objectMapper = new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                List<TicketUpdateRequest> ticketRequests = objectMapper.readValue(ticketsJson, new TypeReference<List<TicketUpdateRequest>>() {});
-
-                // Process each ticket
-                for (TicketUpdateRequest ticketRequest : ticketRequests) {
-                    if (Boolean.TRUE.equals(ticketRequest.getIsDeleted())) {
-                        // Delete ticket
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            ticketTypeRepo.deleteById(ticketRequest.getTicketTypeId());
-                            log.info("Deleted ticket with ID: {}", ticketRequest.getTicketTypeId());
-                        }
-                    } else if (Boolean.TRUE.equals(ticketRequest.getIsNew())) {
-                        // Create new ticket
-                        TicketType newTicket = new TicketType();
-                        newTicket.setName(ticketRequest.getName());
-                        newTicket.setDescription(ticketRequest.getDescription());
-                        newTicket.setPrice(ticketRequest.getPrice());
-                        newTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                        newTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                        newTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                        newTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                        newTicket.setSale(ticketRequest.getSale());
-
-                        // Set event (you'll need to get the event)
-                        Event event = eventService.getEventById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-                        newTicket.setEvent(event);
-
-                        ticketTypeRepo.save(newTicket);
-                        log.info("Created new ticket: {}", newTicket.getName());
-                    } else {
-                        // Update existing ticket
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            TicketType existingTicket = ticketTypeRepo.findById(ticketRequest.getTicketTypeId())
-                                    .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-                            existingTicket.setName(ticketRequest.getName());
-                            existingTicket.setDescription(ticketRequest.getDescription());
-                            existingTicket.setPrice(ticketRequest.getPrice());
-                            existingTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                            existingTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                            existingTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                            existingTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                            existingTicket.setSale(ticketRequest.getSale());
-
-                            ticketTypeRepo.save(existingTicket);
-                            log.info("Updated ticket with ID: {}", ticketRequest.getTicketTypeId());
-                        }
-                    }
-                }
-
-                log.info("Processed {} tickets from JSON", ticketRequests.size());
-            }
-
-        log.info("🔍 EventController: About to call eventService.updateEvent()");
         EventResponse updated = eventService.updateEvent(id, request);
-        log.info("🔍 EventController: eventService.updateEvent() completed");
-        log.info("Event updated successfully with type: {}", updated.getEventType());
-
         model.addAttribute("updated", updated);
         model.addAttribute("message", "Cập nhật thành công!");
 
@@ -211,45 +147,12 @@ public class EventController {
                                                @RequestParam(value = "ticketsJson", required = false) String ticketsJson) {
         try {
             if (ticketsJson != null && !ticketsJson.trim().isEmpty()) {
-                ObjectMapper objectMapper = new ObjectMapper()
+                ObjectMapper mapper = new ObjectMapper()
                         .registerModule(new JavaTimeModule())
                         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                List<TicketUpdateRequest> ticketRequests = objectMapper.readValue(ticketsJson, new TypeReference<List<TicketUpdateRequest>>() {});
-
-                for (TicketUpdateRequest ticketRequest : ticketRequests) {
-                    if (Boolean.TRUE.equals(ticketRequest.getIsDeleted())) {
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            ticketTypeRepo.deleteById(ticketRequest.getTicketTypeId());
-                        }
-                    } else if (Boolean.TRUE.equals(ticketRequest.getIsNew())) {
-                        TicketType newTicket = new TicketType();
-                        newTicket.setName(ticketRequest.getName());
-                        newTicket.setDescription(ticketRequest.getDescription());
-                        newTicket.setPrice(ticketRequest.getPrice());
-                        newTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                        newTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                        newTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                        newTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                        newTicket.setSale(ticketRequest.getSale());
-                        Event event = eventService.getEventById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-                        newTicket.setEvent(event);
-                        ticketTypeRepo.save(newTicket);
-                    } else {
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            TicketType existingTicket = ticketTypeRepo.findById(ticketRequest.getTicketTypeId())
-                                    .orElseThrow(() -> new RuntimeException("Ticket not found"));
-                            existingTicket.setName(ticketRequest.getName());
-                            existingTicket.setDescription(ticketRequest.getDescription());
-                            existingTicket.setPrice(ticketRequest.getPrice());
-                            existingTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                            existingTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                            existingTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                            existingTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                            existingTicket.setSale(ticketRequest.getSale());
-                            ticketTypeRepo.save(existingTicket);
-                        }
-                    }
-                }
+                List<TicketUpdateRequest> ticketRequests =
+                        mapper.readValue(ticketsJson, new TypeReference<>() {});
+                ticketTypeService.updateTickets(id, ticketRequests);
             }
             return ApiResponse.<Void>builder().message("Tickets updated").build();
         } catch (Exception e) {

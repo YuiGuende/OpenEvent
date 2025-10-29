@@ -32,6 +32,7 @@ import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -475,6 +476,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getRecentEvents(int limit) {
+        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdDate"));
         return eventRepo.findAll(PageRequest.of(0, limit)).getContent();
     }
 

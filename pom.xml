@@ -245,13 +245,14 @@
                         </goals>
                         <configuration>
                             <includes>
+                                <include>com/group02/openevent/controller/request/RequestController*.class</include>
                                 <include>com/group02/openevent/controller/OrderController*.class</include>
                                 <include>com/group02/openevent/controller/PaymentController*.class</include>
                                 <include>com/group02/openevent/controller/VoucherController*.class</include>
                                 <include>com/group02/openevent/service/impl/OrderServiceImpl*.class</include>
                                 <include>com/group02/openevent/service/impl/PaymentServiceImpl*.class</include>
                                 <include>com/group02/openevent/service/impl/VoucherServiceImpl*.class</include>
-                                <include>com/group02/openevent/model/order/Order*.class</include>
+                                <include>com/group02/openevent/service/impl/RequestServiceImpl*.class</include>
                             </includes>
                         </configuration>
                     </execution>

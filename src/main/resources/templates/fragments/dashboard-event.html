@@ -1,0 +1,203 @@
+<div class="dashboard-container" th:fragment="content">
+    <!-- Header -->
+    <div class="dashboard-header">
+            <h1 class="dashboard-title">Bảng Điều Khiển Sự Kiện</h1>
+            <p class="dashboard-subtitle">Thống kê và phân tích chi tiết sự kiện của bạn</p>
+    </div>
+
+    <!-- KPI Cards Row 1 -->
+    <div class="kpi-grid">
+        <!-- Card 1: Tổng Doanh Thu -->
+        <div class="kpi-card kpi-card-primary">
+            <div class="kpi-icon">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Tổng Doanh Thu</p>
+                <h3 class="kpi-value" id="totalRevenue">$0.00</h3>
+                <small class="kpi-subtitle">Từ vé đã bán</small>
+            </div>
+        </div>
+
+        <!-- Card 2: Tổng Vé Bán -->
+        <div class="kpi-card kpi-card-success">
+            <div class="kpi-icon">
+                <i class="bi bi-ticket-perforated"></i>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Tổng Vé Bán</p>
+                <h3 class="kpi-value" id="totalTicketsSold">0</h3>
+                <small class="kpi-subtitle">Vé đã bán</small>
+            </div>
+        </div>
+
+        <!-- Card 3: Tổng Người Tham Dự -->
+        <div class="kpi-card kpi-card-info">
+            <div class="kpi-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Tổng Người Tham Dự</p>
+                <h3 class="kpi-value" id="totalAttendees">0</h3>
+                <small class="kpi-subtitle">Người đã mua vé</small>
+            </div>
+        </div>
+
+        <!-- Card 4: Tỷ Lệ Hoàn Vé -->
+        <div class="kpi-card kpi-card-warning">
+            <div class="kpi-icon">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Tỷ Lệ Hoàn Vé</p>
+                <h3 class="kpi-value" id="refundRate">0%</h3>
+                <small class="kpi-subtitle">Vé đã hoàn</small>
+            </div>
+        </div>
+
+        <!-- Card 5: Tỷ Lệ Vé Chưa Bán -->
+        <div class="kpi-card kpi-card-secondary">
+            <div class="kpi-icon">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Tỷ Lệ Vé Chưa Bán</p>
+                <h3 class="kpi-value" id="unsoldRate">0%</h3>
+                <small class="kpi-subtitle">Vé còn lại</small>
+            </div>
+        </div>
+
+        <!-- Card 6: Voucher Đã Dùng -->
+        <div class="kpi-card kpi-card-accent">
+            <div class="kpi-icon">
+                <i class="bi bi-ticket-perforated"></i>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Voucher Đã Dùng</p>
+                <h3 class="kpi-value" id="vouchersUsed">0</h3>
+                <small class="kpi-subtitle">Lần sử dụng</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Combo Chart -->
+    <div class="charts-row">
+        <div class="chart-card chart-card-full">
+            <div class="chart-header">
+                <h3 class="chart-title">Doanh Thu & Số Lượng Đơn</h3>
+                <p class="chart-subtitle">Phân tích doanh thu và số lượng đơn theo ngày/tháng</p>
+            </div>
+            <div id="comboChart" class="chart-wrapper"></div>
+        </div>
+    </div>
+
+
+
+    <!-- Charts Row 1: Two Pie Charts side-by-side -->
+    <div class="charts-row">
+        <!-- Pie Chart: Check-in Rate -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Tỷ Lệ Check-In</h3>
+                <p class="chart-subtitle">Phân chia đã check-in và chưa check-in</p>
+            </div>
+            <div class="chart-wrapper pie-wrapper">
+                <div id="checkInPieChart"></div>
+                <div class="chart-info">
+                    <p class="chart-percentage" id="checkInPercentage">0%</p>
+                    <p class="chart-label"><span id="checkInCount">0</span> / <span id="totalTicketsForCheckIn">0</span> vé</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart: Revenue by Ticket Type -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Doanh Thu Theo Loại Vé</h3>
+                <p class="chart-subtitle">Phân chia doanh thu theo từng loại vé</p>
+            </div>
+            <div class="chart-wrapper pie-wrapper">
+                <div id="revenueByTypeChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: Two Bar Charts side-by-side -->
+    <div class="charts-row">
+        <!-- Bar Chart: Check-in by Ticket Type -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Check-In Theo Loại Vé</h3>
+                <p class="chart-subtitle">So sánh số lượng check-in và tổng vé bán</p>
+            </div>
+            <div class="chart-wrapper">
+                <div id="checkInBarChart"></div>
+            </div>
+        </div>
+
+        <!-- Bar Chart: Revenue by Ticket Type -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Doanh Thu Theo Loại Vé (Cột)</h3>
+                <p class="chart-subtitle">Biểu đồ cột doanh thu theo từng loại vé</p>
+            </div>
+            <div class="chart-wrapper">
+                <div id="revenueBarChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-row">
+        <div class="chart-card chart-card-full">
+            <div class="chart-header">
+                <h3 class="chart-title">Xu Hướng Doanh Thu & Vé Bán</h3>
+                <p class="chart-subtitle">Biểu đồ vùng thể hiện xu hướng theo thời gian</p>
+            </div>
+            <div class="chart-wrapper">
+                <div id="areaChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Type Details Table -->
+    <div class="details-card">
+        <div class="details-header">
+            <h3 class="details-title">Chi Tiết Loại Vé</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="details-table">
+                <thead>
+                <tr>
+                    <th>Loại Vé</th>
+                    <th>Giá</th>
+                    <th>Tổng Số</th>
+                    <th>Đã Bán</th>
+                    <th>Chưa Bán</th>
+                    <th>Check-In</th>
+                    <th>Tỷ Lệ Check-In</th>
+                </tr>
+                </thead>
+                <tbody id="ticketDetailsBody">
+                <!-- Rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- ApexCharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Chỉ lấy eventId, không serialize object phức tạp
+        const eventId = /*[[${event.id}]]*/ null;
+
+        console.log('[v0] Dashboard - Event ID:', eventId);
+
+        // Set global eventId for JavaScript
+        window.eventId = eventId;
+        /*]]>*/
+    </script>
+</div>

@@ -15,6 +15,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -86,5 +87,6 @@ public class EventUpdateRequest {
     List<EventImage> eventImages;
     List<EventSchedule> schedules;
     List<SpeakerRequest> speakers;
-    List<Place> places;
+    List<Place> places ;
+    List<PlaceUpdateRequest> placeUpdateRequests; // Store original place update requests for proper deletion handling
 }

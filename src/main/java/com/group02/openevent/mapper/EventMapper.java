@@ -5,6 +5,7 @@ import com.group02.openevent.dto.request.create.EventCreationRequest;
 import com.group02.openevent.dto.request.update.EventUpdateRequest;
 import com.group02.openevent.dto.response.*;
 import com.group02.openevent.model.event.*;
+import com.group02.openevent.model.ticket.TicketType;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
@@ -20,6 +21,8 @@ public interface EventMapper {
     @Mapping(target = "eventImages", ignore = true)
     @Mapping(target = "parentEvent", ignore = true)
     Event toEvent(EventCreationRequest request);
+
+
 
     // ===================== RESPONSE =====================
     @SubclassMapping(source = FestivalEvent.class, target = FestivalResponse.class)

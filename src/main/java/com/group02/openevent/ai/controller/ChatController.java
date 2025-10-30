@@ -1,6 +1,5 @@
 package com.group02.openevent.ai.controller;
 
-import com.group02.openevent.ai.service.EventAIAgent;
 import com.group02.openevent.ai.util.SessionManager;
 import com.group02.openevent.model.ai.ChatHistory;
 import com.group02.openevent.repository.IChatHistoryRepo;
@@ -21,7 +20,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class ChatController {
 
-    
+
     @Autowired
     private IChatHistoryRepo chatHistoryRepo;
 
@@ -33,10 +32,10 @@ public class ChatController {
      */
     @GetMapping("/history/{userId}")
     public ResponseEntity<List<ChatHistory>> getChatHistory(@PathVariable Integer userId,
-                                                           @RequestParam(required = false) String sessionId) {
+                                                            @RequestParam(required = false) String sessionId) {
         try {
             List<ChatHistory> chatHistory;
-            
+
             if (sessionId != null && !sessionId.isEmpty()) {
                 // Lấy lịch sử của session cụ thể
                 chatHistory = chatHistoryRepo.findByUserIdAndSessionIdOrderByTimestampAsc(userId, sessionId);
@@ -44,9 +43,9 @@ public class ChatController {
                 // Lấy tất cả lịch sử của user
                 chatHistory = chatHistoryRepo.findByUserIdOrderByTimestampAsc(userId);
             }
-            
+
             return ResponseEntity.ok(chatHistory);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
@@ -63,7 +62,7 @@ public class ChatController {
         try {
             List<String> sessions = chatHistoryRepo.findDistinctSessionIdsByUserId(userId);
             return ResponseEntity.ok(sessions);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
@@ -78,16 +77,16 @@ public class ChatController {
      */
     @DeleteMapping("/history/{userId}/{sessionId}")
     public ResponseEntity<Map<String, String>> clearChatHistory(@PathVariable Integer userId,
-                                                               @PathVariable String sessionId) {
+                                                                @PathVariable String sessionId) {
         try {
             chatHistoryRepo.deleteByUserIdAndSessionId(userId, sessionId);
-            
+
             // Xóa session khỏi SessionManager
             SessionManager.remove(sessionId);
-            
+
             Map<String, String> result = Map.of("message", "✅ Đã xóa lịch sử chat thành công");
             return ResponseEntity.ok(result);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             Map<String, String> result = Map.of("error", "❌ Lỗi khi xóa lịch sử chat: " + e.getMessage());
@@ -104,16 +103,16 @@ public class ChatController {
     public ResponseEntity<Map<String, Object>> getSessionInfo(HttpSession session) {
         try {
             String sessionId = (String) session.getAttribute("sessionId");
-            
+
             Map<String, Object> sessionInfo = Map.of(
-                "sessionId", sessionId != null ? sessionId : "N/A",
-                "isNew", sessionId == null,
-                "createdAt", session.getCreationTime(),
-                "lastAccessed", session.getLastAccessedTime()
+                    "sessionId", sessionId != null ? sessionId : "N/A",
+                    "isNew", sessionId == null,
+                    "createdAt", session.getCreationTime(),
+                    "lastAccessed", session.getLastAccessedTime()
             );
-            
+
             return ResponseEntity.ok(sessionInfo);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             Map<String, Object> errorInfo = Map.of("error", e.getMessage());
@@ -132,18 +131,21 @@ public class ChatController {
             // Tạo session ID mới
             String newSessionId = "SESSION_" + System.currentTimeMillis();
             session.setAttribute("sessionId", newSessionId);
-            
-            // Tạo AI Agent mới cho session này (sử dụng default agent)
-            EventAIAgent newAgent = SessionManager.get(newSessionId);
-            SessionManager.put(newSessionId, newAgent);
-            
+
+            // Khởi tạo AI Agent cho session nếu có cấu hình sẵn; nếu chưa sẵn sàng thì bỏ qua để không 500
+            try {
+                SessionManager.getOrCreate(newSessionId);
+            } catch (Exception ignore) {
+                // Hệ thống AI chưa sẵn sàng (ví dụ default agent chưa set) -> vẫn trả về 200 với sessionId
+            }
+
             Map<String, String> result = Map.of(
-                "sessionId", newSessionId,
-                "message", "✅ Đã tạo session mới thành công"
+                    "sessionId", newSessionId,
+                    "message", "✅ Đã tạo session mới thành công"
             );
-            
+
             return ResponseEntity.ok(result);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             Map<String, String> result = Map.of("error", "❌ Lỗi khi tạo session mới: " + e.getMessage());
@@ -160,37 +162,37 @@ public class ChatController {
     public ResponseEntity<Map<String, Object>> getChatStats(@PathVariable Integer userId) {
         try {
             List<ChatHistory> allChats = chatHistoryRepo.findByUserIdOrderByTimestampAsc(userId);
-            
+
             long totalMessages = allChats.size();
             long userMessages = allChats.stream()
-                .filter(chat -> "user".equals(chat.getRole()))
-                .count();
+                    .filter(chat -> "user".equals(chat.getRole()))
+                    .count();
             long aiMessages = allChats.stream()
-                .filter(chat -> "assistant".equals(chat.getRole()))
-                .count();
-            
+                    .filter(chat -> "assistant".equals(chat.getRole()))
+                    .count();
+
             List<String> sessions = chatHistoryRepo.findDistinctSessionIdsByUserId(userId);
             int totalSessions = sessions.size();
-            
+
             // Tìm session có nhiều tin nhắn nhất
             String mostActiveSession = sessions.stream()
-                .mapToLong(sessionId -> 
-                    chatHistoryRepo.countByUserIdAndSessionId(userId, sessionId))
-                .max()
-                .orElse(0) > 0 ? 
-                sessions.get(0) : null;
-            
+                    .mapToLong(sessionId ->
+                            chatHistoryRepo.countByUserIdAndSessionId(userId, sessionId))
+                    .max()
+                    .orElse(0) > 0 ?
+                    sessions.get(0) : null;
+
             Map<String, Object> stats = Map.of(
-                "totalMessages", totalMessages,
-                "userMessages", userMessages,
-                "aiMessages", aiMessages,
-                "totalSessions", totalSessions,
-                "mostActiveSession", mostActiveSession != null ? mostActiveSession : "N/A",
-                "averageMessagesPerSession", totalSessions > 0 ? totalMessages / totalSessions : 0
+                    "totalMessages", totalMessages,
+                    "userMessages", userMessages,
+                    "aiMessages", aiMessages,
+                    "totalSessions", totalSessions,
+                    "mostActiveSession", mostActiveSession != null ? mostActiveSession : "N/A",
+                    "averageMessagesPerSession", totalSessions > 0 ? totalMessages / totalSessions : 0
             );
-            
+
             return ResponseEntity.ok(stats);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             Map<String, Object> errorStats = Map.of("error", e.getMessage());

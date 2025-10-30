@@ -40,12 +40,32 @@ document.addEventListener('DOMContentLoaded', () => {
             initializer: window.initializeEventFormListeners,
         },
         {
-            path: `/manage/event/${eventId}/check-in`,
-            fragment: `/fragments/check-in?id=${eventId}`,
-            title: 'Check-in',
+            path: `/manage/event/${eventId}/dashboard-event`,
+            fragment: `/fragments/dashboard-event?id=${eventId}`,
+            title: 'DashBoard',
             initializer: function() {
-                console.log('Initializing check-in page...');
-                // Initialize check-in functionality
+                console.log('Initializing dashboard page...');
+                // Gọi function khởi tạo dashboard
+                if (typeof window.initializeDashboard === 'function') {
+                    window.initializeDashboard();
+                }
+            }
+        },
+        {
+            path: `/manage/event/${eventId}/orders`,
+            fragment: `/fragments/orders?id=${eventId}`,
+            title: `Đơn Hàng`,
+            initializer: function () {
+                console.log('Orders page loaded - initializing from orders.js');
+                // Wait for orders.js to load and initialize
+                setTimeout(() => {
+                    if (typeof window.initializeOrders === 'function') {
+                        console.log('Found initializeOrders, calling it...');
+                        window.initializeOrders();
+                    } else {
+                        console.warn('initializeOrders function not found');
+                    }
+                }, 200);
             }
         }
     ];

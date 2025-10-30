@@ -27,6 +27,8 @@ class PlaceManager {
         this.renderPlaces();
         
         console.log('🔍 PlaceManager: Places rendered successfully');
+        console.log('🔍 PlaceManager: placeManager instance:', this);
+        console.log('🔍 PlaceManager: window.placeManager:', window.placeManager);
     }
 
     /**
@@ -37,6 +39,9 @@ class PlaceManager {
         const addPlaceBtn = document.getElementById('addPlaceBtn');
         if (addPlaceBtn) {
             addPlaceBtn.addEventListener('click', () => this.showAddPlaceModal());
+            console.log('🔍 PlaceManager: addPlaceBtn event listener attached');
+        } else {
+            console.log('🔍 PlaceManager: addPlaceBtn not found - likely not on update-event page');
         }
 
         // Modal buttons
@@ -51,11 +56,8 @@ class PlaceManager {
             closePlaceModalBtn.addEventListener('click', () => this.closeModal());
         }
 
-        // Save event button - override the existing form submission
-        const saveEventBtn = document.getElementById('saveEventBtn');
-        if (saveEventBtn) {
-            saveEventBtn.addEventListener('click', (e) => this.handleSaveEvent(e));
-        }
+        // Note: Form submission is handled by update-event.js
+        // No need to add another event listener here
     }
 
     /**
@@ -84,8 +86,13 @@ class PlaceManager {
      * Thêm địa điểm mới vào bộ nhớ tạm
      */
     addPlace() {
+        console.log('🔍 PlaceManager: addPlace() called');
+        console.log('🔍 PlaceManager: this.places before add:', this.places);
+        
         const name = document.getElementById('newPlaceName').value.trim();
         const building = document.getElementById('newPlaceBuilding').value;
+        
+        console.log('🔍 PlaceManager: name:', name, 'building:', building);
         
         if (!name) {
             alert('Vui lòng nhập tên địa điểm');
@@ -107,7 +114,11 @@ class PlaceManager {
             isDeleted: false
         };
         
+        console.log('🔍 PlaceManager: newPlace created:', newPlace);
+        
         this.places.push(newPlace);
+        console.log('🔍 PlaceManager: this.places after add:', this.places);
+        
         this.renderPlaces();
         this.closeModal();
         
@@ -188,10 +199,10 @@ class PlaceManager {
 
     /**
      * Lấy dữ liệu places để submit form
-     * @returns {Array} Danh sách places không bị xóa
+     * @returns {Array} Danh sách tất cả places (bao gồm cả những places bị xóa)
      */
     getPlacesData() {
-        return this.places.filter(place => !place.isDeleted);
+        return this.places; // Gửi tất cả places, bao gồm cả những places bị xóa
     }
 
     /**
@@ -209,65 +220,6 @@ class PlaceManager {
             existingPlaces,
             totalChanges: newPlaces.length + deletedPlaces.length
         };
-    }
-
-    /**
-     * Xử lý khi nhấn nút "Lưu thay đổi"
-     * @param {Event} e - Event object
-     */
-    async handleSaveEvent(e) {
-        e.preventDefault();
-        
-        const form = e.target.closest('form');
-        if (!form) {
-            console.error('Form not found');
-            return;
-        }
-
-        // Show loading state
-        const submitBtn = e.target;
-        const originalText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
-
-        try {
-            const formData = new FormData(form);
-            
-            // Add places data to form
-            const placesData = this.getPlacesData();
-            formData.append('placesJson', JSON.stringify(placesData));
-            
-            console.log('Submitting places data:', placesData);
-
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                const changesSummary = this.getChangesSummary();
-                let message = 'Lưu thay đổi thành công!';
-                
-                if (changesSummary.totalChanges > 0) {
-                    message += `\n- Thêm mới: ${changesSummary.newPlaces.length} địa điểm`;
-                    message += `\n- Xóa: ${changesSummary.deletedPlaces.length} địa điểm`;
-                }
-                
-                alert(message);
-                window.location.reload();
-            } else {
-                const errorText = await response.text();
-                console.error('Error response:', errorText);
-                alert('Có lỗi xảy ra khi lưu sự kiện: ' + errorText);
-            }
-        } catch (error) {
-            console.error('Error saving event:', error);
-            alert('Có lỗi mạng xảy ra khi lưu sự kiện');
-        } finally {
-            // Reset button state
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        }
     }
 }
 
@@ -302,10 +254,20 @@ function initializePlaceManager(serverPlaces) {
 function populatePlacesFromEvent() {
     console.log('--- BƯỚC B: populatePlacesFromEvent ĐANG CHẠY ---');
     console.log('initialPlacesData:', initialPlacesData);
+    console.log('typeof initialPlacesData:', typeof initialPlacesData);
+    console.log('window.placeManager before:', window.placeManager);
     
     // 1. Kiểm tra dữ liệu
     if (!initialPlacesData || initialPlacesData.length === 0) {
         console.log('No initial places to populate.');
+        // Still initialize PlaceManager with empty data
+        if (!placeManager) {
+            console.log('Creating new PlaceManager instance with empty data...');
+            placeManager = new PlaceManager();
+            window.placeManager = placeManager; // Ensure it's set globally
+        }
+        placeManager.initializePlaces([]);
+        console.log('window.placeManager after empty init:', window.placeManager);
         return;
     }
     console.log('LOG: Tìm thấy', initialPlacesData.length, 'places để load.');
@@ -314,12 +276,14 @@ function populatePlacesFromEvent() {
     if (!placeManager) {
         console.log('Creating new PlaceManager instance...');
         placeManager = new PlaceManager();
+        window.placeManager = placeManager; // Ensure it's set globally
     }
     
     console.log('Initializing PlaceManager with database data...');
     placeManager.initializePlaces(initialPlacesData);
     
     console.log('✅ Places populated successfully from database');
+    console.log('window.placeManager after populated:', window.placeManager);
 }
 
 // Make placeManager globally accessible

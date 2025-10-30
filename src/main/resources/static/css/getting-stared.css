@@ -345,6 +345,7 @@ body {
     display: flex;
     align-items: center;
     width: 100%;
+    margin-left: -27px;
 }
 
 .sidebar.collapsed .status-badge i {

@@ -20,7 +20,7 @@ public class MusicController {
     @GetMapping("/music/{id}")
     public String getMusicEventDetail(@PathVariable("id") Long id, Model model) {
         try {
-            // 1. Lấy ra DTO duy nhất, đã chứa ĐẦY ĐỦ thông tin
+
             MusicEventDetailDTO eventDetail = musicService.getMusicEventById(id);
             // 2. Truyền DUY NHẤT DTO này sang view với tên là "eventDetail"
             model.addAttribute("eventDetail", eventDetail);

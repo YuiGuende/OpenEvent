@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderDTO {
+    private Long customerId;
     private Long orderId;
     private Long eventId;
     private String eventTitle;

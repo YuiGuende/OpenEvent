@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CompetitionController Integration Tests (Full Coverage)")
-class CompetitionControllerIntegrationTest {
+class CompetitionControllerUnitTest {
 
     @Mock private ICompetitionService competitionService;
 

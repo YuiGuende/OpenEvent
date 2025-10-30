@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MusicController Integration Tests (Full Coverage)")
-class MusicControllerIntegrationTest {
+class MusicControllerUnitTest {
 
     @Mock private IMusicService musicService;
 

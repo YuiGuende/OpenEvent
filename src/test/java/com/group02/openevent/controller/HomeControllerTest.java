@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HomeController Integration Tests (Full Coverage)")
-class HomeControllerIntegrationTest {
+class HomeControllerTest {
 
     @Mock private IAccountRepo accountRepo;
     @Mock private ICustomerRepo customerRepo;

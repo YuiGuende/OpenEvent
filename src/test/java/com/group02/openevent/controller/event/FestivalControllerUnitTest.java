@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("FestivalController Integration Tests (Full Coverage)")
-class FestivalControllerIntegrationTest {
+class FestivalControllerUnitTest {
 
     @Mock private IFestivalService festivalService;
 

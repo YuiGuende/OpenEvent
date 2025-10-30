@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WorkshopController Integration Tests (Full Coverage)")
-class WorkshopControllerIntegrationTest {
+class WorkshopControllerUnitTest {
 
     @Mock private IWorkshopService workshopService;
 

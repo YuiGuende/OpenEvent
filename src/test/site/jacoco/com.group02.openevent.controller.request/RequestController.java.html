@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.controller.request</a> &gt; <span class="el_source">RequestController.java</span></div><h1>RequestController.java</h1><pre class="source lang-java linenums">package com.group02.openevent.controller.request;
+
+import com.group02.openevent.annotation.RequireEventHost;
+import com.group02.openevent.annotation.RequireRequestReceiver; // THÊM MỚI
+import com.group02.openevent.controller.payout.PayoutController;
+import com.group02.openevent.dto.notification.RequestFormDTO;
+import com.group02.openevent.dto.requestApproveEvent.ApproveRequestDTO;
+import com.group02.openevent.dto.requestApproveEvent.CreateRequestDTO;
+import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
+import com.group02.openevent.model.request.RequestStatus;
+import com.group02.openevent.model.request.RequestType;
+import com.group02.openevent.service.RequestService;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException; // THÊM MỚI
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+import java.util.NoSuchElementException; // THÊM MỚI (hoặc khác tùy theo logic aspect)
+
+@Controller
+@RequestMapping(&quot;/api/requests&quot;)
+<span class="fc" id="L32">@RequiredArgsConstructor</span>
+public class RequestController {
+<span class="fc" id="L34">    private static final Logger logger = LoggerFactory.getLogger(RequestController.class);</span>
+    private final RequestService requestService;
+
+    /**
+     * Create a new request (e.g., event approval request)
+     */
+    @PostMapping(consumes = {&quot;application/json&quot;})
+    @ResponseBody
+    public ResponseEntity&lt;RequestDTO&gt; createRequestJson(@RequestBody CreateRequestDTO createRequestDTO) {
+        try {
+<span class="fc" id="L44">            RequestDTO createdRequest = requestService.createRequest(createRequestDTO);</span>
+<span class="fc" id="L45">            return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);</span>
+<span class="fc" id="L46">        } catch (Exception e) {</span>
+<span class="fc" id="L47">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    @GetMapping(&quot;/form&quot;)
+    public String showRequestForm(
+            @RequestParam Long eventId,
+            Model model) {
+<span class="fc" id="L55">        RequestFormDTO formData = new RequestFormDTO();</span>
+        try{
+<span class="fc" id="L57">            formData =requestService.getRequestFormData(eventId);</span>
+<span class="nc" id="L58">        }catch (Exception e){</span>
+<span class="nc" id="L59">            logger.error(e.getMessage());</span>
+<span class="fc" id="L60">        }</span>
+<span class="fc" id="L61">        model.addAttribute(&quot;formData&quot;, formData);</span>
+<span class="fc" id="L62">        return &quot;fragments/request-form&quot;;</span>
+    }
+
+    @PostMapping(consumes = {&quot;multipart/form-data&quot;})
+    @ResponseBody
+    @RequireEventHost(eventIdParamName = &quot;eventId&quot;, userIdParamName = &quot;senderId&quot;)
+    public ResponseEntity&lt;RequestDTO&gt; createRequestWithFile(
+            @SessionAttribute(&quot;ACCOUNT_ID&quot;) Long senderId,
+            // @RequestParam(&quot;senderId&quot;) Long senderId,
+            @RequestParam(&quot;receiverId&quot;) Long receiverId,
+            @RequestParam(&quot;type&quot;) RequestType type,
+            @RequestParam(value = &quot;eventId&quot;, required = false) Long eventId,
+            @RequestParam(value = &quot;orderId&quot;, required = false) Long orderId,
+            @RequestParam(value = &quot;message&quot;, required = false) String message,
+            @RequestParam(value = &quot;targetUrl&quot;, required = false) String targetUrl,
+            @RequestParam(value = &quot;file&quot;, required = false) MultipartFile file) {
+        try {
+<span class="fc" id="L79">            CreateRequestDTO createRequestDTO = CreateRequestDTO.builder()</span>
+<span class="fc" id="L80">                    .senderId(senderId)</span>
+<span class="fc" id="L81">                    .receiverId(receiverId)</span>
+<span class="fc" id="L82">                    .type(type)</span>
+<span class="fc" id="L83">                    .eventId(eventId)</span>
+<span class="fc" id="L84">                    .orderId(orderId)</span>
+<span class="fc" id="L85">                    .message(message)</span>
+<span class="fc" id="L86">                    .targetUrl(targetUrl)</span>
+<span class="fc" id="L87">                    .build();</span>
+<span class="fc" id="L88">            System.out.println(&quot;received request&quot;+createRequestDTO);</span>
+<span class="fc" id="L89">            RequestDTO createdRequest = requestService.createRequestWithFile(createRequestDTO, file);</span>
+<span class="fc" id="L90">            return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);</span>
+<span class="nc" id="L91">        } catch (Exception e) {</span>
+<span class="nc" id="L92">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    /**
+     * Approve a request
+     */
+    @PutMapping(&quot;/{requestId}/approve&quot;)
+    @ResponseBody
+    @RequireRequestReceiver // &lt;-- THÊM MỚI
+    public ResponseEntity&lt;RequestDTO&gt; approveRequest(
+            @PathVariable Long requestId,
+            @RequestBody ApproveRequestDTO approveRequestDTO,
+            @SessionAttribute(&quot;ACCOUNT_ID&quot;) Long currentUserId) { // &lt;-- THÊM MỚI
+        try {
+<span class="fc" id="L107">            RequestDTO approvedRequest = requestService.approveRequest(requestId, approveRequestDTO);</span>
+<span class="fc" id="L108">            return ResponseEntity.ok(approvedRequest);</span>
+<span class="nc" id="L109">        } catch (AccessDeniedException e) { // &lt;-- THÊM MỚI</span>
+<span class="nc" id="L110">            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);</span>
+<span class="fc" id="L111">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L112">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    /**
+     * Reject a request
+     */
+    @PutMapping(&quot;/{requestId}/reject&quot;)
+    @ResponseBody
+    @RequireRequestReceiver // &lt;-- THÊM MỚI
+    public ResponseEntity&lt;RequestDTO&gt; rejectRequest(
+            @PathVariable Long requestId,
+            @RequestBody ApproveRequestDTO approveRequestDTO,
+            @SessionAttribute(&quot;ACCOUNT_ID&quot;) Long currentUserId) { // &lt;-- THÊM MỚI
+        try {
+<span class="fc" id="L127">            RequestDTO rejectedRequest = requestService.rejectRequest(requestId, approveRequestDTO);</span>
+<span class="fc" id="L128">            return ResponseEntity.ok(rejectedRequest);</span>
+<span class="nc" id="L129">        } catch (AccessDeniedException e) { // &lt;-- THÊM MỚI</span>
+<span class="nc" id="L130">            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);</span>
+<span class="fc" id="L131">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L132">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    /**
+     * Get request by ID
+     */
+    @GetMapping(&quot;/{requestId}&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;RequestDTO&gt; getRequestById(@PathVariable Long requestId) {
+<span class="fc" id="L142">        return requestService.getRequestById(requestId)</span>
+<span class="fc" id="L143">                .map(ResponseEntity::ok)</span>
+<span class="fc" id="L144">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    /**
+     * Get all requests with optional filters
+     */
+    @GetMapping
+    @ResponseBody
+    public ResponseEntity&lt;List&lt;RequestDTO&gt;&gt; getAllRequests(
+            @RequestParam(required = false) RequestStatus status,
+            @RequestParam(required = false) RequestType type) {
+        List&lt;RequestDTO&gt; requests;
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (status != null) {</span>
+<span class="fc" id="L157">            requests = requestService.getRequestsByStatus(status);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        } else if (type != null) {</span>
+<span class="fc" id="L159">            requests = requestService.getRequestsByType(type);</span>
+        } else {
+<span class="fc" id="L161">            requests = requestService.getAllRequests();</span>
+        }
+<span class="fc" id="L163">        return ResponseEntity.ok(requests);</span>
+    }
+
+    /**
+     * Get requests with pagination
+     */
+    @GetMapping(&quot;/paginated&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;Page&lt;RequestDTO&gt;&gt; getRequestsPaginated(
+            @RequestParam(required = false) RequestStatus status,
+            @RequestParam(required = false) RequestType type,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size,
+            @RequestParam(defaultValue = &quot;createdAt&quot;) String sortBy,
+            @RequestParam(defaultValue = &quot;DESC&quot;) String sortDir) {
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        Sort sort = sortDir.equalsIgnoreCase(&quot;ASC&quot;)</span>
+<span class="nc" id="L179">                ? Sort.by(sortBy).ascending()</span>
+<span class="fc" id="L180">                : Sort.by(sortBy).descending();</span>
+<span class="fc" id="L181">        Pageable pageable = PageRequest.of(page, size, sort);</span>
+<span class="fc" id="L182">        Page&lt;RequestDTO&gt; requests = requestService.listRequests(status, type, pageable);</span>
+<span class="fc" id="L183">        return ResponseEntity.ok(requests);</span>
+    }
+
+    /**
+     * Get requests by sender ID
+     */
+    @GetMapping(&quot;/sender/{senderId}&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;List&lt;RequestDTO&gt;&gt; getRequestsBySender(@PathVariable Long senderId) {
+<span class="fc" id="L192">        List&lt;RequestDTO&gt; requests = requestService.getRequestsBySenderId(senderId);</span>
+<span class="fc" id="L193">        return ResponseEntity.ok(requests);</span>
+    }
+
+    /**
+     * Get requests by receiver ID
+     */
+    @GetMapping(&quot;/receiver/{receiverId}&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;List&lt;RequestDTO&gt;&gt; getRequestsByReceiver(@PathVariable Long receiverId) {
+<span class="fc" id="L202">        List&lt;RequestDTO&gt; requests = requestService.getRequestsByReceiverId(receiverId);</span>
+<span class="fc" id="L203">        return ResponseEntity.ok(requests);</span>
+    }
+
+    /**
+     * Get requests by event ID
+     */
+    @GetMapping(&quot;/event/{eventId}&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;List&lt;RequestDTO&gt;&gt; getRequestsByEvent(@PathVariable Long eventId) {
+<span class="fc" id="L212">        List&lt;RequestDTO&gt; requests = requestService.getRequestsByEventId(eventId);</span>
+<span class="fc" id="L213">        return ResponseEntity.ok(requests);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

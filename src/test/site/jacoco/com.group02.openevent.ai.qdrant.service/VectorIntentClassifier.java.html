@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VectorIntentClassifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.ai.qdrant.service</a> &gt; <span class="el_source">VectorIntentClassifier.java</span></div><h1>VectorIntentClassifier.java</h1><pre class="source lang-java linenums">package com.group02.openevent.ai.qdrant.service;
+
+import com.group02.openevent.ai.qdrant.model.ActionType;
+import com.group02.openevent.model.event.Event;
+import com.group02.openevent.ai.service.EmbeddingService;
+import com.group02.openevent.ai.service.EventVectorSearchService;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Service để phân loại ý định người dùng sử dụng vector similarity
+ * @author Admin
+ */
+@Service
+<span class="fc" id="L20">@Slf4j</span>
+public class VectorIntentClassifier {
+
+<span class="fc" id="L23">    private final Map&lt;String, float[]&gt; ticketInfoExampleVectors = new HashMap&lt;&gt;();</span>
+    private final QdrantService qdrantService;
+    private final EmbeddingService embeddingService;
+    private final EventVectorSearchService eventVectorSearchService;
+
+<span class="fc" id="L28">    public VectorIntentClassifier(QdrantService qdrantService, EmbeddingService embeddingService,EventVectorSearchService eventVectorSearchService) {</span>
+<span class="fc" id="L29">        this.qdrantService = qdrantService;</span>
+<span class="fc" id="L30">        this.embeddingService = embeddingService;</span>
+<span class="fc" id="L31">        this.eventVectorSearchService = eventVectorSearchService;</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * Trích xuất tên sự kiện từ câu nói của người dùng bằng cách sử dụng EventVectorSearchService.
+     * Đây là phương pháp đúng đắn để tách biệt việc tìm kiếm thực thể.
+     *
+     * @param userInput Câu nói của người dùng.
+     * @return Tên của sự kiện khớp nhất, hoặc chuỗi rỗng nếu không tìm thấy.
+     */
+    public String extractEventName(String userInput) {
+<span class="fc" id="L42">        System.out.println(&quot;🔍 DEBUG: Extracting event name using EventVectorSearchService for: '&quot; + userInput + &quot;'&quot;);</span>
+        try {
+            // Gọi service chuyên dụng để tìm kiếm sự kiện, chỉ lấy 1 kết quả tốt nhất
+<span class="fc" id="L45">            List&lt;Event&gt; foundEvents = eventVectorSearchService.searchEvents(userInput, 0L, 1); // userId=0 vì chưa cần lọc</span>
+
+<span class="pc bpc" id="L47" title="1 of 4 branches missed.">            if (foundEvents != null &amp;&amp; !foundEvents.isEmpty()) {</span>
+                // Lấy tên từ sự kiện đầu tiên (khớp nhất)
+<span class="fc" id="L49">                Event bestMatch = foundEvents.get(0);</span>
+<span class="fc" id="L50">                String eventName = bestMatch.getTitle();</span>
+<span class="fc" id="L51">                System.out.println(&quot;✅ DEBUG: Extracted event name: '&quot; + eventName + &quot;'&quot;);</span>
+<span class="fc" id="L52">                return eventName;</span>
+            } else {
+<span class="fc" id="L54">                System.out.println(&quot;❌ DEBUG: EventVectorSearchService found no matching events.&quot;);</span>
+<span class="fc" id="L55">                return &quot;&quot;;</span>
+            }
+<span class="nc" id="L57">        } catch (Exception e) {</span>
+<span class="nc" id="L58">            log.error(&quot;Lỗi khi trích xuất tên sự kiện: {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L59">            return &quot;&quot;; // Trả về rỗng nếu có lỗi</span>
+        }
+    }
+
+    @PostConstruct
+    public void initializeExampleVectors() {
+<span class="fc" id="L65">        log.info(&quot;Đang khởi tạo và tính toán trước các vector mẫu cho việc hỏi thông tin vé...&quot;);</span>
+<span class="fc" id="L66">        String[] ticketInfoExamples = {</span>
+                &quot;giá vé sự kiện là bao nhiêu&quot;,
+                &quot;vé thường có giá bao nhiêu&quot;,
+                &quot;vé vip giá bao nhiêu tiền&quot;,
+                &quot;có những loại vé nào&quot;,
+                &quot;vé nào còn sẵn&quot;,
+                &quot;thông tin vé sự kiện&quot;,
+                &quot;chi tiết giá vé&quot;,
+                &quot;coi lại vé thường&quot;,
+                &quot;xem giá vé vip&quot;,
+                &quot;bao nhiêu tiền một vé&quot;,
+                &quot;giá cả các loại vé&quot;,
+                &quot;vé còn lại bao nhiêu&quot;
+        };
+
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        for (String example : ticketInfoExamples) {</span>
+            try {
+<span class="fc" id="L83">                float[] vector = embeddingService.getEmbedding(example);</span>
+<span class="fc" id="L84">                this.ticketInfoExampleVectors.put(example, vector);</span>
+<span class="nc" id="L85">            } catch (Exception e) {</span>
+<span class="nc" id="L86">                log.error(&quot;Lỗi khi tạo embedding cho câu mẫu: '{}'. Bỏ qua câu này.&quot;, example, e);</span>
+<span class="fc" id="L87">            }</span>
+        }
+<span class="fc" id="L89">        log.info(&quot;Hoàn tất khởi tạo {} vector mẫu.&quot;, this.ticketInfoExampleVectors.size());</span>
+<span class="fc" id="L90">    }</span>
+
+    public ActionType classifyIntent(String userInput, float[] userVector) {
+        try {
+<span class="nc bnc" id="L94" title="All 4 branches missed.">            if (userInput == null || userInput.trim().isEmpty()) {</span>
+<span class="nc" id="L95">                return ActionType.UNKNOWN;</span>
+            }
+
+            // Kiểm tra câu hỏi về thông tin vé trước
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            if (isTicketInfoQuery(userInput, userVector)) {</span>
+<span class="nc" id="L100">                return ActionType.QUERY_TICKET_INFO;</span>
+            }
+
+<span class="nc" id="L103">            List&lt;Map&lt;String, Object&gt;&gt; results = qdrantService.searchSimilarVectors(userVector, 3);</span>
+
+<span class="nc bnc" id="L105" title="All 4 branches missed.">            if (results == null || results.isEmpty()) {</span>
+<span class="nc" id="L106">                return ActionType.UNKNOWN;</span>
+            }
+
+<span class="nc" id="L109">            Map&lt;String, Object&gt; bestMatch = results.get(0);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">            if (bestMatch == null) {</span>
+<span class="nc" id="L111">                return ActionType.UNKNOWN;</span>
+            }
+
+            // Defensive cast for score
+<span class="nc" id="L115">            Number scoreNum = (Number) bestMatch.getOrDefault(&quot;score&quot;, 0);</span>
+<span class="nc" id="L116">            double score = scoreNum.doubleValue();</span>
+
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (score &lt; 0.80) {</span>
+<span class="nc" id="L119">                return ActionType.UNKNOWN;</span>
+            }
+
+<span class="nc" id="L122">            Map&lt;String, Object&gt; payload = (Map&lt;String, Object&gt;) bestMatch.get(&quot;payload&quot;);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            if (payload == null) {</span>
+<span class="nc" id="L124">                return ActionType.UNKNOWN;</span>
+            }
+            
+<span class="nc" id="L127">            String typeString = (String) payload.getOrDefault(&quot;type&quot;, &quot;unknown&quot;);</span>
+<span class="nc" id="L128">            return ActionType.fromString(typeString);</span>
+
+<span class="nc" id="L130">        } catch (Exception e) {</span>
+<span class="nc" id="L131">            e.printStackTrace();</span>
+<span class="nc" id="L132">            return ActionType.UNKNOWN; // Return UNKNOWN instead of ERROR for graceful fallback</span>
+        }
+    }
+    public String classifyWeather(String userInput,  float[] userVector) {
+        try {
+<span class="nc bnc" id="L137" title="All 4 branches missed.">            if (userInput == null || userInput.trim().isEmpty()) {</span>
+<span class="nc" id="L138">                return &quot;UNKNOWN&quot;;</span>
+            }
+
+<span class="nc" id="L141">            List&lt;Map&lt;String, Object&gt;&gt; results = qdrantService.searchSimilarVectors(userVector, 3);</span>
+<span class="nc" id="L142">            System.out.println(results);</span>
+            
+<span class="nc bnc" id="L144" title="All 4 branches missed.">            if (results == null || results.isEmpty()) {</span>
+<span class="nc" id="L145">                return &quot;EMPTY&quot;;</span>
+            }
+
+<span class="nc" id="L148">            Map&lt;String, Object&gt; bestMatch = results.get(0);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">            if (bestMatch == null) {</span>
+<span class="nc" id="L150">                return &quot;UNKNOWN&quot;;</span>
+            }
+
+<span class="nc" id="L153">            Number scoreNum = (Number) bestMatch.getOrDefault(&quot;score&quot;, 0);</span>
+<span class="nc" id="L154">            double score = scoreNum.doubleValue();</span>
+<span class="nc" id="L155">            System.out.println(score);</span>
+            
+<span class="nc bnc" id="L157" title="All 2 branches missed.">            if (score &lt; 0.6) {</span>
+<span class="nc" id="L158">                return &quot;&lt;0.6&quot;;</span>
+            }
+
+<span class="nc" id="L161">            Map&lt;String, Object&gt; payload = (Map&lt;String, Object&gt;) bestMatch.get(&quot;payload&quot;);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if (payload == null) {</span>
+<span class="nc" id="L163">                return &quot;UNKNOWN&quot;;</span>
+            }
+            
+<span class="nc" id="L166">            String typeString = (String) payload.getOrDefault(&quot;type&quot;, &quot;unknown&quot;);</span>
+<span class="nc" id="L167">            return typeString;</span>
+
+<span class="nc" id="L169">        } catch (Exception e) {</span>
+<span class="nc" id="L170">            e.printStackTrace();</span>
+<span class="nc" id="L171">            return &quot;UNKNOWN&quot;;</span>
+        }
+    }
+    public String classifyEventTitle(String userInput, float[] queryVector) {
+        try {
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            if (queryVector == null) {</span>
+<span class="nc" id="L177">                return &quot;&quot;;</span>
+            }
+
+            // 1. CHUẨN BỊ BỘ LỌC THỜI GIAN (Quan trọng: Chỉ tìm sự kiện sắp tới/đang diễn ra)
+<span class="nc" id="L181">            long currentTimestamp = java.time.Instant.now().getEpochSecond();</span>
+
+<span class="nc" id="L183">            Map&lt;String, Object&gt; timeFilter = Map.of(</span>
+                    &quot;key&quot;, &quot;endsAt&quot;, // Giả định bạn lưu 'endsAt' dưới dạng timestamp trong payload
+<span class="nc" id="L185">                    &quot;range&quot;, Map.of(&quot;gt&quot;, currentTimestamp) // Chỉ tìm sự kiện chưa kết thúc</span>
+            );
+
+<span class="nc" id="L188">            Map&lt;String, Object&gt; filter = Map.of(</span>
+<span class="nc" id="L189">                    &quot;must&quot;, List.of(</span>
+                            // Chỉ tìm kiếm các vector sự kiện
+<span class="nc" id="L191">                            Map.of(&quot;key&quot;, &quot;kind&quot;, &quot;match&quot;, Map.of(&quot;value&quot;, &quot;event&quot;)),</span>
+                            timeFilter
+                    )
+            );
+
+            // 2. TÌM KIẾM VECTOR SỰ KIỆN VỚI FILTER
+            // Cần phương thức searchSimilarVectorsWithFilter(vector, limit, filter) trong QdrantService
+<span class="nc" id="L198">            List&lt;Map&lt;String, Object&gt;&gt; results = qdrantService.searchSimilarVectorsWithFilter(queryVector, 1, filter);</span>
+
+<span class="nc bnc" id="L200" title="All 4 branches missed.">            if (results == null || results.isEmpty()) {</span>
+<span class="nc" id="L201">                return &quot;&quot;; // Không tìm thấy sự kiện sắp tới nào tương đồng</span>
+            }
+
+<span class="nc" id="L204">            Map&lt;String, Object&gt; bestMatch = results.get(0);</span>
+<span class="nc" id="L205">            Number scoreNum = (Number) bestMatch.getOrDefault(&quot;score&quot;, 0);</span>
+<span class="nc" id="L206">            double score = scoreNum.doubleValue();</span>
+
+            // 3. ĐIỀU KIỆN NGƯỠNG ĐIỂM
+            // Chỉ lấy kết quả nếu điểm tương đồng đủ cao (ví dụ: &gt; 0.85)
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if (score &lt; 0.85) {</span>
+<span class="nc" id="L211">                return &quot;&quot;;</span>
+            }
+
+            // 4. TRẢ VỀ TIÊU ĐỀ SỰ KIỆN TỪ PAYLOAD
+<span class="nc" id="L215">            Map&lt;String, Object&gt; payload = (Map&lt;String, Object&gt;) bestMatch.get(&quot;payload&quot;);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">            if (payload != null) {</span>
+                // Giả định tiêu đề sự kiện được lưu trong payload dưới key &quot;title&quot;
+<span class="nc" id="L218">                String title = (String) payload.getOrDefault(&quot;title&quot;, &quot;&quot;);</span>
+<span class="nc" id="L219">                return title.trim();</span>
+            }
+
+<span class="nc" id="L222">            return &quot;&quot;;</span>
+
+<span class="nc" id="L224">        } catch (Exception e) {</span>
+<span class="nc" id="L225">            log.error(&quot;Error during classifyEventTitle (Vector Search): {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L226">            return &quot;&quot;;</span>
+        }
+    }
+    public String classifyToolEvent(String userInput, float[] userVector) {
+        try {
+<span class="nc bnc" id="L231" title="All 4 branches missed.">            if (userInput == null || userInput.trim().isEmpty()) {</span>
+<span class="nc" id="L232">                return &quot;UNKNOWN&quot;;</span>
+            }
+
+<span class="nc" id="L235">            List&lt;Map&lt;String, Object&gt;&gt; results = qdrantService.searchSimilarVectors(userVector, 3);</span>
+<span class="nc" id="L236">            System.out.println(results);</span>
+            
+<span class="nc bnc" id="L238" title="All 4 branches missed.">            if (results == null || results.isEmpty()) {</span>
+<span class="nc" id="L239">                return &quot;&quot;;</span>
+            }
+
+<span class="nc" id="L242">            Map&lt;String, Object&gt; bestMatch = results.get(0);</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">            if (bestMatch == null) {</span>
+<span class="nc" id="L244">                return &quot;UNKNOWN&quot;;</span>
+            }
+
+<span class="nc" id="L247">            Number scoreNum = (Number) bestMatch.getOrDefault(&quot;score&quot;, 0);</span>
+<span class="nc" id="L248">            double score = scoreNum.doubleValue();</span>
+<span class="nc" id="L249">            System.out.println(score);</span>
+            
+<span class="nc bnc" id="L251" title="All 2 branches missed.">            if (score &lt; 0.8) {</span>
+<span class="nc" id="L252">                return &quot;&lt;0.8&quot;;</span>
+            }
+
+<span class="nc" id="L255">            Map&lt;String, Object&gt; payload = (Map&lt;String, Object&gt;) bestMatch.get(&quot;payload&quot;);</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">            if (payload == null) {</span>
+<span class="nc" id="L257">                return &quot;UNKNOWN&quot;;</span>
+            }
+            
+<span class="nc" id="L260">            String typeString = (String) payload.getOrDefault(&quot;toolName&quot;, &quot;unknown&quot;);</span>
+<span class="nc" id="L261">            return typeString;</span>
+
+<span class="nc" id="L263">        } catch (Exception e) {</span>
+<span class="nc" id="L264">            e.printStackTrace();</span>
+<span class="nc" id="L265">            return &quot;UNKNOWN&quot;;</span>
+        }
+    }
+    
+    /**
+     * Extract event name from buy ticket intent using AI
+     */
+    public String extractEventNameFromBuyTicketIntent(String userInput, float[] userVector) {
+        try {
+<span class="nc bnc" id="L274" title="All 4 branches missed.">            if (userInput == null || userInput.trim().isEmpty()) {</span>
+<span class="nc" id="L275">                return &quot;&quot;;</span>
+            }
+            
+            // Use LLM to extract event name more intelligently
+<span class="nc" id="L279">            String prompt = String.format(&quot;&quot;&quot;</span>
+                Từ câu sau, hãy trích xuất tên sự kiện mà người dùng muốn mua vé:
+                Câu: &quot;%s&quot;
+                
+                Chỉ trả về tên sự kiện, không có từ nào khác.
+                Ví dụ: &quot;Music Night&quot;, &quot;Tech Conference&quot;, &quot;Workshop AI&quot;
+                
+                Nếu không tìm thấy tên sự kiện rõ ràng, trả về &quot;UNKNOWN&quot;.
+                &quot;&quot;&quot;, userInput);
+
+<span class="nc" id="L289">            List&lt;Map&lt;String, Object&gt;&gt; results = qdrantService.searchSimilarVectors(userVector, 5);</span>
+            
+<span class="nc bnc" id="L291" title="All 4 branches missed.">            if (results != null &amp;&amp; !results.isEmpty()) {</span>
+                // Look for event-related patterns in results
+<span class="nc bnc" id="L293" title="All 2 branches missed.">                for (Map&lt;String, Object&gt; result : results) {</span>
+<span class="nc" id="L294">                    Map&lt;String, Object&gt; payload = (Map&lt;String, Object&gt;) result.get(&quot;payload&quot;);</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">                    if (payload != null) {</span>
+<span class="nc" id="L296">                        String eventName = (String) payload.get(&quot;eventName&quot;);</span>
+<span class="nc bnc" id="L297" title="All 4 branches missed.">                        if (eventName != null &amp;&amp; !eventName.trim().isEmpty()) {</span>
+<span class="nc" id="L298">                            return eventName.trim();</span>
+                        }
+                    }
+<span class="nc" id="L301">                }</span>
+            }
+            
+            // Fallback: Use embedding-based extraction
+<span class="nc" id="L305">            return extractEventNameWithEmbedding(userInput);</span>
+            
+<span class="nc" id="L307">        } catch (Exception e) {</span>
+<span class="nc" id="L308">            e.printStackTrace();</span>
+<span class="nc" id="L309">            return extractEventNameWithEmbedding(userInput);</span>
+        }
+    }
+    
+    /**
+     * Fallback method using embedding similarity to extract event name
+     */
+    private String extractEventNameWithEmbedding(String userInput) {
+        try {
+<span class="nc" id="L318">            System.out.println(&quot;🔍 DEBUG: Extracting event name with embedding for: '&quot; + userInput + &quot;'&quot;);</span>
+            
+            // Tạo embedding cho user input
+<span class="nc" id="L321">            float[] userVector = embeddingService.getEmbedding(userInput);</span>
+            
+            // Tìm kiếm sự kiện trong Qdrant
+<span class="nc" id="L324">            List&lt;Map&lt;String, Object&gt;&gt; results = qdrantService.searchSimilarVectors(userVector, 5);</span>
+            
+<span class="nc bnc" id="L326" title="All 4 branches missed.">            if (results != null &amp;&amp; !results.isEmpty()) {</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">                for (Map&lt;String, Object&gt; result : results) {</span>
+<span class="nc" id="L328">                    Map&lt;String, Object&gt; payload = (Map&lt;String, Object&gt;) result.get(&quot;payload&quot;);</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">                    if (payload != null) {</span>
+<span class="nc" id="L330">                        String eventName = (String) payload.get(&quot;eventName&quot;);</span>
+<span class="nc bnc" id="L331" title="All 4 branches missed.">                        if (eventName != null &amp;&amp; !eventName.trim().isEmpty()) {</span>
+<span class="nc" id="L332">                            System.out.println(&quot;✅ DEBUG: Found event name via embedding: '&quot; + eventName + &quot;'&quot;);</span>
+<span class="nc" id="L333">                            return eventName.trim();</span>
+                        }
+                    }
+<span class="nc" id="L336">                }</span>
+            }
+            
+            // Fallback: Simple regex extraction
+<span class="nc" id="L340">            return extractEventNameWithRegex(userInput);</span>
+            
+<span class="nc" id="L342">        } catch (Exception e) {</span>
+<span class="nc" id="L343">            System.out.println(&quot;❌ DEBUG: Error in embedding event name extraction: &quot; + e.getMessage());</span>
+<span class="nc" id="L344">            return extractEventNameWithRegex(userInput);</span>
+        }
+    }
+    
+    /**
+     * Fallback method using regex patterns
+     */
+    private String extractEventNameWithRegex(String userInput) {
+        // Common patterns for event names in buy ticket requests
+<span class="nc" id="L353">        String[] patterns = {</span>
+            &quot;(?:mua vé|mua ve|đăng ký|đăng ky|tham gia|đặt vé|dat ve|book vé|order vé)\\s+(?:sự kiện|su kien|event)?\\s*:?\\s*([^,]+)&quot;,
+            &quot;(?:cho|về|tại)\\s+([^,]+?)(?:\\s|$)&quot;,
+            &quot;(?:tên|ten)\\s*(?:sự kiện|su kien|event)?\\s*:?\\s*([^,]+)&quot;,
+            &quot;\&quot;([^\&quot;]+)\&quot;&quot;,
+            &quot;'([^']+)'&quot;
+        };
+        
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        for (String pattern : patterns) {</span>
+<span class="nc" id="L362">            java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern, java.util.regex.Pattern.CASE_INSENSITIVE);</span>
+<span class="nc" id="L363">            java.util.regex.Matcher m = p.matcher(userInput);</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">            if (m.find()) {</span>
+<span class="nc" id="L365">                String eventName = m.group(1).trim();</span>
+                // Clean up common words
+<span class="nc" id="L367">                eventName = eventName.replaceAll(&quot;(?i)\\b(sự kiện|su kien|event|cho|về|tại)\\b&quot;, &quot;&quot;).trim();</span>
+<span class="nc bnc" id="L368" title="All 4 branches missed.">                if (!eventName.isEmpty() &amp;&amp; eventName.length() &gt; 2) {</span>
+<span class="nc" id="L369">                    return eventName;</span>
+                }
+            }
+        }
+        
+<span class="nc" id="L374">        return &quot;&quot;;</span>
+    }
+    
+    /**
+     * Classify user intent as CONFIRM_ORDER, CANCEL_ORDER, or UNKNOWN
+     * for order confirmation scenarios
+     */
+    public ActionType classifyConfirmIntent(String userInput, float[] userVector) {
+        try {
+<span class="nc bnc" id="L383" title="All 4 branches missed.">            if (userInput == null || userInput.trim().isEmpty()) {</span>
+<span class="nc" id="L384">                return ActionType.UNKNOWN;</span>
+            }
+
+<span class="nc" id="L387">            List&lt;Map&lt;String, Object&gt;&gt; results = qdrantService.searchSimilarVectors(userVector, 3);</span>
+            
+<span class="nc bnc" id="L389" title="All 4 branches missed.">            if (results != null &amp;&amp; !results.isEmpty()) {</span>
+<span class="nc" id="L390">                Map&lt;String, Object&gt; bestMatch = results.get(0);</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">                if (bestMatch != null) {</span>
+<span class="nc" id="L392">                    Number scoreNum = (Number) bestMatch.getOrDefault(&quot;score&quot;, 0);</span>
+<span class="nc" id="L393">                    double score = scoreNum.doubleValue();</span>
+                    
+<span class="nc bnc" id="L395" title="All 2 branches missed.">                    if (score &gt;= 0.75) { // High confidence threshold for confirm/cancel</span>
+<span class="nc" id="L396">                        Map&lt;String, Object&gt; payload = (Map&lt;String, Object&gt;) bestMatch.get(&quot;payload&quot;);</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">                        if (payload != null) {</span>
+<span class="nc" id="L398">                            String intentType = (String) payload.getOrDefault(&quot;intentType&quot;, &quot;unknown&quot;);</span>
+<span class="nc" id="L399">                            return ActionType.fromString(intentType);</span>
+                        }
+                    }
+                }
+            }
+            
+            // Fallback: Pattern-based classification with improved regex
+<span class="nc" id="L406">            return classifyConfirmIntentWithPatterns(userInput);</span>
+            
+<span class="nc" id="L408">        } catch (Exception e) {</span>
+<span class="nc" id="L409">            e.printStackTrace();</span>
+<span class="nc" id="L410">            return classifyConfirmIntentWithPatterns(userInput);</span>
+        }
+    }
+    
+    /**
+     * Fallback pattern-based classification for confirm/cancel intents
+     */
+    private ActionType classifyConfirmIntentWithPatterns(String userInput) {
+<span class="nc" id="L418">        String lowerInput = userInput.toLowerCase().trim();</span>
+        
+        // Strong confirm patterns (high priority)
+<span class="nc" id="L421">        String[] strongConfirmPatterns = {</span>
+            &quot;có&quot;, &quot;co&quot;, &quot;yes&quot;, &quot;ok&quot;, &quot;okay&quot;, &quot;đồng ý&quot;, &quot;dong y&quot;,
+            &quot;xác nhận&quot;, &quot;xac nhan&quot;, &quot;confirm&quot;, &quot;agree&quot;, &quot;accept&quot;,
+            &quot;tiếp tục&quot;, &quot;tiep tuc&quot;, &quot;continue&quot;, &quot;proceed&quot;,
+            &quot;tôi đồng ý&quot;, &quot;toi dong y&quot;, &quot;i agree&quot;, &quot;i confirm&quot;,
+            &quot;chắc chắn&quot;, &quot;chac chan&quot;, &quot;sure&quot;, &quot;definitely&quot;
+        };
+        
+        // Strong cancel patterns (high priority)
+<span class="nc" id="L430">        String[] strongCancelPatterns = {</span>
+            &quot;không&quot;, &quot;khong&quot;, &quot;no&quot;, &quot;cancel&quot;, &quot;hủy&quot;, &quot;huy&quot;,
+            &quot;từ chối&quot;, &quot;tu choi&quot;, &quot;refuse&quot;, &quot;reject&quot;, &quot;decline&quot;,
+            &quot;dừng lại&quot;, &quot;dung lai&quot;, &quot;stop&quot;, &quot;abort&quot;, &quot;quit&quot;,
+            &quot;tôi không muốn&quot;, &quot;toi khong muon&quot;, &quot;i don't want&quot;,
+            &quot;không đồng ý&quot;, &quot;khong dong y&quot;, &quot;disagree&quot;
+        };
+        
+        // Check for strong confirm patterns
+<span class="nc bnc" id="L439" title="All 2 branches missed.">        for (String pattern : strongConfirmPatterns) {</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">            if (lowerInput.contains(pattern)) {</span>
+<span class="nc" id="L441">                return ActionType.CONFIRM_ORDER;</span>
+            }
+        }
+        
+        // Check for strong cancel patterns
+<span class="nc bnc" id="L446" title="All 2 branches missed.">        for (String pattern : strongCancelPatterns) {</span>
+<span class="nc bnc" id="L447" title="All 2 branches missed.">            if (lowerInput.contains(pattern)) {</span>
+<span class="nc" id="L448">                return ActionType.CANCEL_ORDER;</span>
+            }
+        }
+        
+        // Weak patterns (lower priority, context dependent)
+<span class="nc" id="L453">        String[] weakConfirmPatterns = {</span>
+            &quot;tiến hành&quot;, &quot;tien hanh&quot;, &quot;go ahead&quot;, &quot;let's go&quot;,
+            &quot;được&quot;, &quot;duoc&quot;, &quot;fine&quot;, &quot;good&quot;, &quot;alright&quot;
+        };
+        
+<span class="nc" id="L458">        String[] weakCancelPatterns = {</span>
+            &quot;thôi&quot;, &quot;thoi&quot;, &quot;never mind&quot;, &quot;forget it&quot;,
+            &quot;không cần&quot;, &quot;khong can&quot;, &quot;not needed&quot;
+        };
+        
+        // Check weak patterns only if no strong pattern found
+<span class="nc bnc" id="L464" title="All 2 branches missed.">        for (String pattern : weakConfirmPatterns) {</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">            if (lowerInput.contains(pattern)) {</span>
+<span class="nc" id="L466">                return ActionType.CONFIRM_ORDER;</span>
+            }
+        }
+        
+<span class="nc bnc" id="L470" title="All 2 branches missed.">        for (String pattern : weakCancelPatterns) {</span>
+<span class="nc bnc" id="L471" title="All 2 branches missed.">            if (lowerInput.contains(pattern)) {</span>
+<span class="nc" id="L472">                return ActionType.CANCEL_ORDER;</span>
+            }
+        }
+        
+        // Default to unknown if no clear pattern
+<span class="nc" id="L477">        return ActionType.UNKNOWN;</span>
+    }
+
+    /**
+     * Kiểm tra xem user input có phải là câu hỏi về thông tin vé không sử dụng embedding similarity
+     */
+    public boolean isTicketInfoQuery(String userInput, float[] userVector) {
+<span class="nc bnc" id="L484" title="All 4 branches missed.">        if (userInput == null || userInput.trim().isEmpty()) {</span>
+<span class="nc" id="L485">            return false;</span>
+        }
+        
+<span class="nc" id="L488">        System.out.println(&quot;🔍 DEBUG: Checking ticket info query with embedding for: '&quot; + userInput + &quot;'&quot;);</span>
+        
+        try {
+
+            
+            // Tính similarity với từng câu mẫu
+<span class="nc" id="L494">            double maxSimilarity = 0.0;</span>
+<span class="nc" id="L495">            String bestMatch = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L497" title="All 2 branches missed.">            for (Map.Entry&lt;String, float[]&gt; entry : this.ticketInfoExampleVectors.entrySet()) {</span>
+<span class="nc" id="L498">                String exampleText = entry.getKey();</span>
+<span class="nc" id="L499">                float[] exampleVector = entry.getValue(); // Lấy vector đã được tính sẵn</span>
+
+<span class="nc" id="L501">                double similarity = cosineSimilarity(userVector, exampleVector);</span>
+
+<span class="nc bnc" id="L503" title="All 2 branches missed.">                if (similarity &gt; maxSimilarity) {</span>
+<span class="nc" id="L504">                    maxSimilarity = similarity;</span>
+<span class="nc" id="L505">                    bestMatch = exampleText;</span>
+                }
+<span class="nc" id="L507">            }</span>
+            
+<span class="nc" id="L509">            System.out.println(&quot;🎯 DEBUG: Best match: '&quot; + bestMatch + &quot;' with similarity: &quot; + maxSimilarity);</span>
+            
+            // Ngưỡng similarity để xác định là câu hỏi về thông tin vé
+<span class="nc" id="L512">            double threshold = 0.75;</span>
+            
+<span class="nc bnc" id="L514" title="All 2 branches missed.">            if (maxSimilarity &gt;= threshold) {</span>
+<span class="nc" id="L515">                System.out.println(&quot;✅ DEBUG: Detected ticket info query with similarity: &quot; + maxSimilarity);</span>
+<span class="nc" id="L516">                return true;</span>
+            } else {
+<span class="nc" id="L518">                System.out.println(&quot;❌ DEBUG: Not a ticket info query. Max similarity: &quot; + maxSimilarity + &quot; (threshold: &quot; + threshold + &quot;)&quot;);</span>
+<span class="nc" id="L519">                return false;</span>
+            }
+            
+<span class="nc" id="L522">        } catch (Exception e) {</span>
+<span class="nc" id="L523">            System.out.println(&quot;❌ DEBUG: Error in embedding similarity check: &quot; + e.getMessage());</span>
+<span class="nc" id="L524">            System.out.println(&quot;🔄 DEBUG: Falling back to keyword matching...&quot;);</span>
+            
+            // Fallback: sử dụng keyword matching
+<span class="nc" id="L527">            String lowerInput = userInput.toLowerCase().trim();</span>
+<span class="nc" id="L528">            String[] ticketInfoKeywords = {</span>
+                &quot;giá vé&quot;, &quot;giá tiền&quot;, &quot;bao nhiêu tiền&quot;, &quot;giá cả&quot;,
+                &quot;vé thường&quot;, &quot;vé vip&quot;, &quot;vé early bird&quot;, &quot;loại vé&quot;,
+                &quot;có những loại vé nào&quot;, &quot;vé nào có sẵn&quot;, &quot;vé còn lại&quot;,
+                &quot;coi lại vé&quot;, &quot;xem vé&quot;, &quot;thông tin vé&quot;, &quot;chi tiết vé&quot;
+            };
+            
+<span class="nc bnc" id="L535" title="All 2 branches missed.">            for (String keyword : ticketInfoKeywords) {</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">                if (lowerInput.contains(keyword)) {</span>
+<span class="nc" id="L537">                    System.out.println(&quot;✅ DEBUG: Found ticket info keyword: '&quot; + keyword + &quot;'&quot;);</span>
+<span class="nc" id="L538">                    return true;</span>
+                }
+            }
+            
+<span class="nc" id="L542">            System.out.println(&quot;❌ DEBUG: No ticket info keywords found&quot;);</span>
+<span class="nc" id="L543">            return false;</span>
+        }
+    }
+    
+    /**
+     * Tính cosine similarity giữa hai vector
+     */
+    private double cosineSimilarity(float[] vectorA, float[] vectorB) {
+<span class="nc bnc" id="L551" title="All 2 branches missed.">        if (vectorA.length != vectorB.length) {</span>
+<span class="nc" id="L552">            return 0.0;</span>
+        }
+        
+<span class="nc" id="L555">        double dotProduct = 0.0;</span>
+<span class="nc" id="L556">        double normA = 0.0;</span>
+<span class="nc" id="L557">        double normB = 0.0;</span>
+        
+<span class="nc bnc" id="L559" title="All 2 branches missed.">        for (int i = 0; i &lt; vectorA.length; i++) {</span>
+<span class="nc" id="L560">            dotProduct += vectorA[i] * vectorB[i];</span>
+<span class="nc" id="L561">            normA += Math.pow(vectorA[i], 2);</span>
+<span class="nc" id="L562">            normB += Math.pow(vectorB[i], 2);</span>
+        }
+        
+<span class="nc" id="L565">        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

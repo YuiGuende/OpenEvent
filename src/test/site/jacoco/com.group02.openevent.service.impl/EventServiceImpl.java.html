@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.service.impl</a> &gt; <span class="el_source">EventServiceImpl.java</span></div><h1>EventServiceImpl.java</h1><pre class="source lang-java linenums">package com.group02.openevent.service.impl;
+
+import com.group02.openevent.dto.home.EventCardDTO;
+import com.group02.openevent.dto.request.PlaceUpdateRequest;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.dto.request.update.EventUpdateRequest;
+import com.group02.openevent.mapper.EventMapper;
+import com.group02.openevent.dto.response.EventResponse;
+import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.enums.SpeakerRole;
+import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.event.EventSchedule;
+import com.group02.openevent.model.event.MusicEvent;
+import com.group02.openevent.model.organization.Organization;
+import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.model.user.Host;
+import com.group02.openevent.repository.*;
+import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IMusicEventRepo;
+import com.group02.openevent.service.EventService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Service;
+import com.group02.openevent.service.OrderService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
+import lombok.AccessLevel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.group02.openevent.model.event.*;
+import com.group02.openevent.model.enums.Building;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+<span class="fc" id="L55">@RequiredArgsConstructor</span>
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+<span class="fc" id="L57">@Slf4j</span>
+public class EventServiceImpl implements EventService {
+    @Autowired
+    @Lazy
+    OrderService orderService;
+    IEventRepo eventRepo;
+    EventMapper eventMapper;
+    IOrganizationRepo organizationRepo;
+    IHostRepo hostRepo;
+    IPlaceRepo placeRepo;
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    public EventResponse saveEvent(EventCreationRequest request) {
+        Event event;
+<span class="fc" id="L73">        log.info(&quot;Saving event {}&quot;, request.getEventType());</span>
+<span class="fc" id="L74">        log.info(&quot;Saving event from DTO type: {}&quot;, request.getClass().getName());</span>
+<span class="fc" id="L75">        EventType type = request.getEventType();</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (type == null) {</span>
+<span class="fc" id="L77">            log.warn(&quot;Null EventType received. Defaulting to generic Event.&quot;);</span>
+<span class="fc" id="L78">            event = new Event();</span>
+        }else {
+<span class="pc bpc" id="L80" title="3 of 5 branches missed.">            switch (request.getEventType()) {</span>
+                case WORKSHOP:
+<span class="fc" id="L82">                    event = new WorkshopEvent();</span>
+<span class="fc" id="L83">                    break;</span>
+                case MUSIC:
+<span class="fc" id="L85">                    event = new MusicEvent();</span>
+<span class="fc" id="L86">                    break;</span>
+                case FESTIVAL:
+<span class="nc" id="L88">                    event = new FestivalEvent();</span>
+<span class="nc" id="L89">                    break;</span>
+                case COMPETITION:
+<span class="nc" id="L91">                    event = new CompetitionEvent();</span>
+<span class="nc" id="L92">                    break;</span>
+                default:
+                    // Khối này chỉ dành cho trường hợp EventType không hợp lệ hoặc không có
+<span class="nc" id="L95">                    log.warn(&quot;Unknown or null EventType received. Defaulting to generic Event.&quot;);</span>
+<span class="nc" id="L96">                    event = new Event();</span>
+                    break;
+            }
+        }
+<span class="fc" id="L100">        log.info(&quot;Saving event {}&quot;, event.getClass().getName());</span>
+<span class="fc" id="L101">        eventMapper.createEventFromRequest(request, event);</span>
+<span class="fc" id="L102">        final Event finalEvent = event;</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        if (event.getSubEvents() != null) {</span>
+<span class="nc" id="L104">            event.getSubEvents().forEach(sub -&gt; sub.setParentEvent(finalEvent));</span>
+        }
+<span class="fc" id="L106">        event.setHost(hostRepo.getHostById(Long.parseLong(&quot;1&quot;)));</span>
+<span class="fc" id="L107">        return eventMapper.toEventResponse(eventRepo.save(event));</span>
+    }
+
+    @Override
+    @Transactional
+    public EventResponse updateEvent(Long id, EventUpdateRequest request) {
+
+<span class="fc" id="L114">        Event existing = eventRepo.findById(id)</span>
+<span class="fc" id="L115">                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Event not found with id &quot; + id));</span>
+
+<span class="fc" id="L117">        Event event = existing; // Dùng biến này để xử lý chung</span>
+<span class="fc" id="L118">        eventMapper.updateEventFromRequest(request, event);</span>
+
+        // 🟢 Update organization, host, parent
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (request.getOrganizationId() != null) {</span>
+<span class="fc" id="L122">            Organization org = organizationRepo.findById(request.getOrganizationId())</span>
+<span class="pc" id="L123">                    .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Organization not found&quot;));</span>
+<span class="fc" id="L124">            event.setOrganization(org);</span>
+        }
+
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        if (request.getHostId() != null) {</span>
+<span class="fc" id="L128">            Host host = hostRepo.findById(request.getHostId())</span>
+<span class="pc" id="L129">                    .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Host not found&quot;));</span>
+<span class="fc" id="L130">            event.setHost(host);</span>
+        }
+
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        if (request.getParentEventId() != null) {</span>
+<span class="nc" id="L134">            Event parent = eventRepo.findById(request.getParentEventId())</span>
+<span class="nc" id="L135">                    .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Parent event not found&quot;));</span>
+<span class="nc" id="L136">            event.setParentEvent(parent);</span>
+        }
+
+<span class="pc bpc" id="L139" title="3 of 5 branches missed.">        switch (String.valueOf(request.getEventType())) {</span>
+            case &quot;COMPETITION&quot; -&gt; {
+<span class="nc" id="L141">                CompetitionEvent comp = (CompetitionEvent) existing;</span>
+<span class="nc" id="L142">                comp.setCompetitionType(request.getCompetitionType());</span>
+<span class="nc" id="L143">                comp.setRules(request.getRules());</span>
+<span class="nc" id="L144">                comp.setPrizePool(request.getPrizePool());</span>
+<span class="nc" id="L145">            }</span>
+            case &quot;MUSIC&quot; -&gt; {
+<span class="fc" id="L147">                MusicEvent mus = (MusicEvent) existing;</span>
+<span class="fc" id="L148">                mus.setMusicType(request.getMusicType());</span>
+<span class="fc" id="L149">                mus.setGenre(request.getGenre());</span>
+<span class="fc" id="L150">                mus.setPerformerCount(request.getPerformerCount());</span>
+<span class="fc" id="L151">            }</span>
+            case &quot;WORKSHOP&quot; -&gt; {
+<span class="nc" id="L153">                WorkshopEvent ws = (WorkshopEvent) existing;</span>
+<span class="nc" id="L154">                ws.setTopic(request.getTopic());</span>
+<span class="nc" id="L155">                ws.setSkillLevel(request.getSkillLevel());</span>
+<span class="nc" id="L156">                ws.setMaxParticipants(request.getMaxParticipants());</span>
+<span class="nc" id="L157">            }</span>
+            case &quot;FESTIVAL&quot; -&gt; {
+<span class="nc" id="L159">                FestivalEvent fe = (FestivalEvent) existing;</span>
+<span class="nc" id="L160">                fe.setCulture(request.getCulture());</span>
+<span class="nc" id="L161">                fe.setHighlight(request.getHighlight());</span>
+            }
+        }
+
+        // 🟢 Places - Handle places from JSON data with proper deletion support
+<span class="pc bpc" id="L166" title="1 of 4 branches missed.">        if (request.getPlaceUpdateRequests() != null &amp;&amp; !request.getPlaceUpdateRequests().isEmpty()) {</span>
+<span class="fc" id="L167">            event.getPlaces().clear();</span>
+
+
+<span class="fc bfc" id="L170" title="All 2 branches covered.">            for (PlaceUpdateRequest placeUpdateRequest : request.getPlaceUpdateRequests()) {</span>
+                // Skip deleted places
+<span class="fc bfc" id="L172" title="All 2 branches covered.">                if (Boolean.TRUE.equals(placeUpdateRequest.getIsDeleted())) {</span>
+<span class="fc" id="L173">                    continue;</span>
+                }
+
+                Place place;
+
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">                if (placeUpdateRequest.getId() != null) {</span>
+<span class="nc" id="L179">                    place = placeRepo.findById(placeUpdateRequest.getId())</span>
+<span class="nc" id="L180">                            .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Place not found with id &quot; + placeUpdateRequest.getId()));</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">                    if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) || </span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                        !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {</span>
+<span class="nc" id="L183">                        place.setPlaceName(placeUpdateRequest.getPlaceName());</span>
+<span class="nc" id="L184">                        place.setBuilding(placeUpdateRequest.getBuilding());</span>
+<span class="nc" id="L185">                        place = placeRepo.save(place);</span>
+                    }
+                } else {
+<span class="fc" id="L188">                    place = new Place();</span>
+<span class="fc" id="L189">                    place.setPlaceName(placeUpdateRequest.getPlaceName());</span>
+<span class="fc" id="L190">                    place.setBuilding(placeUpdateRequest.getBuilding());</span>
+<span class="fc" id="L191">                    place = placeRepo.save(place);</span>
+                }
+
+<span class="fc" id="L194">                event.getPlaces().add(place);</span>
+
+<span class="fc" id="L196">            }</span>
+
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        } else if (request.getPlaces() != null) {</span>
+<span class="nc" id="L199">            event.getPlaces().clear();</span>
+
+<span class="nc bnc" id="L201" title="All 2 branches missed.">            for (Place placeRequest : request.getPlaces()) {</span>
+                Place place;
+
+<span class="nc bnc" id="L204" title="All 2 branches missed.">                if (placeRequest.getId() != null) {</span>
+                    // Existing place - find by ID
+<span class="nc" id="L206">                    place = placeRepo.findById(placeRequest.getId())</span>
+<span class="nc" id="L207">                            .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Place not found with id &quot; + placeRequest.getId()));</span>
+                } else {
+<span class="nc" id="L209">                    place = new Place();</span>
+<span class="nc" id="L210">                    place.setPlaceName(placeRequest.getPlaceName());</span>
+<span class="nc" id="L211">                    place.setBuilding(placeRequest.getBuilding());</span>
+<span class="nc" id="L212">                    place = placeRepo.save(place);</span>
+                }
+<span class="nc" id="L214">                event.getPlaces().add(place);</span>
+<span class="nc" id="L215">            }</span>
+
+<span class="nc" id="L217">            log.info(&quot;Updated event with {} places (fallback mode)&quot;, event.getPlaces().size());</span>
+        }
+        // ✅ Save cuối cùng
+<span class="fc" id="L220">        log.info(&quot;Saving event with {} places to database&quot;, event.getPlaces().size());</span>
+<span class="fc" id="L221">        Event saved = eventRepo.saveAndFlush(event);</span>
+
+<span class="fc" id="L223">        return eventMapper.toEventResponse(saved);</span>
+    }
+
+
+    @Override
+    public MusicEvent saveMusicEvent(MusicEvent musicEvent) {
+<span class="nc" id="L229">        return null;</span>
+    }
+
+    public List&lt;Event&gt; getEventsByIds(List&lt;Long&gt; ids) {
+<span class="nc bnc" id="L233" title="All 4 branches missed.">        if (ids == null || ids.isEmpty()) {</span>
+<span class="nc" id="L234">            return List.of();</span>
+        }
+<span class="nc" id="L236">        return eventRepo.findAllById(ids);</span>
+    }
+
+    @Override
+    public List&lt;EventCardDTO&gt; getCustomerEvents(Long customerId) {
+<span class="nc" id="L241">        List&lt;Event&gt; events = orderService.findConfirmedEventsByCustomerId(customerId);</span>
+<span class="nc" id="L242">        return events.stream()</span>
+<span class="nc" id="L243">                .map(this::convertToDTO)</span>
+<span class="nc" id="L244">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public List&lt;EventCardDTO&gt; getLiveEvents(int i) {
+<span class="nc" id="L249">        List&lt;Event&gt; events = eventRepo.findRecommendedEvents(</span>
+                EventStatus.ONGOING,
+<span class="nc" id="L251">                PageRequest.of(0, i)</span>
+        );
+<span class="nc" id="L253">        return events.stream()</span>
+<span class="nc" id="L254">                .map(this::convertToDTO)</span>
+<span class="nc" id="L255">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; getEventByHostId(Long id) {
+<span class="nc" id="L260">        return eventRepo.getEventByHostId(id);</span>
+    }
+
+    @Override
+    public Event getEventResponseById(Long id) {
+<span class="nc" id="L265">        return eventRepo.findById(id)</span>
+<span class="nc" id="L266">                .orElseThrow(() -&gt; new RuntimeException(&quot;Không tìm thấy sự kiện với ID: &quot; + id));</span>
+    }
+
+    @Override
+    public Page&lt;Event&gt; getEventsByDepartment(Long departmentId, EventType eventType, EventStatus status, Pageable pageable) {
+<span class="nc bnc" id="L271" title="All 4 branches missed.">        if (eventType != null &amp;&amp; status != null) {</span>
+<span class="nc" id="L272">            return eventRepo.findByDepartment_AccountIdAndEventTypeAndStatus(departmentId, eventType, status, pageable);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        } else if (eventType != null) {</span>
+<span class="nc" id="L274">            return eventRepo.findByDepartment_AccountIdAndEventType(departmentId, eventType, pageable);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        } else if (status != null) {</span>
+<span class="nc" id="L276">            return eventRepo.findByDepartment_AccountIdAndStatus(departmentId, status, pageable);</span>
+        } else {
+<span class="nc" id="L278">            return eventRepo.findByDepartment_AccountId(departmentId, pageable);</span>
+        }
+    }
+
+
+    @Override
+    public List&lt;EventCardDTO&gt; searchEvents(String keyword, String type,
+                                           LocalDate startDate, LocalDate endDate) {
+
+<span class="nc bnc" id="L287" title="All 2 branches missed.">        LocalDateTime fromDateTime = (startDate != null)</span>
+<span class="nc" id="L288">                ? startDate.atStartOfDay()</span>
+<span class="nc" id="L289">                : null;</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        LocalDateTime toDateTime = (endDate != null)</span>
+<span class="nc" id="L291">                ? endDate.atTime(23, 59, 59)</span>
+<span class="nc" id="L292">                : null;</span>
+
+<span class="nc" id="L294">        EventType eventType = null;</span>
+<span class="nc bnc" id="L295" title="All 4 branches missed.">        if (type != null &amp;&amp; !type.isBlank()) {</span>
+            try {
+<span class="nc" id="L297">                eventType = EventType.valueOf(type.toUpperCase()); // convert String -&gt; Enum</span>
+<span class="nc" id="L298">            } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L299">                System.out.println(&quot;⚠️ Invalid event type: &quot; + type);</span>
+<span class="nc" id="L300">            }</span>
+        }
+
+<span class="nc" id="L303">        List&lt;Event&gt; events = eventRepo.searchEvents(</span>
+<span class="nc bnc" id="L304" title="All 4 branches missed.">                (keyword == null || keyword.isBlank()) ? null : keyword.trim(),</span>
+                eventType,
+                fromDateTime,
+                toDateTime
+        );
+
+<span class="nc" id="L310">        return events.stream()</span>
+<span class="nc" id="L311">                .map(this::convertToDTO)</span>
+<span class="nc" id="L312">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public long countUniqueParticipantsByEventId(Long id) {
+<span class="nc" id="L317">      return  orderService.countUniqueParticipantsByEventId(id);</span>
+    }
+
+
+    @Override
+    public CompetitionEvent saveCompetitionEvent(CompetitionEvent competitionEvent) {
+<span class="nc bnc" id="L323" title="All 2 branches missed.">        if (competitionEvent.getSchedules() != null) {</span>
+<span class="nc" id="L324">            competitionEvent.getSchedules().forEach(s -&gt; s.setEvent(competitionEvent));</span>
+        }
+<span class="nc" id="L326">        return eventRepo.save(competitionEvent);</span>
+    }
+
+    @Override
+    public FestivalEvent saveFestivalEvent(FestivalEvent festivalEvent) {
+<span class="nc bnc" id="L331" title="All 2 branches missed.">        if (festivalEvent.getSchedules() != null) {</span>
+<span class="nc" id="L332">            festivalEvent.getSchedules().forEach(s -&gt; s.setEvent(festivalEvent));</span>
+        }
+<span class="nc" id="L334">        return eventRepo.save(festivalEvent);</span>
+    }
+
+    @Override
+    public WorkshopEvent saveWorkshopEvent(WorkshopEvent workshopEvent) {
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        if (workshopEvent.getSchedules() != null) {</span>
+<span class="nc" id="L340">            workshopEvent.getSchedules().forEach(s -&gt; s.setEvent(workshopEvent));</span>
+        }
+<span class="nc" id="L342">        return eventRepo.save(workshopEvent);</span>
+    }
+
+    @Override
+    public Optional&lt;Event&gt; getEventById(Long id) {
+<span class="fc" id="L347">        return eventRepo.findById(id);</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; getEventsByType(Class&lt;? extends Event&gt; eventType) {
+<span class="nc" id="L352">        return eventRepo.findByEventType(eventType);</span>
+    }
+
+    @Override
+    public Event saveEvent(Event event) {
+<span class="nc" id="L357">        return eventRepo.save(event);</span>
+    }
+
+    @Override
+    public Page&lt;Event&gt; listEvents(EventType eventType, EventStatus status, Pageable pageable) {
+<span class="nc bnc" id="L362" title="All 4 branches missed.">        if (eventType != null &amp;&amp; status != null) {</span>
+<span class="nc" id="L363">            return eventRepo.findByEventTypeAndStatus(eventType, status, pageable);</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        } else if (eventType != null) {</span>
+<span class="nc" id="L365">            return eventRepo.findByEventType(eventType, pageable);</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        } else if (status != null) {</span>
+<span class="nc" id="L367">            return eventRepo.findByStatus(status, pageable);</span>
+        } else {
+<span class="nc" id="L369">            return eventRepo.findAll(pageable);</span>
+        }
+    }
+    @Override
+    public List&lt;Event&gt; isTimeConflict(LocalDateTime start, LocalDateTime end, List&lt;Place&gt; places) {
+<span class="nc" id="L374">        return eventRepo.findConflictedEvents(start, end, places);</span>
+    }
+
+    @Override
+    public boolean removeEvent(Long id) {
+<span class="nc bnc" id="L379" title="All 2 branches missed.">        if (eventRepo.existsById(id)) {</span>
+<span class="nc" id="L380">            eventRepo.deleteById(id);</span>
+<span class="nc" id="L381">            return true; // ✅ xóa thành công</span>
+        } else {
+<span class="nc" id="L383">            return false; // ✅ không tìm thấy</span>
+        }
+    }
+
+    @Override
+    public boolean deleteByTitle(String title) {
+<span class="nc" id="L389">        List&lt;Event&gt; events = eventRepo.findByTitle(title);</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">        if (events.isEmpty()) {</span>
+<span class="nc" id="L391">            return false; // ✅ không tìm thấy sự kiện</span>
+        }
+<span class="nc" id="L393">        eventRepo.deleteAll(events);</span>
+<span class="nc" id="L394">        return true; // ✅ xóa thành công</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; findByTitle(String title) {
+<span class="nc" id="L399">        return eventRepo.findByTitle(title);</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; findByTitleAndPublicStatus(String title) {
+<span class="nc" id="L404">        return eventRepo.findByTitleAndPublicStatus(title);</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; getAllEvents() {
+<span class="nc" id="L409">        return eventRepo.findAll();</span>
+    }
+
+//    @Override
+//    public List&lt;Event&gt; getEventByUserId(Integer userId) {
+//        return eventRepo.getEventByUserId(userId);
+//    }
+
+    @Override
+    public Optional&lt;Event&gt; getEventByEventId(Long eventId) {
+<span class="nc bnc" id="L419" title="All 2 branches missed.">        if (eventId == null) return Optional.empty();</span>
+<span class="nc" id="L420">        return eventRepo.findById(eventId);</span>
+    }
+
+    @Override
+    public Optional&lt;Event&gt; getFirstEventByTitle(String title) {
+<span class="nc" id="L425">        List&lt;Event&gt; events = eventRepo.findByTitle(title);</span>
+<span class="nc bnc" id="L426" title="All 2 branches missed.">        if (events.isEmpty()) {</span>
+<span class="nc" id="L427">            return Optional.empty();</span>
+        }
+<span class="nc" id="L429">        return Optional.of(events.get(0)); // trả về sự kiện đầu tiên</span>
+    }
+
+    @Override
+    public Optional&lt;Event&gt; getFirstPublicEventByTitle(String title) {
+<span class="nc" id="L434">        List&lt;Event&gt; events = eventRepo.findByTitleAndPublicStatus(title);</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">        if (events.isEmpty()) {</span>
+<span class="nc" id="L436">            return Optional.empty();</span>
+        }
+<span class="nc" id="L438">        return Optional.of(events.get(0)); // trả về sự kiện PUBLIC đầu tiên</span>
+    }
+//    @Override
+//    public Optional&lt;Event&gt; getNextUpcomingEventByUserId(int userId) {
+//        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
+//    }
+    @Override
+    public List&lt;Event&gt; getEventsByPlace(Long placeId) {
+<span class="nc" id="L446">        return eventRepo.findByPlaceId(placeId);</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; getEventsBetween(LocalDateTime start, LocalDateTime end, Long userId) {
+        // TODO: Implement proper filtering by date range and user
+        // For now, return all events filtered by date range
+<span class="nc" id="L453">        return eventRepo.findAll().stream()</span>
+<span class="nc bnc" id="L454" title="All 4 branches missed.">                .filter(event -&gt; event.getStartsAt().isAfter(start) || event.getStartsAt().isEqual(start))</span>
+<span class="nc bnc" id="L455" title="All 4 branches missed.">                .filter(event -&gt; event.getEndsAt().isBefore(end) || event.getEndsAt().isEqual(end))</span>
+<span class="nc" id="L456">                .collect(java.util.stream.Collectors.toList());</span>
+    }
+
+    public Optional&lt;Event&gt; getNextUpcomingEventByUserId(Long userId) {
+        // Gọi repository với điều kiện: sự kiện PHẢI BẮT ĐẦU sau thời điểm hiện tại
+<span class="nc" id="L461">        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; getEventByUserId(Long userId) {
+        // TODO: Implement proper user-based filtering
+        // For now, return all events
+<span class="nc" id="L468">        return eventRepo.findAll();</span>
+    }
+
+    @Override
+    public Event updateEventStatus(Long eventId, EventStatus status) {
+<span class="fc" id="L473">        Optional&lt;Event&gt; eventOpt = eventRepo.findById(eventId);</span>
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">        if (eventOpt.isPresent()) {</span>
+<span class="fc" id="L475">            Event event = eventOpt.get();</span>
+<span class="fc" id="L476">            event.setStatus(status);</span>
+<span class="fc" id="L477">            return eventRepo.save(event);</span>
+        }
+<span class="nc" id="L479">        throw new RuntimeException(&quot;Event not found with id: &quot; + eventId);</span>
+    }
+
+    @Override
+    public Event approveEvent(Long eventId) {
+<span class="nc" id="L484">        return updateEventStatus(eventId, EventStatus.PUBLIC);</span>
+    }
+
+    @Override
+    public long countEventsByStatus(EventStatus status) {
+<span class="nc" id="L489">        return eventRepo.findByStatus(status).size();</span>
+    }
+
+    @Override
+    public long countEventsByType(EventType eventType) {
+<span class="nc" id="L494">        return eventRepo.findByEventType(eventType, PageRequest.of(0, Integer.MAX_VALUE)).getTotalElements();</span>
+    }
+
+    @Override
+    public long countTotalEvents() {
+<span class="nc" id="L499">        return eventRepo.count();</span>
+    }
+
+    @Override
+    public List&lt;Event&gt; getRecentEvents(int limit) {
+<span class="nc" id="L504">        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, &quot;createdDate&quot;));</span>
+<span class="nc" id="L505">        return eventRepo.findAll(PageRequest.of(0, limit)).getContent();</span>
+    }
+
+    @Override
+    public List&lt;EventCardDTO&gt; getPosterEvents() {
+<span class="nc" id="L510">        List&lt;Event&gt; posterEvents = eventRepo.findByPosterTrue();</span>
+<span class="nc" id="L511">        return posterEvents.stream()</span>
+<span class="nc" id="L512">                .map(this::convertToDTO)</span>
+<span class="nc" id="L513">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public List&lt;EventCardDTO&gt; getRecommendedEvents(int limit) {
+<span class="nc" id="L518">        List&lt;Event&gt; events = eventRepo.findRecommendedEvents(</span>
+                EventStatus.PUBLIC,
+<span class="nc" id="L520">                PageRequest.of(0, limit)</span>
+        );
+<span class="nc" id="L522">        return events.stream()</span>
+<span class="nc" id="L523">                .map(this::convertToDTO)</span>
+<span class="nc" id="L524">                .collect(Collectors.toList());</span>
+    }
+
+    @Override
+    public EventCardDTO convertToDTO(Event event) {
+        // Avoid touching Host-&gt;Customer-&gt;Account to prevent EntityNotFound on bad data
+<span class="nc" id="L530">        String organizer = null;</span>
+<span class="nc bnc" id="L531" title="All 4 branches missed.">        if (event.getOrganization() != null &amp;&amp; event.getOrganization().getOrgName() != null) {</span>
+<span class="nc" id="L532">            organizer = event.getOrganization().getOrgName();</span>
+<span class="nc bnc" id="L533" title="All 4 branches missed.">        } else if (event.getHost() != null &amp;&amp; event.getHost().getOrganization() != null</span>
+<span class="nc bnc" id="L534" title="All 2 branches missed.">                &amp;&amp; event.getHost().getOrganization().getOrgName() != null) {</span>
+<span class="nc" id="L535">            organizer = event.getHost().getOrganization().getOrgName();</span>
+        } else {
+<span class="nc" id="L537">            organizer = &quot;Unknown&quot;;</span>
+        }
+<span class="nc bnc" id="L539" title="All 4 branches missed.">        String city = event.getPlaces() != null &amp;&amp; !event.getPlaces().isEmpty()</span>
+<span class="nc" id="L540">                ? event.getPlaces().get(0).getPlaceName()</span>
+<span class="nc" id="L541">                : &quot;TBA&quot;;</span>
+<span class="nc" id="L542">        Integer registered = 0;</span>
+<span class="nc" id="L543">        registered = orderService.countUniqueParticipantsByEventId(event.getId());</span>
+<span class="nc" id="L544">        return EventCardDTO.builder()</span>
+<span class="nc" id="L545">                .id(event.getId())</span>
+<span class="nc" id="L546">                .title(event.getTitle())</span>
+<span class="nc" id="L547">                .imageUrl(event.getImageUrl())</span>
+<span class="nc" id="L548">                .description(event.getDescription())</span>
+<span class="nc" id="L549">                .eventType(event.getEventType())</span>
+<span class="nc" id="L550">                .status(event.getStatus())</span>
+<span class="nc" id="L551">                .startsAt(event.getStartsAt())</span>
+<span class="nc" id="L552">                .endsAt(event.getEndsAt())</span>
+<span class="nc" id="L553">                .enrollDeadline(event.getEnrollDeadline())</span>
+<span class="nc" id="L554">                .capacity(event.getCapacity())</span>
+<span class="nc" id="L555">                .registered(registered)</span>
+<span class="nc" id="L556">                .city(city)</span>
+<span class="nc" id="L557">                .organizer(organizer)</span>
+<span class="nc" id="L558">                .maxPrice(event.getMaxTicketPice())</span>
+<span class="nc" id="L559">                .minPrice(event.getMinTicketPice())</span>
+<span class="nc" id="L560">                .poster(event.isPoster())</span>
+<span class="nc" id="L561">                .benefits(event.getBenefits())</span>
+<span class="nc" id="L562">                .build();</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

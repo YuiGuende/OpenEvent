@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AISecurityService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.ai.security</a> &gt; <span class="el_source">AISecurityService.java</span></div><h1>AISecurityService.java</h1><pre class="source lang-java linenums">package com.group02.openevent.ai.security;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.regex.Pattern;
+
+/**
+ * Service for AI security measures including input validation and sanitization
+ */
+@Service
+<span class="fc" id="L13">@Slf4j</span>
+<span class="fc" id="L14">public class AISecurityService {</span>
+
+    // Patterns for detecting potentially malicious content
+<span class="fc" id="L17">    private static final List&lt;Pattern&gt; MALICIOUS_PATTERNS = Arrays.asList(</span>
+        // SQL Injection patterns
+<span class="fc" id="L19">        Pattern.compile(&quot;.*(union|select|insert|update|delete|drop|create|alter|exec|execute).*&quot;, Pattern.CASE_INSENSITIVE),</span>
+<span class="fc" id="L20">        Pattern.compile(&quot;.*(;|--|/\\*|\\*/).*&quot;, Pattern.CASE_INSENSITIVE),</span>
+        
+        // XSS patterns
+<span class="fc" id="L23">        Pattern.compile(&quot;.*&lt;script.*&gt;.*&lt;/script&gt;.*&quot;, Pattern.CASE_INSENSITIVE),</span>
+<span class="fc" id="L24">        Pattern.compile(&quot;.*javascript:.*&quot;, Pattern.CASE_INSENSITIVE),</span>
+<span class="fc" id="L25">        Pattern.compile(&quot;.*on\\w+\\s*=.*&quot;, Pattern.CASE_INSENSITIVE),</span>
+        
+        // Command injection patterns
+<span class="fc" id="L28">        Pattern.compile(&quot;.*(\\||&amp;|;|`|\\$|\\(|\\)).*&quot;, Pattern.CASE_INSENSITIVE),</span>
+        
+        // Path traversal patterns
+<span class="fc" id="L31">        Pattern.compile(&quot;.*(\\.\\./|\\.\\.\\\\).*&quot;, Pattern.CASE_INSENSITIVE),</span>
+        
+        // Sensitive data patterns
+<span class="fc" id="L34">        Pattern.compile(&quot;.*(password|passwd|secret|key|token|api_key|private).*&quot;, Pattern.CASE_INSENSITIVE)</span>
+    );
+
+    // Maximum input length limits
+    private static final int MAX_INPUT_LENGTH = 5000;
+    private static final int MAX_MESSAGE_LENGTH = 2000;
+    private static final int MAX_EVENT_TITLE_LENGTH = 200;
+    private static final int MAX_EVENT_DESCRIPTION_LENGTH = 2000;
+
+    // Allowed characters for different input types
+<span class="fc" id="L44">    private static final Pattern ALLOWED_EVENT_TITLE_PATTERN = Pattern.compile(&quot;^[a-zA-Z0-9\\s\\-_.,!?()àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]+$&quot;);</span>
+<span class="fc" id="L45">    private static final Pattern ALLOWED_EMAIL_PATTERN = Pattern.compile(&quot;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$&quot;);</span>
+<span class="fc" id="L46">    private static final Pattern ALLOWED_PHONE_PATTERN = Pattern.compile(&quot;^[0-9+\\-\\s()]{9,15}$&quot;);</span>
+
+    /**
+     * Validate and sanitize user input for AI processing
+     */
+    public ValidationResult validateInput(String input, InputType type) {
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        if (input == null) {</span>
+<span class="nc" id="L53">            return ValidationResult.invalid(&quot;Input cannot be null&quot;);</span>
+        }
+
+        // Check for malicious patterns
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        for (Pattern pattern : MALICIOUS_PATTERNS) {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (pattern.matcher(input).matches()) {</span>
+<span class="fc" id="L59">                log.warn(&quot;Malicious pattern detected in input: {}&quot;, input.substring(0, Math.min(100, input.length())));</span>
+<span class="fc" id="L60">                return ValidationResult.invalid(&quot;Input contains potentially malicious content&quot;);</span>
+            }
+<span class="fc" id="L62">        }</span>
+
+        // Check length limits
+<span class="fc" id="L65">        int maxLength = getMaxLengthForType(type);</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (input.length() &gt; maxLength) {</span>
+<span class="nc" id="L67">            return ValidationResult.invalid(&quot;Input exceeds maximum length of &quot; + maxLength + &quot; characters&quot;);</span>
+        }
+
+        // Type-specific validation
+<span class="pc bpc" id="L71" title="3 of 4 branches missed.">        switch (type) {</span>
+            case EVENT_TITLE -&gt; {
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                if (!ALLOWED_EVENT_TITLE_PATTERN.matcher(input).matches()) {</span>
+<span class="nc" id="L74">                    return ValidationResult.invalid(&quot;Event title contains invalid characters&quot;);</span>
+                }
+            }
+            case EMAIL -&gt; {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">                if (!ALLOWED_EMAIL_PATTERN.matcher(input).matches()) {</span>
+<span class="fc" id="L79">                    return ValidationResult.invalid(&quot;Invalid email format&quot;);</span>
+                }
+            }
+            case PHONE -&gt; {
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                if (!ALLOWED_PHONE_PATTERN.matcher(input).matches()) {</span>
+<span class="nc" id="L84">                    return ValidationResult.invalid(&quot;Invalid phone number format&quot;);</span>
+                }
+            }
+            case MESSAGE, EVENT_DESCRIPTION, GENERAL -&gt; {
+                // No additional validation for these types
+            }
+        }
+
+        // Sanitize input
+<span class="fc" id="L93">        String sanitized = sanitizeInput(input, type);</span>
+        
+<span class="fc" id="L95">        return ValidationResult.valid(sanitized);</span>
+    }
+
+    /**
+     * Sanitize input by removing or escaping potentially dangerous characters
+     */
+    public String sanitizeInput(String input, InputType type) {
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        if (input == null) {</span>
+<span class="nc" id="L103">            return null;</span>
+        }
+
+<span class="fc" id="L106">        String sanitized = input.trim();</span>
+
+        // Remove or escape HTML/XML tags
+<span class="fc" id="L109">        sanitized = sanitized.replaceAll(&quot;&lt;[^&gt;]*&gt;&quot;, &quot;&quot;);</span>
+        
+        // Escape special characters for different contexts
+<span class="pc bpc" id="L112" title="4 of 5 branches missed.">        switch (type) {</span>
+            case EVENT_TITLE, EVENT_DESCRIPTION -&gt; {
+                // Remove excessive whitespace
+<span class="nc" id="L115">                sanitized = sanitized.replaceAll(&quot;\\s+&quot;, &quot; &quot;);</span>
+<span class="nc" id="L116">            }</span>
+            case EMAIL -&gt; {
+                // Email is already validated, just trim
+<span class="fc" id="L119">                sanitized = sanitized.toLowerCase().trim();</span>
+<span class="fc" id="L120">            }</span>
+            case PHONE -&gt; {
+                // Remove all non-digit characters except + and -
+<span class="nc" id="L123">                sanitized = sanitized.replaceAll(&quot;[^0-9+\\-]&quot;, &quot;&quot;);</span>
+<span class="nc" id="L124">            }</span>
+            case MESSAGE, GENERAL -&gt; {
+                // Remove excessive whitespace
+<span class="nc" id="L127">                sanitized = sanitized.replaceAll(&quot;\\s+&quot;, &quot; &quot;);</span>
+            }
+        }
+
+<span class="fc" id="L131">        return sanitized;</span>
+    }
+
+    /**
+     * Validate AI response before sending to user
+     */
+    public ValidationResult validateAIResponse(String response) {
+<span class="pc bpc" id="L138" title="2 of 4 branches missed.">        if (response == null || response.trim().isEmpty()) {</span>
+<span class="fc" id="L139">            return ValidationResult.invalid(&quot;AI response cannot be empty&quot;);</span>
+        }
+
+        // Check for malicious content in AI response
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (Pattern pattern : MALICIOUS_PATTERNS) {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            if (pattern.matcher(response).matches()) {</span>
+<span class="nc" id="L145">                log.warn(&quot;Malicious pattern detected in AI response&quot;);</span>
+<span class="nc" id="L146">                return ValidationResult.invalid(&quot;AI response contains potentially malicious content&quot;);</span>
+            }
+<span class="nc" id="L148">        }</span>
+
+        // Check length
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        if (response.length() &gt; MAX_MESSAGE_LENGTH) {</span>
+<span class="nc" id="L152">            return ValidationResult.invalid(&quot;AI response exceeds maximum length&quot;);</span>
+        }
+
+<span class="nc" id="L155">        return ValidationResult.valid(response);</span>
+    }
+
+    /**
+     * Check if user has permission to access AI features
+     */
+    public boolean hasAIPermission(String userId, String feature) {
+        // Implement permission checking logic here
+        // For now, return true for all authenticated users
+<span class="nc bnc" id="L164" title="All 4 branches missed.">        return userId != null &amp;&amp; !userId.trim().isEmpty();</span>
+    }
+
+    /**
+     * Log security events
+     */
+    public void logSecurityEvent(String userId, String event, String details) {
+<span class="nc" id="L171">        log.warn(&quot;Security Event - User: {} Event: {} Details: {}&quot;, userId, event, details);</span>
+        // Here you could send to a security monitoring system
+<span class="nc" id="L173">    }</span>
+
+    private int getMaxLengthForType(InputType type) {
+<span class="pc bpc" id="L176" title="3 of 4 branches missed.">        return switch (type) {</span>
+<span class="nc" id="L177">            case EVENT_TITLE -&gt; MAX_EVENT_TITLE_LENGTH;</span>
+<span class="nc" id="L178">            case EVENT_DESCRIPTION -&gt; MAX_EVENT_DESCRIPTION_LENGTH;</span>
+<span class="nc" id="L179">            case MESSAGE -&gt; MAX_MESSAGE_LENGTH;</span>
+<span class="fc" id="L180">            default -&gt; MAX_INPUT_LENGTH;</span>
+        };
+    }
+
+    /**
+     * Input types for validation
+     */
+<span class="fc" id="L187">    public enum InputType {</span>
+<span class="fc" id="L188">        MESSAGE,</span>
+<span class="fc" id="L189">        EVENT_TITLE,</span>
+<span class="fc" id="L190">        EVENT_DESCRIPTION,</span>
+<span class="fc" id="L191">        EMAIL,</span>
+<span class="fc" id="L192">        PHONE,</span>
+<span class="fc" id="L193">        GENERAL</span>
+    }
+
+    /**
+     * Validation result
+     */
+    public static class ValidationResult {
+        private final boolean valid;
+        private final String sanitizedInput;
+        private final String errorMessage;
+
+<span class="fc" id="L204">        private ValidationResult(boolean valid, String sanitizedInput, String errorMessage) {</span>
+<span class="fc" id="L205">            this.valid = valid;</span>
+<span class="fc" id="L206">            this.sanitizedInput = sanitizedInput;</span>
+<span class="fc" id="L207">            this.errorMessage = errorMessage;</span>
+<span class="fc" id="L208">        }</span>
+
+        public static ValidationResult valid(String sanitizedInput) {
+<span class="fc" id="L211">            return new ValidationResult(true, sanitizedInput, null);</span>
+        }
+
+        public static ValidationResult invalid(String errorMessage) {
+<span class="fc" id="L215">            return new ValidationResult(false, null, errorMessage);</span>
+        }
+
+        public boolean isValid() {
+<span class="fc" id="L219">            return valid;</span>
+        }
+
+        public String getSanitizedInput() {
+<span class="fc" id="L223">            return sanitizedInput;</span>
+        }
+
+        public String getErrorMessage() {
+<span class="fc" id="L227">            return errorMessage;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

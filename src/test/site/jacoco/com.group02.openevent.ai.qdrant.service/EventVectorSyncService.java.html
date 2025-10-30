@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventVectorSyncService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.ai.qdrant.service</a> &gt; <span class="el_source">EventVectorSyncService.java</span></div><h1>EventVectorSyncService.java</h1><pre class="source lang-java linenums">package com.group02.openevent.ai.qdrant.service;
+
+import com.group02.openevent.ai.service.EmbeddingService;
+import com.group02.openevent.model.enums.Building;
+import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.event.Place;
+import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.event.Speaker;
+import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.PlaceService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * Đồng bộ Event &amp; một số intent mẫu vào Qdrant (vector store)
+ */
+@Service
+<span class="fc" id="L26">@RequiredArgsConstructor</span>
+<span class="fc" id="L27">@Slf4j</span>
+public class EventVectorSyncService {
+
+    private final QdrantService qdrantService;     // com.group02.openevent.ai.qdrant.service.QdrantService (của bạn)
+    private final EventService eventService;       // com.group02.openevent.service.EventService
+    private final EmbeddingService embeddingService; // com.group02.openevent.ai.service.EmbeddingService
+    private final PlaceService placeService;
+
+<span class="fc" id="L35">    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;);</span>
+
+
+    /**
+     * Gộp text từ Event thành 1 đoạn để embed, bao gồm tên địa điểm và tên toà nhà/khu vực.
+     */
+    private String toSearchableText(Event e) {
+        // 1. Xử lý thông tin Diễn giả (Speakers)
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        String speakers = (e.getSpeakers() == null) ? &quot;&quot; :</span>
+<span class="fc" id="L44">                e.getSpeakers().stream()</span>
+<span class="fc" id="L45">                        .map(Speaker::getName)</span>
+<span class="fc" id="L46">                        .filter(Objects::nonNull)</span>
+<span class="fc" id="L47">                        .collect(Collectors.joining(&quot;; &quot;));</span>
+
+        // 2. Xử lý thông tin Địa điểm đã làm giàu (PlaceName + Building)
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        String places = (e.getPlaces() == null) ? &quot;&quot; :</span>
+<span class="fc" id="L51">                e.getPlaces().stream()</span>
+<span class="fc" id="L52">                        .map(p -&gt; {</span>
+<span class="nc" id="L53">                            String name = nullSafe(p.getPlaceName());</span>
+                            // Xử lý Building Enum (Cần phương thức getBuildingName(p) nếu Building là Enum)
+<span class="nc" id="L55">                            String buildingStr = getBuildingName(p);</span>
+
+                            // Gộp lại: &quot;Sảnh Alpha - Tòa Alpha&quot;
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                            if (!buildingStr.isEmpty()) {</span>
+<span class="nc" id="L59">                                return name + &quot; - Tòa &quot; + buildingStr;</span>
+                            }
+<span class="nc" id="L61">                            return name;</span>
+                        })
+<span class="pc bnc" id="L63" title="All 2 branches missed.">                        .filter(s -&gt; !s.isBlank())</span>
+<span class="fc" id="L64">                        .collect(Collectors.joining(&quot;; &quot;));</span>
+                         // Dùng &quot;;&quot; để tách biệt các địa điểm
+
+        // 2. Gộp tất cả các trường quan trọng thành một chuỗi tìm kiếm duy nhất
+<span class="fc" id="L68">        return String.join(&quot; &quot;,</span>
+                // Nội dung chính
+<span class="fc" id="L70">                nullSafe(e.getTitle()),</span>
+<span class="fc" id="L71">                nullSafe(e.getDescription()),</span>
+
+                // Nội dung/Lợi ích
+<span class="fc" id="L74">                nullSafe(e.getBenefits()),</span>
+<span class="fc" id="L75">                nullSafe(e.getLearningObjects()),</span>
+
+                // Thông tin Diễn giả
+                &quot;Speakers:&quot;, speakers,
+
+                // Thông tin Địa điểm đã làm giàu
+                places,
+
+                // Các thuộc tính metadata quan trọng (Capacity &amp; Points)
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">                e.getCapacity() != null ? &quot;Capacity:&quot; + e.getCapacity().toString() : &quot;&quot;,</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">                e.getPoints() != null ? &quot;Points:&quot; + e.getPoints().toString() : &quot;&quot;,</span>
+
+                // Thông tin Thời gian/Trạng thái
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">                &quot;StartsAt:&quot;, e.getStartsAt() != null ? e.getStartsAt().format(TS) : &quot;&quot;,</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">                &quot;EndsAt:&quot;, e.getEndsAt() != null ? e.getEndsAt().format(TS) : &quot;&quot;,</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">                &quot;Status:&quot;, e.getStatus() != null ? e.getStatus().name() : &quot;&quot;,</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">                &quot;Type:&quot;, e.getEventType() != null ? e.getEventType().name() : &quot;&quot;</span>
+<span class="fc" id="L92">        ).trim();</span>
+    }
+
+    // THÊM PHƯƠNG THỨC MỚI ĐỂ XỬ LÝ ENUM BUILDING
+    private String getBuildingName(Place p) {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (p.getBuilding() == null) {</span>
+<span class="nc" id="L98">            return &quot;&quot;;</span>
+        }
+<span class="nc" id="L100">        String name = p.getBuilding().name();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (name.equals(Building.NONE.name())) { // Giả sử Enum Building có NONE</span>
+<span class="nc" id="L102">            return &quot;&quot;; // Không thêm &quot;NONE&quot; vào chuỗi tìm kiếm</span>
+        }
+<span class="nc" id="L104">        return name;</span>
+    }
+
+    private String nullSafe(String s) {
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        return s == null ? &quot;&quot; : s;</span>
+    }
+    /**
+     * Đồng bộ toàn bộ sự kiện đang có vào Qdrant THEO LÔ.
+     */
+    @Transactional(readOnly = true)
+    public void syncAllEvents() {
+<span class="fc" id="L115">        List&lt;Event&gt; allEvents = eventService.getAllEvents();</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        if (allEvents.isEmpty()) {</span>
+<span class="nc" id="L117">            log.info(&quot;Không có sự kiện nào để đồng bộ.&quot;);</span>
+<span class="nc" id="L118">            return;</span>
+        }
+<span class="fc" id="L120">        log.info(&quot;Tìm thấy {} sự kiện. Bắt đầu đồng bộ theo lô...&quot;, allEvents.size());</span>
+
+        try {
+            // 1. Chuẩn bị tất cả văn bản cần tạo embedding
+<span class="fc" id="L124">            List&lt;String&gt; textsToEmbed = allEvents.stream().map(this::toSearchableText).toList();</span>
+
+            // 2. Gọi EmbeddingService MỘT LẦN DUY NHẤT
+<span class="fc" id="L127">            List&lt;float[]&gt; vectors = embeddingService.getEmbeddings(textsToEmbed);</span>
+
+            // 3. Chuẩn bị danh sách các điểm (points) để upsert
+<span class="fc" id="L130">            List&lt;Map&lt;String, Object&gt;&gt; pointsToUpsert = IntStream.range(0, allEvents.size())</span>
+<span class="fc" id="L131">                    .mapToObj(i -&gt; {</span>
+<span class="fc" id="L132">                        Event e = allEvents.get(i);</span>
+<span class="fc" id="L133">                        Map&lt;String, Object&gt; payload = createEventPayload(e);</span>
+
+<span class="fc" id="L135">                        String uniqueId = UUID.nameUUIDFromBytes((&quot;event_&quot; + e.getId()).getBytes()).toString();</span>
+
+<span class="fc" id="L137">                        Map&lt;String, Object&gt; point = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L138">                        point.put(&quot;id&quot;, uniqueId);</span>
+<span class="nc" id="L139">                        point.put(&quot;vector&quot;, toFloatList(vectors.get(i)));</span>
+<span class="nc" id="L140">                        point.put(&quot;payload&quot;, payload);</span>
+
+<span class="nc" id="L142">                        return point;</span>
+                    })
+<span class="nc" id="L144">                    .collect(Collectors.toList());</span>
+
+            // 4. Gọi QdrantService MỘT LẦN DUY NHẤT
+<span class="nc" id="L147">            qdrantService.upsertPoints(pointsToUpsert);</span>
+<span class="nc" id="L148">            log.info(&quot;✅ Đồng bộ thành công {} sự kiện vào Qdrant.&quot;, allEvents.size());</span>
+
+<span class="fc" id="L150">        } catch (Exception ex) {</span>
+<span class="fc" id="L151">            log.error(&quot;❌ Lỗi khi đồng bộ sự kiện theo lô: {}&quot;, ex.getMessage(), ex);</span>
+<span class="nc" id="L152">        }</span>
+<span class="fc" id="L153">    }</span>
+
+    /**
+     * Seed những prompt “free time” để AI nhận dạng intent nhanh
+     */
+//    public void seedPromptFreeTime() {
+//        List&lt;String&gt; intents = List.of(
+//                &quot;Gợi ý khung giờ học môn Toán&quot;,
+//                &quot;Bạn có thể gợi ý lịch học toán ngày mai, tuần sau được không?&quot;,
+//                &quot;Tôi muốn biết lúc nào rảnh để học&quot;,
+//                &quot;Bạn có thể cho tôi biết thời gian trống để lên lịch?&quot;,
+//                &quot;Tìm khoảng thời gian rảnh trong tuần&quot;,
+//                &quot;Lên lịch học phù hợp giúp tôi&quot;,
+//                &quot;Hãy đề xuất giờ học hợp lý&quot;
+//        );
+//        seedPrompts(intents, &quot;prompt_free_time&quot;);
+//    }
+
+    /**
+     * Seed những prompt “tổng hợp lịch”
+     */
+    public void seedPromptSummary() {
+<span class="nc" id="L175">        List&lt;String&gt; intents = List.of(</span>
+                &quot;Tổng hợp sự kiện hôm nay&quot;,
+                &quot;Sự kiện tuần tới&quot;,
+                &quot;Tổng hợp sự kiện ngày mai&quot;,
+                &quot;Có gì trong tuần này?&quot;,
+                &quot;Sự kiện tuần sau&quot;,
+                &quot;Tuần tới có gì không?&quot;,
+                &quot;Lịch trình hôm nay như thế nào?&quot;,
+                &quot;Cho tôi biết sự kiện hôm nay&quot;
+        );
+<span class="nc" id="L185">        seedBatch(intents, &quot;prompt&quot;, &quot;type&quot;, &quot;prompt_summary_time&quot;, &quot;prompt&quot;);</span>
+<span class="nc" id="L186">    }</span>
+
+    /**
+     * Seed prompt “gửi email trước sự kiện”
+     */
+    public void seedPromptSendEmail() {
+<span class="nc" id="L192">        List&lt;String&gt; intents = List.of(</span>
+                &quot;Gửi email cho tôi trước 30 phút sự kiện này bắt đầu&quot;,
+                &quot;Nhắc tôi qua email trước 40 phút sự kiện&quot;,
+                &quot;Trước 1 tiếng thì gửi email nhắc nhé&quot;,
+                &quot;Email nhắc nhở trước 45 phút&quot;,
+                &quot;Gửi thông báo mail trước khi sự kiện diễn ra&quot;,
+                &quot;Làm ơn nhắc tôi bằng email khoảng 30-60 phút trước workshop này bắt đầu&quot;
+        );
+<span class="nc" id="L200">        seedBatch(intents, &quot;prompt&quot;, &quot;type&quot;, &quot;prompt_send_email&quot;, &quot;prompt&quot;);</span>
+
+<span class="nc" id="L202">    }</span>
+
+    /**
+     * Seed intent “đã là hoạt động ngoài trời” để cảnh báo thời tiết
+     */
+    public void seedOutdoorActivities() {
+<span class="nc" id="L208">        List&lt;String&gt; vocab = List.of(</span>
+                &quot;đá bóng&quot;, &quot;bơi&quot;, &quot;dã ngoại&quot;, &quot;leo núi&quot;, &quot;chạy bộ&quot;, &quot;tennis&quot;, &quot;đạp xe&quot;,
+                &quot;chơi cầu lông&quot;, &quot;cắm trại&quot;, &quot;đi bộ đường dài&quot;, &quot;đi phượt&quot;, &quot;đi banahill&quot;
+        );
+<span class="nc" id="L212">        seedBatch(vocab, &quot;label&quot;, &quot;type&quot;, &quot;outdoor_activities&quot;, &quot;label&quot;);</span>
+<span class="nc" id="L213">    }</span>
+
+    /**
+     * Seed intent “tạo sự kiện”
+     */
+    public void seedPromptAddEvent() {
+<span class="nc" id="L219">        List&lt;String&gt; intents = List.of(</span>
+                &quot;Lên sự kiện âm nhạc vào lúc 7h đến 9h&quot;,
+                &quot;Tạo sự kiện Inno vào lúc 11h đến 13h&quot;,
+                &quot;Tạo 1 buổi workshop&quot;,
+                &quot;Tạo Event Thi Hoa Hậu vào ngày mai lúc 5h tại FPT University&quot;,
+                &quot;Tạo cuộc thi HackAiThon&quot;
+        );
+<span class="nc" id="L226">        seedBatch(intents, &quot;tool_prompt&quot;, &quot;toolName&quot;, &quot;ADD_EVENT&quot;, &quot;prompt&quot;);</span>
+<span class="nc" id="L227">    }</span>
+
+    /* ==================== helpers ==================== */
+
+    private void seedPrompts(List&lt;String&gt; prompts, String type) {
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        for (String p : prompts) {</span>
+            try {
+<span class="nc" id="L234">                float[] vec = embeddingService.getEmbedding(p);</span>
+<span class="nc" id="L235">                Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L236">                payload.put(&quot;kind&quot;, &quot;prompt&quot;);</span>
+<span class="nc" id="L237">                payload.put(&quot;type&quot;, type);</span>
+<span class="nc" id="L238">                payload.put(&quot;prompt&quot;, p);</span>
+<span class="nc" id="L239">                qdrantService.upsertEmbedding(UUID.randomUUID().toString(), vec, payload);</span>
+<span class="nc" id="L240">            } catch (Exception ex) {</span>
+<span class="nc" id="L241">                log.error(&quot;Seed prompt failed: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L242">            }</span>
+<span class="nc" id="L243">        }</span>
+<span class="nc" id="L244">    }</span>
+
+    private void seedLabels(List&lt;String&gt; labels, String type) {
+<span class="nc bnc" id="L247" title="All 2 branches missed.">        for (String label : labels) {</span>
+            try {
+<span class="nc" id="L249">                float[] vec = embeddingService.getEmbedding(label);</span>
+<span class="nc" id="L250">                Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L251">                payload.put(&quot;kind&quot;, &quot;label&quot;);</span>
+<span class="nc" id="L252">                payload.put(&quot;type&quot;, type);</span>
+<span class="nc" id="L253">                payload.put(&quot;label&quot;, label);</span>
+<span class="nc" id="L254">                qdrantService.upsertEmbedding(UUID.randomUUID().toString(), vec, payload);</span>
+<span class="nc" id="L255">            } catch (Exception ex) {</span>
+<span class="nc" id="L256">                log.error(&quot;Seed label failed: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L257">            }</span>
+<span class="nc" id="L258">        }</span>
+<span class="nc" id="L259">    }</span>
+
+    private void seedToolPrompts(List&lt;String&gt; prompts, String toolName) {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        for (String p : prompts) {</span>
+            try {
+<span class="nc" id="L264">                float[] vec = embeddingService.getEmbedding(p);</span>
+<span class="nc" id="L265">                Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L266">                payload.put(&quot;kind&quot;, &quot;tool_prompt&quot;);</span>
+<span class="nc" id="L267">                payload.put(&quot;toolName&quot;, toolName);</span>
+<span class="nc" id="L268">                payload.put(&quot;prompt&quot;, p);</span>
+<span class="nc" id="L269">                qdrantService.upsertEmbedding(UUID.randomUUID().toString(), vec, payload);</span>
+<span class="nc" id="L270">            } catch (Exception ex) {</span>
+<span class="nc" id="L271">                log.error(&quot;Seed tool prompt failed: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L272">            }</span>
+<span class="nc" id="L273">        }</span>
+<span class="nc" id="L274">    }</span>
+
+    /**
+     * Seed tất cả các Place vào Qdrant THEO LÔ.
+     */
+    public void seedAllPlaces() {
+<span class="nc" id="L280">        List&lt;Place&gt; allPlaces = placeService.findAllPlaces();</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        if (allPlaces.isEmpty()) {</span>
+<span class="nc" id="L282">            log.info(&quot;Không có địa điểm nào để seed.&quot;);</span>
+<span class="nc" id="L283">            return;</span>
+        }
+<span class="nc" id="L285">        log.info(&quot;Tìm thấy {} địa điểm. Bắt đầu seed theo lô...&quot;, allPlaces.size());</span>
+
+        try {
+            // 1. Chuẩn bị texts
+<span class="nc" id="L289">            List&lt;String&gt; textsToEmbed = allPlaces.stream()</span>
+<span class="nc" id="L290">                    .map(p -&gt; String.join(&quot; &quot;, nullSafe(p.getPlaceName()), getBuildingName(p)).trim())</span>
+<span class="nc" id="L291">                    .toList();</span>
+
+            // 2. Tạo embeddings một lần
+<span class="nc" id="L294">            List&lt;float[]&gt; vectors = embeddingService.getEmbeddings(textsToEmbed);</span>
+
+            // 3. Chuẩn bị points
+<span class="nc" id="L297">            List&lt;Map&lt;String, Object&gt;&gt; pointsToUpsert = IntStream.range(0, allPlaces.size())</span>
+<span class="nc" id="L298">                    .mapToObj(i -&gt; {</span>
+<span class="nc" id="L299">                        Place p = allPlaces.get(i);</span>
+<span class="nc" id="L300">                        Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L301">                        payload.put(&quot;kind&quot;, &quot;place&quot;);</span>
+<span class="nc" id="L302">                        payload.put(&quot;place_id&quot;, p.getId());</span>
+<span class="nc" id="L303">                        payload.put(&quot;name&quot;, nullSafe(p.getPlaceName()));</span>
+<span class="nc" id="L304">                        payload.put(&quot;building&quot;, getBuildingName(p));</span>
+
+<span class="nc" id="L306">                        Map&lt;String, Object&gt; point = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L307">                        String uniqueId = UUID.nameUUIDFromBytes((&quot;place_&quot; + p.getId()).getBytes()).toString();</span>
+<span class="nc" id="L308">                        point.put(&quot;id&quot;, uniqueId);</span>
+<span class="nc" id="L309">                        point.put(&quot;vector&quot;, toFloatList(vectors.get(i)));</span>
+<span class="nc" id="L310">                        point.put(&quot;payload&quot;, payload);</span>
+
+<span class="nc" id="L312">                        return point;</span>
+                    })
+<span class="nc" id="L314">                    .collect(Collectors.toList());</span>
+
+            // 4. Upsert một lần
+<span class="nc" id="L317">            qdrantService.upsertPoints(pointsToUpsert);</span>
+<span class="nc" id="L318">            log.info(&quot;✅ Seed thành công {} địa điểm vào Qdrant.&quot;, allPlaces.size());</span>
+
+<span class="nc" id="L320">        } catch (Exception ex) {</span>
+<span class="nc" id="L321">            log.error(&quot;❌ Lỗi khi seed địa điểm theo lô: {}&quot;, ex.getMessage(), ex);</span>
+<span class="nc" id="L322">        }</span>
+<span class="nc" id="L323">    }</span>
+
+    /**
+     * ✅ PHƯƠNG THỨC CHUNG ĐỂ SEED THEO LÔ, TRÁNH LẶP CODE
+     */
+    private void seedBatch(List&lt;String&gt; contents, String kind, String typeKey, String typeValue, String contentKey) {
+<span class="nc bnc" id="L329" title="All 4 branches missed.">        if (contents == null || contents.isEmpty()) return;</span>
+<span class="nc" id="L330">        log.info(&quot;Bắt đầu seed {} items cho kind '{}', type '{}'...&quot;, contents.size(), kind, typeValue);</span>
+
+        try {
+            // 1. Tạo tất cả embeddings một lần
+<span class="nc" id="L334">            List&lt;float[]&gt; vectors = embeddingService.getEmbeddings(contents);</span>
+
+            // 2. Chuẩn bị points
+<span class="nc" id="L337">            List&lt;Map&lt;String, Object&gt;&gt; pointsToUpsert = IntStream.range(0, contents.size())</span>
+<span class="nc" id="L338">                    .mapToObj(i -&gt; {</span>
+<span class="nc" id="L339">                        Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L340">                        payload.put(&quot;kind&quot;, kind);</span>
+<span class="nc" id="L341">                        payload.put(typeKey, typeValue);</span>
+<span class="nc" id="L342">                        payload.put(contentKey, contents.get(i));</span>
+
+<span class="nc" id="L344">                        Map&lt;String, Object&gt; point = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L345">                        point.put(&quot;id&quot;, UUID.randomUUID().toString());</span>
+<span class="nc" id="L346">                        point.put(&quot;vector&quot;, toFloatList(vectors.get(i)));</span>
+<span class="nc" id="L347">                        point.put(&quot;payload&quot;, payload);</span>
+
+<span class="nc" id="L349">                        return point;</span>
+                    })
+<span class="nc" id="L351">                    .collect(Collectors.toList());</span>
+
+            // 3. Upsert tất cả points một lần
+<span class="nc" id="L354">            qdrantService.upsertPoints(pointsToUpsert);</span>
+<span class="nc" id="L355">            log.info(&quot;✅ Seed thành công {} items.&quot;, contents.size());</span>
+<span class="nc" id="L356">        } catch (Exception ex) {</span>
+<span class="nc" id="L357">            log.error(&quot;❌ Lỗi khi seed theo lô cho kind '{}', type '{}': {}&quot;, kind, typeValue, ex.getMessage());</span>
+<span class="nc" id="L358">        }</span>
+<span class="nc" id="L359">    }</span>
+    // Helper để chuyển float[] sang List&lt;Float&gt;
+    private List&lt;Float&gt; toFloatList(float[] vector) {
+<span class="nc bnc" id="L362" title="All 2 branches missed.">        if (vector == null) return Collections.emptyList();</span>
+<span class="nc" id="L363">        return IntStream.range(0, vector.length)</span>
+<span class="nc" id="L364">                .mapToObj(i -&gt; vector[i])</span>
+<span class="nc" id="L365">                .collect(Collectors.toList());</span>
+    }
+    /**
+     * Helper để tạo payload đầy đủ cho một đối tượng Event.
+     * Tách ra từ hàm syncAllEvents cũ để tái sử dụng và làm sạch code.
+     * @param e Đối tượng Event cần tạo payload.
+     * @return Một Map chứa tất cả các metadata cần thiết cho Qdrant.
+     */
+    private Map&lt;String, Object&gt; createEventPayload(Event e) {
+<span class="fc" id="L374">        Map&lt;String, Object&gt; payload = new LinkedHashMap&lt;&gt;();</span>
+
+        // --- Thông tin cơ bản ---
+<span class="fc" id="L377">        payload.put(&quot;kind&quot;, &quot;event&quot;);</span>
+<span class="fc" id="L378">        payload.put(&quot;event_id&quot;, e.getId());</span>
+<span class="fc" id="L379">        payload.put(&quot;title&quot;, nullSafe(e.getTitle()));</span>
+<span class="fc" id="L380">        payload.put(&quot;description&quot;, nullSafe(e.getDescription()));</span>
+
+        // --- Thời gian (định dạng thành chuỗi) ---
+        // Ghi chú: Lưu dưới dạng Unix timestamp (số nguyên) sẽ tốt hơn cho việc lọc theo khoảng thời gian
+        // Ví dụ: payload.put(&quot;startsAt_timestamp&quot;, e.getStartsAt() != null ? e.getStartsAt().toEpochSecond(java.time.ZoneOffset.UTC) : null);
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">        payload.put(&quot;startsAt&quot;, e.getStartsAt() != null ? e.getStartsAt().format(TS) : null);</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">        payload.put(&quot;endsAt&quot;, e.getEndsAt() != null ? e.getEndsAt().format(TS) : null);</span>
+<span class="pc bpc" id="L387" title="1 of 2 branches missed.">        payload.put(&quot;enrollDeadline&quot;, e.getEnrollDeadline() != null ? e.getEnrollDeadline().format(TS) : null);</span>
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">        payload.put(&quot;publicDate&quot;, e.getPublicDate() != null ? e.getPublicDate().format(TS) : null);</span>
+
+        // --- Phân loại và Trạng thái ---
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">        payload.put(&quot;status&quot;, e.getStatus() != null ? e.getStatus().name() : null);</span>
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">        payload.put(&quot;eventType&quot;, e.getEventType() != null ? e.getEventType().name() : null); // Thay vì dùng OTHERS, để null nếu không có</span>
+
+        // --- Thông tin tổ chức ---
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">        payload.put(&quot;orgName&quot;, e.getOrganization() != null ? e.getOrganization().getOrgName() : null);</span>
+<span class="pc bpc" id="L396" title="1 of 2 branches missed.">        payload.put(&quot;hostName&quot;, e.getHost() != null ? e.getHost().getHostName() : null);</span>
+
+        // --- Thuộc tính khác ---
+<span class="fc" id="L399">        payload.put(&quot;capacity&quot;, e.getCapacity());</span>
+<span class="fc" id="L400">        payload.put(&quot;points&quot;, e.getPoints());</span>
+<span class="fc" id="L401">        payload.put(&quot;benefits&quot;, e.getBenefits());</span>
+<span class="fc" id="L402">        payload.put(&quot;learningObjects&quot;, e.getLearningObjects());</span>
+
+        // --- Dữ liệu từ các mối quan hệ (Relationships) ---
+<span class="fc" id="L405">        payload.put(&quot;speakers&quot;,</span>
+<span class="pc bpc" id="L406" title="1 of 2 branches missed.">                e.getSpeakers() == null ? Collections.emptyList()</span>
+<span class="fc" id="L407">                        : e.getSpeakers().stream().map(Speaker::getName).filter(Objects::nonNull).toList()</span>
+        );
+
+<span class="fc" id="L410">        payload.put(&quot;places&quot;,</span>
+<span class="pc bpc" id="L411" title="1 of 2 branches missed.">                e.getPlaces() == null ? Collections.emptyList()</span>
+<span class="fc" id="L412">                        : e.getPlaces().stream().map(Place::getPlaceName).filter(Objects::nonNull).toList()</span>
+        );
+
+        // --- Thông tin giá vé ---
+<span class="fc" id="L416">        payload.put(&quot;minPrice&quot;, e.getMinTicketPice());</span>
+<span class="fc" id="L417">        payload.put(&quot;maxPrice&quot;, e.getMaxTicketPice());</span>
+
+<span class="fc" id="L419">        return payload;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,7 +1,7 @@
 package com.group02.openevent.controller.request;
 
-
 import com.group02.openevent.annotation.RequireEventHost;
+import com.group02.openevent.annotation.RequireRequestReceiver; // THÊM MỚI
 import com.group02.openevent.controller.payout.PayoutController;
 import com.group02.openevent.dto.notification.RequestFormDTO;
 import com.group02.openevent.dto.requestApproveEvent.ApproveRequestDTO;
@@ -19,12 +19,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException; // THÊM MỚI
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
+import java.util.NoSuchElementException; // THÊM MỚI (hoặc khác tùy theo logic aspect)
 
 @Controller
 @RequestMapping("/api/requests")
@@ -32,7 +33,7 @@ import java.util.List;
 public class RequestController {
     private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
     private final RequestService requestService;
-    
+
     /**
      * Create a new request (e.g., event approval request)
      */
@@ -46,6 +47,7 @@ public class RequestController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
+
     @GetMapping("/form")
     public String showRequestForm(
             @RequestParam Long eventId,
@@ -59,12 +61,13 @@ public class RequestController {
         model.addAttribute("formData", formData);
         return "fragments/request-form";
     }
+
     @PostMapping(consumes = {"multipart/form-data"})
     @ResponseBody
     @RequireEventHost(eventIdParamName = "eventId", userIdParamName = "senderId")
     public ResponseEntity<RequestDTO> createRequestWithFile(
             @SessionAttribute("ACCOUNT_ID") Long senderId,
-//            @RequestParam("senderId") Long senderId,
+            // @RequestParam("senderId") Long senderId,
             @RequestParam("receiverId") Long receiverId,
             @RequestParam("type") RequestType type,
             @RequestParam(value = "eventId", required = false) Long eventId,
@@ -89,39 +92,47 @@ public class RequestController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
-    
+
     /**
      * Approve a request
      */
     @PutMapping("/{requestId}/approve")
     @ResponseBody
+    @RequireRequestReceiver // <-- THÊM MỚI
     public ResponseEntity<RequestDTO> approveRequest(
             @PathVariable Long requestId,
-            @RequestBody ApproveRequestDTO approveRequestDTO) {
+            @RequestBody ApproveRequestDTO approveRequestDTO,
+            @SessionAttribute("ACCOUNT_ID") Long currentUserId) { // <-- THÊM MỚI
         try {
             RequestDTO approvedRequest = requestService.approveRequest(requestId, approveRequestDTO);
             return ResponseEntity.ok(approvedRequest);
+        } catch (AccessDeniedException e) { // <-- THÊM MỚI
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
-    
+
     /**
      * Reject a request
      */
     @PutMapping("/{requestId}/reject")
     @ResponseBody
+    @RequireRequestReceiver // <-- THÊM MỚI
     public ResponseEntity<RequestDTO> rejectRequest(
             @PathVariable Long requestId,
-            @RequestBody ApproveRequestDTO approveRequestDTO) {
+            @RequestBody ApproveRequestDTO approveRequestDTO,
+            @SessionAttribute("ACCOUNT_ID") Long currentUserId) { // <-- THÊM MỚI
         try {
             RequestDTO rejectedRequest = requestService.rejectRequest(requestId, approveRequestDTO);
             return ResponseEntity.ok(rejectedRequest);
+        } catch (AccessDeniedException e) { // <-- THÊM MỚI
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
-    
+
     /**
      * Get request by ID
      */
@@ -132,7 +143,7 @@ public class RequestController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    
+
     /**
      * Get all requests with optional filters
      */
@@ -141,9 +152,7 @@ public class RequestController {
     public ResponseEntity<List<RequestDTO>> getAllRequests(
             @RequestParam(required = false) RequestStatus status,
             @RequestParam(required = false) RequestType type) {
-        
         List<RequestDTO> requests;
-        
         if (status != null) {
             requests = requestService.getRequestsByStatus(status);
         } else if (type != null) {
@@ -151,10 +160,9 @@ public class RequestController {
         } else {
             requests = requestService.getAllRequests();
         }
-        
         return ResponseEntity.ok(requests);
     }
-    
+
     /**
      * Get requests with pagination
      */
@@ -167,16 +175,14 @@ public class RequestController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
-        
-        Sort sort = sortDir.equalsIgnoreCase("ASC") 
-                ? Sort.by(sortBy).ascending() 
+        Sort sort = sortDir.equalsIgnoreCase("ASC")
+                ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
         Page<RequestDTO> requests = requestService.listRequests(status, type, pageable);
         return ResponseEntity.ok(requests);
     }
-    
+
     /**
      * Get requests by sender ID
      */
@@ -186,7 +192,7 @@ public class RequestController {
         List<RequestDTO> requests = requestService.getRequestsBySenderId(senderId);
         return ResponseEntity.ok(requests);
     }
-    
+
     /**
      * Get requests by receiver ID
      */
@@ -196,7 +202,7 @@ public class RequestController {
         List<RequestDTO> requests = requestService.getRequestsByReceiverId(receiverId);
         return ResponseEntity.ok(requests);
     }
-    
+
     /**
      * Get requests by event ID
      */

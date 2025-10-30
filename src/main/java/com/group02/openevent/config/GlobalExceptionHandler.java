@@ -6,9 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 @Slf4j
@@ -34,5 +35,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN) // Trả về 403
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
+        // Bạn có thể dùng DTO lỗi của riêng mình ở đây
+        Map<String, String> body = new HashMap<>();
+        body.put("error", "Access Denied");
+        body.put("message", ex.getMessage()); // Thông báo từ Aspect
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 }

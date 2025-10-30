@@ -61,24 +61,30 @@ public class EventServiceImpl implements EventService {
         Event event;
         log.info("Saving event {}", request.getEventType());
         log.info("Saving event from DTO type: {}", request.getClass().getName());
-        switch (request.getEventType()) {
-            case WORKSHOP:
-                event = new WorkshopEvent();
-                break;
-            case MUSIC:
-                event = new MusicEvent();
-                break;
-            case FESTIVAL:
-                event = new FestivalEvent();
-                break;
-            case COMPETITION:
-                event = new CompetitionEvent();
-                break;
-            default:
-                // Khối này chỉ dành cho trường hợp EventType không hợp lệ hoặc không có
-                log.warn("Unknown or null EventType received. Defaulting to generic Event.");
-                event = new Event();
-                break;
+        EventType type = request.getEventType();
+        if (type == null) {
+            log.warn("Null EventType received. Defaulting to generic Event.");
+            event = new Event();
+        }else {
+            switch (request.getEventType()) {
+                case WORKSHOP:
+                    event = new WorkshopEvent();
+                    break;
+                case MUSIC:
+                    event = new MusicEvent();
+                    break;
+                case FESTIVAL:
+                    event = new FestivalEvent();
+                    break;
+                case COMPETITION:
+                    event = new CompetitionEvent();
+                    break;
+                default:
+                    // Khối này chỉ dành cho trường hợp EventType không hợp lệ hoặc không có
+                    log.warn("Unknown or null EventType received. Defaulting to generic Event.");
+                    event = new Event();
+                    break;
+            }
         }
         log.info("Saving event {}", event.getClass().getName());
         eventMapper.createEventFromRequest(request, event);

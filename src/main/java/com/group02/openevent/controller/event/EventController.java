@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.TicketTypeService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -26,7 +27,9 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -186,115 +189,55 @@ public class EventController {
         }
     }
 
-    @PostMapping("/upload/image")
-    @ResponseBody
-    public ResponseEntity<Event> uploadImage(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("index") int index,
-            @RequestParam("mainPoster") boolean mainPoster,
-            @RequestParam("eventId") Long eventId) throws IOException {
-        String url = imageService.saveImage(file);
-        Optional<Event> optionalEvent = eventService.getEventById(eventId);
-        if (optionalEvent.isPresent()) {
-            Event event = optionalEvent.get();
-            EventImage eventImage = new EventImage(url, index, mainPoster, event);
-
-            optionalEvent.get().getEventImages().add(eventImage);
-
-
-            return ResponseEntity.ok(eventService.saveEvent(event));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @PostMapping("/upload/multiple-images")
     @ResponseBody
-    public ResponseEntity<Event> uploadMultipleImages(
+    public ResponseEntity<?> uploadMultipleImages(
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("orderIndexes") int[] orderIndexes,
             @RequestParam("mainPosters") boolean[] mainPosters,
-            @RequestParam("eventId") Long eventId) throws IOException {
-
-        Optional<Event> optionalEvent = eventService.getEventById(eventId);
-        if (!optionalEvent.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Event event = optionalEvent.get();
-
-        // Validate arrays length
-        if (files.length != orderIndexes.length || files.length != mainPosters.length) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        // Process each file
-        for (int i = 0; i < files.length; i++) {
-            MultipartFile file = files[i];
-            int orderIndex = orderIndexes[i];
-            boolean mainPoster = mainPosters[i];
-
-            // Validate file
-            if (file.isEmpty()) continue;
-
-            // Save image and get URL
-            String url = imageService.saveImage(file);
-
-            // Create EventImage
-            EventImage eventImage = new EventImage(url, orderIndex, mainPoster, event);
-            event.getEventImages().add(eventImage);
-        }
-
-        // Save event with new images
-        Event savedEvent = eventService.saveEvent(event);
-        return ResponseEntity.ok(savedEvent);
-    }
-
-    @PostMapping("/upload/images-batch")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<String>> uploadImagesBatch(
-            @RequestParam("eventId") Long eventId,
-            @RequestParam("images") String imagesJson) {
-
+            @RequestParam("eventId") Long eventId) {
         try {
-            // Parse images data from JSON
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            java.util.List<java.util.Map<String, Object>> imagesData =
-                    mapper.readValue(imagesJson, java.util.List.class);
-
             Optional<Event> optionalEvent = eventService.getEventById(eventId);
             if (!optionalEvent.isPresent()) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Event not found"));
             }
 
             Event event = optionalEvent.get();
 
-            // Process each image data
-            for (java.util.Map<String, Object> imageData : imagesData) {
-                // This would need to be implemented based on your image service
-                // For now, we'll create a placeholder
-                String url = "placeholder_url_" + System.currentTimeMillis();
-                int orderIndex = (Integer) imageData.get("orderIndex");
-                boolean mainPoster = (Boolean) imageData.get("mainPoster");
+            // Validate arrays length
+            if (files.length != orderIndexes.length || files.length != mainPosters.length) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid input: arrays have mismatched lengths"));
+            }
 
+            if (event.getEventImages() == null)
+                event.setEventImages(new HashSet<>()); // tránh NullPointerException
+
+            // Process each file
+            for (int i = 0; i < files.length; i++) {
+                MultipartFile file = files[i];
+                int orderIndex = orderIndexes[i];
+                boolean mainPoster = mainPosters[i];
+
+                if (file.isEmpty()) continue;
+
+                String url = imageService.saveImage(file);
                 EventImage eventImage = new EventImage(url, orderIndex, mainPoster, event);
                 event.getEventImages().add(eventImage);
             }
 
-            // Save event
-            eventService.saveEvent(event);
-
-            ApiResponse<String> response = new ApiResponse<>();
-            response.setResult("Images uploaded successfully");
-            return ResponseEntity.ok(response);
+            Event savedEvent = eventService.saveEvent(event);
+            return ResponseEntity.ok(savedEvent);
 
         } catch (Exception e) {
-            log.error("Error uploading images batch", e);
-            ApiResponse<String> response = new ApiResponse<>();
-
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Internal server error", "message", e.getMessage()));
         }
     }
+
+
+
 
     // Delete a single ticket type by id (direct hard delete)
     @DeleteMapping("/ticket/{ticketTypeId}")
@@ -320,5 +263,6 @@ public class EventController {
             return org.springframework.http.ResponseEntity.status(500).body(err);
         }
     }
+
 
 }

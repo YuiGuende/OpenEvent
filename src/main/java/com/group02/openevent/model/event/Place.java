@@ -42,6 +42,9 @@ public class Place {
         this.placeName = placeName;
     }
 
+    public Place(long l, String oldA, String b0) {
+    }
+
     // Getter & Setter
     public Long getId() {
         return id;

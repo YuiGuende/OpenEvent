@@ -156,7 +156,7 @@ public class Event {
     public Event() {
     }
 
-    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
+    public Event(Long id,String title, Event parentEvent, List<Event> subEvents , String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
         this.id = id;
         this.poster = poster;
         this.parentEvent = parentEvent;
@@ -182,6 +182,9 @@ public class Event {
         this.organization = organization;
         this.venueAddress = venueAddress;
         this.guidelines = guidelines;
+    }
+
+    public Event(long l, String testEvent) {
     }
 
     @Override

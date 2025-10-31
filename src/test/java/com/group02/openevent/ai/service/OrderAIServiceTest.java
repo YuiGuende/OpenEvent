@@ -64,6 +64,134 @@ class OrderAIServiceTest {
 		TestPendingOrders.put(sut, userId, seedPending);
 	}
 
+	// ==== startOrderCreation ====
+	@ParameterizedTest
+	@DisplayName("startOrderCreation: no event found or no tickets")
+	@MethodSource("startOrder_emptyCases")
+	void startOrderCreation_emptyCases(java.util.List<Event> events, java.util.List<TicketType> tickets, String expectedContain) {
+		when(eventService.findByTitleAndPublicStatus("Demo"))
+				.thenReturn(events);
+		if (events != null && !events.isEmpty()) {
+			when(ticketTypeService.getTicketTypesByEventId(events.get(0).getId())).thenReturn(tickets);
+		}
+		String res = sut.startOrderCreation(userId, "Demo");
+		assertThat(res).contains(expectedContain);
+	}
+
+	static Stream<Arguments> startOrder_emptyCases() {
+		Event ev = new Event(); ev.setId(1L); ev.setTitle("E1");
+		return Stream.of(
+				Arguments.of(java.util.List.of(), java.util.List.of(), "Không tìm thấy sự kiện"),
+				Arguments.of(java.util.List.of(ev), java.util.List.of(), "hiện không có vé nào")
+		);
+	}
+
+	@org.junit.jupiter.api.Test
+	void startOrderCreation_success_setsPendingAndListsTickets() {
+		Event ev = new Event(); ev.setId(2L); ev.setTitle("Music Night");
+		TicketType vip = new TicketType(); vip.setName("VIP"); vip.setPrice(BigDecimal.valueOf(100000)); vip.setTotalQuantity(10); vip.setSoldQuantity(0);
+		TicketType std = new TicketType(); std.setName("Standard"); std.setPrice(BigDecimal.valueOf(50000)); std.setTotalQuantity(5); std.setSoldQuantity(0);
+		when(eventService.findByTitleAndPublicStatus("Music"))
+				.thenReturn(java.util.List.of(ev));
+		when(ticketTypeService.getTicketTypesByEventId(2L)).thenReturn(java.util.List.of(vip, std));
+		String res = sut.startOrderCreation(userId, "Music");
+		assertThat(res).contains("Các loại vé có sẵn").contains("VIP").contains("Standard");
+		assertThat(sut.hasPendingOrder(userId)).isTrue();
+		assertThat(sut.getPendingOrder(userId).getEvent().getId()).isEqualTo(2L);
+	}
+
+	// ==== selectTicketType ====
+	@org.junit.jupiter.api.Test
+	void selectTicketType_requiresStart() {
+		String msg = sut.selectTicketType(userId + 999, "VIP");
+		assertThat(msg).contains("Vui lòng chọn sự kiện trước");
+	}
+
+	@org.junit.jupiter.api.Test
+	void selectTicketType_notFound_listsOptions() {
+		Event ev = new Event(); ev.setId(3L); ev.setTitle("Conf");
+		TestPendingOrders.edit(sut, userId, po -> { po.setEvent(ev); });
+		TicketType a = new TicketType(); a.setName("A"); a.setTotalQuantity(1); a.setSoldQuantity(0);
+		TicketType b = new TicketType(); b.setName("B"); b.setTotalQuantity(1); b.setSoldQuantity(0);
+		when(ticketTypeService.getTicketTypesByEventId(3L)).thenReturn(java.util.List.of(a,b));
+		String msg = sut.selectTicketType(userId, "VIP");
+		assertThat(msg).contains("Không tìm thấy loại vé").contains("A").contains("B");
+	}
+
+	@org.junit.jupiter.api.Test
+	void selectTicketType_unavailable() {
+		Event ev = new Event(); ev.setId(4L); ev.setTitle("Show");
+		TestPendingOrders.edit(sut, userId, po -> { po.setEvent(ev); });
+		TicketType vip = new TicketType(); vip.setName("VIP"); vip.setTotalQuantity(0); vip.setSoldQuantity(0);
+		when(ticketTypeService.getTicketTypesByEventId(4L)).thenReturn(java.util.List.of(vip));
+		String msg = sut.selectTicketType(userId, "vip");
+		assertThat(msg).contains("đã hết");
+	}
+
+	@org.junit.jupiter.api.Test
+	void selectTicketType_success_setsStepAndTicket() {
+		Event ev = new Event(); ev.setId(5L); ev.setTitle("Meetup");
+		TestPendingOrders.edit(sut, userId, po -> { po.setEvent(ev); });
+		TicketType std = new TicketType(); std.setName("Standard"); std.setTotalQuantity(2); std.setSoldQuantity(0); std.setPrice(BigDecimal.valueOf(1000));
+		when(ticketTypeService.getTicketTypesByEventId(5L)).thenReturn(java.util.List.of(std));
+		String msg = sut.selectTicketType(userId, "stand");
+		assertThat(msg).contains("Vui lòng cung cấp thông tin");
+		assertThat(sut.getPendingOrder(userId).getTicketType().getName()).isEqualTo("Standard");
+		assertThat(sut.getPendingOrder(userId).getCurrentStep()).isEqualTo(PendingOrder.OrderStep.PROVIDE_INFO);
+	}
+
+	// ==== provideInfo ====
+	@org.junit.jupiter.api.Test
+	void provideInfo_requiresTicket() {
+		TestPendingOrders.edit(sut, userId, po -> { po.setTicketType(null); });
+		String res = sut.provideInfo(userId, java.util.Map.of("name","A"));
+		assertThat(res).contains("Vui lòng chọn loại vé trước");
+	}
+
+	@org.junit.jupiter.api.Test
+	void provideInfo_incomplete_returnsMissing() {
+		Event ev = new Event(); ev.setId(6L); ev.setTitle("Expo");
+		TicketType std = new TicketType(); std.setName("Std");
+		TestPendingOrders.edit(sut, userId, po -> { po.setEvent(ev); po.setTicketType(std); po.setParticipantName(null); po.setParticipantEmail(null); });
+		String res = sut.provideInfo(userId, java.util.Map.of("name",""));
+		assertThat(res).contains("Còn thiếu thông tin").contains("Email");
+	}
+
+	@org.junit.jupiter.api.Test
+	void provideInfo_complete_confirmsAndSetsStep() {
+		Event ev = new Event(); ev.setId(7L); ev.setTitle("Summit");
+		TicketType std = new TicketType(); std.setName("Std"); std.setPrice(BigDecimal.valueOf(123));
+		TestPendingOrders.edit(sut, userId, po -> { po.setEvent(ev); po.setTicketType(std); po.setParticipantName(null); po.setParticipantEmail(null); });
+		String res = sut.provideInfo(userId, java.util.Map.of(
+				"name","Alice",
+				"email","a@b.com",
+				"phone","0123"
+		));
+		assertThat(res).contains("Xác nhận thông tin đơn hàng").contains("Summit").contains("Alice");
+		assertThat(sut.getPendingOrder(userId).getCurrentStep()).isEqualTo(PendingOrder.OrderStep.CONFIRM_ORDER);
+	}
+
+	// ==== cancel/get/has pending ====
+	@org.junit.jupiter.api.Test
+	void cancelOrder_whenPresent_thenRemoved() {
+		assertThat(sut.hasPendingOrder(userId)).isTrue();
+		String msg = sut.cancelOrder(userId);
+		assertThat(msg).contains("Đã hủy đơn hàng");
+		assertThat(sut.hasPendingOrder(userId)).isFalse();
+	}
+
+	@org.junit.jupiter.api.Test
+	void cancelOrder_whenNone_thenInfo() {
+		String msg = sut.cancelOrder(999L);
+		assertThat(msg).contains("Không có đơn hàng nào đang chờ xử lý");
+	}
+
+	@org.junit.jupiter.api.Test
+	void getAndHasPendingOrder_work() {
+		assertThat(sut.hasPendingOrder(userId)).isTrue();
+		assertThat(sut.getPendingOrder(userId)).isNotNull();
+	}
+
 	@ParameterizedTest(name = "incomplete: {0}")
 	@MethodSource("incompleteFields")
 	void confirmOrder_incomplete_returnsError(String caseName, Consumer<PendingOrder> mutator) {
@@ -138,6 +266,7 @@ class OrderAIServiceTest {
 		}
 	}
 }
+
 
 
 

@@ -66,6 +66,7 @@ public class TranslationController {
             @RequestParam String text,
             @RequestParam String sourceLang,
             @RequestParam String targetLang) {
+        
         try {
             if (!isValidCode(sourceLang) || !isValidCode(targetLang)) {
                 return ResponseEntity.badRequest()

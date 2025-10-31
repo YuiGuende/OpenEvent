@@ -1,6 +1,8 @@
 package com.group02.openevent.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group02.openevent.ai.security.AISecurityService;
+import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.dto.requestApproveEvent.ApproveRequestDTO;
 // THÊM DTO NÀY
 import com.group02.openevent.dto.requestApproveEvent.CreateRequestDTO;
@@ -31,6 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,7 +87,11 @@ class RequestControllerIntegrationTest {
     private Event eventE1;
     // THÊM MỘT REQUEST MẪU ĐỂ TEST GET
     private Request sampleRequest;
+    @MockitoBean
+    private RateLimitingService rateLimitingService;
 
+    @MockitoBean
+    private AISecurityService aiSecurityService;
     @BeforeEach
     void setUpDatabase() throws IOException {
         when(cloudinaryUtil.uploadFile(any())).thenReturn("http://mock-url.com");

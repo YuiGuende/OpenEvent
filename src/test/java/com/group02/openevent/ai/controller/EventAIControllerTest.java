@@ -22,7 +22,7 @@ class EventAIControllerTest {
 	@Mock private AgentEventService agentEventService;
 	@Mock private EventService eventService;
 	@Mock private PlaceService placeService;
-    @Mock
+    @org.mockito.Mock
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
 	@InjectMocks private EventAIController controller;

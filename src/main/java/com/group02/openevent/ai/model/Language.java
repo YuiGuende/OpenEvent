@@ -36,12 +36,13 @@ public enum Language {
     }
 
     public static Language fromCode(String code) {
+        if (code == null) return null;
         for (Language lang : values()) {
             if (lang.code.equalsIgnoreCase(code)) {
                 return lang;
             }
         }
-        return VIETNAMESE; // Default fallback
+        return null;
     }
 
     public static Language detectFromText(String text) {

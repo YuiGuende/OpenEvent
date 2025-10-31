@@ -3,7 +3,6 @@ package com.group02.openevent.ai.service;
 import com.group02.openevent.ai.dto.Action;
 import com.group02.openevent.ai.dto.EventItem;
 import com.group02.openevent.ai.mapper.AIEventMapper;
-import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.user.Customer;
@@ -96,7 +95,6 @@ class AgentEventServiceTest {
         when(eventRepo.save(any())).thenReturn(saved);
 
         EventItem item = new EventItem();
-        item.setEventType(EventType.MUSIC);
         service.createEventByCustomer(9L, item, 5L);
 
         verify(eventRepo).save(any(Event.class));

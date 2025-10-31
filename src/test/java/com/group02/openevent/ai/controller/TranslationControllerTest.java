@@ -80,6 +80,61 @@ class TranslationControllerTest {
 		mockMvc.perform(post("/api/ai/translation/clear-cache")).andExpect(status().isOk());
 	}
 
+	@org.junit.jupiter.api.Test
+	void translate_serviceException_500() throws Exception {
+		when(translationService.translate(anyString(), any(), any())).thenThrow(new RuntimeException("err"));
+		mockMvc.perform(post("/api/ai/translation/translate")
+				.param("text","hello").param("sourceLang","en").param("targetLang","vi"))
+				.andExpect(status().isInternalServerError())
+				.andExpect(jsonPath("$.error").exists());
+	}
+
+	@org.junit.jupiter.api.Test
+	void languages_exceptionally_500() throws Exception {
+		when(libreTranslateService.getSupportedLanguages())
+				.thenReturn(java.util.concurrent.CompletableFuture.failedFuture(new RuntimeException("err")));
+		mockMvc.perform(get("/api/ai/translation/languages"))
+				.andExpect(status().isInternalServerError())
+				.andExpect(jsonPath("$.error").exists());
+	}
+
+	@org.junit.jupiter.api.Test
+	void testConnection_exception_500() throws Exception {
+		when(translationService.testConnection()).thenThrow(new RuntimeException("err"));
+		mockMvc.perform(get("/api/ai/translation/test"))
+				.andExpect(status().isInternalServerError());
+	}
+
+	@org.junit.jupiter.api.Test
+	void clearCache_exception_500() throws Exception {
+		org.mockito.Mockito.doThrow(new RuntimeException("err")).when(translationService).clearCache();
+		mockMvc.perform(post("/api/ai/translation/clear-cache"))
+				.andExpect(status().isInternalServerError());
+	}
+
+	@org.junit.jupiter.api.Test
+	void status_exception_500() throws Exception {
+		when(translationService.isAvailable()).thenThrow(new RuntimeException("err"));
+		mockMvc.perform(get("/api/ai/translation/status"))
+				.andExpect(status().isInternalServerError());
+	}
+
+	@org.junit.jupiter.api.Test
+	void aiResponse_serviceException_500() throws Exception {
+		when(translationService.translateAIResponse(anyString(), any())).thenThrow(new RuntimeException("err"));
+		mockMvc.perform(post("/api/ai/translation/ai-response")
+				.param("aiResponse","h").param("userLanguage","en"))
+				.andExpect(status().isInternalServerError());
+	}
+
+	@org.junit.jupiter.api.Test
+	void userInput_serviceException_500() throws Exception {
+		when(translationService.translateUserInput(anyString(), any())).thenThrow(new RuntimeException("err"));
+		mockMvc.perform(post("/api/ai/translation/user-input")
+				.param("userInput","h").param("userLanguage","en"))
+				.andExpect(status().isInternalServerError());
+	}
+
 	@ParameterizedTest
 	@CsvSource({"en,true","xx,false"})
 	void aiResponse_param(String userLang, boolean valid) throws Exception {

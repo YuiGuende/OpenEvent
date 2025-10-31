@@ -252,23 +252,29 @@ public class AgentEventService {
         Event event;
         log.info("Saving event {}", draft.getEventType());
         log.info("Saving event from DTO type: {}", draft.getClass().getName());
-        switch (draft.getEventType()) {
-            case WORKSHOP:
-                event = new WorkshopEvent();
-                break;
-            case MUSIC:
-                event = new MusicEvent();
-                break;
-            case FESTIVAL:
-                event = new FestivalEvent();
-                break;
-            case COMPETITION:
-                event = new CompetitionEvent();
-                break;
-            default:
-                log.warn("Unknown or null EventType received. Defaulting to generic Event.");
-                event = new Event();
-                break;
+        EventType draftType = draft.getEventType();
+        if (draftType == null) {
+            log.warn("Unknown or null EventType received. Defaulting to generic Event.");
+            event = new Event();
+        } else {
+            switch (draftType) {
+                case WORKSHOP:
+                    event = new WorkshopEvent();
+                    break;
+                case MUSIC:
+                    event = new MusicEvent();
+                    break;
+                case FESTIVAL:
+                    event = new FestivalEvent();
+                    break;
+                case COMPETITION:
+                    event = new CompetitionEvent();
+                    break;
+                default:
+                    log.warn("Unknown EventType received: {}. Defaulting to generic Event.", draftType);
+                    event = new Event();
+                    break;
+            }
         }
         log.info("Saving event {}", event.getClass().getName());
         AIEventMapper.createEventFromRequest(draft, event);

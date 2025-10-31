@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<<<<<<< HEAD
 <head th:replace="~{fragments/head :: head('Trang chủ')}"></head>
+=======
+<head th:replace="~{fragments/head :: head('Trang chủ')}">
+
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>OpenEvent — Static Preview</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <link rel="stylesheet" th:href="@{/css/chatbot.css}"/>
+    <style>
+        /* Chỉnh lại bố cục thanh tìm kiếm cho đều */
+        .event-search {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+>>>>>>> duy
 
 <body class="page-bg" th:data-user-id="${session.ACCOUNT_ID ?: 2}">
 <div th:replace="~{fragments/header :: siteHeader('home')}"></div>

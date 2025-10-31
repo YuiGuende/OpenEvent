@@ -4,6 +4,7 @@ import com.group02.openevent.ai.qdrant.service.QdrantService;
 import com.group02.openevent.ai.service.EmbeddingService;
 import com.group02.openevent.model.event.Event;
 import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,21 @@ public class EventVectorSyncListener {
     public void afterEventUpdate(Event event) {
         log.info("Event UPDATED (ID: {}), starting sync to Qdrant...", event.getId());
         upsertEventVector(event);
+    }
+    @PostRemove
+    public void afterEventDelete(Event event) {
+        log.info("Event DELETED (ID: {}), starting delete from Qdrant...", event.getId());
+        try {
+            // Lấy ID của sự kiện
+            String eventId = String.valueOf(event.getId());
+
+            // Gọi service của Qdrant để xóa
+            qdrantService.deleteEmbedding(eventId);
+
+            log.info("✅ Successfully deleted event ID {} from Qdrant.", eventId);
+        } catch (Exception e) {
+            log.error("❌ Failed to delete event ID {} from Qdrant: {}", event.getId(), e.getMessage());
+        }
     }
 
     private void upsertEventVector(Event event) {

@@ -349,3 +349,5 @@ LibreTranslate là lựa chọn tốt để thay thế Google Translate API:
 
 Chỉ cần cập nhật configuration và restart application là có thể sử dụng ngay! 🚀
 
+
+

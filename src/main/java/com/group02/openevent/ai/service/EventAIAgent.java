@@ -205,7 +205,7 @@ Khi người dùng hỏi về cách thao tác trên hệ thống hoặc cần h�
   2️⃣ Thời gian bắt đầu và kết thúc
   3️⃣ Địa điểm tổ chức
   4️⃣ Mô tả sự kiện (tùy chọn)
-  5️⃣ Loại sự kiện (Workshop, Concert, Hackathon, v.v.)
+  5️⃣ Loại sự kiện (WORKSHOP, MUSIC, v.v.)
   
   Anh/chị có thể nói với em như: 'Tạo sự kiện Music Night vào 20h ngày 15/12 tại Nhà văn hóa'
   
@@ -460,9 +460,9 @@ hoặc
         if (userInput == null || userInput.trim().isEmpty()) {
             return false;
         }
-        
+
         String input = userInput.toLowerCase();
-        
+
         // Các từ khóa ngoài phạm vi
         String[] outOfScopeKeywords = {
             "lịch sử việt nam", "lịch sử trung quốc", "lịch sử mỹ", "tổng thống mỹ",
@@ -475,7 +475,7 @@ hoặc
             "giải trí", "phim ảnh", "mv", "nhạc mới", "game",
             "thời sự", "tin nóng", "sự kiện thế giới"
         };
-        
+
         // Kiểm tra không chứa các từ khóa liên quan đến OpenEvent
         String[] openEventKeywords = {
             "sự kiện", "event", "vé", "ticket", "mua vé", "đặt vé",
@@ -487,21 +487,21 @@ hoặc
             "schedule", "lịch trình", "time",
             "thời tiết", "weather", "mưa", "nắng", "dự báo", "forecast"
         };
-        
+
         // Nếu có từ khóa OpenEvent, không phải ngoài phạm vi
         for (String keyword : openEventKeywords) {
             if (input.contains(keyword)) {
                 return false;
             }
         }
-        
+
         // Kiểm tra nếu có từ khóa ngoài phạm vi
         for (String keyword : outOfScopeKeywords) {
             if (input.contains(keyword)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -526,21 +526,21 @@ hoặc
         if (userInput == null || userInput.trim().isEmpty()) {
             return false;
         }
-        
+
         String input = userInput.toLowerCase();
-        
+
         String[] weatherKeywords = {
             "thời tiết", "weather", "mưa", "nắng", "dự báo", "forecast",
-            "trời hôm nay", "thời tiết hôm nay", "ngày mai trời", 
+            "trời hôm nay", "thời tiết hôm nay", "ngày mai trời",
             "hôm nay trời", "weather today", "weather forecast"
         };
-        
+
         for (String keyword : weatherKeywords) {
             if (input.contains(keyword)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -551,26 +551,26 @@ hoặc
         try {
             // Extract location from user input or use default
             String location = "Da Nang"; // Default location
-            
+
             // Try to extract location from user input
             if (userInput.toLowerCase().contains("hà nội") || userInput.toLowerCase().contains("hanoi")) {
                 location = "Ha Noi";
-            } else if (userInput.toLowerCase().contains("hồ chí minh") || 
+            } else if (userInput.toLowerCase().contains("hồ chí minh") ||
                       userInput.toLowerCase().contains("ho chi minh")) {
                 location = "Ho Chi Minh City";
-            } else if (userInput.toLowerCase().contains("đà nẵng") || 
+            } else if (userInput.toLowerCase().contains("đà nẵng") ||
                       userInput.toLowerCase().contains("da nang")) {
                 location = "Da Nang";
             } else if (userInput.toLowerCase().contains("hải phòng")) {
                 location = "Hai Phong";
             }
-            
+
             // Get weather forecast for today
             LocalDateTime today = LocalDateTime.now();
             String forecastNote = weatherService.getForecastNote(today, location);
-            
+
             if (forecastNote != null && !forecastNote.isEmpty()) {
-                return "🌤 **Thời tiết:**\n" + forecastNote + 
+                return "🌤 **Thời tiết:**\n" + forecastNote +
                        "\n\n💡 Lưu ý: Thời tiết có thể ảnh hưởng đến sự kiện ngoài trời. " +
                        "Anh/chị có thể cân nhắc khi lập kế hoạch sự kiện! 😊";
             } else {
@@ -590,7 +590,7 @@ hoặc
                                    String sessionId,
                                    List<Message> context,
                                    HttpServletResponse response) throws Exception {
-        
+
         // Kiểm tra câu hỏi có ngoài phạm vi không
         if (isOutOfScope(userInput)) {
             return handleOutOfScopeQuestion();
@@ -963,13 +963,53 @@ hoặc
                 }
             }
         } else {
-            // Không có action
+            // Không có action JSON
+
+            // --- BẮT ĐẦU SỬA LỖI HALLUCINATION ---
+
+            // 1. Ngay lập tức kiểm tra xem ý định của người dùng có phải là TÌM KIẾM không
+            ActionType fallbackIntent = classifier.classifyIntent(userInput, userVector);
+
+            if (fallbackIntent == ActionType.PROMPT_SUMMARY_TIME ||
+                    fallbackIntent == ActionType.QUERY_TICKET_INFO) {
+
+                // 2. Gọi các hàm helper để lấy dữ liệu THẬT từ DB
+                String realDataSummary;
+                try {
+                    if (fallbackIntent == ActionType.PROMPT_SUMMARY_TIME) {
+                        realDataSummary = handleSummaryRequest(userInput, userId); // Gọi hàm tìm kiếm sự kiện
+                    } else {
+                        realDataSummary = handleTicketInfoQuery(userInput, userVector); // Gọi hàm tìm kiếm vé
+                    }
+                } catch (Exception e) {
+                    log.error("Lỗi khi chạy fallback intent: {}", e.getMessage());
+                    return "❌ Đã có lỗi xảy ra khi tôi cố gắng tìm kiếm thông tin.";
+                }
+
+                // 3. KIỂM TRA XEM CÓ DỮ LIỆU THẬT KHÔNG
+                // (Kiểm tra các chuỗi rỗng mà hàm helper của bạn trả về)
+                if (realDataSummary == null ||
+                        realDataSummary.startsWith("📭 Không có sự kiện") ||
+                        realDataSummary.startsWith("ℹ️ Sự kiện") ||
+                        realDataSummary.startsWith("📝 Mình không hiểu")) {
+
+                    // 4. NẾU DB TRỐNG: Trả về câu trả lời an toàn, do chính bạn viết
+                    return "Dạ, hiện tại em chưa tìm thấy sự kiện nào phù hợp với yêu cầu của anh/chị ạ. Anh/chị có muốn em hỗ trợ tạo một sự kiện mới không? 😊";
+                }
+
+                // 5. NẾU CÓ DỮ LIỆU THẬT: Trả về dữ liệu đó
+                return realDataSummary;
+            }
+            // --- KẾT THÚC SỬA LỖI ---
+
+
+            // Nếu KHÔNG PHẢI LÀ TÌM KIẾM (ví dụ: chào hỏi, nói chuyện phiếm)
+            // VÀ AI có trả lời, thì mới return text đó
             if (!userVisibleText.isBlank()) {
-                return userVisibleText; // LLM đã trả câu trả lời tự nhiên
+                return userVisibleText;
             }
 
-            // Fallback intent
-            ActionType fallbackIntent = classifier.classifyIntent(userInput, userVector);
+            // Các fallback intent còn lại (không phải tìm kiếm)
             switch (fallbackIntent) {
                 case BUY_TICKET -> {
                     return "❌ Vui lòng bắt đầu lại quy trình mua vé bằng cách nói 'Mua vé [tên sự kiện]'";
@@ -1152,16 +1192,27 @@ hoặc
             start = now.minusDays(dow.getValue() - 1).toLocalDate().atStartOfDay().plusWeeks(1);
             range = "tuần sau";
         } else {
-            return null;
+            // Mặc định: tìm TẤT CẢ sự kiện sắp diễn ra
+            start = now;
+            range = "sắp diễn ra";
         }
 
         List<Event> allEvents = eventService.getAllEvents();
+
         List<Event> events = allEvents.stream()
-                .filter(event -> event.getStartsAt().isAfter(start) || event.getStartsAt().isEqual(start))
+                // Lọc sự kiện chưa kết thúc
+                .filter(event -> event.getEndsAt().isAfter(start))
+
+                // --- THAY ĐỔI QUAN TRỌNG ---
+                // Lọc bỏ các sự kiện có trạng thái DRAFT hoặc CANCEL
+                .filter(event -> event.getStatus() != EventStatus.DRAFT && event.getStatus() != EventStatus.CANCEL)
+                // --- KẾT THÚC THAY ĐỔI ---
+
+                .sorted(Comparator.comparing(Event::getStartsAt)) // Sắp xếp theo thời gian
                 .toList();
 
         if (events.isEmpty()) {
-            return "📭 Không có sự kiện nào trong " + range + ".";
+            return "📭 Không có sự kiện nào " + range + ".";
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");

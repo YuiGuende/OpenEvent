@@ -486,13 +486,20 @@ function formatMessage(message) {
 }
 
 function showTyping(show) {
-    if (!typingIndicator) return;
-    
+    if (!typingIndicator || !chatMessages) return;
+
+    // Ensure typing indicator is inside the messages container so it's visible
+    // if (!chatMessages.contains(typingIndicator)) {
+    //     chatMessages.appendChild(typingIndicator);
+    // }
+
     if (show) {
         typingIndicator.classList.add('show');
-        if (chatMessages) {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        // Scroll to bottom to reveal the typing indicator
+        chatMessages.scrollTo({
+            top: chatMessages.scrollHeight,
+            behavior: 'smooth'
+        });
     } else {
         typingIndicator.classList.remove('show');
     }

@@ -1,8 +1,8 @@
 package com.group02.openevent.controller.auth;
 
-import com.group02.openevent.dto.request.LoginRequest;
 import com.group02.openevent.service.AuthService;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,15 +11,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@Slf4j
 public class LoginController {
 
     @Autowired
     private AuthService authService;
 
     @GetMapping("/login")
-    public String showLoginPage(@RequestParam(required = false) String redirect, Model model) {
-        if (redirect != null && !redirect.isEmpty()) {
-            model.addAttribute("redirectUrl", redirect);
+    public String showLoginPage(
+            @RequestParam(required = false) String redirect,
+            @RequestParam(required = false) String redirectUrl,
+            Model model) {
+        // Support both 'redirect' and 'redirectUrl' parameter names
+        String targetUrl = redirectUrl != null ? redirectUrl : redirect;
+        log.info("Login page - redirect param: {}, redirectUrl param: {}, final targetUrl: {}", 
+                 redirect, redirectUrl, targetUrl);
+        if (targetUrl != null && !targetUrl.isEmpty()) {
+            model.addAttribute("redirectUrl", targetUrl);
         }
         return "security/login";
     }

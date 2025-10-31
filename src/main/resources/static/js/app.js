@@ -67,15 +67,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }, 200);
             }
+        },
+        {
+            path: `/manage/event/${eventId}/create-forms`,
+            fragment: `/fragments/create-forms?id=${eventId}`,
+            title: 'Tạo Form',
+            initializer: function() {
+                console.log('Initializing create forms page...');
+            }
+        },
+        {
+            path: `/manage/event/${eventId}/qr-codes`,
+            fragment: `/fragments/qr-codes?id=${eventId}`,
+            title: 'QR Codes',
+            initializer: function() {
+                console.log('Initializing QR codes page...');
+            }
         }
     ];
 
     console.log('🚀 Initializing SPA Router with eventId:', eventId);
     console.log('📋 Routes:', appRoutes);
     
+    // Log all route paths for debugging
+    appRoutes.forEach((route, index) => {
+        console.log(`Route ${index + 1}: ${route.path} → ${route.fragment}`);
+    });
+    
     // Initialize SPA Router
     window.spaRouter = new SpaRouter(appRoutes, '#main-content');
     console.log('✅ SPA Router initialized successfully');
+    console.log('🔍 Current URL:', window.location.pathname);
 });
 
 // Fallback initialization if DOM is already loaded

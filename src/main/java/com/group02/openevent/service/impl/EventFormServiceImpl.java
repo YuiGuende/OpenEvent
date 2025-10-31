@@ -213,16 +213,27 @@ public class EventFormServiceImpl implements EventFormService {
         Customer customer = customerRepo.getReferenceById(request.getCustomerId());
 
         for (SubmitResponseRequest.ResponseItem item : request.getResponses()) {
+            if (item == null) {
+                System.err.println("Warning: Null response item skipped");
+                continue;
+            }
+            
+            if (item.getQuestionId() == null) {
+                System.err.println("Warning: Response item with null questionId skipped");
+                continue;
+            }
+            
             FormQuestion question = formQuestionRepo.findById(item.getQuestionId())
-                    .orElseThrow(() -> new RuntimeException("Question not found"));
+                    .orElseThrow(() -> new RuntimeException("Question not found: " + item.getQuestionId()));
 
             FormResponse response = new FormResponse();
             response.setEventForm(form);
             response.setCustomer(customer);
             response.setFormQuestion(question);
-            response.setResponseValue(item.getResponseValue());
+            response.setResponseValue(item.getResponseValue() != null ? item.getResponseValue() : "");
 
             formResponseRepo.save(response);
+            System.out.println("Saved response for question " + item.getQuestionId() + " with value: " + item.getResponseValue());
         }
     }
 
@@ -274,8 +285,10 @@ public class EventFormServiceImpl implements EventFormService {
         dto.setIsActive(form.getIsActive());
         dto.setCreatedAt(form.getCreatedAt());
 
-        if (form.getQuestions() != null) {
-            dto.setQuestions(form.getQuestions().stream()
+        // Sửa: Dùng query có sắp xếp thay vì lazy loading để tránh duplicate và đảm bảo thứ tự
+        List<FormQuestion> questions = formQuestionRepo.findByFormIdOrderByOrder(form.getFormId());
+        if (questions != null && !questions.isEmpty()) {
+            dto.setQuestions(questions.stream()
                     .map(this::convertQuestionToDTO)
                     .collect(Collectors.toList()));
         }

@@ -883,6 +883,47 @@
 </section>
 <!-- Banner Section End -->
 
+<!-- Success/Info/Warning Messages -->
+<div class="container" style="margin-top: 20px; margin-bottom: 20px;">
+    <!-- Success Message -->
+    <div th:if="${param.success != null}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <i class="bi bi-check-circle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Thành công!</strong>
+        <span th:if="${param.success[0] == 'checkin_success'}">Bạn đã check-in thành công!</span>
+        <span th:if="${param.success[0] == 'form_submitted'}">Form đã được gửi thành công!</span>
+        <span th:if="${param.success[0] == 'feedback_submitted'}">Phản hồi đã được gửi thành công!</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <!-- Info Message (Already checked in) -->
+    <div th:if="${param.info != null}" class="alert alert-info alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;">
+        <i class="bi bi-info-circle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Thông tin:</strong>
+        <span th:if="${param.info[0] == 'already_checked_in'}">
+            <span th:text="${param.message != null ? param.message[0] : 'Bạn đã check-in rồi. Form response đã được lưu.'}"></span>
+        </span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <!-- Warning Message -->
+    <div th:if="${param.warning != null}" class="alert alert-warning alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Cảnh báo:</strong>
+        <span th:if="${param.warning[0] == 'checkin_failed'}">
+            <span th:text="${param.message != null ? param.message[0] : 'Check-in không thành công.'}"></span>
+        </span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <!-- Error Message -->
+    <div th:if="${param.error != null}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <i class="bi bi-x-circle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Lỗi:</strong>
+        <span th:text="${param.message != null ? param.message[0] : 'Đã xảy ra lỗi.'}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+
 <!-- Countdown Section Start -->
 <section class="countdown-timer section-padding-compact" th:if="${eventDetail != null and eventDetail.startsAt != null}">
     <div class="container">

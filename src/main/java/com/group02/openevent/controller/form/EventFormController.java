@@ -4,6 +4,10 @@ import com.group02.openevent.dto.form.*;
 import com.group02.openevent.service.EventFormService;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.dto.attendance.AttendanceRequest;
+import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.account.Account;
+import com.group02.openevent.repository.ICustomerRepo;
+import com.group02.openevent.repository.IAccountRepo;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +17,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/forms")
@@ -25,7 +34,9 @@ import java.util.List;
 public class EventFormController {
 
     private final EventFormService eventFormService;
-     private final EventAttendanceService attendanceService;
+    private final EventAttendanceService attendanceService;
+    private final ICustomerRepo customerRepo;
+    private final IAccountRepo accountRepo;
 
     // Host: Create form for event
     @GetMapping("/create/{eventId}")
@@ -61,16 +72,17 @@ public class EventFormController {
         try {
             if (request.getEventId() == null) {
                 log.error("Event ID is null in form creation request");
-                return "redirect:/music/null?error=missing_event_id";
+                return "redirect:/manage/event/0/create-forms?error=missing_event_id";
             }
             
             eventFormService.createForm(request);
-            return "redirect:/music/" + request.getEventId() + "?success=form_created";
+            log.info("Form created successfully for event ID: {}", request.getEventId());
+            return "redirect:/manage/event/" + request.getEventId() + "/create-forms?success=form_created";
         } catch (Exception e) {
             log.error("Error creating form for event ID: {}", request.getEventId(), e);
             Long eventId = request.getEventId() != null ? request.getEventId() : 0L;
             String encodedMessage = UriUtils.encode(e.getMessage(), StandardCharsets.UTF_8);
-            return "redirect:/music/" + eventId + "?error=form_creation_failed&message=" + encodedMessage;
+            return "redirect:/manage/event/" + eventId + "/create-forms?error=form_creation_failed&message=" + encodedMessage;
         }
     }
 
@@ -136,14 +148,65 @@ public class EventFormController {
 
     @PostMapping("/feedback/submit")
     public String submitFeedback(@ModelAttribute SubmitResponseRequest request,
-                                 @RequestParam(required = false) Long eventId) {
+                                 @RequestParam(required = false) Long eventId,
+                                 HttpServletRequest httpRequest) {
+        log.info("=== FORM SUBMIT REQUEST RECEIVED ===");
+        log.info("Form ID from request: {}", request.getFormId());
+        log.info("Event ID from param: {}", eventId);
+        log.info("Responses count: {}", request.getResponses() != null ? request.getResponses().size() : 0);
+        
         try {
             // Validate before submitting
             if (request.getFormId() == null) {
+                log.error("Form ID is null!");
                 throw new RuntimeException("Form ID is required");
             }
-            if (request.getCustomerId() == null) {
-                throw new RuntimeException("Customer ID is required");
+            
+            // Lấy customerId từ session thay vì từ form
+            Long accountIdFromAttr = (Long) httpRequest.getAttribute("currentUserId");
+            Long accountId = accountIdFromAttr;
+            
+            if (accountId == null) {
+                HttpSession session = httpRequest.getSession(false);
+                if (session != null) {
+                    accountId = (Long) session.getAttribute("ACCOUNT_ID");
+                }
+            }
+            
+            if (accountId == null) {
+                throw new RuntimeException("User not logged in");
+            }
+            
+            final Long finalAccountId = accountId;
+            
+            // Tìm Customer từ accountId
+            Customer customer = customerRepo.findByAccount_AccountId(finalAccountId).orElse(null);
+            if (customer == null) {
+                // Tự động tạo Customer nếu chưa có (giống như OrderController)
+                Account account = accountRepo.findById(finalAccountId)
+                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + finalAccountId));
+                
+                customer = new Customer();
+                customer.setAccount(account);
+                customer.setEmail(account.getEmail());
+                customer.setPoints(0);
+                customer = customerRepo.save(customer);
+            }
+            
+            // Set customerId vào request
+            request.setCustomerId(customer.getCustomerId());
+            
+            // Validate responses
+            if (request.getResponses() == null || request.getResponses().isEmpty()) {
+                throw new RuntimeException("No responses provided");
+            }
+            
+            // Log để debug
+            log.info("Submitting form {} for customer {}", request.getFormId(), customer.getCustomerId());
+            log.info("Number of responses: {}", request.getResponses().size());
+            for (int i = 0; i < request.getResponses().size(); i++) {
+                SubmitResponseRequest.ResponseItem item = request.getResponses().get(i);
+                log.info("Response {}: questionId={}, responseValue={}", i, item.getQuestionId(), item.getResponseValue());
             }
             
             // Persist responses
@@ -156,6 +219,8 @@ public class EventFormController {
             if (resolvedEventId != null) {
                 eventId = resolvedEventId;
             }
+            
+            log.info("Form submitted successfully. Form type: {}, Event ID: {}", formType, eventId);
 
             // Resolve current user email (for attendance)
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -163,42 +228,89 @@ public class EventFormController {
 
             // Branch by form type
             if (formType == com.group02.openevent.model.form.EventForm.FormType.CHECKIN) {
-                AttendanceRequest ar = new AttendanceRequest();
-                ar.setEmail(currentEmail);
-                // Optional: derive name/phone/org from first few responses if needed
-                if (request.getResponses() != null && !request.getResponses().isEmpty()) {
-                    // Use first response as fullName if non-empty
-                    String first = request.getResponses().get(0).getResponseValue();
-                    ar.setFullName(first != null ? first : "");
+                // Check if already checked in before attempting check-in
+                boolean alreadyCheckedIn = attendanceService.isAlreadyCheckedIn(eventId, currentEmail);
+                
+                if (!alreadyCheckedIn) {
+                    // Only check-in if not already checked in
+                    AttendanceRequest ar = new AttendanceRequest();
+                    ar.setEmail(currentEmail);
+                    // Optional: derive name/phone/org from first few responses if needed
+                    if (request.getResponses() != null && !request.getResponses().isEmpty()) {
+                        // Use first response as fullName if non-empty
+                        String first = request.getResponses().get(0).getResponseValue();
+                        ar.setFullName(first != null ? first : "");
+                    }
+                    try {
+                        attendanceService.checkIn(eventId, ar);
+                        log.info("Check-in successful for event {} with email {}", eventId, currentEmail);
+                        // Redirect with check-in success message
+                        String redirectUrl = "/events/" + eventId + "?success=checkin_success";
+                        log.info("Redirecting to: {}", redirectUrl);
+                        return "redirect:" + redirectUrl;
+                    } catch (Exception e) {
+                        log.warn("Check-in failed (may already be checked in): {}", e.getMessage());
+                        // Continue anyway - form response is already saved
+                        // Redirect with warning message
+                        String redirectUrl = "/events/" + eventId + "?warning=checkin_failed&message=" + UriUtils.encode(e.getMessage(), StandardCharsets.UTF_8);
+                        log.info("Redirecting to: {}", redirectUrl);
+                        return "redirect:" + redirectUrl;
+                    }
+                } else {
+                    log.info("User {} already checked in for event {}, skipping check-in but form response saved", currentEmail, eventId);
+                    // Redirect with message that already checked in
+                    String redirectUrl = "/events/" + eventId + "?info=already_checked_in&message=" + UriUtils.encode("Bạn đã check-in rồi. Form response đã được lưu.", StandardCharsets.UTF_8);
+                    log.info("Redirecting to: {}", redirectUrl);
+                    return "redirect:" + redirectUrl;
                 }
-                attendanceService.checkIn(eventId, ar);
-                return "redirect:/events/" + eventId + "/checkin-form?success=checkin_success";
             }
 
             if (formType == com.group02.openevent.model.form.EventForm.FormType.FEEDBACK) {
                 if (currentEmail != null) {
                     attendanceService.checkOut(eventId, currentEmail);
                 }
-                return "redirect:/events/" + eventId + "/checkout-form?success=checkout_success";
+                // Redirect to event detail page after successful feedback submission
+                String redirectUrl = "/events/" + eventId + "?success=feedback_submitted";
+                log.info("Redirecting to: {}", redirectUrl);
+                return "redirect:" + redirectUrl;
             }
 
-            // After submit, redirect by type
+            // After submit, redirect về trang event detail (router chung sẽ tự động route đúng event type)
             if (eventId != null) {
-                return "redirect:/music/" + eventId + "?success=form_submitted";
+                String redirectUrl = "/events/" + eventId + "?success=form_submitted";
+                log.info("Redirecting to: {}", redirectUrl);
+                return "redirect:" + redirectUrl;
             }
+            log.info("Redirecting to home page");
             return "redirect:/?success=form_submitted";
         } catch (Exception e) {
-            log.error("Error submitting feedback: {}", e.getMessage());
+            log.error("=== ERROR SUBMITTING FORM ===");
+            log.error("Error message: {}", e.getMessage());
+            log.error("Stack trace: ", e);
             String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown error";
             String encodedMessage = UriUtils.encode(errorMsg, StandardCharsets.UTF_8);
-            if (eventId != null) {
-                return "redirect:/music/" + eventId + "?error=submission_failed&message=" + encodedMessage;
+            
+            // Try to get eventId from request if not in param
+            Long finalEventId = eventId;
+            if (finalEventId == null && request.getFormId() != null) {
+                try {
+                    EventFormDTO formDto = eventFormService.getFormById(request.getFormId());
+                    finalEventId = formDto.getEventId();
+                } catch (Exception ex) {
+                    log.error("Could not get eventId from form: {}", ex.getMessage());
+                }
             }
+            
+            if (finalEventId != null) {
+                log.info("Redirecting to error page: /events/{}", finalEventId);
+                return "redirect:/events/" + finalEventId + "?error=submission_failed&message=" + encodedMessage;
+            }
+            log.info("Redirecting to home page with error");
             return "redirect:/?error=submission_failed&message=" + encodedMessage;
         }
     }
 
-    // Host: View responses
+    // Host: View responses by eventId (all form types)
     @GetMapping("/responses/{eventId}")
     public String viewResponses(@PathVariable Long eventId, Model model) {
         try {
@@ -215,9 +327,33 @@ public class EventFormController {
             if (checkinResponses == null) checkinResponses = new ArrayList<>();
             if (feedbackResponses == null) feedbackResponses = new ArrayList<>();
             
-            model.addAttribute("registerResponses", registerResponses);
-            model.addAttribute("checkinResponses", checkinResponses);
-            model.addAttribute("feedbackResponses", feedbackResponses);
+            // Group responses by customerId (group all responses of same customer together)
+            Map<Long, List<FormResponseDTO>> groupedRegisterResponses = registerResponses.stream()
+                .collect(Collectors.groupingBy(
+                    FormResponseDTO::getCustomerId,
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+            Map<Long, List<FormResponseDTO>> groupedCheckinResponses = checkinResponses.stream()
+                .collect(Collectors.groupingBy(
+                    FormResponseDTO::getCustomerId,
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+            Map<Long, List<FormResponseDTO>> groupedFeedbackResponses = feedbackResponses.stream()
+                .collect(Collectors.groupingBy(
+                    FormResponseDTO::getCustomerId,
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+            
+            model.addAttribute("groupedRegisterResponses", groupedRegisterResponses);
+            model.addAttribute("groupedCheckinResponses", groupedCheckinResponses);
+            model.addAttribute("groupedFeedbackResponses", groupedFeedbackResponses);
+            // Keep old format for backward compatibility (but won't be used in template)
+            model.addAttribute("registerResponses", new ArrayList<FormResponseDTO>());
+            model.addAttribute("checkinResponses", new ArrayList<FormResponseDTO>());
+            model.addAttribute("feedbackResponses", new ArrayList<FormResponseDTO>());
             model.addAttribute("eventId", eventId);
             return "host/view-responses";
         } catch (Exception e) {
@@ -226,6 +362,64 @@ public class EventFormController {
                     e.getMessage() != null ? e.getMessage() : "Unknown error", 
                     StandardCharsets.UTF_8);
             return "redirect:/music/" + eventId + "?error=no_responses_found&message=" + encodedMessage;
+        }
+    }
+    
+    // Host: View responses by formId (single form)
+    @GetMapping("/form/{formId}/responses")
+    public String viewFormResponses(@PathVariable Long formId, @RequestParam(required = false) Long eventId, Model model) {
+        try {
+            // Get form details
+            EventFormDTO form = eventFormService.getFormById(formId);
+            if (form == null) {
+                throw new RuntimeException("Form not found");
+            }
+            
+            // Use eventId from form if not provided
+            Long resolvedEventId = eventId != null ? eventId : form.getEventId();
+            
+            // Get responses for this specific form
+            List<FormResponseDTO> responses = eventFormService.getResponsesByFormId(formId);
+            if (responses == null) responses = new ArrayList<>();
+            
+            // Group responses by customerId (group all responses of same customer together)
+            Map<Long, List<FormResponseDTO>> groupedRegisterResponses = new LinkedHashMap<>();
+            Map<Long, List<FormResponseDTO>> groupedCheckinResponses = new LinkedHashMap<>();
+            Map<Long, List<FormResponseDTO>> groupedFeedbackResponses = new LinkedHashMap<>();
+            
+            Map<Long, List<FormResponseDTO>> groupedResponses = responses.stream()
+                .collect(Collectors.groupingBy(
+                    FormResponseDTO::getCustomerId,
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+            
+            switch (form.getFormType()) {
+                case REGISTER -> groupedRegisterResponses = groupedResponses;
+                case CHECKIN -> groupedCheckinResponses = groupedResponses;
+                case FEEDBACK -> groupedFeedbackResponses = groupedResponses;
+            }
+            
+            model.addAttribute("form", form);
+            model.addAttribute("groupedRegisterResponses", groupedRegisterResponses);
+            model.addAttribute("groupedCheckinResponses", groupedCheckinResponses);
+            model.addAttribute("groupedFeedbackResponses", groupedFeedbackResponses);
+            // Keep old format for backward compatibility (but won't be used in template)
+            model.addAttribute("registerResponses", new ArrayList<FormResponseDTO>());
+            model.addAttribute("checkinResponses", new ArrayList<FormResponseDTO>());
+            model.addAttribute("feedbackResponses", new ArrayList<FormResponseDTO>());
+            model.addAttribute("eventId", resolvedEventId);
+            model.addAttribute("formId", formId);
+            return "host/view-responses";
+        } catch (Exception e) {
+            log.error("Error loading responses for form ID: {}", formId, e);
+            String encodedMessage = UriUtils.encode(
+                    e.getMessage() != null ? e.getMessage() : "Unknown error", 
+                    StandardCharsets.UTF_8);
+            if (eventId != null) {
+                return "redirect:/manage/event/" + eventId + "/create-forms?error=responses_not_found&message=" + encodedMessage;
+            }
+            return "redirect:/?error=responses_not_found&message=" + encodedMessage;
         }
     }
 
@@ -249,6 +443,42 @@ public class EventFormController {
             return ResponseEntity.ok("Response submitted successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to submit response: " + e.getMessage());
+        }
+    }
+    
+    // Host: View form details
+    @GetMapping("/view/{formId}")
+    public String viewForm(@PathVariable Long formId, Model model) {
+        try {
+            EventFormDTO form = eventFormService.getFormById(formId);
+            model.addAttribute("form", form);
+            model.addAttribute("eventId", form.getEventId());
+            return "host/view-form";
+        } catch (Exception e) {
+            log.error("Error loading form ID: {}", formId, e);
+            return "redirect:/?error=form_not_found";
+        }
+    }
+    
+    // Host: Delete form
+    @PostMapping("/{formId}/delete")
+    public String deleteForm(@PathVariable Long formId, @RequestParam(required = false) Long eventId) {
+        try {
+            // Get eventId from form before deleting
+            if (eventId == null) {
+                EventFormDTO form = eventFormService.getFormById(formId);
+                eventId = form.getEventId();
+            }
+            eventFormService.deleteForm(formId);
+            log.info("Form {} deleted successfully", formId);
+            // Redirect back to create-forms page
+            return "redirect:/manage/event/" + eventId + "/create-forms?success=form_deleted";
+        } catch (Exception e) {
+            log.error("Error deleting form ID: {}", formId, e);
+            if (eventId != null) {
+                return "redirect:/manage/event/" + eventId + "/create-forms?error=delete_failed";
+            }
+            return "redirect:/?error=delete_failed";
         }
     }
 }

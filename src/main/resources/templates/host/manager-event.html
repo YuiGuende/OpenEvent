@@ -131,6 +131,24 @@
                 </div>
 
                 <div class="nav-section">
+                    <div class="nav-section-title">QUẢN LÝ FORM</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/create-forms'}" class="nav-link" data-link>
+                                <i class="bi bi-file-earmark-plus"></i>
+                                <span>Tạo Form</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/qr-codes'}" class="nav-link" data-link>
+                                <i class="bi bi-qr-code"></i>
+                                <span>QR Codes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
                     <div class="nav-section-title">CÔNG CỤ</div>
                     <ul class="nav-list">
                         <li class="nav-item">

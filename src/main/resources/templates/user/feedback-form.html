@@ -129,10 +129,10 @@
                 
                 <!-- Submit Button -->
                 <div class="text-center">
-                    <a th:href="@{'/forms/' + ${eventId}}" class="btn btn-primary btn-lg">
+                    <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-file-alt"></i> Submit Form
-                    </a>
-                    <a th:href="@{'/music/' + ${eventId}}" class="btn btn-secondary btn-lg ms-2">
+                    </button>
+                    <a th:href="@{'/events/' + ${eventId}}" class="btn btn-secondary btn-lg ms-2">
                         <i class="fas fa-arrow-left"></i> Back to Event
                     </a>
                 </div>
@@ -140,7 +140,7 @@
             
             <!-- If no form available, hide submit form -->
             <div th:if="${form} == null" class="text-center">
-                <a th:href="@{'/music/' + ${eventId}}" class="btn btn-secondary btn-lg">
+                <a th:href="@{'/events/' + ${eventId}}" class="btn btn-secondary btn-lg">
                     <i class="fas fa-arrow-left"></i> Back to Event
                 </a>
             </div>

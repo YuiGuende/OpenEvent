@@ -13,6 +13,8 @@ import com.group02.openevent.service.IImageService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import com.group02.openevent.service.TicketTypeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +57,13 @@ public class EventController {
         this.ticketTypeRepo = ticketTypeRepo;
         this.ticketTypeService = ticketTypeService;
     }
+    private Long getHostAccountId(HttpSession session) {
+        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (accountId == null) {
+            throw new RuntimeException("User not logged in");
+        }
+        return accountId;
+    }
 
 
     // POST - create event
@@ -83,10 +92,12 @@ public class EventController {
     }
 
     @PostMapping("/saveEvent")
-    public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, Model model) {
+    public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, Model model, HttpSession session) {
         log.info("startsAt = {}", request.getStartsAt());
         log.info("endsAt = {}", request.getEndsAt());
-        EventResponse savedEvent =  eventService.saveEvent(request);
+        Long hostId = getHostAccountId(session);
+        log.info("Host ID : {}", hostId);
+        EventResponse savedEvent =  eventService.saveEvent(request,hostId);
         log.info(String.valueOf(savedEvent.getEventType()));
         return "redirect:/manage/event/" + savedEvent.getId()+ "/getting-stared";
     }
@@ -236,9 +247,6 @@ public class EventController {
         }
     }
 
-
-
-
     // Delete a single ticket type by id (direct hard delete)
     @DeleteMapping("/ticket/{ticketTypeId}")
     @ResponseBody
@@ -263,6 +271,5 @@ public class EventController {
             return org.springframework.http.ResponseEntity.status(500).body(err);
         }
     }
-
 
 }

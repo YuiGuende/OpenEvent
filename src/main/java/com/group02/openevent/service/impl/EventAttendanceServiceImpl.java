@@ -91,7 +91,7 @@ public class EventAttendanceServiceImpl implements EventAttendanceService {
         EventAttendance attendance = attendanceRepo.findByEventIdAndEmail(eventId, normalizedEmail)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin check-in với email: " + email));
         
-        // Must own a paid ticket
+        // Verify ticket ownership for checkout (must have PAID order)
         boolean hasPaidOrder = normalizedEmail != null && orderRepo.existsPaidByEventIdAndParticipantEmail(eventId, normalizedEmail);
         if (!hasPaidOrder) {
             throw new RuntimeException("Bạn không đăng ký sự kiện này (không tìm thấy vé đã thanh toán).");

@@ -43,21 +43,28 @@ class SpaRouter {
      */
     // Trong SpaRouter.js
     navigateTo(path) {
-        console.log(`[Router] Bắt đầu điều hướng đến: ${path}`); // <-- LOG 1
-        const route = this.findRoute(path);
+        // Normalize path first
+        const normalizedPath = path.split('?')[0].replace(/\/$/, '');
+        console.log(`[Router] Bắt đầu điều hướng đến: ${path} (normalized: ${normalizedPath})`);
+        
+        const route = this.findRoute(normalizedPath);
         if (!route) {
-            console.error(`[SpaRouter] Không tìm thấy route cho path: ${path}. Chuyển về trang mặc định.`);
-
+            console.error(`[SpaRouter] Không tìm thấy route cho path: ${normalizedPath}`);
+            console.error(`[SpaRouter] Available routes:`, this.routes.map(r => r.path));
+            console.error(`[SpaRouter] Chuyển về trang mặc định.`);
 
             const defaultRoute = this.routes[0]; // Lấy route đầu tiên làm mặc định
-            if (defaultRoute && defaultRoute.path !== path) { // Tránh lặp vô hạn nếu chính route mặc định bị lỗi
+            if (defaultRoute && defaultRoute.path !== normalizedPath) { // Tránh lặp vô hạn nếu chính route mặc định bị lỗi
+                console.log(`[SpaRouter] Redirecting to default route: ${defaultRoute.path}`);
                 this.navigateTo(defaultRoute.path);
             }
             return;
         }
 
+        console.log(`[Router] ✅ Route found, navigating to: ${route.path}`);
+        
         // Đẩy trạng thái mới vào history, cập nhật URL
-        history.pushState({ path }, route.title, path);
+        history.pushState({ path: normalizedPath }, route.title, normalizedPath);
         this.renderContent(route);
     }
 
@@ -145,7 +152,26 @@ class SpaRouter {
      * @returns {object|null} - Đối tượng route hoặc null nếu không tìm thấy.
      */
     findRoute(path) {
-        return this.routes.find(route => route.path === path) || null;
+        // Normalize path (remove trailing slashes, handle query params)
+        const normalizedPath = path.split('?')[0].replace(/\/$/, '');
+        
+        console.log(`[Router] Finding route for path: ${path} (normalized: ${normalizedPath})`);
+        console.log(`[Router] Available routes:`, this.routes.map(r => r.path));
+        
+        const route = this.routes.find(route => {
+            const routePath = route.path.split('?')[0].replace(/\/$/, '');
+            const match = routePath === normalizedPath;
+            if (match) {
+                console.log(`[Router] ✅ Found matching route: ${route.path}`);
+            }
+            return match;
+        });
+        
+        if (!route) {
+            console.warn(`[Router] ❌ No route found for: ${normalizedPath}`);
+        }
+        
+        return route || null;
     }
 
     /**

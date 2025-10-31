@@ -1,0 +1,227 @@
+<!-- Main Content -->
+<div class="container" th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="page-header mb-4">
+                        <h2 class="card-title mb-2">
+                            <i class="bi bi-qr-code"></i> QR Codes Check-in/Check-out
+                        </h2>
+                        <p class="text-muted">
+                            Sự kiện: <strong th:text="${event.title}">Event Name</strong>
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info mb-4" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Hướng dẫn sử dụng
+                        </h6>
+                        <ul class="mb-0 small">
+                            <li>In hoặc hiển thị QR codes tại địa điểm tổ chức sự kiện</li>
+                            <li>Người tham dự quét mã QR bằng camera điện thoại để truy cập form</li>
+                            <li>QR Code Check-in: Đăng ký khi đến sự kiện</li>
+                            <li>QR Code Check-out: Ghi nhận khi rời khỏi sự kiện</li>
+                        </ul>
+                    </div>
+
+                    <!-- QR Codes Display -->
+                    <div class="row g-4">
+                        <!-- QR Code Check-in -->
+                        <div class="col-md-6">
+                            <div class="qr-code-card">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <div class="qr-header mb-4">
+                                            <div class="qr-icon-wrapper mb-3">
+                                                <div class="qr-icon bg-success bg-opacity-10 text-success mx-auto">
+                                                    <i class="bi bi-box-arrow-in-right"></i>
+                                                </div>
+                                            </div>
+                                            <h4 class="mb-2">Check-in QR Code</h4>
+                                            <p class="text-muted small mb-0">Quét mã này để check-in</p>
+                                        </div>
+                                        
+                                        <div class="qr-code-display mb-4">
+                                            <div class="bg-light p-4 rounded border">
+                                                <img th:src="@{'/events/qr-code/generate?url=' + ${checkinUrl}}" 
+                                                     alt="Check-in QR Code" 
+                                                     class="img-fluid"
+                                                     style="max-width: 280px;">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="qr-actions">
+                                            <div class="input-group mb-3">
+                                                <input type="text" 
+                                                       class="form-control form-control-sm" 
+                                                       th:value="${checkinUrl}" 
+                                                       readonly 
+                                                       id="checkinUrl"
+                                                       style="font-family: monospace; font-size: 0.85rem;">
+                                                <button class="btn btn-outline-secondary btn-sm" 
+                                                        type="button" 
+                                                        onclick="copyToClipboard('checkinUrl')">
+                                                    <i class="bi bi-clipboard"></i> Copy
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-success" 
+                                                        onclick="downloadQRCode('checkin')">
+                                                    <i class="bi bi-download"></i> Tải xuống QR Code
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Code Check-out -->
+                        <div class="col-md-6">
+                            <div class="qr-code-card">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <div class="qr-header mb-4">
+                                            <div class="qr-icon-wrapper mb-3">
+                                                <div class="qr-icon bg-danger bg-opacity-10 text-danger mx-auto">
+                                                    <i class="bi bi-box-arrow-right"></i>
+                                                </div>
+                                            </div>
+                                            <h4 class="mb-2">Check-out QR Code</h4>
+                                            <p class="text-muted small mb-0">Quét mã này để check-out</p>
+                                        </div>
+                                        
+                                        <div class="qr-code-display mb-4">
+                                            <div class="bg-light p-4 rounded border">
+                                                <img th:src="@{'/events/qr-code/generate?url=' + ${checkoutUrl}}" 
+                                                     alt="Check-out QR Code" 
+                                                     class="img-fluid"
+                                                     style="max-width: 280px;">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="qr-actions">
+                                            <div class="input-group mb-3">
+                                                <input type="text" 
+                                                       class="form-control form-control-sm" 
+                                                       th:value="${checkoutUrl}" 
+                                                       readonly 
+                                                       id="checkoutUrl"
+                                                       style="font-family: monospace; font-size: 0.85rem;">
+                                                <button class="btn btn-outline-secondary btn-sm" 
+                                                        type="button" 
+                                                        onclick="copyToClipboard('checkoutUrl')">
+                                                    <i class="bi bi-clipboard"></i> Copy
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-danger" 
+                                                        onclick="downloadQRCode('checkout')">
+                                                    <i class="bi bi-download"></i> Tải xuống QR Code
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const eventId = /*[[${eventId}]]*/ 0;
+    const checkinQRUrl = /*[[${checkinUrl}]]*/ '';
+    const checkoutQRUrl = /*[[${checkoutUrl}]]*/ '';
+    
+    function copyToClipboard(elementId) {
+        const input = document.getElementById(elementId);
+        if (!input) {
+            console.error('Element not found:', elementId);
+            return;
+        }
+        
+        input.select();
+        document.execCommand('copy');
+        
+        // Show feedback
+        const button = event.target.closest('button');
+        if (button) {
+            const originalHtml = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            button.classList.remove('btn-outline-secondary');
+            button.classList.add('btn-success');
+            
+            setTimeout(() => {
+                button.innerHTML = originalHtml;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-secondary');
+            }, 2000);
+        }
+    }
+
+    function downloadQRCode(type) {
+        const url = type === 'checkin' ? checkinQRUrl : checkoutQRUrl;
+        const qrUrl = `/events/qr-code/generate?url=${encodeURIComponent(url)}`;
+        
+        fetch(qrUrl)
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `qr-code-${type}-event-${eventId}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error downloading QR code:', error);
+                alert('Không thể tải xuống mã QR. Vui lòng thử lại.');
+            });
+    }
+    /*]]>*/
+</script>
+
+<style>
+    .page-header {
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 15px;
+    }
+    
+    .qr-icon-wrapper {
+        margin-top: 10px;
+    }
+    
+    .qr-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+    }
+    
+    .qr-code-display {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .qr-code-card {
+        transition: transform 0.2s;
+    }
+    
+    .qr-code-card:hover {
+        transform: translateY(-3px);
+    }
+</style>

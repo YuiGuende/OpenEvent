@@ -7,8 +7,7 @@ import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.service.EventService;
-import com.group02.openevent.service.IImageService;
+import com.group02.openevent.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -35,11 +34,15 @@ public class HostController {
 
     private final EventService eventService;
     private final IImageService imageService;
+    private final HostService hostService;
+    private final CustomerService customerService;
 
     @Autowired
-    public HostController(EventService eventService, IImageService imageService) {
+    public HostController(EventService eventService, IImageService imageService, HostService hostService, CustomerService customerService) {
         this.eventService = eventService;
         this.imageService = imageService;
+        this.hostService = hostService;
+        this.customerService = customerService;
     }
 
     private Long getHostAccountId(HttpSession session) {
@@ -47,7 +50,12 @@ public class HostController {
         if (accountId == null) {
             throw new RuntimeException("User not logged in");
         }
-        return accountId;
+        Customer customer = customerService.getCustomerByAccountId(accountId);
+        Long hostId = customer.getHost().getId();
+        if (hostId == null) {
+            throw new RuntimeException("Host not found");
+        }
+        return hostId;
     }
 
     @GetMapping("/organizer")
@@ -87,7 +95,6 @@ public class HostController {
     public String settings(Model model) {
         return "fragments/settings :: content";
     }
-
 
 
 //    @GetMapping("/event/manage/{id}")

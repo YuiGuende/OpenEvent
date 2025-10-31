@@ -57,7 +57,7 @@ public class SecurityConfig {
                 // 2. Cấu hình Authorization
                 .authorizeHttpRequests(auth -> auth
                         // Loại bỏ /perform_login khỏi permitAll() để Spring Security xử lý
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/img/**","/images/**", "/", "/api/payments/webhook", "/api/payments/webhook/test", "/api/payments/webhook/test-data").permitAll()
+                        .requestMatchers("/login", "/api/auth/register", "/css/**", "/js/**", "/img/**", "/images/**", "/", "/api/payments/webhook", "/api/payments/webhook/test", "/api/payments/webhook/test-data").permitAll()
                         .anyRequest().authenticated()
                 )
 

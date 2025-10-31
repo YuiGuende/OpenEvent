@@ -285,9 +285,11 @@ public class AgentEventService {
         // 2) Find or create Host (idempotent)
         Host h = c.getHost();
         if (h == null) {
+            log.info("This customer has no host");
             h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -> {
                 Host nh = new Host();
                 nh.setCustomer(c);
+                log.info("Create host corresponding to customer id {}", c.getCustomerId());
                 return hostService.save(nh);
             });
         }

@@ -65,10 +65,13 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                 Event event = eventService.getEventById(eventId)
                         .orElseThrow(() -> new EntityNotFoundException("Event not found"));
                 ticket.setEvent(event);
+                // Ensure INSERT for new tickets (avoid trying to UPDATE a non-existent row)
+                ticket.setTicketTypeId(null);
             } else {
                 TicketType existing = ticketTypeRepo.findById(request.getTicketTypeId())
                         .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
-                BeanUtils.copyProperties(ticket, existing, "id", "event");
+                // Do not override identifier or relations
+                BeanUtils.copyProperties(ticket, existing, "ticketTypeId", "event");
                 ticket = existing;
             }
 

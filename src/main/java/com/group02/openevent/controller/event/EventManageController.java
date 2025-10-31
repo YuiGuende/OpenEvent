@@ -61,13 +61,6 @@ public class EventManageController {
         return accountId;
     }
 
-    //    @RequestMapping(value = "/manage/event/{eventId:\\d+}/{path:[^\\.]*}")
-//    public String forwardSpaRoutes() {
-//        // "forward:" là một chỉ thị đặc biệt để Spring thực hiện chuyển tiếp
-//        // ở phía server, giữ nguyên URL trên trình duyệt.
-//        // Đảm bảo đường dẫn này chính xác.
-//        return "forward:/host/manager-event";
-//    }
     @RequestMapping(value = "/manage/event/{eventId:\\d+}/{path:[^\\.]*}")
     public String showManagerPage(@PathVariable Long eventId, Model model) throws JsonProcessingException {
 
@@ -201,22 +194,18 @@ public class EventManageController {
     @GetMapping("/fragments/dashboard-event")
     public String dashboard(@RequestParam Long id, Model model) {
         log.info("Loading dashboard fragment for event ID: {}", id);
-        
-        try {
-            List<Place> places = placeService.getAllByEventId(id);
-            log.info("✅ Test successful - Found {} places", places.size());
-            
-            StringBuilder result = new StringBuilder();
-            result.append("Event ID: ").append(id).append("\n");
-            result.append("Places found: ").append(places.size()).append("\n");
-            result.append("Places: ").append(places).append("\n");
-            
-            return result.toString();
-        } catch (Exception e) {
-            log.error("❌ Test failed: ", e);
-            return "Error: " + e.getMessage();
-        }
+
+        Event event = eventService.getEventResponseById(id);
+        model.addAttribute("event", event);
+
+        // Load ticket types for dashboard
+        List<TicketType> allTicketTypes = ticketTypeRepo.findByEventId(id);
+        model.addAttribute("allTicketTypes", allTicketTypes);
+
+        log.info("Dashboard fragment loaded for event {} with {} ticket types", id, allTicketTypes.size());
+        return "fragments/dashboard-event :: content";
     }
+
 
 
 

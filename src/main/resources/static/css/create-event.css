@@ -1165,13 +1165,17 @@ html {
     left: 0;
     width: 100%;
     height: 100%;
-    background: white;
+    background: rgba(0, 0, 0, 0.5); /* default overlay */
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+/* Cropper popup should NOT dim the page */
+.cropper-modal {
+    background: rgba(0, 0, 0, 0.5) !important;
+}
 
 .cropper-modal-content, .social-modal-content {
     background: white;
@@ -1862,15 +1866,15 @@ html {
         grid-template-columns: 1fr;
         gap: 16px;
     }
-    
+
     .upload-card {
         padding: 16px;
     }
-    
+
     .upload-area {
         padding: 24px 16px;
     }
-    
+
     .preview-container {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 8px;

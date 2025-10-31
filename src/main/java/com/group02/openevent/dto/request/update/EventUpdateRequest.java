@@ -47,6 +47,7 @@ public class EventUpdateRequest {
     EventType eventType; // Dùng cho Jackson chọn subclass
 
     LocalDateTime publicDate;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     LocalDateTime enrollDeadline;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     LocalDateTime startsAt;

@@ -1,11 +1,26 @@
 // Version check
 console.log('lineup-manager.js v4 loaded')
 
+// CSRF helpers for Spring Security
+function getCsrf() {
+    const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+    const headerName = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')
+    return { token, headerName }
+}
+
+function withCsrf(headers = {}) {
+    const { token, headerName } = getCsrf()
+    if (token && headerName) {
+        headers[headerName] = token
+    }
+    return headers
+}
+
 // Function to get role display name
 function getRoleDisplayName(role) {
     const roleMap = {
         'SPEAKER': '🎤 Speaker',
-        'ARTIST': '🎨 Artist', 
+        'ARTIST': '🎨 Artist',
         'PERFORMER': '🎪 Performer',
         'SINGER': '🎵 Singer',
         'MC': '🎙️ MC',
@@ -20,20 +35,20 @@ function restoreAddButton() {
     console.log('restoreAddButton called')
     const addButton = document.querySelector('.lineup-delete-section-btn')
     console.log('Found delete button:', addButton)
-    
+
     if (addButton && addButton.dataset.originalText) {
         console.log('Restoring Add button...')
         console.log('Original text:', addButton.dataset.originalText)
         console.log('Original class:', addButton.dataset.originalClass)
-        
+
         // Restore original state
         addButton.textContent = addButton.dataset.originalText
         addButton.className = addButton.dataset.originalClass
         addButton.style.cssText = addButton.dataset.originalStyle
-        
+
         // Remove the onclick handler
         addButton.onclick = null
-        
+
         console.log('Add button restored successfully')
         return true
     } else {
@@ -44,16 +59,16 @@ function restoreAddButton() {
 
 window.addLineupSection = function () {
     console.log('addLineupSection called')
-    
+
     const container = document.getElementById("lineupSections")
-    
+
     if (!container) {
         console.error('lineupSections container not found')
         return
     }
-    
 
-    
+
+
     const div = document.createElement("div")
     div.className = "lineup-section"
     div.innerHTML = `
@@ -155,7 +170,7 @@ function createCropperModal() {
     const modal = document.createElement('div')
     modal.className = 'cropper-modal'
     modal.id = 'cropperModal'
-    
+
     // Create modal content directly
     modal.innerHTML = `
         <div class="cropper-modal-content">
@@ -181,7 +196,7 @@ function createCropperModal() {
             </div>
         </div>
     `
-    
+
     return modal
 }
 
@@ -222,7 +237,7 @@ function setupLineupSectionListeners(div) {
     const imagePreview = div.querySelector(".lineup-image-preview")
     const uploadBtn = div.querySelector(".lineup-upload-btn")
     const placeholder = div.querySelector(".lineup-image-placeholder")
-    
+
     // Upload triggers
     const triggerUpload = () => imageInput.click()
     imagePreview.onclick = triggerUpload
@@ -230,7 +245,7 @@ function setupLineupSectionListeners(div) {
         e.preventDefault()
         triggerUpload()
     }
-    
+
     // Image input change - show cropper
     imageInput.onchange = (e) => {
         const file = e.target.files[0]
@@ -238,14 +253,14 @@ function setupLineupSectionListeners(div) {
             showImageCropper(div, file)
         }
     }
-    
+
     // Tagline character count
     const tagline = div.querySelector(".lineupTagline")
     const taglineCount = div.querySelector(".lineupTaglineCount")
     if (tagline && taglineCount) {
         tagline.oninput = () => (taglineCount.textContent = tagline.value.length)
     }
-    
+
     // Individual form delete button
     const individualDeleteBtn = div.querySelector(".lineup-form-delete-individual")
     if (individualDeleteBtn) {
@@ -253,63 +268,63 @@ function setupLineupSectionListeners(div) {
             e.preventDefault()
             e.stopPropagation()
             console.log('Individual form delete clicked')
-            
+
             if (confirm('Are you sure you want to delete this form?')) {
                 div.remove()
                 console.log('Individual form deleted')
             }
         }
     }
-    
+
     // Add another button - create summary and new form
     div.querySelector(".lineup-add-another").onclick = () => {
         handleAddAnother(div)
     }
-    
+
     // Social links button
     div.querySelector(".lineup-social-btn").onclick = () => {
         console.log('Social button clicked')
         showSocialModal(div)
     }
-    
+
     // Role title edit functionality
     setupRoleEditListeners(div)
-    
+
     // Modal close handlers are now handled in individual functions
 }
 
 function showImageCropper(div, file) {
     console.log('showImageCropper called with file:', file)
-    
+
     // Create modal dynamically and append to body
     const modal = createCropperModal()
     document.body.appendChild(modal)
-    
+
     const cropperImage = modal.querySelector("#cropperImage")
     const cropperZoomSlider = modal.querySelector(".cropper-zoom-slider")
-    
+
     console.log('Modal elements:', {modal, cropperImage, cropperZoomSlider})
-    
+
     if (!modal || !cropperImage || !cropperZoomSlider) {
         console.error('Missing cropper elements')
         return
     }
-    
+
     // Set image source
     cropperImage.src = URL.createObjectURL(file)
-    
+
     // Show modal
     modal.style.display = "block"
-    
+
     // Attach event listeners immediately
     const saveBtn = modal.querySelector(".cropper-save")
     const cancelBtn = modal.querySelector(".cropper-cancel")
     const closeBtn = modal.querySelector(".cropper-close")
-    
+
     console.log('Save button element:', saveBtn)
     console.log('Cancel button element:', cancelBtn)
     console.log('Close button element:', closeBtn)
-    
+
     // Function to close modal and cleanup
     const closeModal = () => {
         console.log('Closing modal and cleaning up')
@@ -325,29 +340,29 @@ function showImageCropper(div, file) {
             console.error('Error closing modal:', error)
         }
     }
-    
+
     // Save cropped image
     saveBtn.onclick = (e) => {
         e.preventDefault()
         e.stopPropagation()
         console.log('Save button clicked')
-        
+
         try {
             if (!cropperImage.cropper) {
                 console.error('Cropper not initialized')
                 alert('Cropper chưa sẵn sàng, vui lòng đợi một chút')
                 return
             }
-            
+
             const canvas = cropperImage.cropper.getCroppedCanvas({
                 width: 200,
                 height: 200,
                 imageSmoothingEnabled: true,
                 imageSmoothingQuality: 'high',
             })
-            
+
             console.log('Canvas created:', canvas)
-            
+
             if (canvas) {
                 // Convert canvas to blob
                 canvas.toBlob(async (blob) => {
@@ -359,6 +374,7 @@ function showImageCropper(div, file) {
                         // Upload to server
                         const response = await fetch('/api/speakers/upload/image', {
                             method: 'POST',
+                            headers: withCsrf(),
                             body: formData
                         })
 
@@ -366,27 +382,27 @@ function showImageCropper(div, file) {
                             const result = await response.json()
                             const imageUrl = result.imageUrl
 
-                // Update preview
-                const imagePreview = div.querySelector(".lineup-image-preview")
-                const placeholder = div.querySelector(".lineup-image-placeholder")
-                
-                // Remove existing cropped image
-                const existingImg = imagePreview.querySelector(".lineup-cropped-image")
-                if (existingImg) {
-                    existingImg.remove()
-                }
-                
-                // Create new image element
-                const newImg = document.createElement('img')
+                            // Update preview
+                            const imagePreview = div.querySelector(".lineup-image-preview")
+                            const placeholder = div.querySelector(".lineup-image-placeholder")
+
+                            // Remove existing cropped image
+                            const existingImg = imagePreview.querySelector(".lineup-cropped-image")
+                            if (existingImg) {
+                                existingImg.remove()
+                            }
+
+                            // Create new image element
+                            const newImg = document.createElement('img')
                             newImg.src = imageUrl
-                newImg.className = 'lineup-cropped-image'
-                newImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 50%;'
-                
-                // Replace placeholder with cropped image
-                placeholder.style.display = 'none'
-                imagePreview.appendChild(newImg)
-                imagePreview.classList.add('has-image')
-                
+                            newImg.className = 'lineup-cropped-image'
+                            newImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 50%;'
+
+                            // Replace placeholder with cropped image
+                            placeholder.style.display = 'none'
+                            imagePreview.appendChild(newImg)
+                            imagePreview.classList.add('has-image')
+
                             // Store image URL instead of base64
                             div.dataset.croppedImage = imageUrl
 
@@ -409,43 +425,43 @@ function showImageCropper(div, file) {
             console.error('Error saving cropped image:', error)
             alert('Có lỗi khi lưu ảnh: ' + error.message)
         }
-        
+
         // Close modal
         closeModal()
     }
-    
+
     // Cancel cropping
     cancelBtn.onclick = (e) => {
         e.preventDefault()
         e.stopPropagation()
         console.log('Cancel button clicked')
-        
+
         // Reset file input
         const fileInput = div.querySelector(".lineupImageInput")
         if (fileInput) {
             fileInput.value = ""
         }
-        
+
         // Close modal
         closeModal()
     }
-    
+
     // Close button
     closeBtn.onclick = (e) => {
         e.preventDefault()
         e.stopPropagation()
         console.log('Close button clicked')
-        
+
         // Reset file input
         const fileInput = div.querySelector(".lineupImageInput")
         if (fileInput) {
             fileInput.value = ""
         }
-        
+
         // Close modal
         closeModal()
     }
-    
+
     // Close modal when clicking outside
     modal.onclick = (e) => {
         if (e.target === modal) {
@@ -453,16 +469,16 @@ function showImageCropper(div, file) {
             closeModal()
         }
     }
-    
+
     // Wait for image to load before initializing cropper
     cropperImage.onload = () => {
         console.log('Image loaded, initializing cropper')
-        
+
         // Destroy existing cropper if any
         if (cropperImage.cropper) {
             cropperImage.cropper.destroy()
         }
-        
+
         // Initialize cropper
         const cropper = new Cropper(cropperImage, {
             aspectRatio: 1,
@@ -480,16 +496,16 @@ function showImageCropper(div, file) {
                 console.log('Cropper ready')
             }
         })
-        
+
         // Store cropper instance
         cropperImage.cropper = cropper
-        
+
         // Zoom slider
         cropperZoomSlider.oninput = () => {
             cropper.zoomTo(parseFloat(cropperZoomSlider.value))
         }
     }
-    
+
     // Handle image load error
     cropperImage.onerror = () => {
         console.error('Failed to load image')
@@ -503,22 +519,22 @@ function showSocialModal(div) {
     const modal = createSocialModal()
     document.body.appendChild(modal)
     console.log('Modal created and appended')
-    
+
     // Add more social links
     modal.querySelector(".social-add-more").onclick = () => {
         addSocialLinkItem(modal)
     }
-    
+
     // Save social links
     modal.querySelector(".social-save").onclick = () => {
         saveSocialLinks(div, modal)
     }
-    
+
     // Close modal handlers
     modal.querySelector(".social-close").onclick = () => {
         document.body.removeChild(modal)
     }
-    
+
     // Close modal when clicking outside
     modal.onclick = (e) => {
         if (e.target.id === "socialModal") {
@@ -541,21 +557,21 @@ function addSocialLinkItem(modal) {
         </div>
         <button class="social-remove" type="button">&times;</button>
     `
-    
+
     // Add remove functionality
     newItem.querySelector(".social-remove").onclick = () => {
         newItem.remove()
     }
-    
+
     // Add input change functionality
     const input = newItem.querySelector(".social-link-input")
     const icon = newItem.querySelector(".social-platform-icon")
     const label = newItem.querySelector("label")
-    
+
     input.oninput = () => {
         updateSocialIcon(input.value, icon, label)
     }
-    
+
     socialBody.appendChild(newItem)
 }
 
@@ -569,10 +585,10 @@ function updateSocialIcon(url, icon, label) {
         'tiktok.com': {icon: 'fab fa-tiktok', label: 'TikTok'},
         'snapchat.com': {icon: 'fab fa-snapchat', label: 'Snapchat'},
     }
-    
+
     let platform = 'Website'
     let iconClass = 'fas fa-globe'
-    
+
     for (const [domain, data] of Object.entries(platformMap)) {
         if (url.includes(domain)) {
             platform = data.label
@@ -580,7 +596,7 @@ function updateSocialIcon(url, icon, label) {
             break
         }
     }
-    
+
     icon.className = `social-platform-icon ${iconClass}`
     label.textContent = platform
 }
@@ -588,7 +604,7 @@ function updateSocialIcon(url, icon, label) {
 // Function to update social links preview
 function updateSocialLinksPreview(div, socialLinks) {
     console.log('updateSocialLinksPreview called with:', socialLinks)
-    
+
     // Find or create social links preview container
     let previewContainer = div.querySelector('.social-links-preview')
     if (!previewContainer) {
@@ -601,17 +617,17 @@ function updateSocialLinksPreview(div, socialLinks) {
             border-radius: 4px;
             border: 1px solid #e0e0e0;
         `
-        
+
         // Insert after social button
         const socialBtn = div.querySelector('.lineup-social-btn')
         if (socialBtn) {
             socialBtn.parentNode.insertBefore(previewContainer, socialBtn.nextSibling)
         }
     }
-    
+
     // Clear existing content
     previewContainer.innerHTML = ''
-    
+
     // Add social links
     socialLinks.forEach(link => {
         if (link.url.trim()) {
@@ -636,12 +652,12 @@ function updateSocialLinksPreview(div, socialLinks) {
 function saveSocialLinks(div, modal) {
     const socialItems = modal.querySelectorAll(".social-link-item")
     const socialLinks = []
-    
+
     socialItems.forEach(item => {
         const input = item.querySelector(".social-link-input")
         const icon = item.querySelector(".social-platform-icon")
         const label = item.querySelector("label")
-        
+
         if (input.value.trim()) {
             socialLinks.push({
                 url: input.value.trim(),
@@ -650,15 +666,15 @@ function saveSocialLinks(div, modal) {
             })
         }
     })
-    
+
     // Store social links
     div.dataset.socialLinks = JSON.stringify(socialLinks)
-    
+
     // Update preview if any links exist
     if (socialLinks.length > 0) {
         updateSocialLinksPreview(div, socialLinks)
     }
-    
+
     // Close modal
     document.body.removeChild(modal)
 }
@@ -666,27 +682,27 @@ function saveSocialLinks(div, modal) {
 
 async function handleAddAnother(div) {
     console.log('handleAddAnother called')
-    
+
     const nameInput = div.querySelector(".lineupName")
     const imagePreview = div.querySelector(".lineup-image-preview")
     const hasImage = imagePreview.querySelector(".lineup-cropped-image") || div.dataset.croppedImage
-    
+
     console.log('Name:', nameInput.value)
     console.log('Has image:', !!hasImage)
-    
+
     // Simple validation
     if (!nameInput.value.trim()) {
         alert('Name is required')
         return
     }
-    
+
     if (!hasImage) {
         alert('Please upload an image first')
         return
     }
-    
+
     console.log('Validation passed, creating speaker...')
-    
+
     // Prepare data for API
     const name = nameInput.value.trim()
     const tagline = div.querySelector(".lineupTagline").value.trim()
@@ -708,9 +724,9 @@ async function handleAddAnother(div) {
         // Call API to create speaker
         const response = await fetch('/api/speakers', {
             method: 'POST',
-            headers: {
+            headers: withCsrf({
                 'Content-Type': 'application/json'
-            },
+            }),
             body: JSON.stringify(speakerData)
         })
 
@@ -720,16 +736,17 @@ async function handleAddAnother(div) {
 
             // Add speaker to event
             const addToEventResponse = await fetch(`/api/speakers/${createdSpeaker.id}/events/${eventId}`, {
-                method: 'POST'
+                method: 'POST',
+                headers: withCsrf()
             })
 
             if (addToEventResponse.ok) {
                 console.log('Speaker added to event successfully')
 
                 // Create summary card with created speaker data
-    const summaryCard = document.createElement("div")
-    summaryCard.className = "lineup-member-summary"
-    summaryCard.innerHTML = `
+                const summaryCard = document.createElement("div")
+                summaryCard.className = "lineup-member-summary"
+                summaryCard.innerHTML = `
         <div class="summary-content">
             <div class="summary-drag-handle">
                 <i class="fas fa-grip-lines"></i>
@@ -752,30 +769,33 @@ async function handleAddAnother(div) {
             </div>
         </div>
     `
-    
-    // Add edit functionality
-    summaryCard.querySelector(".summary-edit").onclick = () => {
+
+                // Add edit functionality
+                summaryCard.querySelector(".summary-edit").onclick = () => {
                     editSpeakerFromSummary(summaryCard, createdSpeaker)
-    }
-    
-    // Add delete functionality
+                }
+
+                // Add delete functionality
                 summaryCard.querySelector(".summary-delete").onclick = async () => {
                     if (confirm(`Bạn có chắc chắn muốn xóa "${createdSpeaker.name}"?`)) {
                         try {
-                            const response = await fetch(`/api/speakers/${createdSpeaker.id}`, {method: 'DELETE'});
+                        const response = await fetch(`/api/speakers/${createdSpeaker.id}`, {
+                            method: 'DELETE',
+                            headers: withCsrf()
+                        });
                             if (response.ok) {
-            summaryCard.remove()
+                                summaryCard.remove()
                             } else {
                                 alert('Lỗi khi xóa!');
                             }
                         } catch (error) {
                             alert('Lỗi mạng!');
                         }
-        }
-    }
-    
-    // Insert before the form
-    div.querySelector(".lineup-form-container").insertAdjacentElement("beforebegin", summaryCard)
+                    }
+                }
+
+                // Insert before the form
+                div.querySelector(".lineup-form-container").insertAdjacentElement("beforebegin", summaryCard)
 
                 alert('Speaker created successfully!')
             } else {
@@ -788,13 +808,13 @@ async function handleAddAnother(div) {
         console.error('Error creating speaker:', error)
         alert('Network error!')
     }
-    
+
     // Reset form
     nameInput.value = ""
     div.querySelector(".lineupTagline").value = ""
     div.querySelector(".lineupTaglineCount").textContent = "0"
     div.querySelector(".lineupRole").value = "SPEAKER"
-    
+
     // Reset image
     const placeholder = imagePreview.querySelector(".lineup-image-placeholder")
     const croppedImg = imagePreview.querySelector(".lineup-cropped-image")
@@ -804,14 +824,14 @@ async function handleAddAnother(div) {
     placeholder.style.display = "flex"
     imagePreview.classList.remove('has-image')
     div.dataset.croppedImage = ""
-    
+
     console.log('Form reset successfully')
 }
 
 function populateLineupFromEvent() {
     console.log('--- BƯỚC B: populateLineupFromEvent ĐANG CHẠY ---');
     console.log('initialSpeakersData:', initialSpeakersData);
-    
+
     // 1. Kiểm tra dữ liệu
     if (!initialSpeakersData || initialSpeakersData.length === 0) {
         console.log('No initial speakers to populate.');
@@ -837,7 +857,7 @@ function populateLineupFromEvent() {
 
         const summaryCard = document.createElement("div");
         summaryCard.className = "lineup-member-summary";
-    summaryCard.innerHTML = `
+        summaryCard.innerHTML = `
         <div class="summary-content">
                 <div class="summary-drag-handle"><i class="fas fa-grip-lines"></i></div>
                 <div class="summary-avatar"><img src="${croppedImage}" alt="${name}" class="summary-image"></div>
@@ -857,7 +877,10 @@ function populateLineupFromEvent() {
         summaryCard.querySelector(".summary-delete").onclick = async () => {
             if (confirm(`Bạn có chắc chắn muốn xóa "${name}"?`)) {
                 try {
-                    const response = await fetch(`/api/speakers/${speaker.id}`, {method: 'DELETE'});
+                    const response = await fetch(`/api/speakers/${speaker.id}`, {
+                        method: 'DELETE',
+                        headers: withCsrf()
+                    });
                     if (response.ok) {
                         summaryCard.remove();
                     } else {
@@ -869,7 +892,7 @@ function populateLineupFromEvent() {
             }
         };
 
-    summaryCard.querySelector(".summary-edit").onclick = () => {
+        summaryCard.querySelector(".summary-edit").onclick = () => {
             editSpeakerFromSummary(summaryCard, speaker);
         };
 
@@ -880,40 +903,40 @@ function populateLineupFromEvent() {
     addLineupSection();
 }
 
-    // Gọi khi DOM load hoặc khi fragment được load
-    document.addEventListener('DOMContentLoaded', populateLineupFromEvent);
-    //
-    // Function to edit speaker from summary card
-    function editSpeakerFromSummary(summaryCard, speaker) {
-        console.log('Edit clicked for:', speaker);
-        // Tạo form để chỉnh sửa
-        const formContainer = addLineupSection();
-        if (!formContainer) return;
-        
-        // Điền dữ liệu vào form
-        formContainer.querySelector(".lineupName").value = speaker.name || "";
-        formContainer.querySelector(".lineupTagline").value = speaker.profile || "";
-        formContainer.querySelector(".lineupRole").value = speaker.defaultRole || "SPEAKER";
-        
-        // Điền ảnh nếu có
-        const imagePreview = formContainer.querySelector(".lineup-image-preview");
-        const placeholder = imagePreview.querySelector(".lineup-image-placeholder");
-        if (speaker.imageUrl) {
-            const img = document.createElement('img');
-            img.src = speaker.imageUrl;
-            img.className = 'lineup-cropped-image';
-            img.style.cssText = 'width:100%; height:100%; object-fit:cover; border-radius:50%;';
-            placeholder.style.display = 'none';
-            imagePreview.appendChild(img);
-            formContainer.dataset.croppedImage = speaker.imageUrl;
-        }
-        
-        // Thay đổi nút "Add another" thành "Save Update" và thêm nút Cancel
-        const addAnotherBtn = formContainer.querySelector(".lineup-add-another");
-        if (addAnotherBtn) {
-            addAnotherBtn.textContent = "Save Update";
-            addAnotherBtn.className = "lineup-save-update";
-            addAnotherBtn.style.cssText = `
+// Gọi khi DOM load hoặc khi fragment được load
+document.addEventListener('DOMContentLoaded', populateLineupFromEvent);
+//
+// Function to edit speaker from summary card
+function editSpeakerFromSummary(summaryCard, speaker) {
+    console.log('Edit clicked for:', speaker);
+    // Tạo form để chỉnh sửa
+    const formContainer = addLineupSection();
+    if (!formContainer) return;
+
+    // Điền dữ liệu vào form
+    formContainer.querySelector(".lineupName").value = speaker.name || "";
+    formContainer.querySelector(".lineupTagline").value = speaker.profile || "";
+    formContainer.querySelector(".lineupRole").value = speaker.defaultRole || "SPEAKER";
+
+    // Điền ảnh nếu có
+    const imagePreview = formContainer.querySelector(".lineup-image-preview");
+    const placeholder = imagePreview.querySelector(".lineup-image-placeholder");
+    if (speaker.imageUrl) {
+        const img = document.createElement('img');
+        img.src = speaker.imageUrl;
+        img.className = 'lineup-cropped-image';
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover; border-radius:50%;';
+        placeholder.style.display = 'none';
+        imagePreview.appendChild(img);
+        formContainer.dataset.croppedImage = speaker.imageUrl;
+    }
+
+    // Thay đổi nút "Add another" thành "Save Update" và thêm nút Cancel
+    const addAnotherBtn = formContainer.querySelector(".lineup-add-another");
+    if (addAnotherBtn) {
+        addAnotherBtn.textContent = "Save Update";
+        addAnotherBtn.className = "lineup-save-update";
+        addAnotherBtn.style.cssText = `
                 background: #28a745;
                 color: white;
                 border: none;
@@ -923,13 +946,13 @@ function populateLineupFromEvent() {
                 font-size: 0.9rem;
                 margin-right: 0.5rem;
             `;
-            
-            // Thêm nút Cancel
-            const cancelBtn = document.createElement("button");
-            cancelBtn.textContent = "Cancel";
-            cancelBtn.className = "lineup-cancel-update";
-            cancelBtn.type = "button";
-            cancelBtn.style.cssText = `
+
+        // Thêm nút Cancel
+        const cancelBtn = document.createElement("button");
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.className = "lineup-cancel-update";
+        cancelBtn.type = "button";
+        cancelBtn.style.cssText = `
                 background: #6c757d;
                 color: white;
                 border: none;
@@ -938,19 +961,19 @@ function populateLineupFromEvent() {
                 cursor: pointer;
                 font-size: 0.9rem;
             `;
-            
-            // Insert cancel button after save button
-            addAnotherBtn.parentNode.insertBefore(cancelBtn, addAnotherBtn.nextSibling);
-            
-            // Event handler cho nút Cancel
-            cancelBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Create original summary card with original data
-                const originalSummaryCard = document.createElement("div");
-                originalSummaryCard.className = "lineup-member-summary";
-                originalSummaryCard.innerHTML = `
+
+        // Insert cancel button after save button
+        addAnotherBtn.parentNode.insertBefore(cancelBtn, addAnotherBtn.nextSibling);
+
+        // Event handler cho nút Cancel
+        cancelBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Create original summary card with original data
+            const originalSummaryCard = document.createElement("div");
+            originalSummaryCard.className = "lineup-member-summary";
+            originalSummaryCard.innerHTML = `
                     <div class="summary-content">
                         <div class="summary-drag-handle"><i class="fas fa-grip-lines"></i></div>
                         <div class="summary-avatar"><img src="${speaker.imageUrl}" alt="${speaker.name}" class="summary-image"></div>
@@ -965,86 +988,86 @@ function populateLineupFromEvent() {
                         </div>
                     </div>
                 `;
-                
-                // Add event handlers to original summary card
-                originalSummaryCard.querySelector(".summary-delete").onclick = async () => {
-                    if (confirm(`Bạn có chắc chắn muốn xóa "${speaker.name}"?`)) {
-                        try {
-                            const response = await fetch(`/api/speakers/${speaker.id}`, {method: 'DELETE'});
-                            if (response.ok) {
-                                originalSummaryCard.remove();
-                            } else {
-                                alert('Lỗi khi xóa!');
-                            }
-                        } catch (error) {
-                            alert('Lỗi mạng!');
+
+            // Add event handlers to original summary card
+            originalSummaryCard.querySelector(".summary-delete").onclick = async () => {
+                if (confirm(`Bạn có chắc chắn muốn xóa "${speaker.name}"?`)) {
+                    try {
+                        const response = await fetch(`/api/speakers/${speaker.id}`, {method: 'DELETE'});
+                        if (response.ok) {
+                            originalSummaryCard.remove();
+                        } else {
+                            alert('Lỗi khi xóa!');
                         }
+                    } catch (error) {
+                        alert('Lỗi mạng!');
                     }
-                };
-                
-                originalSummaryCard.querySelector(".summary-edit").onclick = () => {
-                    editSpeakerFromSummary(originalSummaryCard, speaker);
-                };
-                
-                // Replace form with original summary card
-                formContainer.parentNode.replaceChild(originalSummaryCard, formContainer);
+                }
             };
-            
-            // Thay đổi event handler
-            addAnotherBtn.onclick = async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Validate form
-                const nameInput = formContainer.querySelector(".lineupName");
-                const imagePreview = formContainer.querySelector(".lineup-image-preview");
-                const hasImage = imagePreview.querySelector(".lineup-cropped-image") || formContainer.dataset.croppedImage;
-                
-                if (!nameInput.value.trim()) {
-                    alert('Name is required');
-                    return;
-                }
-                
-                if (!hasImage) {
-                    alert('Please upload an image first');
-                    return;
-                }
-                
-                // Show loading state
-                addAnotherBtn.disabled = true;
-                addAnotherBtn.textContent = "Saving...";
-                
-                try {
-                    // Prepare data for API
-                    const updateData = {
-                        id: speaker.id,
-                        name: nameInput.value.trim(),
-                        profile: formContainer.querySelector(".lineupTagline").value.trim(),
-                        imageUrl: formContainer.dataset.croppedImage || speaker.imageUrl,
-                        defaultRole: formContainer.querySelector(".lineupRole").value,
-                        eventId: window.location.pathname.split('/')[3] // Get eventId from URL
-                    };
-                    
-                    // Call API to update speaker
-                    const response = await fetch(`/api/speakers/${speaker.id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(updateData)
-                    });
-                    
-                    if (response.ok) {
-                        // Update speaker data
-                        speaker.name = updateData.name;
-                        speaker.profile = updateData.profile;
-                        speaker.imageUrl = updateData.imageUrl;
-                        speaker.defaultRole = updateData.defaultRole;
-                        
-                        // Create new summary card with updated data
-                        const updatedSummaryCard = document.createElement("div");
-                        updatedSummaryCard.className = "lineup-member-summary";
-                        updatedSummaryCard.innerHTML = `
+
+            originalSummaryCard.querySelector(".summary-edit").onclick = () => {
+                editSpeakerFromSummary(originalSummaryCard, speaker);
+            };
+
+            // Replace form with original summary card
+            formContainer.parentNode.replaceChild(originalSummaryCard, formContainer);
+        };
+
+        // Thay đổi event handler
+        addAnotherBtn.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Validate form
+            const nameInput = formContainer.querySelector(".lineupName");
+            const imagePreview = formContainer.querySelector(".lineup-image-preview");
+            const hasImage = imagePreview.querySelector(".lineup-cropped-image") || formContainer.dataset.croppedImage;
+
+            if (!nameInput.value.trim()) {
+                alert('Name is required');
+                return;
+            }
+
+            if (!hasImage) {
+                alert('Please upload an image first');
+                return;
+            }
+
+            // Show loading state
+            addAnotherBtn.disabled = true;
+            addAnotherBtn.textContent = "Saving...";
+
+            try {
+                // Prepare data for API
+                const updateData = {
+                    id: speaker.id,
+                    name: nameInput.value.trim(),
+                    profile: formContainer.querySelector(".lineupTagline").value.trim(),
+                    imageUrl: formContainer.dataset.croppedImage || speaker.imageUrl,
+                    defaultRole: formContainer.querySelector(".lineupRole").value,
+                    // eventId: window.location.pathname.split('/')[3] // Get eventId from URL
+                };
+
+                // Call API to update speaker
+                const response = await fetch(`/api/speakers/${speaker.id}`, {
+                    method: 'PUT',
+                    headers: withCsrf({
+                        'Content-Type': 'application/json'
+                    }),
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    // Update speaker data
+                    speaker.name = updateData.name;
+                    speaker.profile = updateData.profile;
+                    speaker.imageUrl = updateData.imageUrl;
+                    speaker.defaultRole = updateData.defaultRole;
+
+                    // Create new summary card with updated data
+                    const updatedSummaryCard = document.createElement("div");
+                    updatedSummaryCard.className = "lineup-member-summary";
+                    updatedSummaryCard.innerHTML = `
                             <div class="summary-content">
                                 <div class="summary-drag-handle"><i class="fas fa-grip-lines"></i></div>
                                 <div class="summary-avatar"><img src="${speaker.imageUrl}" alt="${speaker.name}" class="summary-image"></div>
@@ -1059,52 +1082,52 @@ function populateLineupFromEvent() {
                                 </div>
                             </div>
                         `;
-                        
-                        // Add event handlers to updated summary card
-                        updatedSummaryCard.querySelector(".summary-delete").onclick = async () => {
-                            if (confirm(`Bạn có chắc chắn muốn xóa "${speaker.name}"?`)) {
-                                try {
-                                    const response = await fetch(`/api/speakers/${speaker.id}`, {method: 'DELETE'});
-                                    if (response.ok) {
-                                        updatedSummaryCard.remove();
-                                    } else {
-                                        alert('Lỗi khi xóa!');
-                                    }
-                                } catch (error) {
-                                    alert('Lỗi mạng!');
+
+                    // Add event handlers to updated summary card
+                    updatedSummaryCard.querySelector(".summary-delete").onclick = async () => {
+                        if (confirm(`Bạn có chắc chắn muốn xóa "${speaker.name}"?`)) {
+                            try {
+                                const response = await fetch(`/api/speakers/${speaker.id}`, {method: 'DELETE'});
+                                if (response.ok) {
+                                    updatedSummaryCard.remove();
+                                } else {
+                                    alert('Lỗi khi xóa!');
                                 }
+                            } catch (error) {
+                                alert('Lỗi mạng!');
                             }
-                        };
-                        
-                        updatedSummaryCard.querySelector(".summary-edit").onclick = () => {
-                            editSpeakerFromSummary(updatedSummaryCard, speaker);
-                        };
-                        
-                        // Replace form with updated summary card
-                        formContainer.parentNode.replaceChild(updatedSummaryCard, formContainer);
-                        
-                        alert('Speaker updated successfully!');
-                    } else {
-                        alert('Error updating speaker!');
-                    }
-                } catch (error) {
-                    console.error('Error updating speaker:', error);
-                    alert('Network error!');
-                } finally {
-                    addAnotherBtn.disabled = false;
-                    addAnotherBtn.textContent = "Save Update";
+                        }
+                    };
+
+                    updatedSummaryCard.querySelector(".summary-edit").onclick = () => {
+                        editSpeakerFromSummary(updatedSummaryCard, speaker);
+                    };
+
+                    // Replace form with updated summary card
+                    formContainer.parentNode.replaceChild(updatedSummaryCard, formContainer);
+
+                    alert('Speaker updated successfully!');
+                } else {
+                    alert('Error updating speaker!');
                 }
-            };
-        }
-        
-        // Thay thế summary bằng form
-        summaryCard.parentNode.replaceChild(formContainer, summaryCard);
+            } catch (error) {
+                console.error('Error updating speaker:', error);
+                alert('Network error!');
+            } finally {
+                addAnotherBtn.disabled = false;
+                addAnotherBtn.textContent = "Save Update";
+            }
+        };
     }
 
-    // Export function để có thể gọi từ bên ngoài
-    window.populateLineupFromEvent = populateLineupFromEvent;
-    window.addLineupSection = addLineupSection;
-    window.editSpeakerFromSummary = editSpeakerFromSummary;
+    // Thay thế summary bằng form
+    summaryCard.parentNode.replaceChild(formContainer, summaryCard);
+}
+
+// Export function để có thể gọi từ bên ngoài
+window.populateLineupFromEvent = populateLineupFromEvent;
+window.addLineupSection = addLineupSection;
+window.editSpeakerFromSummary = editSpeakerFromSummary;
 
 
 
@@ -1118,7 +1141,7 @@ function setupRoleEditListeners(div) {
     const roleEdit = div.querySelector(".lineup-role-edit")
     const roleSelect = div.querySelector(".lineupRole")
     const roleIcon = div.querySelector(".lineup-role-icon")
-    
+
     // Function to update role icon based on selected value
     const updateRoleIcon = (value) => {
         const iconMap = {
@@ -1130,12 +1153,12 @@ function setupRoleEditListeners(div) {
             'MC': 'fas fa-microphone-alt',
             'OTHER': 'fas fa-star'
         }
-        
+
         if (roleIcon && iconMap[value]) {
             roleIcon.className = `lineup-role-icon ${iconMap[value]}`
         }
     }
-    
+
     if (roleText && roleEdit && roleSelect) {
         roleEdit.onclick = (e) => {
             e.preventDefault()
@@ -1145,50 +1168,49 @@ function setupRoleEditListeners(div) {
             roleSelect.value = roleText.textContent.trim().split(' ')[1]?.toUpperCase() || 'LINEUP'
             roleSelect.focus()
         }
-        
+
         roleSelect.onchange = () => {
             const selectedText = roleSelect.options[roleSelect.selectedIndex].text
             const selectedValue = roleSelect.value
-            
+
             // Update icon
             updateRoleIcon(selectedValue)
-            
+
             // Update text (remove emoji and keep only text)
             const textOnly = selectedText.replace(/[🎭🎨🎤🎪🎵🎙️⭐]/g, '').trim()
             roleText.innerHTML = `<i class="lineup-role-icon"></i> ${textOnly}`
-            
+
             // Update the icon in the new HTML
             const newRoleIcon = roleText.querySelector(".lineup-role-icon")
             if (newRoleIcon) {
                 updateRoleIcon(selectedValue)
             }
-            
+
             roleText.style.display = "inline-block"
             roleEdit.style.display = "inline-block"
             roleSelect.style.display = "none"
         }
-        
+
         roleSelect.onblur = () => {
             const selectedText = roleSelect.options[roleSelect.selectedIndex].text
             const selectedValue = roleSelect.value
-            
+
             // Update icon
             updateRoleIcon(selectedValue)
-            
+
             // Update text (remove emoji and keep only text)
             const textOnly = selectedText.replace(/[🎭🎨🎤🎪🎵🎙️⭐]/g, '').trim()
             roleText.innerHTML = `<i class="lineup-role-icon"></i> ${textOnly}`
-            
+
             // Update the icon in the new HTML
             const newRoleIcon = roleText.querySelector(".lineup-role-icon")
             if (newRoleIcon) {
                 updateRoleIcon(selectedValue)
             }
-            
+
             roleText.style.display = "inline-block"
             roleEdit.style.display = "inline-block"
             roleSelect.style.display = "none"
         }
     }
 }
-

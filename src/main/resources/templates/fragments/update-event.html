@@ -67,19 +67,19 @@
                         th:classappend="${request.eventType == 'MUSIC'} ? 'active' : ''"
                         onclick="selectEventType('MUSIC')">Music
                 </button>
-                <button th:if="${eventTypes == 'WorkshopEvent'}" class="event-type-tab" type="button"
+                <button th:if="${eventTypes == 'WorkshopEvent'}" class="event-type-tab active" type="button"
                         th:classappend="${request.eventType == 'WORKSHOP'} ? 'active' : ''"
                         onclick="selectEventType('WORKSHOP')">Workshop
                 </button>
-                <button th:if="${eventTypes == 'FestivalEvent'}" class="event-type-tab" type="button"
+                <button th:if="${eventTypes == 'FestivalEvent'}" class="event-type-tab active" type="button"
                         th:classappend="${request.eventType == 'FESTIVAL'} ? 'active' : ''"
                         onclick="selectEventType('FESTIVAL')">Festival
                 </button>
-                <button th:if="${eventTypes == 'CompetitionEvent'}" class="event-type-tab" type="button"
+                <button th:if="${eventTypes == 'CompetitionEvent'}" class="event-type-tab active" type="button"
                         th:classappend="${request.eventType == 'COMPETITION'} ? 'active' : ''"
                         onclick="selectEventType('COMPETITION')">Competition
                 </button>
-                <button th:if="${eventTypes == 'Event'} " class="event-type-tab" type="button"
+                <button th:if="${eventTypes == 'Event'} " class="event-type-tab active" type="button"
                         th:classappend="${request.eventType == 'OTHER'} ? 'active' : ''"
                         onclick="selectEventType('OTHER')">Other
                 </button>

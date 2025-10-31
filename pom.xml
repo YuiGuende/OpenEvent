@@ -269,17 +269,9 @@
                                 <include>com/group02/openevent/ai/controller/EventAIController*.class</include>
                                 <include>com/group02/openevent/ai/controller/TranslationController*.class</include>
 
-                                <include>com/group02/openevent/ai/qdrant/service/EventVectorSyncService*.class</include>
-                                <include>com/group02/openevent/ai/qdrant/service/QdrantService*.class</include>
-                                <include>com/group02/openevent/ai/qdrant/service/VectorIntentClassifier*.class</include>
-                                <include>com/group02/openevent/ai/qdrant/service/VectorSeedRunner*.class</include>
-
-                                <include>com/group02/openevent/ai/security/AISecurityService*.class</include>
-                                <include>com/group02/openevent/ai/security/RateLimitingService*.class</include>
                                 <include>com/group02/openevent/ai/service/AgentEventService*.class</include>
                                 <include>com/group02/openevent/ai/service/LanguageDetectionService*.class</include>
                                 <include>com/group02/openevent/ai/service/OrderAIService*.class</include>
-                                <include>com/group02/openevent/ai/util/SessionManager*.class</include>
 
                                 <include>com/group02/openevent/controller/form/EventFormController*.class</include>
                                 <include>com/group02/openevent/service/EventAttendanceService*.class</include>

@@ -82,23 +82,27 @@ public class SpeakerServiceImpl implements SpeakerService {
     @Override
     @Transactional
     public Speaker addToEvent(Long speakerId, Long eventId) {
-        // Tìm speaker và event
+        // 1. Tìm speaker và event
         Speaker speaker = speakerRepo.findById(speakerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Speaker với ID: " + speakerId));
-        
+
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Event với ID: " + eventId));
-        
-        // Thêm event vào speaker's events list
-        if (speaker.getEvents() == null) {
-            speaker.setEvents(new ArrayList<>());
+
+        // 2. Sửa đổi "BÊN SỞ HỮU" (Owning Side) - chính là Event
+        if (event.getSpeakers() == null) {
+            event.setSpeakers(new ArrayList<>());
         }
-        
-        if (!speaker.getEvents().contains(event)) {
-            speaker.getEvents().add(event);
-            speakerRepo.save(speaker);
+
+        // 3. Thêm speaker vào danh sách của Event
+        if (!event.getSpeakers().contains(speaker)) {
+            event.getSpeakers().add(speaker);
+
+            // 4. Lưu lại "BÊN SỞ HỮU" (Event)
+            // Khi bạn lưu Event, JPA sẽ tự động cập nhật bảng "event_speaker"
+            eventRepo.save(event);
         }
-        
+
         return speaker;
     }
 

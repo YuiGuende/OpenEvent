@@ -1,18 +1,13 @@
 package com.group02.openevent.controller.event;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.group02.openevent.dto.request.PlaceUpdateRequest;
-import com.group02.openevent.dto.request.TicketUpdateRequest;
-import com.group02.openevent.dto.request.create.EventCreationRequest;
 import com.group02.openevent.dto.request.update.EventUpdateRequest;
+import com.group02.openevent.dto.request.PlaceUpdateRequest;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
 import com.group02.openevent.dto.response.ApiResponse;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.*;
+import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.model.ticket.TicketType;
-import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,21 +15,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.TicketTypeService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import com.group02.openevent.model.event.Event;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
 import java.io.IOException;
 import java.util.HashSet;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -88,18 +81,7 @@ public class EventController {
     public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
         return eventService.saveWorkshopEvent(event);
     }
-    @GetMapping("/event")
-    public String userRegistration(Model model) {
-        //Empty Userform model object to store from data
-        log.info("da vao ham nay");
-        EventCreationRequest request = new EventCreationRequest();
-        model.addAttribute("eventForm", request);
-        List<String> listTypeEvent = Arrays.asList("MUSIC", "FESTIVAL", "WORKSHOP","COMPETITION","OTHERS");
-        model.addAttribute("listTypeEvent", listTypeEvent);
-        return "host/events";
-    }
 
-    // POST - create event
     @PostMapping("/saveEvent")
     public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, Model model) {
         log.info("startsAt = {}", request.getStartsAt());
@@ -118,12 +100,10 @@ public class EventController {
 
     @PostMapping("/update/{id}")
     public String updateEvent(@PathVariable("id") Long id,
-                             @ModelAttribute EventUpdateRequest request,
-                             @RequestParam(value = "placesJson", required = false) String placesJson,
-                             @RequestParam(value = "ticketsJson", required = false) String ticketsJson,
-                             Model model){
-        log.info("Controller Update Event with ID: {}", id);
-        log.info("Event Type: {}", request.getEventType());
+                              @ModelAttribute EventUpdateRequest request,
+                              @RequestParam(value = "placesJson", required = false) String placesJson,
+                              @RequestParam(value = "ticketsJson", required = false) String ticketsJson,
+                              Model model){
 
         try {
             // Process places from JSON if provided
@@ -134,86 +114,26 @@ public class EventController {
                         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
                 List<PlaceUpdateRequest> placeRequests = objectMapper.readValue(placesJson, new TypeReference<List<PlaceUpdateRequest>>() {});
 
-                // Convert PlaceUpdateRequest to Place entities
+                // Convert PlaceUpdateRequest to Place entities (keep all places, including deleted ones)
                 List<Place> places = placeRequests.stream()
-                    .filter(pr -> !Boolean.TRUE.equals(pr.getIsDeleted())) // Filter out deleted places
-                    .map(pr -> {
-                        Place place = new Place();
-                        place.setId(pr.getId());
-                        place.setPlaceName(pr.getPlaceName());
-                        place.setBuilding(pr.getBuilding());
-                        return place;
-                    })
-                    .collect(Collectors.toList());
+                        .map(pr -> {
+                            Place place = new Place();
+                            place.setId(pr.getId());
+                            place.setPlaceName(pr.getPlaceName());
+                            place.setBuilding(pr.getBuilding());
+                            // Store isDeleted flag in a custom field or handle it in service layer
+                            return place;
+                        })
+                        .collect(Collectors.toList());
+
 
                 request.setPlaces(places);
                 request.setPlaceUpdateRequests(placeRequests);
                 log.info("Parsed {} places from JSON (including deleted places)", places.size());
             }
-
-            // Process tickets from JSON if provided
-            if (ticketsJson != null && !ticketsJson.trim().isEmpty()) {
-                log.info("Processing tickets JSON: {}", ticketsJson);
-                ObjectMapper objectMapper = new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                List<TicketUpdateRequest> ticketRequests = objectMapper.readValue(ticketsJson, new TypeReference<List<TicketUpdateRequest>>() {});
-
-                // Process each ticket
-                for (TicketUpdateRequest ticketRequest : ticketRequests) {
-                    if (Boolean.TRUE.equals(ticketRequest.getIsDeleted())) {
-                        // Delete ticket
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            ticketTypeRepo.deleteById(ticketRequest.getTicketTypeId());
-                            log.info("Deleted ticket with ID: {}", ticketRequest.getTicketTypeId());
-                        }
-                    } else if (Boolean.TRUE.equals(ticketRequest.getIsNew())) {
-                        // Create new ticket
-                        TicketType newTicket = new TicketType();
-                        newTicket.setName(ticketRequest.getName());
-                        newTicket.setDescription(ticketRequest.getDescription());
-                        newTicket.setPrice(ticketRequest.getPrice());
-                        newTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                        newTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                        newTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                        newTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                        newTicket.setSale(ticketRequest.getSale());
-
-                        // Set event (you'll need to get the event)
-                        Event event = eventService.getEventById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-                        newTicket.setEvent(event);
-
-                        ticketTypeRepo.save(newTicket);
-                        log.info("Created new ticket: {}", newTicket.getName());
-                    } else {
-                        // Update existing ticket
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            TicketType existingTicket = ticketTypeRepo.findById(ticketRequest.getTicketTypeId())
-                                    .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-                            existingTicket.setName(ticketRequest.getName());
-                            existingTicket.setDescription(ticketRequest.getDescription());
-                            existingTicket.setPrice(ticketRequest.getPrice());
-                            existingTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                            existingTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                            existingTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                            existingTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                            existingTicket.setSale(ticketRequest.getSale());
-
-                            ticketTypeRepo.save(existingTicket);
-                            log.info("Updated ticket with ID: {}", ticketRequest.getTicketTypeId());
-                        }
-                    }
-                }
-
-                log.info("Processed {} tickets from JSON", ticketRequests.size());
-            }
-
-        EventResponse updated = eventService.updateEvent(id, request);
-            log.info("Event updated successfully with type: {}", updated.getEventType());
-
-        model.addAttribute("updated", updated);
-        model.addAttribute("message", "Cập nhật thành công!");
+            EventResponse updated = eventService.updateEvent(id, request);
+            model.addAttribute("updated", updated);
+            model.addAttribute("message", "Cập nhật thành công!");
 
         } catch (Exception e) {
             log.error("Error updating event: ", e);
@@ -252,11 +172,6 @@ public class EventController {
         return eventService.getEventsByType(eventType);
     }
 
-    @GetMapping("/getAll")
-    public List<Event> getAllEvents() {
-        return eventService.getAllEvents();
-    }
-
     private Class<? extends Event> getEventTypeClass(String type) {
         switch (type.toUpperCase()) {
             case "MUSIC":
@@ -271,28 +186,6 @@ public class EventController {
                 return Event.class;
             default:
                 throw new IllegalArgumentException("Unknown event type: " + type);
-        }
-    }
-
-    @PostMapping("/upload/image")
-    @ResponseBody
-    public ResponseEntity<Event> uploadImage(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("index") int index,
-            @RequestParam("mainPoster") boolean mainPoster,
-            @RequestParam("eventId") Long eventId) throws IOException {
-        String url = imageService.saveImage(file);
-        Optional<Event> optionalEvent = eventService.getEventById(eventId);
-        if (optionalEvent.isPresent()) {
-            Event event = optionalEvent.get();
-            EventImage eventImage = new EventImage(url, index, mainPoster, event);
-
-            optionalEvent.get().getEventImages().add(eventImage);
-
-
-            return ResponseEntity.ok(eventService.saveEvent(event));
-        } else {
-            return ResponseEntity.notFound().build();
         }
     }
 

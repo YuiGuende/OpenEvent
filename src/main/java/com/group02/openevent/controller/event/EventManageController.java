@@ -170,24 +170,42 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/create-forms")
-    public String createForms(@RequestParam Long id, Model model) {
+    public String createForms(@RequestParam(required = false) Long id, Model model) {
+        if (id == null) {
+            log.error("⚠️ Missing event ID parameter for create-forms fragment");
+            model.addAttribute("error", "Missing event ID");
+            return "fragments/create-forms :: content";
+        }
+        
         log.info("🔍 Loading create forms fragment for event ID: {}", id);
         
-        Event event = eventService.getEventResponseById(id);
-        model.addAttribute("event", event);
-        model.addAttribute("eventId", id);
+        try {
+            Event event = eventService.getEventResponseById(id);
+            model.addAttribute("event", event);
+            model.addAttribute("eventId", id);
+            
+            // Load danh sách form đã tạo cho event này
+            List<EventFormDTO> forms = eventFormService.getAllFormsByEventId(id);
+            model.addAttribute("forms", forms);
+            log.info("📋 Loaded {} forms for event {}", forms.size(), id);
+            
+            log.info("✅ Create forms fragment loaded successfully for event: {}", event.getTitle());
+        } catch (Exception e) {
+            log.error("❌ Error loading create forms fragment for event ID: {}", id, e);
+            model.addAttribute("error", "Không thể tải form cho sự kiện này: " + e.getMessage());
+            model.addAttribute("eventId", id);
+        }
         
-        // Load danh sách form đã tạo cho event này
-        List<EventFormDTO> forms = eventFormService.getAllFormsByEventId(id);
-        model.addAttribute("forms", forms);
-        log.info("📋 Loaded {} forms for event {}", forms.size(), id);
-        
-        log.info("✅ Create forms fragment loaded successfully for event: {}", event.getTitle());
         return "fragments/create-forms :: content";
     }
 
     @GetMapping("/fragments/qr-codes")
-    public String qrCodes(@RequestParam Long id, Model model) {
+    public String qrCodes(@RequestParam(required = false) Long id, Model model) {
+        if (id == null) {
+            log.error("⚠️ Missing event ID parameter for qr-codes fragment");
+            model.addAttribute("error", "Missing event ID");
+            return "fragments/qr-codes :: content";
+        }
         log.info("🔍 Loading QR codes fragment for event ID: {}", id);
         
         Event event = eventService.getEventResponseById(id);

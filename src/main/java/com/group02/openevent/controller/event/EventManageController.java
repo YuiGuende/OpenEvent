@@ -141,6 +141,7 @@ public class EventManageController {
     public String gettingStared(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
+        model.addAttribute("eventId", event.getId());
         return "fragments/getting-started :: content";
     }
 

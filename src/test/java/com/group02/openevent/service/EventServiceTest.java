@@ -28,16 +28,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -761,6 +760,278 @@ public class EventServiceTest {
         verify(eventRepo, times(1)).searchEvents(keyword, null, null, null);
         assertEquals(1, result.size());
         // (Bạn cũng có thể kiểm tra log "⚠️ Invalid event type: INVALID_TYPE" nếu setup log)
+    }
+    @Test
+    @DisplayName("Test getEventById - Should return Optional from repo")
+    void testGetEventById() {
+        when(eventRepo.findById(1L)).thenReturn(Optional.of(mockEvent));
+        Optional<Event> result = eventService.getEventById(1L);
+        assertTrue(result.isPresent());
+        verify(eventRepo, times(1)).findById(1L);
+    }
+
+    @Test
+    @DisplayName("Test getEventsByIds - Branch 1: Should return events")
+    void testGetEventsByIds_Branch1_ValidList() {
+        List<Long> ids = List.of(1L, 2L);
+        when(eventRepo.findAllById(ids)).thenReturn(List.of(mockEvent));
+
+        List<Event> result = eventService.getEventsByIds(ids);
+
+        assertEquals(1, result.size());
+        verify(eventRepo, times(1)).findAllById(ids);
+    }
+
+    @Test
+    @DisplayName("Test getEventsByIds - Branch 2: Should return empty for null list")
+    void testGetEventsByIds_Branch2_NullList() {
+        List<Event> result = eventService.getEventsByIds(null);
+        assertTrue(result.isEmpty());
+        verify(eventRepo, never()).findAllById(any());
+    }
+
+    @Test
+    @DisplayName("Test getEventsByIds - Branch 2: Should return empty for empty list")
+    void testGetEventsByIds_Branch3_EmptyList() {
+        List<Event> result = eventService.getEventsByIds(Collections.emptyList());
+        assertTrue(result.isEmpty());
+        verify(eventRepo, never()).findAllById(any());
+    }
+
+    @Test
+    @DisplayName("Test getEventByHostId")
+    void testGetEventByHostId() {
+        when(eventRepo.getEventByHostId(1L)).thenReturn(List.of(mockEvent));
+        eventService.getEventByHostId(1L);
+        verify(eventRepo, times(1)).getEventByHostId(1L);
+    }
+
+    @Test
+    @DisplayName("Test countUniqueParticipantsByEventId")
+    void testCountUniqueParticipantsByEventId() {
+        when(orderService.countUniqueParticipantsByEventId(1L)).thenReturn(25);
+        long result = eventService.countUniqueParticipantsByEventId(1L);
+        assertEquals(25L, result);
+        verify(orderService, times(1)).countUniqueParticipantsByEventId(1L);
+    }
+
+    @Test
+    @DisplayName("Test saveEvent (POJO)")
+    void testSaveEvent_POJO() {
+        when(eventRepo.save(mockEvent)).thenReturn(mockEvent);
+        eventService.saveEvent(mockEvent);
+        verify(eventRepo, times(1)).save(mockEvent);
+    }
+
+    @Test
+    @DisplayName("Test getEventsByType")
+    void testGetEventsByType() {
+        when(eventRepo.findByEventType(MusicEvent.class)).thenReturn(List.of(mockEvent));
+        eventService.getEventsByType(MusicEvent.class);
+        verify(eventRepo, times(1)).findByEventType(MusicEvent.class);
+    }
+
+    @Test
+    @DisplayName("Test findByTitle")
+    void testFindByTitle() {
+        when(eventRepo.findByTitle("Test")).thenReturn(List.of(mockEvent));
+        eventService.findByTitle("Test");
+        verify(eventRepo, times(1)).findByTitle("Test");
+    }
+
+    @Test
+    @DisplayName("Test findByTitleAndPublicStatus")
+    void testFindByTitleAndPublicStatus() {
+        when(eventRepo.findByTitleAndPublicStatus("Test")).thenReturn(List.of(mockEvent));
+        eventService.findByTitleAndPublicStatus("Test");
+        verify(eventRepo, times(1)).findByTitleAndPublicStatus("Test");
+    }
+
+    @Test
+    @DisplayName("Test getAllEvents")
+    void testGetAllEvents() {
+        when(eventRepo.findAll()).thenReturn(List.of(mockEvent));
+        eventService.getAllEvents();
+        verify(eventRepo, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Test getFirstPublicEventByTitle - Branch 1: Found")
+    void testGetFirstPublicEventByTitle_Branch1_Found() {
+        when(eventRepo.findByTitleAndPublicStatus("Test")).thenReturn(List.of(mockEvent, new Event()));
+        Optional<Event> result = eventService.getFirstPublicEventByTitle("Test");
+        assertTrue(result.isPresent());
+        assertEquals(mockEvent, result.get());
+    }
+
+    @Test
+    @DisplayName("Test getFirstPublicEventByTitle - Branch 2: Not Found")
+    void testGetFirstPublicEventByTitle_Branch2_NotFound() {
+        when(eventRepo.findByTitleAndPublicStatus("Test")).thenReturn(List.of());
+        Optional<Event> result = eventService.getFirstPublicEventByTitle("Test");
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test getEventsByPlace")
+    void testGetEventsByPlace() {
+        when(eventRepo.findByPlaceId(1L)).thenReturn(List.of(mockEvent));
+        eventService.getEventsByPlace(1L);
+        verify(eventRepo, times(1)).findByPlaceId(1L);
+    }
+
+    @Test
+    @DisplayName("Test getNextUpcomingEventByUserId")
+    void testGetNextUpcomingEventByUserId() {
+        when(eventRepo.findNextUpcomingEventByUserId(eq(1L), any(LocalDateTime.class))).thenReturn(Optional.of(mockEvent));
+        eventService.getNextUpcomingEventByUserId(1L);
+        verify(eventRepo, times(1)).findNextUpcomingEventByUserId(eq(1L), any(LocalDateTime.class));
+    }
+
+    @Test
+    @DisplayName("Test getEventByUserId")
+    void testGetEventByUserId() {
+        when(eventRepo.findAll()).thenReturn(List.of(mockEvent));
+        // Logic hiện tại của hàm này là findAll(), nên ta test đúng như vậy
+        eventService.getEventByUserId(1L);
+        verify(eventRepo, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Test countEventsByStatus")
+    void testCountEventsByStatus() {
+        when(eventRepo.findByStatus(EventStatus.PUBLIC)).thenReturn(List.of(mockEvent, new Event()));
+        long result = eventService.countEventsByStatus(EventStatus.PUBLIC);
+        assertEquals(2L, result);
+    }
+
+    @Test
+    @DisplayName("Test countEventsByType")
+    void testCountEventsByType() {
+        // Giả lập Page trả về
+        Page<Event> mockPage = new PageImpl<>(List.of(mockEvent, new Event()));
+        when(eventRepo.findByEventType(eq(EventType.MUSIC), any(PageRequest.class))).thenReturn(mockPage);
+
+        long result = eventService.countEventsByType(EventType.MUSIC);
+
+        assertEquals(2L, result);
+        verify(eventRepo, times(1)).findByEventType(eq(EventType.MUSIC), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Test getRecentEvents")
+    void testGetRecentEvents() {
+        Page<Event> mockPage = new PageImpl<>(List.of(mockEvent));
+        // Phải dùng any(PageRequest.class) vì logic tạo PageRequest nằm bên trong hàm
+        when(eventRepo.findAll(any(PageRequest.class))).thenReturn(mockPage);
+
+        List<Event> result = eventService.getRecentEvents(5);
+
+        assertEquals(1, result.size());
+        verify(eventRepo, times(1)).findAll(any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Test getPosterEvents")
+    void testGetPosterEvents() {
+        when(eventRepo.findByPosterTrue()).thenReturn(List.of(mockEvent));
+        List<EventCardDTO> result = eventService.getPosterEvents();
+        assertEquals(1, result.size());
+        verify(eventRepo, times(1)).findByPosterTrue();
+    }
+
+
+    // =======================================================
+    // TEST BỔ SUNG CHO CÁC HÀM CÒN LẠI
+    // =======================================================
+
+    @Test
+    @DisplayName("Test saveMusicEvent - Should return null (as per implementation)")
+    void testSaveMusicEvent() {
+        // Test này chỉ đảm bảo hàm chạy đúng như code (return null)
+        assertNull(eventService.saveMusicEvent(new MusicEvent()));
+    }
+
+    @Test
+    @DisplayName("Test saveFestivalEvent - Should set parent on schedules")
+    void testSaveFestivalEvent() {
+        FestivalEvent event = new FestivalEvent();
+        EventSchedule schedule = new EventSchedule();
+        event.setSchedules(List.of(schedule));
+        when(eventRepo.save(event)).thenReturn(event);
+
+        eventService.saveFestivalEvent(event);
+        assertEquals(event, schedule.getEvent());
+        verify(eventRepo, times(1)).save(event);
+    }
+
+    @Test
+    @DisplayName("Test saveWorkshopEvent - Should set parent on schedules")
+    void testSaveWorkshopEvent() {
+        WorkshopEvent event = new WorkshopEvent();
+        EventSchedule schedule = new EventSchedule();
+        event.setSchedules(List.of(schedule));
+        when(eventRepo.save(event)).thenReturn(event);
+
+        eventService.saveWorkshopEvent(event);
+        assertEquals(event, schedule.getEvent());
+        verify(eventRepo, times(1)).save(event);
+    }
+
+    @Test
+    @DisplayName("Test isTimeConflict")
+    void testIsTimeConflict() {
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = LocalDateTime.now().plusHours(2);
+        List<Place> places = List.of(mockPlace);
+        when(eventRepo.findConflictedEvents(start, end, places)).thenReturn(List.of(mockEvent));
+
+        List<Event> result = eventService.isTimeConflict(start, end, places);
+
+        assertEquals(1, result.size());
+        verify(eventRepo, times(1)).findConflictedEvents(start, end, places);
+    }
+
+    @Test
+    @DisplayName("Test getEventsBetween - Logic Stream Filter")
+    void testGetEventsBetween() {
+        // Given
+        LocalDateTime start = LocalDateTime.of(2025, 1, 10, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 1, 20, 0, 0);
+
+        Event eventInRange = new Event();
+        eventInRange.setStartsAt(LocalDateTime.of(2025, 1, 11, 0, 0));
+        eventInRange.setEndsAt(LocalDateTime.of(2025, 1, 12, 0, 0));
+
+        Event eventOutOfRange = new Event();
+        eventOutOfRange.setStartsAt(LocalDateTime.of(2025, 1, 1, 0, 0));
+        eventOutOfRange.setEndsAt(LocalDateTime.of(2025, 1, 2, 0, 0));
+
+        when(eventRepo.findAll()).thenReturn(List.of(eventInRange, eventOutOfRange));
+
+        // When
+        List<Event> result = eventService.getEventsBetween(start, end, 1L);
+
+        // Then
+        assertEquals(1, result.size());
+        assertEquals(eventInRange, result.get(0));
+    }
+
+    @Test
+    @DisplayName("Test convertToDTO - Branch: Organizer is Host's Organization")
+    void testConvertToDTO_Branch_OrganizerIsHostOrg() {
+        // Given
+        // Nhánh 2 (bị thiếu): Event.Org = null, NHƯNG Host.Org != null
+        mockHost.setOrganization(mockOrg); // Host thuộc Org
+        mockEvent.setOrganization(null);  // Event không có Org trực tiếp
+        mockEvent.setHost(mockHost);      // Event có Host
+
+        // When
+        EventCardDTO dto = eventService.convertToDTO(mockEvent);
+
+        // Then
+        // Phải lấy tên Org từ Host
+        assertEquals("Test Org", dto.getOrganizer());
     }
 
 

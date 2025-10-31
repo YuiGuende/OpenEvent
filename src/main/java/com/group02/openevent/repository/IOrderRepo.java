@@ -51,6 +51,24 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT DISTINCT o.customer.account.accountId FROM Order o " +
             "WHERE o.event.id = :eventId AND o.status = 'PAID'")
     List<Long> findDistinctCustomerAccountIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
+
+    /**
+     * Check if there exists a PAID order for given event and participant email
+     */
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Order o " +
+            "WHERE o.event.id = :eventId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID " +
+            "AND LOWER(o.participantEmail) = LOWER(:email)")
+    boolean existsPaidByEventIdAndParticipantEmail(@Param("eventId") Long eventId, @Param("email") String email);
+
+    /**
+     * Check if there exists a PAID order for given event and customer
+     */
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Order o " +
+            "WHERE o.event.id = :eventId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID " +
+            "AND o.customer.customerId = :customerId")
+    boolean existsPaidByEventIdAndCustomerId(@Param("eventId") Long eventId, @Param("customerId") Long customerId);
 }
 
 

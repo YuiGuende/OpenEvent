@@ -32,6 +32,12 @@ public class EventForm {
     @Column(name = "form_description", columnDefinition = "TEXT")
     private String formDescription;
 
+    public enum FormType { REGISTER, CHECKIN, FEEDBACK }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "form_type", nullable = false, length = 20)
+    private FormType formType = FormType.FEEDBACK;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 

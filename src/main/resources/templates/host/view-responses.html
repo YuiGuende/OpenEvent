@@ -8,32 +8,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .response-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-        }
-        .response-item {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            background-color: #f8f9fa;
         }
         .response-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             margin-bottom: 30px;
             text-align: center;
         }
-        .stats-card {
+        .form-type-section {
+            margin-bottom: 40px;
+        }
+        .form-type-header {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
+            margin-bottom: 20px;
             text-align: center;
-            margin-bottom: 30px;
+        }
+        .form-type-header.register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-type-header.checkin {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .form-type-header.feedback {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
         }
         .export-btn {
             background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
@@ -46,61 +66,63 @@
     <div class="container">
         <div class="response-container">
             <div class="response-header">
-                <h2><i class="fas fa-chart-bar"></i> Feedback Responses</h2>
-                <p>View and analyze feedback from event participants</p>
-            </div>
-            
-            <!-- Statistics -->
-            <div class="stats-card">
-                <h3><i class="fas fa-users"></i> Total Responses: <span th:text="${#lists.size(responses)}">0</span></h3>
-                <p>Feedback collected from event participants</p>
+                <h2><i class="fas fa-chart-bar"></i> Form Responses</h2>
+                <p>View and analyze responses from event participants</p>
             </div>
             
             <!-- Export Button -->
             <div class="text-center mb-4">
-                <button class="btn export-btn btn-lg" onclick="exportToCSV()">
-                    <i class="fas fa-download"></i> Export to CSV
+                <button class="btn export-btn btn-lg" onclick="exportAllToCSV()">
+                    <i class="fas fa-download"></i> Export All to CSV
                 </button>
                 <a th:href="@{'/music/' + ${eventId}}" class="btn btn-secondary btn-lg ms-2">
                     <i class="fas fa-arrow-left"></i> Back to Event
                 </a>
             </div>
-            
-            <!-- Responses -->
-            <div th:if="${#lists.isEmpty(responses)}" class="text-center text-muted">
-                <i class="fas fa-inbox fa-3x mb-3"></i>
-                <h4>No responses yet</h4>
-                <p>Participants haven't submitted feedback for this event.</p>
-            </div>
-            
-            <div th:if="${!#lists.isEmpty(responses)}">
-                <!-- Table with pagination -->
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover" id="responsesTable">
+
+            <!-- Register Form Responses -->
+            <div class="form-type-section">
+                <div class="form-type-header register">
+                    <h3><i class="fas fa-user-plus"></i> Register Form Responses</h3>
+                    <p>Total: <span th:text="${#lists.size(registerResponses)}">0</span> responses</p>
+                </div>
+                
+                <div th:if="${#lists.isEmpty(registerResponses)}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>No register responses yet</h4>
+                    <p>Participants haven't submitted register forms for this event.</p>
+                </div>
+                
+                <div th:if="${!#lists.isEmpty(registerResponses)}" class="table-responsive">
+                    <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
                                 <th>#</th>
-                                <th><i class="fas fa-user"></i> Customer ID</th>
-                                <th><i class="fas fa-question-circle"></i> Question ID</th>
+                                <th><i class="fas fa-user"></i> Customer Name</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-question-circle"></i> Question</th>
                                 <th><i class="fas fa-comment"></i> Response</th>
                                 <th><i class="fas fa-clock"></i> Submitted At</th>
                             </tr>
                         </thead>
-                        <tbody id="responsesTableBody">
-                            <tr th:each="response, iterStat : ${responses}">
+                        <tbody>
+                            <tr th:each="response, iterStat : ${registerResponses}">
                                 <td th:text="${iterStat.index + 1}">1</td>
                                 <td>
-                                    <span class="badge bg-primary" th:text="${response.customerId}">1</span>
+                                    <strong th:text="${response.customerName ?: 'N/A'}">Customer Name</strong>
                                 </td>
                                 <td>
-                                    <span class="badge bg-info" th:text="${response.questionId}">1</span>
+                                    <span th:text="${response.customerEmail ?: 'N/A'}">email@example.com</span>
                                 </td>
                                 <td>
-                                    <span th:text="${response.responseValue}">User response</span>
+                                    <span th:text="${response.questionText ?: 'N/A'}">Question text</span>
+                                </td>
+                                <td>
+                                    <span th:text="${response.responseValue}">Response value</span>
                                 </td>
                                 <td>
                                     <small class="text-muted" 
-                                           th:text="${#temporals.format(response.submittedAt, 'dd/MM/yyyy HH:mm')}">
+                                           th:text="${response.submittedAt != null ? #temporals.format(response.submittedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
                                         01/01/2024 12:00
                                     </small>
                                 </td>
@@ -108,142 +130,171 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Check-in Form Responses -->
+            <div class="form-type-section">
+                <div class="form-type-header checkin">
+                    <h3><i class="fas fa-sign-in-alt"></i> Check-in Form Responses</h3>
+                    <p>Total: <span th:text="${#lists.size(checkinResponses)}">0</span> responses</p>
+                </div>
                 
-                <!-- Pagination -->
-                <nav aria-label="Responses pagination">
-                    <ul class="pagination justify-content-center" id="pagination">
-                        <!-- Pagination will be generated by JavaScript -->
-                    </ul>
-                </nav>
+                <div th:if="${#lists.isEmpty(checkinResponses)}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>No check-in responses yet</h4>
+                    <p>Participants haven't submitted check-in forms for this event.</p>
+                </div>
+                
+                <div th:if="${!#lists.isEmpty(checkinResponses)}" class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th><i class="fas fa-user"></i> Customer Name</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-question-circle"></i> Question</th>
+                                <th><i class="fas fa-comment"></i> Response</th>
+                                <th><i class="fas fa-clock"></i> Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="response, iterStat : ${checkinResponses}">
+                                <td th:text="${iterStat.index + 1}">1</td>
+                                <td>
+                                    <strong th:text="${response.customerName ?: 'N/A'}">Customer Name</strong>
+                                </td>
+                                <td>
+                                    <span th:text="${response.customerEmail ?: 'N/A'}">email@example.com</span>
+                                </td>
+                                <td>
+                                    <span th:text="${response.questionText ?: 'N/A'}">Question text</span>
+                                </td>
+                                <td>
+                                    <span th:text="${response.responseValue}">Response value</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted" 
+                                           th:text="${response.submittedAt != null ? #temporals.format(response.submittedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                        01/01/2024 12:00
+                                    </small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Feedback Form Responses -->
+            <div class="form-type-section">
+                <div class="form-type-header feedback">
+                    <h3><i class="fas fa-comment-dots"></i> Feedback Form Responses</h3>
+                    <p>Total: <span th:text="${#lists.size(feedbackResponses)}">0</span> responses</p>
+                </div>
+                
+                <div th:if="${#lists.isEmpty(feedbackResponses)}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>No feedback responses yet</h4>
+                    <p>Participants haven't submitted feedback forms for this event.</p>
+                </div>
+                
+                <div th:if="${!#lists.isEmpty(feedbackResponses)}" class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th><i class="fas fa-user"></i> Customer Name</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-question-circle"></i> Question</th>
+                                <th><i class="fas fa-comment"></i> Response</th>
+                                <th><i class="fas fa-clock"></i> Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="response, iterStat : ${feedbackResponses}">
+                                <td th:text="${iterStat.index + 1}">1</td>
+                                <td>
+                                    <strong th:text="${response.customerName ?: 'N/A'}">Customer Name</strong>
+                                </td>
+                                <td>
+                                    <span th:text="${response.customerEmail ?: 'N/A'}">email@example.com</span>
+                                </td>
+                                <td>
+                                    <span th:text="${response.questionText ?: 'N/A'}">Question text</span>
+                                </td>
+                                <td>
+                                    <span th:text="${response.responseValue}">Response value</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted" 
+                                           th:text="${response.submittedAt != null ? #temporals.format(response.submittedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                        01/01/2024 12:00
+                                    </small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Pagination settings
-        const itemsPerPage = 10;
-        let currentPage = 1;
-        let allResponses = [];
-        
-        // Initialize pagination when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all response rows
-            const responseRows = document.querySelectorAll('#responsesTableBody tr');
-            allResponses = Array.from(responseRows);
+        function exportAllToCSV() {
+            const allData = [];
             
-            // Sort by submission time (newest first)
-            allResponses.sort((a, b) => {
-                const timeA = new Date(a.querySelector('td:last-child small').textContent.trim());
-                const timeB = new Date(b.querySelector('td:last-child small').textContent.trim());
-                return timeB - timeA; // Newest first
+            // Get data from all three tables
+            const tables = document.querySelectorAll('.table-responsive table');
+            tables.forEach((table, tableIndex) => {
+                const tableTitle = table.closest('.form-type-section').querySelector('.form-type-header h3').textContent.trim();
+                
+                // Get headers
+                const headers = [];
+                table.querySelectorAll('thead th').forEach((th, index) => {
+                    if (index > 0) { // Skip # column
+                        headers.push(th.textContent.trim().replace(/\s+/g, ' '));
+                    }
+                });
+                
+                // Get data rows
+                table.querySelectorAll('tbody tr').forEach(tr => {
+                    const row = {
+                        'Form Type': tableTitle,
+                        cells: []
+                    };
+                    tr.querySelectorAll('td').forEach((td, index) => {
+                        if (index > 0) { // Skip # column
+                            row.cells.push(td.textContent.trim().replace(/\s+/g, ' '));
+                        }
+                    });
+                    allData.push(row);
+                });
             });
             
-            // Update row numbers after sorting
-            allResponses.forEach((row, index) => {
-                row.querySelector('td:first-child').textContent = index + 1;
-            });
-            
-            // Initialize pagination
-            if (allResponses.length > itemsPerPage) {
-                setupPagination();
-                showPage(1);
-            }
-        });
-        
-        function setupPagination() {
-            const totalPages = Math.ceil(allResponses.length / itemsPerPage);
-            const pagination = document.getElementById('pagination');
-            
-            pagination.innerHTML = '';
-            
-            // Previous button
-            const prevLi = document.createElement('li');
-            prevLi.className = 'page-item';
-            prevLi.innerHTML = '<a class="page-link" href="#" onclick="showPage(' + (currentPage - 1) + ')">Previous</a>';
-            if (currentPage === 1) prevLi.classList.add('disabled');
-            pagination.appendChild(prevLi);
-            
-            // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
-                const li = document.createElement('li');
-                li.className = 'page-item' + (i === currentPage ? ' active' : '');
-                li.innerHTML = '<a class="page-link" href="#" onclick="showPage(' + i + ')">' + i + '</a>';
-                pagination.appendChild(li);
-            }
-            
-            // Next button
-            const nextLi = document.createElement('li');
-            nextLi.className = 'page-item';
-            nextLi.innerHTML = '<a class="page-link" href="#" onclick="showPage(' + (currentPage + 1) + ')">Next</a>';
-            if (currentPage === totalPages) nextLi.classList.add('disabled');
-            pagination.appendChild(nextLi);
-        }
-        
-        function showPage(page) {
-            const totalPages = Math.ceil(allResponses.length / itemsPerPage);
-            if (page < 1 || page > totalPages) return;
-            
-            currentPage = page;
-            
-            // Hide all rows
-            allResponses.forEach(row => row.style.display = 'none');
-            
-            // Show rows for current page
-            const startIndex = (page - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, allResponses.length);
-            
-            for (let i = startIndex; i < endIndex; i++) {
-                allResponses[i].style.display = '';
-            }
-            
-            // Update pagination
-            setupPagination();
-        }
-        
-        function exportToCSV() {
-            // Get table data
-            const table = document.querySelector('table');
-            if (!table) {
+            if (allData.length === 0) {
                 alert('No data to export');
                 return;
             }
             
-            const rows = [];
+            // Prepare CSV with Form Type column
+            const csvHeaders = ['Form Type', ...headers];
+            const csvRows = [];
             
-            // Get headers (skip the # column)
-            const headers = [];
-            table.querySelectorAll('thead th').forEach((th, index) => {
-                if (index > 0) { // Skip first column (#)
-                    headers.push(th.textContent.trim().replace(/\s+/g, ' '));
-                }
-            });
-            rows.push(headers);
-            
-            // Get data rows
-            table.querySelectorAll('tbody tr').forEach(tr => {
-                const cells = [];
-                tr.querySelectorAll('td').forEach((td, index) => {
-                    if (index > 0) { // Skip first column (#)
-                        cells.push(td.textContent.trim().replace(/\s+/g, ' '));
-                    }
-                });
-                rows.push(cells);
+            allData.forEach(row => {
+                const csvRow = [`"${row['Form Type'].replace(/"/g, '""')}"`, ...row.cells.map(cell => `"${cell.replace(/"/g, '""')}"`)];
+                csvRows.push(csvRow.join(','));
             });
             
             // Convert to CSV with UTF-8 BOM for Excel compatibility
             const BOM = '\uFEFF';
-            const csvContent = BOM + rows.map(row => 
-                row.map(field => `"${field.replace(/"/g, '""')}"`).join(',')
-            ).join('\n');
+            const csvContent = BOM + csvHeaders.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n' + csvRows.join('\n');
             
             // Download CSV
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const eventId = new URLSearchParams(window.location.search).get('eventId') || 'event';
-            a.download = `feedback_responses_${eventId}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `form_responses_${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

@@ -15,6 +15,7 @@ public class EventFormDTO {
     private Long eventId;
     private String formTitle;
     private String formDescription;
+    private com.group02.openevent.model.form.EventForm.FormType formType;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private List<FormQuestionDTO> questions;

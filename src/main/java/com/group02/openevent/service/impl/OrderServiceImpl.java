@@ -19,8 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -152,11 +154,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public List<UserOrderDTO> getOrderDTOsByCustomerId(Long customerId, OrderStatus status) {
-        List<Order> orders = orderRepo.findByCustomerId(customerId);
+        List<Order> orders = new ArrayList<>(orderRepo.findByCustomerId(customerId));
         if (status != null) {
             orders = orders.stream()
                     .filter(o -> o.getStatus() == status)
-                    .toList();
+                    .collect(Collectors.toList());
         }
         orders.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
         return orders.stream().map(this::mapToUserOrderDTO).toList();

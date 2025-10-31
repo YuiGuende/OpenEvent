@@ -18,6 +18,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -85,6 +87,13 @@ public class EventAttendanceController {
      */
     @GetMapping("/{eventId}/checkin-form")
     public String showCheckinForm(@PathVariable Long eventId, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAnonymous = (authentication == null) || !authentication.isAuthenticated() ||
+                (authentication.getPrincipal() != null && "anonymousUser".equals(authentication.getPrincipal()));
+        if (isAnonymous) {
+            String redirectUrl = "/events/" + eventId + "/checkin-form";
+            return "redirect:/login?redirect=" + java.net.URLEncoder.encode(redirectUrl, java.nio.charset.StandardCharsets.UTF_8);
+        }
         Event event = eventService.getEventById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
         
@@ -105,7 +114,7 @@ public class EventAttendanceController {
         
         return "redirect:/login?checkin=true&eventId=" + eventId + "&eventTitle=" + 
                java.net.URLEncoder.encode(event.getTitle(), java.nio.charset.StandardCharsets.UTF_8) +
-               "&action=checkin&redirectUrl=" + java.net.URLEncoder.encode("/events/" + eventId + "/checkin-form", java.nio.charset.StandardCharsets.UTF_8);
+               "&action=checkin&redirectUrl=" + java.net.URLEncoder.encode("/forms/checkin/" + eventId, java.nio.charset.StandardCharsets.UTF_8);
     }
     
     /**
@@ -119,7 +128,7 @@ public class EventAttendanceController {
         
         return "redirect:/login?checkin=true&eventId=" + eventId + "&eventTitle=" + 
                java.net.URLEncoder.encode(event.getTitle(), java.nio.charset.StandardCharsets.UTF_8) +
-               "&action=checkout&redirectUrl=" + java.net.URLEncoder.encode("/events/" + eventId + "/checkout-form", java.nio.charset.StandardCharsets.UTF_8);
+               "&action=checkout&redirectUrl=" + java.net.URLEncoder.encode("/forms/feedback/" + eventId, java.nio.charset.StandardCharsets.UTF_8);
     }
     
     /**

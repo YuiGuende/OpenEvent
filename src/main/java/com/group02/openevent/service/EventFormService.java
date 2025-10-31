@@ -13,6 +13,8 @@ public interface EventFormService {
     // Form Management
     EventFormDTO createForm(CreateFormRequest request);
     EventFormDTO getFormByEventId(Long eventId);
+    EventFormDTO getActiveFormByEventIdAndType(Long eventId, com.group02.openevent.model.form.EventForm.FormType formType);
+    EventFormDTO getFormById(Long formId);
     List<EventFormDTO> getAllFormsByEventId(Long eventId);
     EventFormDTO updateForm(Long formId, CreateFormRequest request);
     void deleteForm(Long formId);
@@ -28,4 +30,5 @@ public interface EventFormService {
     List<FormResponseDTO> getResponsesByFormId(Long formId);
     List<FormResponseDTO> getResponsesByEventId(Long eventId);
     List<FormResponseDTO> getUserResponsesByFormId(Long formId, Long customerId);
+    List<FormResponseDTO> getResponsesByEventIdAndFormType(Long eventId, com.group02.openevent.model.form.EventForm.FormType formType);
 }

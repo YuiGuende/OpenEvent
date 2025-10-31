@@ -45,79 +45,79 @@ public class OrderAIService {
      */
     public String startOrderCreation(Long userId, String eventQuery) {
         // Search for event (PUBLIC status only for ticket buying)
-<span class="nc" id="L48">        List&lt;Event&gt; events = eventService.findByTitleAndPublicStatus(eventQuery);</span>
+<span class="fc" id="L48">        List&lt;Event&gt; events = eventService.findByTitleAndPublicStatus(eventQuery);</span>
 
-<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (events.isEmpty()) {</span>
-<span class="nc" id="L51">            return &quot;❌ Không tìm thấy sự kiện \&quot;&quot; + eventQuery + &quot;\&quot;. Vui lòng kiểm tra lại tên sự kiện.&quot;;</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (events.isEmpty()) {</span>
+<span class="fc" id="L51">            return &quot;❌ Không tìm thấy sự kiện \&quot;&quot; + eventQuery + &quot;\&quot;. Vui lòng kiểm tra lại tên sự kiện.&quot;;</span>
         }
 
-<span class="nc" id="L54">        Event event = events.get(0);</span>
+<span class="fc" id="L54">        Event event = events.get(0);</span>
 
         // Create pending order
-<span class="nc" id="L57">        PendingOrder pendingOrder = new PendingOrder();</span>
-<span class="nc" id="L58">        pendingOrder.setEvent(event);</span>
-<span class="nc" id="L59">        pendingOrder.setCurrentStep(PendingOrder.OrderStep.SELECT_TICKET_TYPE);</span>
-<span class="nc" id="L60">        pendingOrders.put(userId, pendingOrder);</span>
+<span class="fc" id="L57">        PendingOrder pendingOrder = new PendingOrder();</span>
+<span class="fc" id="L58">        pendingOrder.setEvent(event);</span>
+<span class="fc" id="L59">        pendingOrder.setCurrentStep(PendingOrder.OrderStep.SELECT_TICKET_TYPE);</span>
+<span class="fc" id="L60">        pendingOrders.put(userId, pendingOrder);</span>
 
         // Get available ticket types
-<span class="nc" id="L63">        List&lt;TicketType&gt; ticketTypes = ticketTypeService.getTicketTypesByEventId(event.getId());</span>
+<span class="fc" id="L63">        List&lt;TicketType&gt; ticketTypes = ticketTypeService.getTicketTypesByEventId(event.getId());</span>
 
-<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (ticketTypes.isEmpty()) {</span>
-<span class="nc" id="L66">            return &quot;❌ Sự kiện \&quot;&quot; + event.getTitle() + &quot;\&quot; hiện không có vé nào.&quot;;</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (ticketTypes.isEmpty()) {</span>
+<span class="fc" id="L66">            return &quot;❌ Sự kiện \&quot;&quot; + event.getTitle() + &quot;\&quot; hiện không có vé nào.&quot;;</span>
         }
 
-<span class="nc" id="L69">        StringBuilder response = new StringBuilder();</span>
-<span class="nc" id="L70">        response.append(&quot;🎫 Sự kiện: **&quot;).append(event.getTitle()).append(&quot;**\n\n&quot;);</span>
-<span class="nc" id="L71">        response.append(&quot;📅 Thời gian: &quot;).append(event.getStartsAt()).append(&quot;\n\n&quot;);</span>
-<span class="nc" id="L72">        response.append(&quot;Các loại vé có sẵn:\n\n&quot;);</span>
+<span class="fc" id="L69">        StringBuilder response = new StringBuilder();</span>
+<span class="fc" id="L70">        response.append(&quot;🎫 Sự kiện: **&quot;).append(event.getTitle()).append(&quot;**\n\n&quot;);</span>
+<span class="fc" id="L71">        response.append(&quot;📅 Thời gian: &quot;).append(event.getStartsAt()).append(&quot;\n\n&quot;);</span>
+<span class="fc" id="L72">        response.append(&quot;Các loại vé có sẵn:\n\n&quot;);</span>
 
-<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (TicketType ticket : ticketTypes) {</span>
-<span class="nc" id="L75">            response.append(&quot;• **&quot;).append(ticket.getName()).append(&quot;**\n&quot;);</span>
-<span class="nc" id="L76">            response.append(&quot;  - Giá: &quot;).append(ticket.getFinalPrice()).append(&quot; VND\n&quot;);</span>
-<span class="nc" id="L77">            response.append(&quot;  - Còn lại: &quot;).append(ticket.getAvailableQuantity()).append(&quot; vé\n&quot;);</span>
-<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (ticket.getDescription() != null) {</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (TicketType ticket : ticketTypes) {</span>
+<span class="fc" id="L75">            response.append(&quot;• **&quot;).append(ticket.getName()).append(&quot;**\n&quot;);</span>
+<span class="fc" id="L76">            response.append(&quot;  - Giá: &quot;).append(ticket.getFinalPrice()).append(&quot; VND\n&quot;);</span>
+<span class="fc" id="L77">            response.append(&quot;  - Còn lại: &quot;).append(ticket.getAvailableQuantity()).append(&quot; vé\n&quot;);</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">            if (ticket.getDescription() != null) {</span>
 <span class="nc" id="L79">                response.append(&quot;  - Mô tả: &quot;).append(ticket.getDescription()).append(&quot;\n&quot;);</span>
             }
-<span class="nc" id="L81">            response.append(&quot;\n&quot;);</span>
-<span class="nc" id="L82">        }</span>
+<span class="fc" id="L81">            response.append(&quot;\n&quot;);</span>
+<span class="fc" id="L82">        }</span>
 
-<span class="nc" id="L84">        response.append(&quot;💡 Bạn muốn chọn loại vé nào?&quot;);</span>
+<span class="fc" id="L84">        response.append(&quot;💡 Bạn muốn chọn loại vé nào?&quot;);</span>
 
-<span class="nc" id="L86">        return response.toString();</span>
+<span class="fc" id="L86">        return response.toString();</span>
     }
 
     /**
      * Select ticket type
      */
     public String selectTicketType(Long userId, String ticketTypeName) {
-<span class="nc" id="L93">        PendingOrder pendingOrder = pendingOrders.get(userId);</span>
+<span class="fc" id="L93">        PendingOrder pendingOrder = pendingOrders.get(userId);</span>
 
-<span class="nc bnc" id="L95" title="All 4 branches missed.">        if (pendingOrder == null || pendingOrder.getEvent() == null) {</span>
-<span class="nc" id="L96">            return &quot;❌ Vui lòng chọn sự kiện trước. Bạn có thể nói: 'Mua vé sự kiện [tên sự kiện]'&quot;;</span>
+<span class="pc bpc" id="L95" title="1 of 4 branches missed.">        if (pendingOrder == null || pendingOrder.getEvent() == null) {</span>
+<span class="fc" id="L96">            return &quot;❌ Vui lòng chọn sự kiện trước. Bạn có thể nói: 'Mua vé sự kiện [tên sự kiện]'&quot;;</span>
         }
 
         // Find ticket type
-<span class="nc" id="L100">        List&lt;TicketType&gt; ticketTypes = ticketTypeService.getTicketTypesByEventId(pendingOrder.getEvent().getId());</span>
-<span class="nc" id="L101">        Optional&lt;TicketType&gt; selectedTicket = ticketTypes.stream()</span>
-<span class="nc" id="L102">                .filter(t -&gt; t.getName().toLowerCase().contains(ticketTypeName.toLowerCase()))</span>
-<span class="nc" id="L103">                .findFirst();</span>
+<span class="fc" id="L100">        List&lt;TicketType&gt; ticketTypes = ticketTypeService.getTicketTypesByEventId(pendingOrder.getEvent().getId());</span>
+<span class="fc" id="L101">        Optional&lt;TicketType&gt; selectedTicket = ticketTypes.stream()</span>
+<span class="fc" id="L102">                .filter(t -&gt; t.getName().toLowerCase().contains(ticketTypeName.toLowerCase()))</span>
+<span class="fc" id="L103">                .findFirst();</span>
 
-<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (selectedTicket.isEmpty()) {</span>
-<span class="nc" id="L106">            return &quot;❌ Không tìm thấy loại vé \&quot;&quot; + ticketTypeName + &quot;\&quot;. Các loại vé có sẵn: &quot;</span>
-<span class="nc" id="L107">                    + String.join(&quot;, &quot;, ticketTypes.stream().map(TicketType::getName).toList());</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (selectedTicket.isEmpty()) {</span>
+<span class="fc" id="L106">            return &quot;❌ Không tìm thấy loại vé \&quot;&quot; + ticketTypeName + &quot;\&quot;. Các loại vé có sẵn: &quot;</span>
+<span class="fc" id="L107">                    + String.join(&quot;, &quot;, ticketTypes.stream().map(TicketType::getName).toList());</span>
         }
 
-<span class="nc" id="L110">        TicketType ticket = selectedTicket.get();</span>
+<span class="fc" id="L110">        TicketType ticket = selectedTicket.get();</span>
 
         // Check availability
-<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (!ticket.isAvailable()) {</span>
-<span class="nc" id="L114">            return &quot;❌ Loại vé \&quot;&quot; + ticket.getName() + &quot;\&quot; đã hết. Vui lòng chọn loại vé khác.&quot;;</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (!ticket.isAvailable()) {</span>
+<span class="fc" id="L114">            return &quot;❌ Loại vé \&quot;&quot; + ticket.getName() + &quot;\&quot; đã hết. Vui lòng chọn loại vé khác.&quot;;</span>
         }
 
-<span class="nc" id="L117">        pendingOrder.setTicketType(ticket);</span>
-<span class="nc" id="L118">        pendingOrder.setCurrentStep(PendingOrder.OrderStep.PROVIDE_INFO);</span>
+<span class="fc" id="L117">        pendingOrder.setTicketType(ticket);</span>
+<span class="fc" id="L118">        pendingOrder.setCurrentStep(PendingOrder.OrderStep.PROVIDE_INFO);</span>
 
-<span class="nc" id="L120">        return &quot;✅ Đã chọn vé **&quot; + ticket.getName() + &quot;** - Giá: &quot; + ticket.getFinalPrice() + &quot; VND\n\n&quot; +</span>
+<span class="fc" id="L120">        return &quot;✅ Đã chọn vé **&quot; + ticket.getName() + &quot;** - Giá: &quot; + ticket.getFinalPrice() + &quot; VND\n\n&quot; +</span>
                &quot;📝 Vui lòng cung cấp thông tin:\n&quot; +
                &quot;- Tên người tham gia\n&quot; +
                &quot;- Email\n&quot; +
@@ -129,42 +129,42 @@ public class OrderAIService {
      * Provide participant information
      */
     public String provideInfo(Long userId, Map&lt;String, String&gt; info) {
-<span class="nc" id="L132">        PendingOrder pendingOrder = pendingOrders.get(userId);</span>
+<span class="fc" id="L132">        PendingOrder pendingOrder = pendingOrders.get(userId);</span>
 
-<span class="nc bnc" id="L134" title="All 4 branches missed.">        if (pendingOrder == null || pendingOrder.getTicketType() == null) {</span>
-<span class="nc" id="L135">            return &quot;❌ Vui lòng chọn loại vé trước.&quot;;</span>
+<span class="pc bpc" id="L134" title="1 of 4 branches missed.">        if (pendingOrder == null || pendingOrder.getTicketType() == null) {</span>
+<span class="fc" id="L135">            return &quot;❌ Vui lòng chọn loại vé trước.&quot;;</span>
         }
 
         // Extract information
-<span class="nc bnc" id="L139" title="All 2 branches missed.">        if (info.containsKey(&quot;name&quot;)) pendingOrder.setParticipantName(info.get(&quot;name&quot;));</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (info.containsKey(&quot;email&quot;)) pendingOrder.setParticipantEmail(info.get(&quot;email&quot;));</span>
-<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (info.containsKey(&quot;phone&quot;)) pendingOrder.setParticipantPhone(info.get(&quot;phone&quot;));</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (info.containsKey(&quot;organization&quot;)) pendingOrder.setParticipantOrganization(info.get(&quot;organization&quot;));</span>
-<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (info.containsKey(&quot;notes&quot;)) pendingOrder.setNotes(info.get(&quot;notes&quot;));</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        if (info.containsKey(&quot;name&quot;)) pendingOrder.setParticipantName(info.get(&quot;name&quot;));</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (info.containsKey(&quot;email&quot;)) pendingOrder.setParticipantEmail(info.get(&quot;email&quot;));</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (info.containsKey(&quot;phone&quot;)) pendingOrder.setParticipantPhone(info.get(&quot;phone&quot;));</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        if (info.containsKey(&quot;organization&quot;)) pendingOrder.setParticipantOrganization(info.get(&quot;organization&quot;));</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        if (info.containsKey(&quot;notes&quot;)) pendingOrder.setNotes(info.get(&quot;notes&quot;));</span>
 
         // Check if complete
-<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (!pendingOrder.isComplete()) {</span>
-<span class="nc" id="L147">            return &quot;⚠️ Còn thiếu thông tin:\n&quot; + pendingOrder.getMissingFields() +</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (!pendingOrder.isComplete()) {</span>
+<span class="fc" id="L147">            return &quot;⚠️ Còn thiếu thông tin:\n&quot; + pendingOrder.getMissingFields() +</span>
                    &quot;\nVui lòng cung cấp đầy đủ thông tin.&quot;;
         }
 
-<span class="nc" id="L151">        pendingOrder.setCurrentStep(PendingOrder.OrderStep.CONFIRM_ORDER);</span>
+<span class="fc" id="L151">        pendingOrder.setCurrentStep(PendingOrder.OrderStep.CONFIRM_ORDER);</span>
 
         // Show summary
-<span class="nc" id="L154">        StringBuilder summary = new StringBuilder();</span>
-<span class="nc" id="L155">        summary.append(&quot;📋 **Xác nhận thông tin đơn hàng:**\n\n&quot;);</span>
-<span class="nc" id="L156">        summary.append(&quot;🎫 Sự kiện: &quot;).append(pendingOrder.getEvent().getTitle()).append(&quot;\n&quot;);</span>
-<span class="nc" id="L157">        summary.append(&quot;🎟️ Loại vé: &quot;).append(pendingOrder.getTicketType().getName()).append(&quot;\n&quot;);</span>
-<span class="nc" id="L158">        summary.append(&quot;💰 Giá: &quot;).append(pendingOrder.getTicketType().getFinalPrice()).append(&quot; VND\n\n&quot;);</span>
-<span class="nc" id="L159">        summary.append(&quot;👤 Thông tin người tham gia:\n&quot;);</span>
-<span class="nc" id="L160">        summary.append(&quot;- Tên: &quot;).append(pendingOrder.getParticipantName()).append(&quot;\n&quot;);</span>
-<span class="nc" id="L161">        summary.append(&quot;- Email: &quot;).append(pendingOrder.getParticipantEmail()).append(&quot;\n&quot;);</span>
-<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (pendingOrder.getParticipantPhone() != null) {</span>
-<span class="nc" id="L163">            summary.append(&quot;- SĐT: &quot;).append(pendingOrder.getParticipantPhone()).append(&quot;\n&quot;);</span>
+<span class="fc" id="L154">        StringBuilder summary = new StringBuilder();</span>
+<span class="fc" id="L155">        summary.append(&quot;📋 **Xác nhận thông tin đơn hàng:**\n\n&quot;);</span>
+<span class="fc" id="L156">        summary.append(&quot;🎫 Sự kiện: &quot;).append(pendingOrder.getEvent().getTitle()).append(&quot;\n&quot;);</span>
+<span class="fc" id="L157">        summary.append(&quot;🎟️ Loại vé: &quot;).append(pendingOrder.getTicketType().getName()).append(&quot;\n&quot;);</span>
+<span class="fc" id="L158">        summary.append(&quot;💰 Giá: &quot;).append(pendingOrder.getTicketType().getFinalPrice()).append(&quot; VND\n\n&quot;);</span>
+<span class="fc" id="L159">        summary.append(&quot;👤 Thông tin người tham gia:\n&quot;);</span>
+<span class="fc" id="L160">        summary.append(&quot;- Tên: &quot;).append(pendingOrder.getParticipantName()).append(&quot;\n&quot;);</span>
+<span class="fc" id="L161">        summary.append(&quot;- Email: &quot;).append(pendingOrder.getParticipantEmail()).append(&quot;\n&quot;);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        if (pendingOrder.getParticipantPhone() != null) {</span>
+<span class="fc" id="L163">            summary.append(&quot;- SĐT: &quot;).append(pendingOrder.getParticipantPhone()).append(&quot;\n&quot;);</span>
         }
-<span class="nc" id="L165">        summary.append(&quot;\n💡 Xác nhận đặt vé? (Có/Không)&quot;);</span>
+<span class="fc" id="L165">        summary.append(&quot;\n💡 Xác nhận đặt vé? (Có/Không)&quot;);</span>
 
-<span class="nc" id="L167">        return summary.toString();</span>
+<span class="fc" id="L167">        return summary.toString();</span>
     }
 
     /**
@@ -272,24 +272,24 @@ public class OrderAIService {
      * Cancel pending order
      */
     public String cancelOrder(Long userId) {
-<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (pendingOrders.remove(userId) != null) {</span>
-<span class="nc" id="L276">            return &quot;❌ Đã hủy đơn hàng.&quot;;</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">        if (pendingOrders.remove(userId) != null) {</span>
+<span class="fc" id="L276">            return &quot;❌ Đã hủy đơn hàng.&quot;;</span>
         }
-<span class="nc" id="L278">        return &quot;ℹ️ Không có đơn hàng nào đang chờ xử lý.&quot;;</span>
+<span class="fc" id="L278">        return &quot;ℹ️ Không có đơn hàng nào đang chờ xử lý.&quot;;</span>
     }
 
     /**
      * Get pending order status
      */
     public PendingOrder getPendingOrder(Long userId) {
-<span class="nc" id="L285">        return pendingOrders.get(userId);</span>
+<span class="fc" id="L285">        return pendingOrders.get(userId);</span>
     }
 
     /**
      * Check if user has pending order
      */
     public boolean hasPendingOrder(Long userId) {
-<span class="nc" id="L292">        return pendingOrders.containsKey(userId);</span>
+<span class="fc" id="L292">        return pendingOrders.containsKey(userId);</span>
     }
 }
 

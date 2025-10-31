@@ -285,43 +285,45 @@ import java.util.Optional;
         // 2) Find or create Host (idempotent)
 <span class="fc" id="L286">        Host h = c.getHost();</span>
 <span class="pc bpc" id="L287" title="1 of 2 branches missed.">        if (h == null) {</span>
-<span class="fc" id="L288">            h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -&gt; {</span>
-<span class="fc" id="L289">                Host nh = new Host();</span>
-<span class="fc" id="L290">                nh.setCustomer(c);</span>
-<span class="fc" id="L291">                return hostService.save(nh);</span>
+<span class="fc" id="L288">            log.info(&quot;This customer has no host&quot;);</span>
+<span class="fc" id="L289">            h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -&gt; {</span>
+<span class="fc" id="L290">                Host nh = new Host();</span>
+<span class="fc" id="L291">                nh.setCustomer(c);</span>
+<span class="fc" id="L292">                log.info(&quot;Create host corresponding to customer id {}&quot;, c.getCustomerId());</span>
+<span class="fc" id="L293">                return hostService.save(nh);</span>
             });
         }
         
         // 3) Required host
-<span class="fc" id="L296">        finalEvent.setHost(h);</span>
+<span class="fc" id="L298">        finalEvent.setHost(h);</span>
         
         // 4) Optional organization
-<span class="fc bfc" id="L299" title="All 2 branches covered.">        if (organizationId != null) {</span>
-<span class="fc" id="L300">            Organization org = organizationService.findById(organizationId)</span>
-<span class="pc" id="L301">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Organization không tồn tại&quot;));</span>
-<span class="fc" id="L302">            finalEvent.setOrganization(org);</span>
-<span class="fc" id="L303">        } else {</span>
-<span class="fc" id="L304">            finalEvent.setOrganization(null);</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">        if (organizationId != null) {</span>
+<span class="fc" id="L302">            Organization org = organizationService.findById(organizationId)</span>
+<span class="pc" id="L303">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Organization không tồn tại&quot;));</span>
+<span class="fc" id="L304">            finalEvent.setOrganization(org);</span>
+<span class="fc" id="L305">        } else {</span>
+<span class="fc" id="L306">            finalEvent.setOrganization(null);</span>
         }
         
         // 5) Safe defaults
-<span class="pc bpc" id="L308" title="1 of 2 branches missed.">        if (finalEvent.getStatus() == null) finalEvent.setStatus(EventStatus.DRAFT);</span>
-<span class="pc bpc" id="L309" title="1 of 2 branches missed.">        if (finalEvent.getEventType() == null) finalEvent.setEventType(EventType.OTHERS);</span>
-<span class="pc bpc" id="L310" title="1 of 2 branches missed.">        if (finalEvent.getCreatedAt() == null) finalEvent.setCreatedAt(LocalDateTime.now());</span>
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">        if (finalEvent.getStatus() == null) finalEvent.setStatus(EventStatus.DRAFT);</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (finalEvent.getEventType() == null) finalEvent.setEventType(EventType.OTHERS);</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">        if (finalEvent.getCreatedAt() == null) finalEvent.setCreatedAt(LocalDateTime.now());</span>
 
         // 6) Lưu event và tạo nhắc nhở mặc định cho host
-<span class="fc" id="L313">        Event savedEvent = eventRepo.save(event);</span>
+<span class="fc" id="L315">        Event savedEvent = eventRepo.save(event);</span>
         
         // Tạo lịch nhắc nhở mặc định cho host khi tạo event
         try {
-<span class="fc" id="L317">            createOrUpdateEmailReminder(savedEvent.getId(), 5, userId);</span>
-<span class="fc" id="L318">            log.info(&quot;✅ Đã tạo lịch nhắc nhở mặc định cho host khi tạo event ID: {}&quot;, savedEvent.getId());</span>
-<span class="nc" id="L319">        } catch (Exception e) {</span>
-<span class="nc" id="L320">            log.error(&quot;❌ Lỗi khi tạo lịch nhắc nhở cho event ID: {} - {}&quot;, savedEvent.getId(), e.getMessage(), e);</span>
+<span class="fc" id="L319">            createOrUpdateEmailReminder(savedEvent.getId(), 5, userId);</span>
+<span class="fc" id="L320">            log.info(&quot;✅ Đã tạo lịch nhắc nhở mặc định cho host khi tạo event ID: {}&quot;, savedEvent.getId());</span>
+<span class="nc" id="L321">        } catch (Exception e) {</span>
+<span class="nc" id="L322">            log.error(&quot;❌ Lỗi khi tạo lịch nhắc nhở cho event ID: {} - {}&quot;, savedEvent.getId(), e.getMessage(), e);</span>
             // Không throw exception để không ảnh hưởng đến việc tạo event
-<span class="fc" id="L322">        }</span>
+<span class="fc" id="L324">        }</span>
 
-<span class="fc" id="L324">        return savedEvent;</span>
+<span class="fc" id="L326">        return savedEvent;</span>
     }
 
 

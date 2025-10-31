@@ -13,10 +13,10 @@ OpenEvent,com.group02.openevent.service.impl,RequestServiceImpl,44,618,7,43,2,14
 OpenEvent,com.group02.openevent.service.impl,EventServiceImpl,229,866,31,81,47,191,33,81,7,48
 OpenEvent,com.group02.openevent.service.impl,PlaceServiceImpl,0,172,2,12,0,30,2,12,0,7
 OpenEvent,com.group02.openevent.service.impl,VoucherServiceImpl,0,175,0,12,0,44,0,16,0,10
-OpenEvent,com.group02.openevent.service.impl,TicketTypeServiceImpl,110,401,18,42,16,101,26,30,11,15
+OpenEvent,com.group02.openevent.service.impl,TicketTypeServiceImpl,110,404,18,42,16,102,26,30,11,15
 OpenEvent,com.group02.openevent.service.impl,PaymentServiceImpl,293,309,8,20,74,81,7,23,3,13
 OpenEvent,com.group02.openevent.service.impl,OrderServiceImpl,21,503,12,32,1,106,12,37,1,26
 OpenEvent,com.group02.openevent.controller.form,EventFormController,52,444,18,29,5,115,15,21,0,12
-OpenEvent,com.group02.openevent.ai.service,AgentEventService,193,473,21,30,43,115,25,17,5,10
-OpenEvent,com.group02.openevent.ai.service,OrderAIService,397,341,43,9,73,64,32,4,7,3
+OpenEvent,com.group02.openevent.ai.service,AgentEventService,193,481,21,30,43,117,25,17,5,10
+OpenEvent,com.group02.openevent.ai.service,OrderAIService,43,695,14,38,5,132,14,22,0,10
 OpenEvent,com.group02.openevent.ai.service,LanguageDetectionService,10,332,8,32,4,62,8,17,0,5

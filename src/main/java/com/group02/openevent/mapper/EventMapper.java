@@ -51,7 +51,6 @@ public interface EventMapper {
 
 
     @Mapping(target = "id", ignore = true) // Luôn bỏ qua ID khi mapping từ Request vào Entity mới
-    @Mapping(target = "version", ignore = true)
     void createEventFromRequest(EventCreationRequest request, @MappingTarget Event event);
 
 

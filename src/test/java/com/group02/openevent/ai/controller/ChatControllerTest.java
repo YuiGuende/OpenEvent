@@ -94,6 +94,23 @@ class ChatControllerTest {
 		mockMvc.perform(get("/api/ai/chat/stats/{userId}", userId))
 				.andExpect(status().isOk());
 	}
+
+	@org.junit.jupiter.api.Test
+	void stats_exception_500() throws Exception {
+		org.mockito.Mockito.doThrow(new RuntimeException("db"))
+				.when(chatHistoryRepo).findByUserIdOrderByTimestampAsc(org.mockito.ArgumentMatchers.anyInt());
+		mockMvc.perform(get("/api/ai/chat/stats/{userId}", 9))
+				.andExpect(status().isInternalServerError());
+	}
+
+	@org.junit.jupiter.api.Test
+	void getSessionInfo_withSessionId() throws Exception {
+		var session = new org.springframework.mock.web.MockHttpSession();
+		session.setAttribute("sessionId", "S123");
+		mockMvc.perform(get("/api/ai/chat/session-info").session(session))
+				.andExpect(status().isOk())
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.sessionId").value("S123"));
+	}
 }
 
 

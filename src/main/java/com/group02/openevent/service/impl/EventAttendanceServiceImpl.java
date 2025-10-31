@@ -6,6 +6,7 @@ import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.repository.IEventAttendanceRepo;
 import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.EventAttendanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class EventAttendanceServiceImpl implements EventAttendanceService {
     
     @Autowired
     private IEventRepo eventRepo;
+
+    @Autowired
+    private IOrderRepo orderRepo;
     
     @Override
     @Transactional
@@ -34,9 +38,17 @@ public class EventAttendanceServiceImpl implements EventAttendanceService {
         // Validate event exists
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found with ID: " + eventId));
+
+        String normalizedEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : null;
+
+        // Enforce ticket ownership (must have PAID order for this event)
+        boolean hasPaidOrder = normalizedEmail != null && orderRepo.existsPaidByEventIdAndParticipantEmail(eventId, normalizedEmail);
+        if (!hasPaidOrder) {
+            throw new RuntimeException("Bạn không đăng ký sự kiện này (không tìm thấy vé đã thanh toán).");
+        }
         
         // Check if already checked in
-        Optional<EventAttendance> existingOpt = attendanceRepo.findByEventIdAndEmail(eventId, request.getEmail());
+        Optional<EventAttendance> existingOpt = attendanceRepo.findByEventIdAndEmail(eventId, normalizedEmail);
         
         if (existingOpt.isPresent()) {
             EventAttendance existing = existingOpt.get();
@@ -60,7 +72,7 @@ public class EventAttendanceServiceImpl implements EventAttendanceService {
         EventAttendance attendance = new EventAttendance();
         attendance.setEvent(event);
         attendance.setFullName(request.getFullName());
-        attendance.setEmail(request.getEmail());
+        attendance.setEmail(normalizedEmail);
         attendance.setPhone(request.getPhone());
         attendance.setOrganization(request.getOrganization());
         attendance.setCheckInTime(LocalDateTime.now());
@@ -72,12 +84,19 @@ public class EventAttendanceServiceImpl implements EventAttendanceService {
     @Override
     @Transactional
     public EventAttendance checkOut(Long eventId, String email) {
-        log.info("Processing check-out for event {} with email {}", eventId, email);
+        String normalizedEmail = email != null ? email.trim().toLowerCase() : null;
+        log.info("Processing check-out for event {} with email {}", eventId, normalizedEmail);
         
         // Find attendance record
-        EventAttendance attendance = attendanceRepo.findByEventIdAndEmail(eventId, email)
+        EventAttendance attendance = attendanceRepo.findByEventIdAndEmail(eventId, normalizedEmail)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin check-in với email: " + email));
         
+        // Must own a paid ticket
+        boolean hasPaidOrder = normalizedEmail != null && orderRepo.existsPaidByEventIdAndParticipantEmail(eventId, normalizedEmail);
+        if (!hasPaidOrder) {
+            throw new RuntimeException("Bạn không đăng ký sự kiện này (không tìm thấy vé đã thanh toán).");
+        }
+
         // Validate status
         if (attendance.getStatus() != EventAttendance.AttendanceStatus.CHECKED_IN) {
             throw new RuntimeException("Bạn chưa check-in hoặc đã check-out rồi");

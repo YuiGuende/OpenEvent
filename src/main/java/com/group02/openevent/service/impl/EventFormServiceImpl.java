@@ -38,10 +38,18 @@ public class EventFormServiceImpl implements EventFormService {
         Event event = eventRepo.findById(request.getEventId())
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        EventForm form = new EventForm();
+        // Validate type
+        if (request.getFormType() == null) {
+            throw new RuntimeException("Form type is required (REGISTER/CHECKIN/FEEDBACK)");
+        }
+        
+        // Upsert: if an active form of this type already exists for the event, update it instead of inserting a new one
+        EventForm form = eventFormRepo.findActiveByEventIdAndType(request.getEventId(), request.getFormType())
+                .orElseGet(EventForm::new);
         form.setEvent(event);
         form.setFormTitle(request.getFormTitle());
         form.setFormDescription(request.getFormDescription());
+        form.setFormType(request.getFormType());
         form.setIsActive(true);
 
         EventForm savedForm = eventFormRepo.save(form);
@@ -77,6 +85,20 @@ public class EventFormServiceImpl implements EventFormService {
     public EventFormDTO getFormByEventId(Long eventId) {
         EventForm form = eventFormRepo.findByEventIdAndActive(eventId)
                 .orElseThrow(() -> new RuntimeException("No active form found for event"));
+        return convertToDTO(form);
+    }
+
+    @Override
+    public EventFormDTO getActiveFormByEventIdAndType(Long eventId, EventForm.FormType formType) {
+        EventForm form = eventFormRepo.findActiveByEventIdAndType(eventId, formType)
+                .orElseThrow(() -> new RuntimeException("No active " + formType + " form found for event"));
+        return convertToDTO(form);
+    }
+
+    @Override
+    public EventFormDTO getFormById(Long formId) {
+        EventForm form = eventFormRepo.findById(formId)
+                .orElseThrow(() -> new RuntimeException("Form not found"));
         return convertToDTO(form);
     }
 
@@ -232,12 +254,23 @@ public class EventFormServiceImpl implements EventFormService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<FormResponseDTO> getResponsesByEventIdAndFormType(Long eventId, com.group02.openevent.model.form.EventForm.FormType formType) {
+        List<FormResponse> responses = formResponseRepo.findByEventIdAndFormType(eventId, formType);
+        return responses.stream()
+                .sorted((r1, r2) -> r2.getSubmittedAt().compareTo(r1.getSubmittedAt())) // Sort by newest first
+                .map(this::convertResponseToDTO)
+                .collect(Collectors.toList());
+    }
+
     private EventFormDTO convertToDTO(EventForm form) {
         EventFormDTO dto = new EventFormDTO();
         dto.setFormId(form.getFormId());
         dto.setEventId(form.getEvent().getId());
         dto.setFormTitle(form.getFormTitle());
         dto.setFormDescription(form.getFormDescription());
+        dto.setFormType(form.getFormType());
         dto.setIsActive(form.getIsActive());
         dto.setCreatedAt(form.getCreatedAt());
 
@@ -271,9 +304,19 @@ public class EventFormServiceImpl implements EventFormService {
         // Customer might be a lazy proxy - access it within transaction
         if (response.getCustomer() != null) {
             dto.setCustomerId(response.getCustomer().getCustomerId());
+            dto.setCustomerName(response.getCustomer().getName() != null ? response.getCustomer().getName() : "");
+            dto.setCustomerEmail(response.getCustomer().getEmail() != null ? response.getCustomer().getEmail() : "");
         }
         
-        dto.setQuestionId(response.getFormQuestion().getQuestionId());
+        // Form type
+        dto.setFormType(response.getEventForm().getFormType());
+        
+        // Question information
+        if (response.getFormQuestion() != null) {
+            dto.setQuestionId(response.getFormQuestion().getQuestionId());
+            dto.setQuestionText(response.getFormQuestion().getQuestionText() != null ? response.getFormQuestion().getQuestionText() : "");
+        }
+        
         dto.setResponseValue(response.getResponseValue());
         dto.setSubmittedAt(response.getSubmittedAt());
         return dto;

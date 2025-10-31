@@ -281,10 +281,11 @@
                                 <include>com/group02/openevent/ai/service/OrderAIService*.class</include>
                                 <include>com/group02/openevent/ai/util/SessionManager*.class</include>
 
-                                <include>com/group02/openevent/ai/qdrant/service</include>
-                                <include>com/group02/openevent/ai/security</include>
-                                <include>com/group02/openevent/ai/service</include>
-                                <include>com/group02/openevent/ai/util</include>
+                                <include>com/group02/openevent/controller/form/EventFormController*.class</include>
+                                <include>com/group02/openevent/service/EventAttendanceService*.class</include>
+                                <include>com/group02/openevent/service/EventFormService*.class</include>
+
+
                             </includes>
                         </configuration>
                     </execution>

@@ -13,14 +13,15 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+
 @Service
 public interface IOrderRepo extends JpaRepository<Order, Long> {
-    
+
     List<Order> findByCustomer(Customer customer);
-    
+
     @Query("SELECT o FROM Order o WHERE o.customer.customerId = :customerId")
     List<Order> findByCustomerId(@Param("customerId") Long customerId);
-    
+
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
     List<Order> findByEventId(@Param("eventId") Long eventId);
 
@@ -52,6 +53,7 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     Page<Order> findByEventIdAndStatus(@Param("eventId") Long eventId,
                                        @Param("status") OrderStatus status,
                                        Pageable pageable);
+
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
     Page<Order> findByEventId(@Param("eventId") Long eventId, Pageable pageable);
 
@@ -59,8 +61,25 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
             "WHERE o.event.id = :eventId AND o.status = 'PAID'")
     List<Long> findDistinctCustomerAccountIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
 
-    // Check if any order references a given ticket type (protect FK delete)
     boolean existsByTicketType_TicketTypeId(Long ticketTypeId);
+
+    /**
+     * Check if there exists a PAID order for given event and participant email
+     */
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Order o " +
+            "WHERE o.event.id = :eventId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID " +
+            "AND LOWER(o.participantEmail) = LOWER(:email)")
+    boolean existsPaidByEventIdAndParticipantEmail(@Param("eventId") Long eventId, @Param("email") String email);
+
+    /**
+     * Check if there exists a PAID order for given event and customer
+     */
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Order o " +
+            "WHERE o.event.id = :eventId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID " +
+            "AND o.customer.customerId = :customerId")
+    boolean existsPaidByEventIdAndCustomerId(@Param("eventId") Long eventId, @Param("customerId") Long customerId);
 }
 
 

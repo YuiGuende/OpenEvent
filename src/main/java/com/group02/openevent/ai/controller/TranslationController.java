@@ -33,28 +33,28 @@ public class TranslationController {
             @RequestParam String text,
             @RequestParam String sourceLang,
             @RequestParam String targetLang) {
-
+        
         try {
             if (!isValidCode(sourceLang) || !isValidCode(targetLang)) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Invalid language code"));
+                    .body(Map.of("error", "Invalid language code"));
             }
             Language source = Language.fromCode(sourceLang);
             Language target = Language.fromCode(targetLang);
-
+            
             String translatedText = translationService.translate(text, source, target);
-
+            
             return ResponseEntity.ok(Map.of(
-                    "originalText", text,
-                    "translatedText", translatedText,
-                    "sourceLanguage", source.getName(),
-                    "targetLanguage", target.getName()
+                "originalText", text,
+                "translatedText", translatedText,
+                "sourceLanguage", source.getName(),
+                "targetLanguage", target.getName()
             ));
-
+            
         } catch (Exception e) {
             log.error("Translation failed", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Translation failed: " + e.getMessage()));
+                .body(Map.of("error", "Translation failed: " + e.getMessage()));
         }
     }
 
@@ -108,15 +108,15 @@ public class TranslationController {
     @GetMapping("/languages")
     public CompletableFuture<ResponseEntity<Map<String, Object>>> getSupportedLanguages() {
         return libreTranslateService.getSupportedLanguages()
-                .thenApply(languages -> ResponseEntity.ok(Map.of(
-                        "languages", languages,
-                        "count", languages.size()
-                )))
-                .exceptionally(throwable -> {
-                    log.error("Failed to get supported languages", throwable);
-                    return ResponseEntity.internalServerError()
-                            .body(Map.of("error", "Failed to get supported languages: " + throwable.getMessage()));
-                });
+            .thenApply(languages -> ResponseEntity.ok(Map.of(
+                "languages", languages,
+                "count", languages.size()
+            )))
+            .exceptionally(throwable -> {
+                log.error("Failed to get supported languages", throwable);
+                return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Failed to get supported languages: " + throwable.getMessage()));
+            });
     }
 
     /**
@@ -126,17 +126,17 @@ public class TranslationController {
     public ResponseEntity<?> testConnection() {
         try {
             boolean isAvailable = translationService.testConnection();
-
+            
             return ResponseEntity.ok(Map.of(
-                    "available", isAvailable,
-                    "service", "LibreTranslate",
-                    "cacheSize", translationService.getCacheSize()
+                "available", isAvailable,
+                "service", "LibreTranslate",
+                "cacheSize", translationService.getCacheSize()
             ));
-
+            
         } catch (Exception e) {
             log.error("Connection test failed", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Connection test failed: " + e.getMessage()));
+                .body(Map.of("error", "Connection test failed: " + e.getMessage()));
         }
     }
 
@@ -147,16 +147,16 @@ public class TranslationController {
     public ResponseEntity<?> clearCache() {
         try {
             translationService.clearCache();
-
+            
             return ResponseEntity.ok(Map.of(
-                    "message", "Translation cache cleared successfully",
-                    "cacheSize", translationService.getCacheSize()
+                "message", "Translation cache cleared successfully",
+                "cacheSize", translationService.getCacheSize()
             ));
-
+            
         } catch (Exception e) {
             log.error("Failed to clear cache", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Failed to clear cache: " + e.getMessage()));
+                .body(Map.of("error", "Failed to clear cache: " + e.getMessage()));
         }
     }
 
@@ -168,18 +168,18 @@ public class TranslationController {
         try {
             boolean isAvailable = translationService.isAvailable();
             int cacheSize = translationService.getCacheSize();
-
+            
             return ResponseEntity.ok(Map.of(
-                    "available", isAvailable,
-                    "service", "LibreTranslate",
-                    "cacheSize", cacheSize,
-                    "status", isAvailable ? "healthy" : "unavailable"
+                "available", isAvailable,
+                "service", "LibreTranslate",
+                "cacheSize", cacheSize,
+                "status", isAvailable ? "healthy" : "unavailable"
             ));
-
+            
         } catch (Exception e) {
             log.error("Failed to get status", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Failed to get status: " + e.getMessage()));
+                .body(Map.of("error", "Failed to get status: " + e.getMessage()));
         }
     }
 
@@ -190,26 +190,26 @@ public class TranslationController {
     public ResponseEntity<?> translateAIResponse(
             @RequestParam String aiResponse,
             @RequestParam String userLanguage) {
-
+        
         try {
             if (!isValidCode(userLanguage)) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Invalid user language code"));
+                    .body(Map.of("error", "Invalid user language code"));
             }
             Language userLang = Language.fromCode(userLanguage);
-
+            
             String translatedResponse = translationService.translateAIResponse(aiResponse, userLang);
-
+            
             return ResponseEntity.ok(Map.of(
-                    "originalResponse", aiResponse,
-                    "translatedResponse", translatedResponse,
-                    "userLanguage", userLang.getName()
+                "originalResponse", aiResponse,
+                "translatedResponse", translatedResponse,
+                "userLanguage", userLang.getName()
             ));
-
+            
         } catch (Exception e) {
             log.error("AI response translation failed", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "AI response translation failed: " + e.getMessage()));
+                .body(Map.of("error", "AI response translation failed: " + e.getMessage()));
         }
     }
 
@@ -220,26 +220,26 @@ public class TranslationController {
     public ResponseEntity<?> translateUserInput(
             @RequestParam String userInput,
             @RequestParam String userLanguage) {
-
+        
         try {
             if (!isValidCode(userLanguage)) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Invalid user language code"));
+                    .body(Map.of("error", "Invalid user language code"));
             }
             Language userLang = Language.fromCode(userLanguage);
-
+            
             String translatedInput = translationService.translateUserInput(userInput, userLang);
-
+            
             return ResponseEntity.ok(Map.of(
-                    "originalInput", userInput,
-                    "translatedInput", translatedInput,
-                    "userLanguage", userLang.getName()
+                "originalInput", userInput,
+                "translatedInput", translatedInput,
+                "userLanguage", userLang.getName()
             ));
-
+            
         } catch (Exception e) {
             log.error("User input translation failed", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "User input translation failed: " + e.getMessage()));
+                .body(Map.of("error", "User input translation failed: " + e.getMessage()));
         }
     }
 }

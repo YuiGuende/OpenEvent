@@ -750,6 +750,8 @@ CREATE TABLE event_forms (
     event_id BIGINT NOT NULL,
     form_title VARCHAR(200) NOT NULL,
     form_description TEXT,
+    -- Type of form: REGISTER (post-payment), CHECKIN (before attendance), FEEDBACK (post-checkout)
+    form_type ENUM('REGISTER','CHECKIN','FEEDBACK') NOT NULL DEFAULT 'FEEDBACK',
     is_active BOOLEAN DEFAULT TRUE,
     created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
     CONSTRAINT fk_eventform_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
@@ -773,16 +775,24 @@ CREATE TABLE form_responses (
     response_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     form_id BIGINT NOT NULL,
     customer_id BIGINT NOT NULL,
+    -- Optional link to the buyer's order when submitting REGISTER/FEEDBACK forms
+    order_id BIGINT DEFAULT NULL,
+    -- Optional link to attendance record when submitting CHECKIN/FEEDBACK forms
+    attendance_id BIGINT DEFAULT NULL,
     question_id BIGINT NOT NULL,
     response_value TEXT NOT NULL,
     submitted_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
     CONSTRAINT fk_response_form FOREIGN KEY (form_id) REFERENCES event_forms (form_id) ON DELETE CASCADE,
     CONSTRAINT fk_response_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON DELETE CASCADE,
-    CONSTRAINT fk_response_question FOREIGN KEY (question_id) REFERENCES form_questions (question_id) ON DELETE CASCADE
+    CONSTRAINT fk_response_question FOREIGN KEY (question_id) REFERENCES form_questions (question_id) ON DELETE CASCADE,
+    CONSTRAINT fk_response_order FOREIGN KEY (order_id) REFERENCES orders (order_id) ON DELETE SET NULL,
+    CONSTRAINT fk_response_attendance FOREIGN KEY (attendance_id) REFERENCES event_attendance (attendance_id) ON DELETE SET NULL
 );
 
 -- Indexes for Feedback Form System
 CREATE INDEX idx_eventforms_event_id ON event_forms (event_id);
+-- Ensure one active form per type per event (optional uniqueness by type)
+CREATE UNIQUE INDEX uk_event_form_type ON event_forms (event_id, form_type);
 CREATE INDEX idx_eventforms_active ON event_forms (is_active);
 CREATE INDEX idx_formquestions_form_id ON form_questions (form_id);
 CREATE INDEX idx_formquestions_order ON form_questions (form_id, question_order);
@@ -790,5 +800,7 @@ CREATE INDEX idx_formresponses_form_id ON form_responses (form_id);
 CREATE INDEX idx_formresponses_customer_id ON form_responses (customer_id);
 CREATE INDEX idx_formresponses_question_id ON form_responses (question_id);
 CREATE INDEX idx_formresponses_submitted_at ON form_responses (submitted_at);
+CREATE INDEX idx_formresponses_order_id ON form_responses (order_id);
+CREATE INDEX idx_formresponses_attendance_id ON form_responses (attendance_id);
 
 SELECT 'Sample data inserted successfully!' as status;

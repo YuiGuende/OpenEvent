@@ -37,8 +37,8 @@
     <div class="container">
         <div class="form-container">
             <div class="form-header">
-                <h2><i class="fas fa-comment-dots"></i> <span th:text="${form?.formTitle ?: 'Feedback Form'}">Feedback Form</span></h2>
-                <p th:text="${form?.formDescription ?: 'Please share your thoughts about this event'}">Please share your thoughts about this event</p>
+                <h2><i class="fas fa-comment-dots"></i> <span th:text="${form != null ? form.formTitle : 'Form'}">Form</span></h2>
+                <p th:text="${form != null ? form.formDescription : 'Please fill in the form'}">Please fill in the form</p>
             </div>
             
             <!-- No Form Message -->
@@ -47,7 +47,7 @@
                 <span th:text="${noFormMessage}">Chưa có form feedback nào cho sự kiện này.</span>
             </div>
             
-            <form th:action="@{/forms/feedback/submit(eventId=${eventId})}" method="post" id="feedbackForm">
+            <form th:if="${form} != null" th:action="@{/forms/feedback/submit(eventId=${eventId})}" method="post" id="feedbackForm">
                 <input type="hidden" name="formId" th:value="${form.formId}" id="formIdInput">
                 <input type="hidden" name="customerId" value="1"> <!-- TODO: Get from session -->
                 
@@ -129,14 +129,21 @@
                 
                 <!-- Submit Button -->
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-paper-plane"></i> Submit Feedback
-                    </button>
+                    <a th:href="@{'/forms/' + ${eventId}}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-file-alt"></i> Submit Form
+                    </a>
                     <a th:href="@{'/music/' + ${eventId}}" class="btn btn-secondary btn-lg ms-2">
                         <i class="fas fa-arrow-left"></i> Back to Event
                     </a>
                 </div>
             </form>
+            
+            <!-- If no form available, hide submit form -->
+            <div th:if="${form} == null" class="text-center">
+                <a th:href="@{'/music/' + ${eventId}}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back to Event
+                </a>
+            </div>
         </div>
     </div>
 

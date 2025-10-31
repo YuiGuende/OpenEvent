@@ -2,6 +2,10 @@ package com.group02.openevent.controller.form;
 
 import com.group02.openevent.dto.form.*;
 import com.group02.openevent.service.EventFormService;
+import com.group02.openevent.service.EventAttendanceService;
+import com.group02.openevent.dto.attendance.AttendanceRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +25,34 @@ import java.util.List;
 public class EventFormController {
 
     private final EventFormService eventFormService;
+     private final EventAttendanceService attendanceService;
 
     // Host: Create form for event
     @GetMapping("/create/{eventId}")
-    public String showCreateForm(@PathVariable Long eventId, Model model) {
+    public String showCreateForm(@PathVariable Long eventId, @RequestParam(required = false) String type, Model model) {
         CreateFormRequest request = new CreateFormRequest();
         request.setEventId(eventId);
+        if (type != null) {
+            try {
+                request.setFormType(com.group02.openevent.model.form.EventForm.FormType.valueOf(type.toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                request.setFormType(com.group02.openevent.model.form.EventForm.FormType.FEEDBACK);
+            }
+        }
+        // Compute page title to avoid complex Thymeleaf expressions
+        String pageTitle;
+        if (request.getFormType() == null) {
+            pageTitle = "Create Feedback Form";
+        } else {
+            switch (request.getFormType()) {
+                case REGISTER -> pageTitle = "Create Register Form";
+                case CHECKIN -> pageTitle = "Create Check-in Form";
+                default -> pageTitle = "Create Feedback Form";
+            }
+        }
         model.addAttribute("eventId", eventId);
         model.addAttribute("createFormRequest", request);
+        model.addAttribute("pageTitle", pageTitle);
         return "host/create-feedback-form";
     }
 
@@ -50,11 +74,18 @@ public class EventFormController {
         }
     }
 
+    // User: Select form type (Register, Check-in, Feedback)
+    @GetMapping("/{eventId}")
+    public String showSelectFormType(@PathVariable Long eventId, Model model) {
+        model.addAttribute("eventId", eventId);
+        return "user/select-form-type";
+    }
+
     // User: View and submit feedback form
     @GetMapping("/feedback/{eventId}")
     public String showFeedbackForm(@PathVariable Long eventId, Model model) {
         try {
-            EventFormDTO form = eventFormService.getFormByEventId(eventId);
+            EventFormDTO form = eventFormService.getActiveFormByEventIdAndType(eventId, com.group02.openevent.model.form.EventForm.FormType.FEEDBACK);
             model.addAttribute("form", form);
             model.addAttribute("eventId", eventId);
             model.addAttribute("submitResponseRequest", new SubmitResponseRequest());
@@ -64,6 +95,41 @@ public class EventFormController {
             // Instead of redirecting, show empty form page
             model.addAttribute("eventId", eventId);
             model.addAttribute("noFormMessage", "Chưa có form feedback nào cho sự kiện này. Vui lòng liên hệ host để tạo form.");
+            model.addAttribute("form", null);
+            return "user/feedback-form";
+        }
+    }
+
+    // User: View register form after payment
+    @GetMapping("/register/{eventId}")
+    public String showRegisterForm(@PathVariable Long eventId, Model model) {
+        try {
+            EventFormDTO form = eventFormService.getActiveFormByEventIdAndType(eventId, com.group02.openevent.model.form.EventForm.FormType.REGISTER);
+            model.addAttribute("form", form);
+            model.addAttribute("eventId", eventId);
+            model.addAttribute("submitResponseRequest", new SubmitResponseRequest());
+            return "user/feedback-form"; // reuse generic form template
+        } catch (Exception e) {
+            model.addAttribute("eventId", eventId);
+            model.addAttribute("noFormMessage", "Chưa có form đăng ký nào cho sự kiện này.");
+            model.addAttribute("form", null);
+            return "user/feedback-form";
+        }
+    }
+
+    // User: View check-in form (after login and QR)
+    @GetMapping("/checkin/{eventId}")
+    public String showCheckinForm(@PathVariable Long eventId, Model model) {
+        try {
+            EventFormDTO form = eventFormService.getActiveFormByEventIdAndType(eventId, com.group02.openevent.model.form.EventForm.FormType.CHECKIN);
+            model.addAttribute("form", form);
+            model.addAttribute("eventId", eventId);
+            model.addAttribute("submitResponseRequest", new SubmitResponseRequest());
+            return "user/feedback-form"; // reuse generic form template
+        } catch (Exception e) {
+            model.addAttribute("eventId", eventId);
+            model.addAttribute("noFormMessage", "Chưa có form check-in nào cho sự kiện này.");
+            model.addAttribute("form", null);
             return "user/feedback-form";
         }
     }
@@ -80,13 +146,47 @@ public class EventFormController {
                 throw new RuntimeException("Customer ID is required");
             }
             
+            // Persist responses
             eventFormService.submitResponse(request);
-            
-            // Use the eventId from the request parameter if available
-            if (eventId != null) {
-                return "redirect:/music/" + eventId + "?success=feedback_submitted";
+
+            // Determine form type and event
+            EventFormDTO formDto = eventFormService.getFormById(request.getFormId());
+            com.group02.openevent.model.form.EventForm.FormType formType = formDto.getFormType();
+            Long resolvedEventId = formDto.getEventId();
+            if (resolvedEventId != null) {
+                eventId = resolvedEventId;
             }
-            return "redirect:/?success=feedback_submitted";
+
+            // Resolve current user email (for attendance)
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String currentEmail = (auth != null && auth.getName() != null) ? auth.getName().trim().toLowerCase() : null;
+
+            // Branch by form type
+            if (formType == com.group02.openevent.model.form.EventForm.FormType.CHECKIN) {
+                AttendanceRequest ar = new AttendanceRequest();
+                ar.setEmail(currentEmail);
+                // Optional: derive name/phone/org from first few responses if needed
+                if (request.getResponses() != null && !request.getResponses().isEmpty()) {
+                    // Use first response as fullName if non-empty
+                    String first = request.getResponses().get(0).getResponseValue();
+                    ar.setFullName(first != null ? first : "");
+                }
+                attendanceService.checkIn(eventId, ar);
+                return "redirect:/events/" + eventId + "/checkin-form?success=checkin_success";
+            }
+
+            if (formType == com.group02.openevent.model.form.EventForm.FormType.FEEDBACK) {
+                if (currentEmail != null) {
+                    attendanceService.checkOut(eventId, currentEmail);
+                }
+                return "redirect:/events/" + eventId + "/checkout-form?success=checkout_success";
+            }
+
+            // After submit, redirect by type
+            if (eventId != null) {
+                return "redirect:/music/" + eventId + "?success=form_submitted";
+            }
+            return "redirect:/?success=form_submitted";
         } catch (Exception e) {
             log.error("Error submitting feedback: {}", e.getMessage());
             String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown error";
@@ -102,14 +202,22 @@ public class EventFormController {
     @GetMapping("/responses/{eventId}")
     public String viewResponses(@PathVariable Long eventId, Model model) {
         try {
-            List<FormResponseDTO> responses = eventFormService.getResponsesByEventId(eventId);
+            // Get responses for each form type
+            List<FormResponseDTO> registerResponses = eventFormService.getResponsesByEventIdAndFormType(
+                eventId, com.group02.openevent.model.form.EventForm.FormType.REGISTER);
+            List<FormResponseDTO> checkinResponses = eventFormService.getResponsesByEventIdAndFormType(
+                eventId, com.group02.openevent.model.form.EventForm.FormType.CHECKIN);
+            List<FormResponseDTO> feedbackResponses = eventFormService.getResponsesByEventIdAndFormType(
+                eventId, com.group02.openevent.model.form.EventForm.FormType.FEEDBACK);
             
-            // Handle empty list gracefully
-            if (responses == null) {
-                responses = new ArrayList<>();
-            }
+            // Handle empty lists gracefully
+            if (registerResponses == null) registerResponses = new ArrayList<>();
+            if (checkinResponses == null) checkinResponses = new ArrayList<>();
+            if (feedbackResponses == null) feedbackResponses = new ArrayList<>();
             
-            model.addAttribute("responses", responses);
+            model.addAttribute("registerResponses", registerResponses);
+            model.addAttribute("checkinResponses", checkinResponses);
+            model.addAttribute("feedbackResponses", feedbackResponses);
             model.addAttribute("eventId", eventId);
             return "host/view-responses";
         } catch (Exception e) {

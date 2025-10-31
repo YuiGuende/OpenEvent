@@ -70,6 +70,7 @@ public class HostController {
         Long id = Long.parseLong("1");
         List<Event> eventResponses = eventService.getEventByHostId(id);
         model.addAttribute("events", eventResponses);
+        log.info("Events: " + eventResponses);
         return "fragments/dashboard :: content";
     }
 
@@ -82,7 +83,6 @@ public class HostController {
         List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
         model.addAttribute("listTypeEvent", listTypeEvent);
         model.addAttribute("events", eventResponses);
-
         return "fragments/events :: content";
     }
 

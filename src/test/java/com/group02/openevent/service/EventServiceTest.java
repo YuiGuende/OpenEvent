@@ -32,6 +32,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -548,6 +550,217 @@ public class EventServiceTest {
 
         // Then
         assertEquals("TBA", dto.getCity());
+    }
+    @Test
+    @DisplayName("Test removeEvent - Branch 1: Should return true when exists")
+    void testRemoveEvent_Branch1_Exists() {
+        // Given
+        when(eventRepo.existsById(1L)).thenReturn(true);
+        doNothing().when(eventRepo).deleteById(1L); // Cần thiết cho verify
+
+        // When
+        boolean result = eventService.removeEvent(1L);
+
+        // Then
+        assertTrue(result);
+        verify(eventRepo, times(1)).existsById(1L);
+        verify(eventRepo, times(1)).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("Test removeEvent - Branch 2: Should return false when not exists")
+    void testRemoveEvent_Branch2_NotExists() {
+        // Given
+        when(eventRepo.existsById(99L)).thenReturn(false);
+
+        // When
+        boolean result = eventService.removeEvent(99L);
+
+        // Then
+        assertFalse(result);
+        verify(eventRepo, times(1)).existsById(99L);
+        verify(eventRepo, never()).deleteById(anyLong()); // Không được gọi xóa
+    }
+
+    @Test
+    @DisplayName("Test deleteByTitle - Branch 1: Should return true when found")
+    void testDeleteByTitle_Branch1_Found() {
+        // Given
+        when(eventRepo.findByTitle("Delete Me")).thenReturn(List.of(mockEvent));
+        doNothing().when(eventRepo).deleteAll(any(List.class));
+
+        // When
+        boolean result = eventService.deleteByTitle("Delete Me");
+
+        // Then
+        assertTrue(result);
+        verify(eventRepo, times(1)).findByTitle("Delete Me");
+        verify(eventRepo, times(1)).deleteAll(List.of(mockEvent));
+    }
+
+    @Test
+    @DisplayName("Test deleteByTitle - Branch 2: Should return false when not found")
+    void testDeleteByTitle_Branch2_NotFound() {
+        // Given
+        when(eventRepo.findByTitle("Delete Me")).thenReturn(List.of()); // Trả về list rỗng
+
+        // When
+        boolean result = eventService.deleteByTitle("Delete Me");
+
+        // Then
+        assertFalse(result);
+        verify(eventRepo, times(1)).findByTitle("Delete Me");
+        verify(eventRepo, never()).deleteAll(any(List.class));
+    }
+
+    // =======================================================
+    // TESTS CHO CÁC HÀM TÌM KIẾM (getFirst.../getEvent...)
+    // =======================================================
+
+    @Test
+    @DisplayName("Test getFirstEventByTitle - Branch 1: Found")
+    void testGetFirstEventByTitle_Branch1_Found() {
+        // Given
+        when(eventRepo.findByTitle("Test Event")).thenReturn(List.of(mockEvent, new Event()));
+
+        // When
+        Optional<Event> result = eventService.getFirstEventByTitle("Test Event");
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals(mockEvent, result.get()); // Đảm bảo trả về phần tử đầu tiên
+    }
+
+    @Test
+    @DisplayName("Test getFirstEventByTitle - Branch 2: Not Found (Empty list)")
+    void testGetFirstEventByTitle_Branch2_NotFound() {
+        // Given
+        when(eventRepo.findByTitle("Test Event")).thenReturn(List.of()); // Rỗng
+
+        // When
+        Optional<Event> result = eventService.getFirstEventByTitle("Test Event");
+
+        // Then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test getEventByEventId - Branch 1: ID is null")
+    void testGetEventByEventId_Branch1_NullId() {
+        // When
+        Optional<Event> result = eventService.getEventByEventId(null);
+
+        // Then
+        assertTrue(result.isEmpty());
+        verify(eventRepo, never()).findById(anyLong()); // Không được gọi repo
+    }
+
+    @Test
+    @DisplayName("Test getEventByEventId - Branch 2: ID is valid")
+    void testGetEventByEventId_Branch2_ValidId() {
+        // Given
+        when(eventRepo.findById(1L)).thenReturn(Optional.of(mockEvent));
+
+        // When
+        Optional<Event> result = eventService.getEventByEventId(1L);
+
+        // Then
+        assertTrue(result.isPresent());
+        verify(eventRepo, times(1)).findById(1L);
+    }
+
+    // =======================================================
+    // TEST BỔ SUNG CHO convertToDTO
+    // =======================================================
+
+    @Test
+    @DisplayName("Test convertToDTO - Branch: Organizer is Unknown (Host and Org are null)")
+    void testConvertToDTO_Branch_OrganizerUnknown() {
+        // Given
+        mockEvent.setOrganization(null);
+        mockEvent.setHost(null);
+
+        // When
+        EventCardDTO dto = eventService.convertToDTO(mockEvent);
+
+        // Then
+        assertEquals("Unknown", dto.getOrganizer());
+    }
+
+    // =======================================================
+    // TESTS CHO HÀM searchEvents
+    // =======================================================
+
+    @Test
+    @DisplayName("Test searchEvents - Branch: All parameters null (Chỉ gọi với nulls)")
+    void testSearchEvents_Branch_AllNull() {
+        // Given
+        when(eventRepo.searchEvents(null, null, null, null)).thenReturn(List.of(mockEvent));
+
+        // When
+        List<EventCardDTO> result = eventService.searchEvents(null, null, null, null);
+
+        // Then
+        verify(eventRepo, times(1)).searchEvents(null, null, null, null);
+        assertEquals(1, result.size()); // Đảm bảo convertToDTO được gọi
+    }
+
+    @Test
+    @DisplayName("Test searchEvents - Branch: Blank keyword (Phải convert sang null)")
+    void testSearchEvents_Branch_BlankKeyword() {
+        // Given
+        when(eventRepo.searchEvents(null, null, null, null)).thenReturn(List.of(mockEvent));
+
+        // When
+        // Keyword rỗng (" ") phải được coi là null
+        List<EventCardDTO> result = eventService.searchEvents("   ", null, null, null);
+
+        // Then
+        verify(eventRepo, times(1)).searchEvents(null, null, null, null);
+    }
+
+    @Test
+    @DisplayName("Test searchEvents - Branch: All parameters valid")
+    void testSearchEvents_Branch_AllParamsValid() {
+        // Given
+        String keyword = "Music Fest";
+        String typeStr = "MUSIC";
+        LocalDate startDate = LocalDate.of(2025, 1, 1);
+        LocalDate endDate = LocalDate.of(2025, 1, 31);
+
+        // Xác định đúng LocalDateTime sẽ được truyền vào Repo
+        LocalDateTime expectedStart = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        LocalDateTime expectedEnd = LocalDateTime.of(2025, 1, 31, 23, 59, 59);
+
+        when(eventRepo.searchEvents(keyword, EventType.MUSIC, expectedStart, expectedEnd))
+                .thenReturn(List.of(mockEvent));
+
+        // When
+        List<EventCardDTO> result = eventService.searchEvents(keyword, typeStr, startDate, endDate);
+
+        // Then
+        verify(eventRepo, times(1)).searchEvents(keyword, EventType.MUSIC, expectedStart, expectedEnd);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    @DisplayName("Test searchEvents - Branch: Invalid EventType (catch exception)")
+    void testSearchEvents_Branch_InvalidType() {
+        // Given
+        String keyword = "Test";
+        String invalidType = "INVALID_TYPE"; // Loại này không có trong Enum
+
+        // Repo sẽ được gọi với EventType là null vì exception
+        when(eventRepo.searchEvents(keyword, null, null, null)).thenReturn(List.of(mockEvent));
+
+        // When
+        List<EventCardDTO> result = eventService.searchEvents(keyword, invalidType, null, null);
+
+        // Then
+        // Quan trọng: Xác minh rằng nó vẫn gọi repo, nhưng với EventType là null
+        verify(eventRepo, times(1)).searchEvents(keyword, null, null, null);
+        assertEquals(1, result.size());
+        // (Bạn cũng có thể kiểm tra log "⚠️ Invalid event type: INVALID_TYPE" nếu setup log)
     }
 
 

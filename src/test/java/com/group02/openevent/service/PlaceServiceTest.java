@@ -132,4 +132,5 @@ public class PlaceServiceTest {
         inOrder.verify(placeRepo).findPlacesByEventId(eventId);
         inOrder.verify(placeRepo).findPlacesByEventIdNative(eventId);
     }
+
 }

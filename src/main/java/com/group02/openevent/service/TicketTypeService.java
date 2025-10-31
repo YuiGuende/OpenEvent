@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TicketTypeService {
-    TicketType createTicketType(TicketType ticketType);
     Optional<TicketType> getTicketTypeById(Long id);
     List<TicketType> getAllTicketTypes();
     void updateTickets(Long eventId, List<TicketUpdateRequest> tickets);

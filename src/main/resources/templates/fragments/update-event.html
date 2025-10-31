@@ -2,10 +2,10 @@
 <div th:fragment="content" xmlns:th="http://www.thymeleaf.org">
     <!-- Back Button -->
     <div class="mb-4">
-        <button class="btn btn-outline-secondary" onclick="showDefaultContent()">
+        <a th:href="@{'/manage/event/' + ${request.id} + '/getting-started'}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i>
             Quay lại trang chính
-        </button>
+        </a>
     </div>
     <form th:action="@{'/api/events/update/' + ${request.id}}"
           th:object="${request}"

@@ -35,10 +35,10 @@
             <p class="card-description">
                 Tạo vé cho sự kiện của bạn, đặt giá và quản lý số lượng có sẵn.
             </p>
-            <button class="btn btn-primary">
+            <a th:href="@{'/manage/event/' + ${eventId} + '/ticket'}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i>
                 Thêm vé
-            </button>
+            </a>
         </div>
     </div>
 
@@ -52,10 +52,10 @@
             <p class="card-description">
                 Thêm chi tiết sự kiện và quản lý cài đặt sự kiện.
             </p>
-            <button class="btn btn-outline-primary" id="setupEventBtn">
+            <a th:href="@{'/manage/event/' + ${eventId} + '/settings'}" class="btn btn-outline-primary" id="setupEventBtn">
                 <i class="bi bi-gear"></i>
                 Thiết lập sự kiện của bạn
-            </button>
+            </a>
         </div>
     </div>
 

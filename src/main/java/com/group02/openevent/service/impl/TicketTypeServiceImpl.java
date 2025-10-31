@@ -38,13 +38,6 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Autowired
     private IOrderRepo orderRepo;
 
-    @Override
-    public TicketType createTicketType(TicketType ticketType) {
-        if (ticketType.getSoldQuantity() == null) {
-            ticketType.setSoldQuantity(0);
-        }
-        return ticketTypeRepo.save(ticketType);
-    }
 
     @Override
     public Optional<TicketType> getTicketTypeById(Long id) {

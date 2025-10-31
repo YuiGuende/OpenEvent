@@ -99,6 +99,14 @@ public class Host {
         this.hostDiscountPercent = hostDiscountPercent;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     // Method to get host name from customer or organization
     public String getHostName() {
         if (customer != null && customer.getAccount() != null) {

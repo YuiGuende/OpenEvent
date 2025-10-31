@@ -624,6 +624,102 @@ public class EventControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // ===== Additional tests for remaining endpoints =====
+
+
+    @Test
+    void GET_EVENT_ShouldReturnEvent_WhenExists() throws Exception {
+        Event ev = new Event();
+        ev.setId(77L);
+        when(eventService.getEventById(77L)).thenReturn(Optional.of(ev));
+
+        mockMvc.perform(get("/api/events/{id}", 77))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(77));
+    }
+
+    @Test
+    void GET_EVENT_ShouldReturnEmpty_WhenNotFound() throws Exception {
+        when(eventService.getEventById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/events/{id}", 999))
+                .andExpect(status().isOk())
+                .andExpect(content().string("null"));
+    }
+
+    @Test
+    void GET_BY_TYPE_ShouldReturnList() throws Exception {
+        Event e1 = new Event(); e1.setId(1L);
+        Event e2 = new Event(); e2.setId(2L);
+        when(eventService.getEventsByType(com.group02.openevent.model.event.MusicEvent.class))
+                .thenReturn(java.util.Arrays.asList(e1, e2));
+
+        mockMvc.perform(get("/api/events/type/{type}", "music"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[1].id").value(2));
+    }
+
+    @Test
+    void UPLOAD_IMAGE_ShouldAttachImageAndReturnEvent() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("files", "a.jpg", "image/jpeg", "abc".getBytes());
+        Event ev = new Event(); ev.setId(5L); ev.setEventImages(new java.util.HashSet<>());
+        when(eventService.getEventById(5L)).thenReturn(Optional.of(ev));
+        when(imageService.saveImage(any())).thenReturn("http://url");
+        when(eventService.saveEvent(any(Event.class))).thenReturn(ev);
+
+        mockMvc.perform(multipart("/api/events/upload/multiple-images")
+                        .file(file)
+                        .param("orderIndexes", "0")
+                        .param("mainPosters", "true")
+                        .param("eventId", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5));
+    }
+
+    @Test
+    void UPLOAD_IMAGE_ShouldReturn404_WhenEventMissing() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("files", "a.jpg", "image/jpeg", "abc".getBytes());
+        when(eventService.getEventById(123L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(multipart("/api/events/upload/multiple-images")
+                        .file(file)
+                        .param("orderIndexes", "0")
+                        .param("mainPosters", "true")
+                        .param("eventId", "123"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void UPLOAD_IMAGES_BATCH_ShouldReturnOk() throws Exception {
+        MockMultipartFile file1 = new MockMultipartFile("files", "a.jpg", "image/jpeg", "abc".getBytes());
+        MockMultipartFile file2 = new MockMultipartFile("files", "b.jpg", "image/jpeg", "def".getBytes());
+        Event ev = new Event(); ev.setId(7L); ev.setEventImages(new java.util.HashSet<>());
+        when(eventService.getEventById(7L)).thenReturn(Optional.of(ev));
+        when(imageService.saveImage(any())).thenReturn("http://url");
+        when(eventService.saveEvent(any(Event.class))).thenReturn(ev);
+
+        mockMvc.perform(multipart("/api/events/upload/multiple-images")
+                        .file(file1)
+                        .file(file2)
+                        .param("orderIndexes", "0", "1")
+                        .param("mainPosters", "true", "false")
+                        .param("eventId", "7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7));
+    }
+
+    @Test
+    void UPLOAD_IMAGES_BATCH_ShouldReturn404_WhenEventMissing() throws Exception {
+        when(eventService.getEventById(404L)).thenReturn(Optional.empty());
+
+        String imagesJson = "[{'orderIndex':0,'mainPoster':true}]".replace('\'', '"');
+
+        mockMvc.perform(post("/api/events/upload/images-batch")
+                        .param("eventId", "404")
+                        .param("images", imagesJson))
+                .andExpect(status().isNotFound());
+    }
 
 
 

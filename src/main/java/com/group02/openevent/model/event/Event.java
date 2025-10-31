@@ -54,9 +54,6 @@ public class Event {
     )
     private Long id;
 
-    @Version
-    private Long version;
-
     private boolean poster;
 
     @ManyToOne

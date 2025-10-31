@@ -2,7 +2,6 @@ package com.group02.openevent.controller.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.group02.openevent.dto.request.update.EventUpdateRequest;
-import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.mapper.EventMapper;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.repository.ISpeakerRepo;
@@ -10,6 +9,8 @@ import com.group02.openevent.repository.IEventScheduleRepo;
 import com.group02.openevent.repository.IEventImageRepo;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.EventFormService;
+import com.group02.openevent.dto.form.EventFormDTO;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -40,6 +41,8 @@ public class EventManageController {
     ITicketTypeRepo ticketTypeRepo;
     @Autowired
     EventMapper eventMapper;
+    @Autowired
+    EventFormService eventFormService;
 
     //    @RequestMapping(value = "/manage/event/{eventId:\\d+}/{path:[^\\.]*}")
 //    public String forwardSpaRoutes() {
@@ -57,6 +60,7 @@ public class EventManageController {
         // 2. Đưa dữ liệu Event vào Model để toàn bộ trang có thể sử dụng
         // (ví dụ: hiển thị tên sự kiện ở header)
         model.addAttribute("event", event);
+        model.addAttribute("eventId", eventId);
 
         // 3. Chỉ định fragment mặc định cần tải cho lần đầu tiên
         model.addAttribute("content", "fragments/getting-started :: content");
@@ -163,6 +167,45 @@ public class EventManageController {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
         return "fragments/check-in :: content";
+    }
+
+    @GetMapping("/fragments/create-forms")
+    public String createForms(@RequestParam Long id, Model model) {
+        log.info("🔍 Loading create forms fragment for event ID: {}", id);
+        
+        Event event = eventService.getEventResponseById(id);
+        model.addAttribute("event", event);
+        model.addAttribute("eventId", id);
+        
+        // Load danh sách form đã tạo cho event này
+        List<EventFormDTO> forms = eventFormService.getAllFormsByEventId(id);
+        model.addAttribute("forms", forms);
+        log.info("📋 Loaded {} forms for event {}", forms.size(), id);
+        
+        log.info("✅ Create forms fragment loaded successfully for event: {}", event.getTitle());
+        return "fragments/create-forms :: content";
+    }
+
+    @GetMapping("/fragments/qr-codes")
+    public String qrCodes(@RequestParam Long id, Model model) {
+        log.info("🔍 Loading QR codes fragment for event ID: {}", id);
+        
+        Event event = eventService.getEventResponseById(id);
+        model.addAttribute("event", event);
+        model.addAttribute("eventId", id);
+        
+        // Get base URL from config or request
+        String baseUrl = "http://localhost:8080"; // TODO: Get from config
+        
+        // Create URLs for QR codes
+        String checkinUrl = baseUrl + "/events/" + id + "/qr-checkin";
+        String checkoutUrl = baseUrl + "/events/" + id + "/qr-checkout";
+        
+        model.addAttribute("checkinUrl", checkinUrl);
+        model.addAttribute("checkoutUrl", checkoutUrl);
+        
+        log.info("✅ QR codes fragment loaded successfully for event: {}", event.getTitle());
+        return "fragments/qr-codes :: content";
     }
 
     // Test endpoint để kiểm tra places

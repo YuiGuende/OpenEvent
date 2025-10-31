@@ -267,5 +267,78 @@ class PaymentControllerIntegrationTest {
                     .andExpect(jsonPath("$.message").value("Webhook endpoint is accessible"));
         }
     }
+
+    @Nested
+    @DisplayName("extractOrderIdFromDescription Tests")
+    class ExtractOrderIdFromDescriptionTests {
+        @Test
+        @DisplayName("TC-12: Handle webhook with valid description extracts order ID")
+        void handleWebhook_ValidDescription_ExtractsOrderId() throws Exception {
+            // Arrange - webhook body with description containing order ID
+            String webhookBody = """
+                {
+                    "code": "00",
+                    "desc": "Payment successful",
+                    "data": {
+                        "paymentLinkId": "12345",
+                        "orderCode": 123,
+                        "amount": 100000,
+                        "description": "CSUO5KESD48 Order 1"
+                    }
+                }
+                """;
+
+            // Act & Assert - this will test the extractOrderIdFromDescription method indirectly
+            mockMvc.perform(post("/api/payments/webhook")
+                            .contentType("application/json")
+                            .content(webhookBody))
+                    .andExpect(status().isOk());
+
+            // Verify that the service was called to find payment by order
+            verify(paymentService, atLeastOnce()).getPaymentByOrderId(1L);
+        }
+
+        @Test
+        @DisplayName("TC-13: Handle webhook with empty body returns success")
+        void handleWebhook_EmptyBody_ReturnsSuccess() throws Exception {
+            // Act & Assert
+            mockMvc.perform(post("/api/payments/webhook")
+                            .contentType("application/json")
+                            .content("{}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.error").value(0))
+                    .andExpect(jsonPath("$.message").value("ok"));
+        }
+
+        @Test
+        @DisplayName("TC-14: Handle webhook with null body returns success")
+        void handleWebhook_NullBody_ReturnsSuccess() throws Exception {
+            // Act & Assert
+            mockMvc.perform(post("/api/payments/webhook")
+                            .contentType("application/json"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.error").value(0))
+                    .andExpect(jsonPath("$.message").value("ok"));
+        }
+
+        @Test
+        @DisplayName("TC-15: Handle webhook without data returns success")
+        void handleWebhook_NoData_ReturnsSuccess() throws Exception {
+            // Arrange
+            String webhookBody = """
+                {
+                    "code": "00",
+                    "desc": "Payment successful"
+                }
+                """;
+
+            // Act & Assert
+            mockMvc.perform(post("/api/payments/webhook")
+                            .contentType("application/json")
+                            .content(webhookBody))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.error").value(0));
+        }
+    }
 }
 

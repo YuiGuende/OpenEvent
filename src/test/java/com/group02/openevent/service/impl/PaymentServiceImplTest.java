@@ -360,5 +360,134 @@ class PaymentServiceImplTest {
             verify(paymentRepo, never()).save(any());
         }
     }
+
+    @Nested
+    @DisplayName("getPaymentByOrderId Tests")
+    class GetPaymentByOrderIdTests {
+        @Test
+        @DisplayName("TC-16: Get payment by order ID successfully")
+        void getPaymentByOrderId_Success() {
+            // Arrange
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(order));
+            when(paymentRepo.findByOrder(order)).thenReturn(Optional.of(payment));
+
+            // Act
+            Optional<Payment> result = paymentService.getPaymentByOrderId(ORDER_ID);
+
+            // Assert
+            assertThat(result).isPresent();
+            assertThat(result.get()).isEqualTo(payment);
+            verify(orderRepo).findById(ORDER_ID);
+            verify(paymentRepo).findByOrder(order);
+        }
+
+        @Test
+        @DisplayName("TC-17: Get payment by order ID returns empty when order not found")
+        void getPaymentByOrderId_OrderNotFound() {
+            // Arrange
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.empty());
+
+            // Act
+            Optional<Payment> result = paymentService.getPaymentByOrderId(ORDER_ID);
+
+            // Assert
+            assertThat(result).isEmpty();
+            verify(orderRepo).findById(ORDER_ID);
+            verify(paymentRepo, never()).findByOrder(any());
+        }
+
+        @Test
+        @DisplayName("TC-18: Get payment by order ID returns empty when payment not found")
+        void getPaymentByOrderId_PaymentNotFound() {
+            // Arrange
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(order));
+            when(paymentRepo.findByOrder(order)).thenReturn(Optional.empty());
+
+            // Act
+            Optional<Payment> result = paymentService.getPaymentByOrderId(ORDER_ID);
+
+            // Assert
+            assertThat(result).isEmpty();
+            verify(orderRepo).findById(ORDER_ID);
+            verify(paymentRepo).findByOrder(order);
+        }
+    }
+
+    @Nested
+    @DisplayName("getPaymentByOrder Tests")
+    class GetPaymentByOrderTests {
+        @Test
+        @DisplayName("TC-19: Get payment by order successfully")
+        void getPaymentByOrder_Success() {
+            // Arrange
+            when(paymentRepo.findByOrder(order)).thenReturn(Optional.of(payment));
+
+            // Act
+            Optional<Payment> result = paymentService.getPaymentByOrder(order);
+
+            // Assert
+            assertThat(result).isPresent();
+            assertThat(result.get()).isEqualTo(payment);
+            verify(paymentRepo).findByOrder(order);
+        }
+
+        @Test
+        @DisplayName("TC-20: Get payment by order returns empty when not found")
+        void getPaymentByOrder_NotFound() {
+            // Arrange
+            when(paymentRepo.findByOrder(order)).thenReturn(Optional.empty());
+
+            // Act
+            Optional<Payment> result = paymentService.getPaymentByOrder(order);
+
+            // Assert
+            assertThat(result).isEmpty();
+            verify(paymentRepo).findByOrder(order);
+        }
+    }
+
+    @Nested
+    @DisplayName("handlePaymentWebhookFromPayOS Tests")
+    class HandlePaymentWebhookFromPayOSTests {
+        @Test
+        @DisplayName("TC-21: Handle payment webhook from PayOS returns failure when no data")
+        void handlePaymentWebhookFromPayOS_NoData_ReturnsFailure() {
+            // Arrange - webhook with no data
+            PayOSWebhookData webhookData = new PayOSWebhookData();
+            webhookData.setCode(0);
+            webhookData.setDesc("Payment successful");
+            webhookData.setData(null);
+
+            // Act
+            PaymentResult result = paymentService.handlePaymentWebhookFromPayOS(webhookData);
+
+            // Assert
+            assertThat(result).isNotNull();
+            assertThat(result.isSuccess()).isFalse();
+            assertThat(result.getMessage()).contains("Invalid webhook signature");
+        }
+
+        @Test
+        @DisplayName("TC-22: Handle payment webhook from PayOS returns failure when payment link ID missing")
+        void handlePaymentWebhookFromPayOS_MissingPaymentLinkId_ReturnsFailure() {
+            // Arrange - webhook with data but no payment link ID
+            PayOSWebhookData webhookData = new PayOSWebhookData();
+            webhookData.setCode(0);
+            webhookData.setDesc("Payment successful");
+            
+            PayOSWebhookData.Data data = new PayOSWebhookData.Data();
+            data.setPaymentLinkId(null);
+            data.setOrderCode(123L);
+            webhookData.setData(data);
+
+            // Act
+            PaymentResult result = paymentService.handlePaymentWebhookFromPayOS(webhookData);
+
+            // Assert
+            assertThat(result).isNotNull();
+            assertThat(result.isSuccess()).isFalse();
+            assertThat(result.getMessage()).contains("Missing payment link ID");
+        }
+    }
 }
 

@@ -1,7 +1,9 @@
 package com.group02.openevent.controller;
 
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.service.EventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +18,41 @@ import java.util.Optional;
 public class EventDetailController {
 
 	private final IEventRepo eventRepo;
+	private final EventService eventService;
 
-	public EventDetailController(IEventRepo eventRepo) {
+	public EventDetailController(IEventRepo eventRepo, EventService eventService) {
 		this.eventRepo = eventRepo;
+		this.eventService = eventService;
+	}
+
+	/**
+	 * Router chung: Nhận event ID và tự động route tới đúng controller dựa trên event type
+	 */
+	@GetMapping("/events/{eventId}")
+	public String routeEventById(@PathVariable Long eventId) {
+		Optional<Event> eventOpt = eventService.getEventById(eventId);
+		
+		if (eventOpt.isEmpty()) {
+			return "error/404";
+		}
+		
+		Event event = eventOpt.get();
+		EventType eventType = event.getEventType();
+		
+		// Forward tới đúng controller dựa trên event type (không redirect để giữ nguyên URL)
+		switch (eventType) {
+			case MUSIC:
+				return "forward:/music/" + eventId;
+			case COMPETITION:
+				return "forward:/competition/" + eventId;
+			case WORKSHOP:
+				return "forward:/workshop/" + eventId;
+			case FESTIVAL:
+				return "forward:/festival/" + eventId;
+			default:
+				// Fallback về generic event detail page
+				return "forward:/event/" + eventId;
+		}
 	}
 
 	@GetMapping("/event/{eventId}")

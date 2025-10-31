@@ -3095,18 +3095,18 @@
     <div class="hero-track" id="heroTrack">
 
         <div class="hero-slide"
-             th:with="imageUrl=${!#strings.isEmpty(eventDetail.bannerUrl) ? eventDetail.bannerUrl : '/music/assets/img/background/banner.jpg'}"
+             th:with="imageUrl=${eventDetail != null && !#strings.isEmpty(eventDetail.bannerUrl) ? eventDetail.bannerUrl : '/music/assets/img/background/banner.jpg'}"
              th:style="|background-image: url('${imageUrl}')|">
 
             <div class="container hero-content">
                 <div class="hero-actions text-right">
-                    <a class="btn btn-common" href="#pricing" th:if="${!#lists.isEmpty(eventDetail.ticketTypes)}">Get
+                    <a class="btn btn-common" href="#pricing" th:if="${eventDetail != null and !#lists.isEmpty(eventDetail.ticketTypes)}">Get
                         Ticket</a>
                 </div>
             </div>
         </div>
 
-        <th:block th:if="${eventDetail?.galleryUrls != null}">
+        <th:block th:if="${eventDetail != null and eventDetail.galleryUrls != null}">
             <div class="hero-slide"
                  th:each="url : ${eventDetail.galleryUrls}"
                  th:if="${url != null and url != ''}"
@@ -3120,6 +3120,47 @@
     <div class="hero-progress" id="heroProgress" style="display: none;"></div>
 </section>
 <!-- Banner Section End -->
+
+<!-- Success/Info/Warning Messages -->
+<div class="container" style="margin-top: 20px; margin-bottom: 20px;">
+    <!-- Success Message -->
+    <div th:if="${param.success != null}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <i class="bi bi-check-circle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Thành công!</strong>
+        <span th:if="${param.success[0] == 'checkin_success'}">Bạn đã check-in thành công!</span>
+        <span th:if="${param.success[0] == 'form_submitted'}">Form đã được gửi thành công!</span>
+        <span th:if="${param.success[0] == 'feedback_submitted'}">Phản hồi đã được gửi thành công!</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <!-- Info Message (Already checked in) -->
+    <div th:if="${param.info != null}" class="alert alert-info alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;">
+        <i class="bi bi-info-circle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Thông tin:</strong>
+        <span th:if="${param.info[0] == 'already_checked_in'}">
+            <span th:text="${param.message != null ? param.message[0] : 'Bạn đã check-in rồi. Form response đã được lưu.'}"></span>
+        </span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <!-- Warning Message -->
+    <div th:if="${param.warning != null}" class="alert alert-warning alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Cảnh báo:</strong>
+        <span th:if="${param.warning[0] == 'checkin_failed'}">
+            <span th:text="${param.message != null ? param.message[0] : 'Check-in không thành công.'}"></span>
+        </span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <!-- Error Message -->
+    <div th:if="${param.error != null}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <i class="bi bi-x-circle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        <strong>Lỗi:</strong>
+        <span th:text="${param.message != null ? param.message[0] : 'Đã xảy ra lỗi.'}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
 
 <!-- Countdown Section Start -->
 <section class="countdown-timer section-padding-compact"
@@ -3356,16 +3397,27 @@
             <div class="col-12">
                 <div class="section-title-header text-center">
                     <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s"
-                        th:text="${eventDetail.title}">Event Title</h1>
+                        th:text="${eventDetail != null ? eventDetail.title : 'Music Event'}">Event Title</h1>
                     <p class="wow fadeInDown" data-wow-delay="0.2s">
-                        <span th:if="${eventDetail.musicType != null}"
+                        <span th:if="${eventDetail != null and eventDetail.musicType != null}"
                               th:text="'Type: ' + ${eventDetail.musicType}"></span>
-                        <span th:if="${eventDetail.genre != null}" th:text="' | Genre: ' + ${eventDetail.genre}"></span>
+                        <span th:if="${eventDetail != null and eventDetail.genre != null}" th:text="' | Genre: ' + ${eventDetail.genre}"></span>
                     </p>
                 </div>
             </div>
         </div>
-        <div class="row">
+        
+        <!-- Error Message -->
+        <div th:if="${error != null}" class="row">
+            <div class="col-12">
+                <div class="alert alert-danger text-center">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span th:text="${error}">Error message</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row" th:if="${eventDetail != null}">
             <div class="col-12">
                 <div class="event-description-box wow fadeInUp" data-wow-delay="0.3s">
                     <!-- Title moved inside the cyan box for better aesthetics -->
@@ -3455,10 +3507,10 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.3s">
                     <div class="icon"><i class="lni-map"></i></div>
-                    <p th:text="${eventDetail.places != null and !eventDetail.places.isEmpty()
+                    <p th:text="${eventDetail != null and eventDetail.places != null and !eventDetail.places.isEmpty()
                         ? eventDetail.places[0].placeName
                         : 'Venue'}">Venue</p>
-                    <span th:text="${eventDetail.places != null and !eventDetail.places.isEmpty()
+                    <span th:text="${eventDetail != null and eventDetail.places != null and !eventDetail.places.isEmpty()
                         ? eventDetail.places[0].building
                         : 'Building'}">Building</span>
                 </div>
@@ -3468,10 +3520,10 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.6s">
                     <div class="icon"><i class="lni-timer"></i></div>
-                    <p th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null
+                    <p th:text="${eventDetail != null and eventDetail.startsAt != null and eventDetail.endsAt != null
                         ? #temporals.format(eventDetail.startsAt, 'dd/MM/yyyy') + ' - ' + #temporals.format(eventDetail.endsAt, 'dd/MM/yyyy')
                         : 'Date TBA'}">Date</p>
-                    <span th:text="${eventDetail.startsAt != null and eventDetail.endsAt != null
+                    <span th:text="${eventDetail != null and eventDetail.startsAt != null and eventDetail.endsAt != null
                         ? #temporals.format(eventDetail.startsAt, 'HH:mm') + ' – ' + #temporals.format(eventDetail.endsAt, 'HH:mm')
                         : 'Time TBA'}">Time</span>
                 </div>
@@ -3481,7 +3533,7 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="0.9s">
                     <div class="icon"><i class="lni-users"></i></div>
-                    <p th:text="${eventDetail.capacity != null
+                    <p th:text="${eventDetail != null and eventDetail.capacity != null
                         ? eventDetail.capacity + ' Seats'
                         : 'Limited Seats'}">Capacity</p>
                     <span>Book early to secure your spot</span>
@@ -3492,7 +3544,7 @@
             <div class="col-md-6 col-lg-3 col-xs-12 work-counter-widget text-center">
                 <div class="counter wow fadeInRight" data-wow-delay="1.2s">
                     <div class="icon"><i class="lni-coffee-cup"></i></div>
-                    <p th:text="${eventDetail.benefits != null
+                    <p th:text="${eventDetail != null and eventDetail.benefits != null
                         ? eventDetail.benefits
                         : 'Great Benefits'}">Benefits</p>
                     <span>Don't miss out</span>
@@ -3959,7 +4011,7 @@
             <div class="col-md-6 col-lg-6 col-xs-12 wow fadeInLeft" data-wow-delay="0.3s">
                 <p class="intro-desc">
                     Join us at
-                    <span th:text="${eventDetail.venueAddress != null ? eventDetail.venueAddress : 'the venue'}">the venue</span>
+                    <span th:text="${eventDetail != null and eventDetail.venueAddress != null ? eventDetail.venueAddress : 'the venue'}">the venue</span>
                     for an unforgettable experience!
                 </p>
 
@@ -4036,7 +4088,7 @@
                 <div class="organizer-display-box wow fadeInUp" data-wow-delay="0.3s">
                     <div class="organizer-content">
                         <!-- Organization Header -->
-                        <div class="organizer-header-section">
+                        <div class="organizer-header-section" th:if="${eventDetail != null and eventDetail.organization != null}">
                             <div class="organizer-logo" th:if="${eventDetail.organization.imageUrl != null}">
                                 <img th:src="${eventDetail.organization.imageUrl}" alt="Organizer Logo">
                             </div>
@@ -4050,7 +4102,7 @@
                         </div>
 
                         <!-- Contact Details -->
-                        <div class="organizer-contact-section">
+                        <div class="organizer-contact-section" th:if="${eventDetail != null and eventDetail.organization != null}">
                             <h3>Contact Information</h3>
                             <div class="contact-items">
                                 <div class="contact-item" th:if="${eventDetail.organization.website != null}">

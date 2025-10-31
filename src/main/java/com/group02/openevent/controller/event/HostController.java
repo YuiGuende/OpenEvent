@@ -57,16 +57,18 @@ public class HostController {
 
     @GetMapping("/fragment/dashboard")
     public String dashboard(Model model, HttpSession session) {
-        Long id = getHostAccountId(session);
+        Long id = Long.parseLong("2");
         List<Event> eventResponses = eventService.getEventByHostId(id);
         model.addAttribute("events", eventResponses);
         log.info("Events: " + eventResponses);
+        log.info("Host account ID: " + getHostAccountId(session));
         return "fragments/dashboard :: content";
     }
 
     @GetMapping("/fragment/events")
     public String events(Model model, HttpSession session) {
-        Long id = getHostAccountId(session);
+        log.info("Host account ID: " + getHostAccountId(session));
+        Long id = Long.parseLong("2");
         EventCreationRequest request = new EventCreationRequest();
         model.addAttribute("eventForm", request);
         List<Event> eventResponses = eventService.getEventByHostId(id);

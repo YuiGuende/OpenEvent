@@ -168,7 +168,7 @@ public class MusicServiceImpl implements IMusicService {
 
                     return dto;
                 })
-                .orElseThrow(() -> new RuntimeException("Competition Event not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Music Event not found with id: " + id));
     }
 
 

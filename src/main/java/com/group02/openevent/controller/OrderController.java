@@ -4,9 +4,9 @@ import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.account.Account;
 import com.group02.openevent.repository.ICustomerRepo;
-import com.group02.openevent.repository.IEventRepo;
-import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.VoucherService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,11 +27,13 @@ public class OrderController {
 
     private final OrderService orderService;
     private final ICustomerRepo customerRepo;
+    private final IAccountRepo accountRepo;
     private final VoucherService voucherService;
 
-    public OrderController(OrderService orderService, ICustomerRepo customerRepo, VoucherService voucherService) {
+    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, VoucherService voucherService) {
         this.orderService = orderService;
         this.customerRepo = customerRepo;
+        this.accountRepo = accountRepo;
         this.voucherService = voucherService;
     }
 
@@ -74,7 +76,15 @@ public class OrderController {
 
             Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
             if (customer == null) {
-                return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
+                // Tự động tạo Customer nếu chưa có
+                Account account = accountRepo.findById(accountId)
+                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
+                
+                customer = new Customer();
+                customer.setAccount(account);
+                customer.setEmail(account.getEmail());
+                customer.setPoints(0);
+                customer = customerRepo.save(customer);
             }
 
             // Check if customer already registered (paid) for this event
@@ -134,7 +144,15 @@ public class OrderController {
 
         Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
         if (customer == null) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
+            // Tự động tạo Customer nếu chưa có
+            Account account = accountRepo.findById(accountId)
+                    .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
+            
+            customer = new Customer();
+            customer.setAccount(account);
+            customer.setEmail(account.getEmail());
+            customer.setPoints(0);
+            customer = customerRepo.save(customer);
         }
 
         List<Order> orders = orderService.getOrdersByCustomer(customer);
@@ -155,7 +173,15 @@ public class OrderController {
 
             Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
             if (customer == null) {
-                return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
+                // Tự động tạo Customer nếu chưa có
+                Account account = accountRepo.findById(accountId)
+                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
+                
+                customer = new Customer();
+                customer.setAccount(account);
+                customer.setEmail(account.getEmail());
+                customer.setPoints(0);
+                customer = customerRepo.save(customer);
             }
 
             boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);

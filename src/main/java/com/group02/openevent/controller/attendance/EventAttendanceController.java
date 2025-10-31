@@ -18,8 +18,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -84,16 +82,13 @@ public class EventAttendanceController {
     /**
      * Form check-in
      * URL: /events/{eventId}/checkin-form
+     * Note: Spring Security tự động yêu cầu authentication cho endpoint này
      */
     @GetMapping("/{eventId}/checkin-form")
     public String showCheckinForm(@PathVariable Long eventId, Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAnonymous = (authentication == null) || !authentication.isAuthenticated() ||
-                (authentication.getPrincipal() != null && "anonymousUser".equals(authentication.getPrincipal()));
-        if (isAnonymous) {
-            String redirectUrl = "/events/" + eventId + "/checkin-form";
-            return "redirect:/login?redirect=" + java.net.URLEncoder.encode(redirectUrl, java.nio.charset.StandardCharsets.UTF_8);
-        }
+        // Spring Security đã tự động kiểm tra authentication
+        // Nếu chưa đăng nhập, user sẽ được redirect tới /login và sau đó quay lại đây
+        
         Event event = eventService.getEventById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
         
@@ -106,29 +101,45 @@ public class EventAttendanceController {
     /**
      * QR Code Check-in redirect to login
      * URL: /events/{eventId}/qr-checkin
+     * Redirects to check-in form (EventForm with type CHECKIN)
      */
     @GetMapping("/{eventId}/qr-checkin")
     public String qrCheckinRedirect(@PathVariable Long eventId, Model model) {
         Event event = eventService.getEventById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
         
-        return "redirect:/login?checkin=true&eventId=" + eventId + "&eventTitle=" + 
+        // Redirect to check-in form (EventForm)
+        String checkinFormUrl = "/forms/checkin/" + eventId;
+        String redirectUrl = "redirect:/login?checkin=true&eventId=" + eventId + "&eventTitle=" + 
                java.net.URLEncoder.encode(event.getTitle(), java.nio.charset.StandardCharsets.UTF_8) +
-               "&action=checkin&redirectUrl=" + java.net.URLEncoder.encode("/forms/checkin/" + eventId, java.nio.charset.StandardCharsets.UTF_8);
+               "&action=checkin&redirectUrl=" + java.net.URLEncoder.encode(checkinFormUrl, java.nio.charset.StandardCharsets.UTF_8);
+        
+        log.info("QR Check-in for event {} - Redirecting to: {}", eventId, redirectUrl);
+        log.info("Target checkin form URL: {}", checkinFormUrl);
+        
+        return redirectUrl;
     }
     
     /**
      * QR Code Check-out redirect to login
      * URL: /events/{eventId}/qr-checkout
+     * Redirects to feedback form (EventForm with type FEEDBACK)
      */
     @GetMapping("/{eventId}/qr-checkout")
     public String qrCheckoutRedirect(@PathVariable Long eventId, Model model) {
         Event event = eventService.getEventById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
         
-        return "redirect:/login?checkin=true&eventId=" + eventId + "&eventTitle=" + 
+        // Redirect to feedback form (EventForm)
+        String feedbackFormUrl = "/forms/feedback/" + eventId;
+        String redirectUrl = "redirect:/login?checkin=true&eventId=" + eventId + "&eventTitle=" + 
                java.net.URLEncoder.encode(event.getTitle(), java.nio.charset.StandardCharsets.UTF_8) +
-               "&action=checkout&redirectUrl=" + java.net.URLEncoder.encode("/forms/feedback/" + eventId, java.nio.charset.StandardCharsets.UTF_8);
+               "&action=checkout&redirectUrl=" + java.net.URLEncoder.encode(feedbackFormUrl, java.nio.charset.StandardCharsets.UTF_8);
+        
+        log.info("QR Check-out for event {} - Redirecting to: {}", eventId, redirectUrl);
+        log.info("Target feedback form URL: {}", feedbackFormUrl);
+        
+        return redirectUrl;
     }
     
     /**

@@ -1,6 +1,7 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.order.CreateOrderRequest;
+import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
@@ -539,6 +540,172 @@ class OrderServiceImplTest {
             assertThat(result).hasSize(1);
             assertThat(result.get(0)).isEqualTo(event);
             verify(orderRepo).findEventsByCustomerId(CUSTOMER_ID);
+        }
+    }
+
+    @Nested
+    @DisplayName("createOrderWithTicketTypes Tests")
+    class CreateOrderWithTicketTypesTests {
+        private CreateOrderWithTicketTypeRequest request;
+        private TicketType ticketType;
+
+        @BeforeEach
+        void setUp() {
+            ticketType = new TicketType();
+            ticketType.setTicketTypeId(1L);
+            ticketType.setName("VIP");
+            ticketType.setPrice(BigDecimal.valueOf(100000));
+            ticketType.setTotalQuantity(10);
+            ticketType.setSoldQuantity(0);
+
+            request = new CreateOrderWithTicketTypeRequest();
+            request.setEventId(EVENT_ID);
+            request.setTicketTypeId(1L);
+            request.setParticipantName("John Doe");
+            request.setParticipantEmail("john@example.com");
+            request.setParticipantPhone("0123456789");
+            request.setParticipantOrganization("Org");
+            request.setNotes("Test notes");
+        }
+
+        @Test
+        @DisplayName("TC-26: Create order with ticket types successfully")
+        void createOrderWithTicketTypes_Success() {
+            // Arrange
+            when(eventRepo.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(ticketTypeRepo.findById(1L)).thenReturn(Optional.of(ticketType));
+            when(ticketTypeService.canPurchaseTickets(1L, 1)).thenReturn(true);
+            when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
+                Order savedOrder = invocation.getArgument(0);
+                savedOrder.setOrderId(ORDER_ID);
+                return savedOrder;
+            });
+
+            // Act
+            Order result = orderService.createOrderWithTicketTypes(request, customer);
+
+            // Assert
+            assertThat(result).isNotNull();
+            assertThat(result.getOrderId()).isEqualTo(ORDER_ID);
+            assertThat(result.getCustomer()).isEqualTo(customer);
+            assertThat(result.getEvent()).isEqualTo(event);
+            assertThat(result.getTicketType()).isEqualTo(ticketType);
+            assertThat(result.getStatus()).isEqualTo(OrderStatus.PENDING);
+            verify(eventRepo).findById(EVENT_ID);
+            verify(ticketTypeRepo).findById(1L);
+            verify(ticketTypeService).canPurchaseTickets(1L, 1);
+            verify(ticketTypeService).reserveTickets(1L);
+            verify(orderRepo, atLeast(1)).save(any(Order.class));
+        }
+
+        @Test
+        @DisplayName("TC-27: Create order with ticket types fails when event not found")
+        void createOrderWithTicketTypes_EventNotFound() {
+            // Arrange
+            when(eventRepo.findById(EVENT_ID)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> orderService.createOrderWithTicketTypes(request, customer))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Event not found");
+            verify(eventRepo).findById(EVENT_ID);
+            verify(ticketTypeRepo, never()).findById(any());
+            verify(orderRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("TC-28: Create order with ticket types fails when ticket type ID is null")
+        void createOrderWithTicketTypes_TicketTypeIdNull() {
+            // Arrange
+            request.setTicketTypeId(null);
+            when(eventRepo.findById(EVENT_ID)).thenReturn(Optional.of(event));
+
+            // Act & Assert
+            assertThatThrownBy(() -> orderService.createOrderWithTicketTypes(request, customer))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("At least one ticket type must be specified");
+            verify(eventRepo).findById(EVENT_ID);
+            verify(ticketTypeRepo, never()).findById(any());
+        }
+
+        @Test
+        @DisplayName("TC-29: Create order with ticket types fails when ticket type not found")
+        void createOrderWithTicketTypes_TicketTypeNotFound() {
+            // Arrange
+            when(eventRepo.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(ticketTypeRepo.findById(1L)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> orderService.createOrderWithTicketTypes(request, customer))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Ticket type not found");
+            verify(eventRepo).findById(EVENT_ID);
+            verify(ticketTypeRepo).findById(1L);
+            verify(orderRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("TC-30: Create order with ticket types fails when cannot purchase")
+        void createOrderWithTicketTypes_CannotPurchase() {
+            // Arrange
+            when(eventRepo.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(ticketTypeRepo.findById(1L)).thenReturn(Optional.of(ticketType));
+            when(ticketTypeService.canPurchaseTickets(1L, 1)).thenReturn(false);
+
+            // Act & Assert
+            assertThatThrownBy(() -> orderService.createOrderWithTicketTypes(request, customer))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Cannot purchase ticket");
+            verify(ticketTypeService).canPurchaseTickets(1L, 1);
+            verify(ticketTypeService, never()).reserveTickets(any());
+            verify(orderRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("TC-31: Create order with ticket types and voucher successfully")
+        void createOrderWithTicketTypes_WithVoucher_Success() {
+            // Arrange
+            request.setVoucherCode("DISCOUNT10");
+            when(eventRepo.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(ticketTypeRepo.findById(1L)).thenReturn(Optional.of(ticketType));
+            when(ticketTypeService.canPurchaseTickets(1L, 1)).thenReturn(true);
+            when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
+                Order savedOrder = invocation.getArgument(0);
+                savedOrder.setOrderId(ORDER_ID);
+                return savedOrder;
+            });
+
+            // Act
+            Order result = orderService.createOrderWithTicketTypes(request, customer);
+
+            // Assert
+            assertThat(result).isNotNull();
+            verify(voucherService).applyVoucherToOrder("DISCOUNT10", result);
+            verify(orderRepo, atLeast(2)).save(any(Order.class)); // Save twice: once initial, once after voucher
+        }
+
+        @Test
+        @DisplayName("TC-32: Create order with ticket types continues when voucher fails")
+        void createOrderWithTicketTypes_VoucherFails_ContinuesWithoutVoucher() {
+            // Arrange
+            request.setVoucherCode("INVALID");
+            when(eventRepo.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(ticketTypeRepo.findById(1L)).thenReturn(Optional.of(ticketType));
+            when(ticketTypeService.canPurchaseTickets(1L, 1)).thenReturn(true);
+            when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
+                Order savedOrder = invocation.getArgument(0);
+                savedOrder.setOrderId(ORDER_ID);
+                return savedOrder;
+            });
+            doThrow(new RuntimeException("Invalid voucher")).when(voucherService).applyVoucherToOrder(any(), any());
+
+            // Act
+            Order result = orderService.createOrderWithTicketTypes(request, customer);
+
+            // Assert - order should still be created despite voucher failure
+            assertThat(result).isNotNull();
+            assertThat(result.getOrderId()).isEqualTo(ORDER_ID);
+            verify(voucherService).applyVoucherToOrder("INVALID", result);
         }
     }
 }

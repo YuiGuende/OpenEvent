@@ -45,6 +45,9 @@ public class EventCreationRequest {
     @Enumerated(EnumType.STRING)
     EventStatus status = EventStatus.DRAFT;
 
+    Long hostId;
+    Long organizationId;
+
 
 
 }

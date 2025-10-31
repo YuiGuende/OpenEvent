@@ -36,7 +36,7 @@ public class Order {
     @JsonIgnoreProperties({"event", "orders"})
     private TicketType ticketType;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = OrderStatusConverter.class)
     @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 

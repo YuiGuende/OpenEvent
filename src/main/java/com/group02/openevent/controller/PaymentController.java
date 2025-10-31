@@ -187,53 +187,6 @@ public class PaymentController {
     }
 
     /**
-     * Test webhook với data giả để kiểm tra logic
-     */
-    @PostMapping("/webhook/test-data")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> testWebhookWithData(@RequestBody Map<String, Object> testData) {
-        System.out.println("=== TEST WEBHOOK WITH DATA ===");
-        System.out.println("Test data: " + testData);
-        
-        try {
-            // Tạo PayOSWebhookData giả để test
-            PayOSWebhookData webhookData = new PayOSWebhookData();
-            webhookData.setCode(0);
-            webhookData.setDesc("Test webhook");
-            
-            PayOSWebhookData.Data data = new PayOSWebhookData.Data();
-            data.setOrderCode(12345L);
-            data.setAmount(100000);
-            data.setDescription("Test payment");
-            data.setPaymentLinkId(999L);
-            data.setCode("00");
-            data.setDesc("Test webhook");
-            
-            webhookData.setData(data);
-            
-            // Test webhook processing
-            PaymentResult result = paymentService.handlePaymentWebhookFromPayOS(webhookData);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Test webhook processed");
-            response.put("result", result.isSuccess());
-            response.put("resultMessage", result.getMessage());
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            System.out.println("Test webhook error: " + e.getMessage());
-            e.printStackTrace();
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Test webhook failed: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-    /**
      * Helper method to extract order ID from description
      * Description format: "CSUO5KESD48 Order 17"
      */

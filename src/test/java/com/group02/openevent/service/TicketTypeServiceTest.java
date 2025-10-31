@@ -18,11 +18,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 
-import java.awt.print.Pageable;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -335,5 +333,180 @@ public class TicketTypeServiceTest {
         assertEquals(100L, dto.getTicketTypeId());
         assertEquals("Standard Ticket", dto.getName());
         assertTrue(dto.isAvailable());
+    }
+    @Test
+    @DisplayName("Test convertToDTO - Branch: 'saleNotStarted' is true")
+    void testConvertToDTO_Branch_SaleNotStarted() {
+        // Given
+        // Cài đặt ngày bán vé trong tương lai
+        mockTicketType.setStartSaleDate(LocalDateTime.now().plusDays(5));
+
+        // When
+        TicketTypeDTO dto = ticketTypeService.convertToDTO(mockTicketType);
+
+        // Then
+        // Xác minh nhánh 'if (saleNotStarted)' đã chạy
+        assertTrue(dto.isSaleNotStarted());
+        assertNotNull(dto.getSaleStartCountdownText());
+        assertFalse(dto.isAvailable()); // Chưa có sẵn vì chưa tới ngày bán
+
+        // Xác minh nội dung countdown text (ví dụ: "5 days")
+        assertTrue(dto.getSaleStartCountdownText().contains("5 days") || dto.getSaleStartCountdownText().contains("4 days"));
+    }
+
+    @Test
+    @DisplayName("Test convertToDTO - Branch: 'getSale()' is null")
+    void testConvertToDTO_Branch_SaleIsNull() {
+        // Given
+        mockTicketType.setSale(null); // Set sale là null
+        mockTicketType.setPrice(new BigDecimal("100.00"));
+
+        // When
+        TicketTypeDTO dto = ticketTypeService.convertToDTO(mockTicketType);
+
+        // Then
+        // Xác minh logic (ticketType.getSale() != null ? ticketType.getSale() : BigDecimal.ZERO)
+        assertEquals(BigDecimal.ZERO, dto.getSale());
+        // Giá cuối cùng bằng giá gốc vì không giảm giá
+        assertEquals(new BigDecimal("100.00"), dto.getFinalPrice());
+    }
+
+    @Test
+    @DisplayName("Test convertToDTO - Branch: 'catch (Exception e)'")
+    void testConvertToDTO_Branch_CatchesException() {
+        // Given
+        // Gây ra NullPointerException bằng cách set event là null
+        mockTicketType.setEvent(null);
+
+        // When & Then
+        // Xác minh rằng phương thức đã ném ra lỗi (thay vì trả về null)
+        assertThrows(Exception.class, () -> {
+            ticketTypeService.convertToDTO(mockTicketType);
+        });
+
+        // (Trong console, bạn cũng sẽ thấy "Error converting TicketType to DTO...")
+    }
+
+    @Test
+    @DisplayName("Test convertToDTO - Branch: 'isSoldOut' is true")
+    void testConvertToDTO_Branch_IsSoldOut() {
+        // Given
+        mockTicketType.setTotalQuantity(100);
+        mockTicketType.setSoldQuantity(100); // Đã bán hết
+
+        // When
+        TicketTypeDTO dto = ticketTypeService.convertToDTO(mockTicketType);
+
+        // Then
+        // Xác minh các boolean liên quan
+        assertTrue(dto.isSoldOut());
+        assertFalse(dto.isAvailable());
+        assertEquals(0, dto.getAvailableQuantity());
+    }
+
+    @Test
+    @DisplayName("Test convertToDTO - Branch: 'saleOverdue' is true")
+    void testConvertToDTO_Branch_SaleOverdue() {
+        // Given
+        mockTicketType.setEndSaleDate(LocalDateTime.now().minusDays(1L)); // Đã hết hạn bán
+
+        // When
+        TicketTypeDTO dto = ticketTypeService.convertToDTO(mockTicketType);
+
+        // Then
+        assertTrue(dto.isSaleOverdue());
+        assertFalse(dto.isAvailable());
+    }
+    @Test
+    @DisplayName("Test reserveTickets - Success (Logic ngầm 1 vé)")
+    void testReserveTickets_Success() {
+        // Given
+        // 1. Tạo một MOCK TicketType, KHÔNG dùng "mockTicketType" từ setUp
+        TicketType ticketToReturn = mock(TicketType.class);
+
+        // 2. Giả lập repository trả về MOCK này
+        when(ticketTypeRepo.findById(100L)).thenReturn(Optional.of(ticketToReturn));
+
+        // 3. Giờ bạn có thể dùng when() trên MOCK này (SỬA LỖI)
+        when(ticketToReturn.canPurchase()).thenReturn(true);
+
+        // When
+        ticketTypeService.reserveTickets(100L);
+
+        // Then
+        // Xác minh rằng các phương thức trên MOCK đã được gọi
+        verify(ticketToReturn, times(1)).increaseSoldQuantity();
+        verify(ticketTypeRepo, times(1)).save(ticketToReturn);
+    }
+
+    @Test
+    @DisplayName("Test reserveTickets - Throws IllegalStateException when cannot purchase")
+    void testReserveTickets_ThrowsException() {
+        // Given
+        // 1. Tạo một MOCK TicketType, KHÔNG dùng "mockTicketType" từ setUp
+        TicketType ticketToReturn = mock(TicketType.class);
+
+        // 2. Giả lập repository trả về MOCK này
+        when(ticketTypeRepo.findById(100L)).thenReturn(Optional.of(ticketToReturn));
+
+        // 3. Giờ bạn có thể dùng when() trên MOCK này (SỬA LỖI)
+        when(ticketToReturn.canPurchase()).thenReturn(false); // canPurchase() trả về false
+
+        // When & Then
+        assertThrows(IllegalStateException.class, () -> {
+            ticketTypeService.reserveTickets(100L);
+        });
+
+        // Đảm bảo nó không lưu lại gì cả
+        verify(ticketTypeRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Test getTicketTypesPageable - (Sửa lỗi import)")
+    void testGetTicketTypesPageable() {
+        // Given
+        // Dùng import đúng của Spring
+        Pageable pageable =  PageRequest.of(0, 5);
+        Page<TicketType> mockPage = new PageImpl<>(List.of(mockTicketType), pageable, 1);
+
+        when(ticketTypeRepo.findAll( pageable)).thenReturn(mockPage);
+
+        // When
+        Page<TicketType> result = ticketTypeService.getTicketTypesPageable(pageable);
+
+        // Then
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Standard Ticket", result.getContent().get(0).getName());
+        verify(ticketTypeRepo, times(1)).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("Test getAllTicketTypes - (Hàm bị thiếu)")
+    void testGetAllTicketTypes() {
+        // Given
+        when(ticketTypeRepo.findAll()).thenReturn(List.of(mockTicketType));
+
+        // When
+        List<TicketType> result = ticketTypeService.getAllTicketTypes();
+
+        // Then
+        assertEquals(1, result.size());
+        verify(ticketTypeRepo, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Test getAvailableTicketTypeDTOsByEventId - (Hàm bị thiếu)")
+    void testGetAvailableTicketTypeDTOsByEventId() {
+        // Given
+        when(ticketTypeRepo.findAvailableByEventIdIgnoreTime(1L)).thenReturn(List.of(mockTicketType));
+
+        // When
+        List<TicketTypeDTO> result = ticketTypeService.getAvailableTicketTypeDTOsByEventId(1L);
+
+        // Then
+        assertEquals(1, result.size());
+        // Test này cũng tự động test convertToDTO
+        assertEquals("Standard Ticket", result.get(0).getName());
+        verify(ticketTypeRepo, times(1)).findAvailableByEventIdIgnoreTime(1L);
     }
 }

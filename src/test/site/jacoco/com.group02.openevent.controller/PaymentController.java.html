@@ -46,7 +46,7 @@ public class PaymentController {
 <span class="fc" id="L46">        System.out.println(&quot;Webhook body: &quot; + webhookBody);</span>
         
         // Handle PayOS test webhook (empty or minimal body)
-<span class="pc bpc" id="L49" title="1 of 4 branches missed.">        if (webhookBody == null || webhookBody.isEmpty()) {</span>
+<span class="fc bfc" id="L49" title="All 4 branches covered.">        if (webhookBody == null || webhookBody.isEmpty()) {</span>
 <span class="fc" id="L50">            System.out.println(&quot;Empty webhook body - PayOS test request&quot;);</span>
 <span class="fc" id="L51">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
 <span class="fc" id="L52">            response.put(&quot;error&quot;, 0);</span>
@@ -179,11 +179,11 @@ public class PaymentController {
     @GetMapping(&quot;/webhook/test&quot;)
     @ResponseBody
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; testWebhook() {
-<span class="nc" id="L182">        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
-<span class="nc" id="L183">        response.put(&quot;success&quot;, true);</span>
-<span class="nc" id="L184">        response.put(&quot;message&quot;, &quot;Webhook endpoint is accessible&quot;);</span>
-<span class="nc" id="L185">        response.put(&quot;timestamp&quot;, System.currentTimeMillis());</span>
-<span class="nc" id="L186">        return ResponseEntity.ok(response);</span>
+<span class="fc" id="L182">        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L183">        response.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L184">        response.put(&quot;message&quot;, &quot;Webhook endpoint is accessible&quot;);</span>
+<span class="fc" id="L185">        response.put(&quot;timestamp&quot;, System.currentTimeMillis());</span>
+<span class="fc" id="L186">        return ResponseEntity.ok(response);</span>
     }
 
     /**
@@ -258,21 +258,21 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getPaymentHistory(HttpServletRequest request) {
         try {
-<span class="nc" id="L261">            Long accountId = (Long) request.getAttribute(&quot;currentUserId&quot;);</span>
-<span class="nc bnc" id="L262" title="All 2 branches missed.">            if (accountId == null) {</span>
-<span class="nc" id="L263">                return ResponseEntity.badRequest().body(Map.of(</span>
-<span class="nc" id="L264">                    &quot;success&quot;, false,</span>
+<span class="fc" id="L261">            Long accountId = (Long) request.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">            if (accountId == null) {</span>
+<span class="fc" id="L263">                return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="fc" id="L264">                    &quot;success&quot;, false,</span>
                     &quot;message&quot;, &quot;User not logged in&quot;
                 ));
             }
 
-<span class="nc" id="L269">            var payments = paymentService.getPaymentsByCustomerId(accountId);</span>
+<span class="fc" id="L269">            var payments = paymentService.getPaymentsByCustomerId(accountId);</span>
             
-<span class="nc" id="L271">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
-<span class="nc" id="L272">            response.put(&quot;success&quot;, true);</span>
-<span class="nc" id="L273">            response.put(&quot;payments&quot;, payments);</span>
+<span class="fc" id="L271">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L272">            response.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L273">            response.put(&quot;payments&quot;, payments);</span>
 
-<span class="nc" id="L275">            return ResponseEntity.ok(response);</span>
+<span class="fc" id="L275">            return ResponseEntity.ok(response);</span>
 
 <span class="nc" id="L277">        } catch (Exception e) {</span>
 <span class="nc" id="L278">            return ResponseEntity.badRequest().body(Map.of(</span>
@@ -424,29 +424,29 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getPaymentStatusByOrder(@PathVariable Long orderId) {
         try {
-<span class="nc" id="L427">            Order order = orderService.getById(orderId).orElse(null);</span>
-<span class="nc bnc" id="L428" title="All 2 branches missed.">            if (order == null) {</span>
-<span class="nc" id="L429">                return ResponseEntity.badRequest().body(Map.of(</span>
-<span class="nc" id="L430">                    &quot;success&quot;, false,</span>
+<span class="fc" id="L427">            Order order = orderService.getById(orderId).orElse(null);</span>
+<span class="fc bfc" id="L428" title="All 2 branches covered.">            if (order == null) {</span>
+<span class="fc" id="L429">                return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="fc" id="L430">                    &quot;success&quot;, false,</span>
                     &quot;message&quot;, &quot;Order not found&quot;
                 ));
             }
 
-<span class="nc" id="L435">            Optional&lt;Payment&gt; paymentOpt = paymentService.getPaymentByOrder(order);</span>
+<span class="fc" id="L435">            Optional&lt;Payment&gt; paymentOpt = paymentService.getPaymentByOrder(order);</span>
             
-<span class="nc" id="L437">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
-<span class="nc" id="L438">            response.put(&quot;success&quot;, true);</span>
-<span class="nc" id="L439">            response.put(&quot;orderId&quot;, orderId);</span>
-<span class="nc" id="L440">            response.put(&quot;orderStatus&quot;, order.getStatus().name());</span>
+<span class="fc" id="L437">            Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L438">            response.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L439">            response.put(&quot;orderId&quot;, orderId);</span>
+<span class="fc" id="L440">            response.put(&quot;orderStatus&quot;, order.getStatus().name());</span>
             
-<span class="nc bnc" id="L442" title="All 2 branches missed.">            if (paymentOpt.isPresent()) {</span>
-<span class="nc" id="L443">                Payment payment = paymentOpt.get();</span>
-<span class="nc" id="L444">                response.put(&quot;paymentStatus&quot;, payment.getStatus().name());</span>
-<span class="nc" id="L445">                response.put(&quot;checkoutUrl&quot;, payment.getCheckoutUrl());</span>
-<span class="nc" id="L446">                response.put(&quot;qrCode&quot;, payment.getQrCode());</span>
+<span class="fc bfc" id="L442" title="All 2 branches covered.">            if (paymentOpt.isPresent()) {</span>
+<span class="fc" id="L443">                Payment payment = paymentOpt.get();</span>
+<span class="fc" id="L444">                response.put(&quot;paymentStatus&quot;, payment.getStatus().name());</span>
+<span class="fc" id="L445">                response.put(&quot;checkoutUrl&quot;, payment.getCheckoutUrl());</span>
+<span class="fc" id="L446">                response.put(&quot;qrCode&quot;, payment.getQrCode());</span>
             }
 
-<span class="nc" id="L449">            return ResponseEntity.ok(response);</span>
+<span class="fc" id="L449">            return ResponseEntity.ok(response);</span>
 
 <span class="nc" id="L451">        } catch (Exception e) {</span>
 <span class="nc" id="L452">            return ResponseEntity.badRequest().body(Map.of(</span>

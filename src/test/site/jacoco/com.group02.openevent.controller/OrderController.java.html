@@ -37,28 +37,28 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity&lt;Order&gt; create(@RequestBody CreateOrderRequest request) {
-<span class="nc" id="L40">        Order created = orderService.createOrder(request);</span>
-<span class="nc" id="L41">        return ResponseEntity.ok(created);</span>
+<span class="fc" id="L40">        Order created = orderService.createOrder(request);</span>
+<span class="fc" id="L41">        return ResponseEntity.ok(created);</span>
     }
 
     @GetMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Order&gt; get(@PathVariable(&quot;id&quot;) Long id) {
-<span class="nc" id="L46">        return orderService.getById(id)</span>
-<span class="nc" id="L47">                .map(ResponseEntity::ok)</span>
-<span class="nc" id="L48">                .orElse(ResponseEntity.notFound().build());</span>
+<span class="fc" id="L46">        return orderService.getById(id)</span>
+<span class="fc" id="L47">                .map(ResponseEntity::ok)</span>
+<span class="fc" id="L48">                .orElse(ResponseEntity.notFound().build());</span>
     }
 
     @GetMapping
     public Page&lt;Order&gt; list(@RequestParam(defaultValue = &quot;0&quot;) int page,
                             @RequestParam(defaultValue = &quot;20&quot;) int size) {
-<span class="nc" id="L54">        Pageable pageable = PageRequest.of(page, size);</span>
-<span class="nc" id="L55">        return orderService.list(pageable);</span>
+<span class="fc" id="L54">        Pageable pageable = PageRequest.of(page, size);</span>
+<span class="fc" id="L55">        return orderService.list(pageable);</span>
     }
 
     @DeleteMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Void&gt; delete(@PathVariable(&quot;id&quot;) Long id) {
-<span class="nc" id="L60">        orderService.delete(id);</span>
-<span class="nc" id="L61">        return ResponseEntity.noContent().build();</span>
+<span class="fc" id="L60">        orderService.delete(id);</span>
+<span class="fc" id="L61">        return ResponseEntity.noContent().build();</span>
     }
 
     /**
@@ -127,18 +127,18 @@ public class OrderController {
      */
     @GetMapping(&quot;/my-orders&quot;)
     public ResponseEntity&lt;?&gt; getMyOrders(HttpServletRequest httpRequest) {
-<span class="nc" id="L130">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
-<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (accountId == null) {</span>
-<span class="nc" id="L132">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
+<span class="fc" id="L130">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (accountId == null) {</span>
+<span class="fc" id="L132">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
         }
 
-<span class="nc" id="L135">        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (customer == null) {</span>
-<span class="nc" id="L137">            return ResponseEntity.status(404).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;Customer not found&quot;));</span>
+<span class="fc" id="L135">        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (customer == null) {</span>
+<span class="fc" id="L137">            return ResponseEntity.status(404).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;Customer not found&quot;));</span>
         }
 
-<span class="nc" id="L140">        List&lt;Order&gt; orders = orderService.getOrdersByCustomer(customer);</span>
-<span class="nc" id="L141">        return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;orders&quot;, orders));</span>
+<span class="fc" id="L140">        List&lt;Order&gt; orders = orderService.getOrdersByCustomer(customer);</span>
+<span class="fc" id="L141">        return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;orders&quot;, orders));</span>
     }
 
 
@@ -176,16 +176,16 @@ public class OrderController {
      */
     @PostMapping(&quot;/{orderId}/cancel&quot;)
     public ResponseEntity&lt;?&gt; cancelOrder(@PathVariable Long orderId, HttpServletRequest httpRequest) {
-<span class="nc" id="L179">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
-<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (accountId == null) {</span>
-<span class="nc" id="L181">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
+<span class="fc" id="L179">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (accountId == null) {</span>
+<span class="fc" id="L181">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
         }
 
         try {
-<span class="nc" id="L185">            orderService.cancelOrder(orderId);</span>
-<span class="nc" id="L186">            return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;message&quot;, &quot;Order cancelled successfully&quot;));</span>
-<span class="nc" id="L187">        } catch (Exception e) {</span>
-<span class="nc" id="L188">            return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, e.getMessage()));</span>
+<span class="fc" id="L185">            orderService.cancelOrder(orderId);</span>
+<span class="fc" id="L186">            return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;message&quot;, &quot;Order cancelled successfully&quot;));</span>
+<span class="fc" id="L187">        } catch (Exception e) {</span>
+<span class="fc" id="L188">            return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, e.getMessage()));</span>
         }
     }
 
@@ -194,14 +194,14 @@ public class OrderController {
      */
     @PostMapping(&quot;/{orderId}/confirm&quot;)
     public ResponseEntity&lt;?&gt; confirmOrder(@PathVariable Long orderId, HttpServletRequest httpRequest) {
-<span class="nc" id="L197">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (accountId == null) {</span>
-<span class="nc" id="L199">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
+<span class="fc" id="L197">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if (accountId == null) {</span>
+<span class="fc" id="L199">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
         }
 
         try {
-<span class="nc" id="L203">            orderService.confirmOrder(orderId);</span>
-<span class="nc" id="L204">            return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;message&quot;, &quot;Order confirmed successfully&quot;));</span>
+<span class="fc" id="L203">            orderService.confirmOrder(orderId);</span>
+<span class="fc" id="L204">            return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;message&quot;, &quot;Order confirmed successfully&quot;));</span>
 <span class="nc" id="L205">        } catch (Exception e) {</span>
 <span class="nc" id="L206">            return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, e.getMessage()));</span>
         }
@@ -212,33 +212,33 @@ public class OrderController {
      */
     @PostMapping(&quot;/{orderId}/apply-voucher&quot;)
     public ResponseEntity&lt;?&gt; applyVoucher(@PathVariable Long orderId, @RequestParam String voucherCode, HttpServletRequest httpRequest) {
-<span class="nc" id="L215">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
-<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (accountId == null) {</span>
+<span class="fc" id="L215">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">        if (accountId == null) {</span>
 <span class="nc" id="L217">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
         }
 
         try {
-<span class="nc" id="L221">            Optional&lt;Order&gt; orderOpt = orderService.getById(orderId);</span>
-<span class="nc bnc" id="L222" title="All 2 branches missed.">            if (orderOpt.isEmpty()) {</span>
-<span class="nc" id="L223">                return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;Order not found&quot;));</span>
+<span class="fc" id="L221">            Optional&lt;Order&gt; orderOpt = orderService.getById(orderId);</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">            if (orderOpt.isEmpty()) {</span>
+<span class="fc" id="L223">                return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;Order not found&quot;));</span>
             }
 
-<span class="nc" id="L226">            Order order = orderOpt.get();</span>
+<span class="fc" id="L226">            Order order = orderOpt.get();</span>
 
             // Kiểm tra quyền sở hữu order
-<span class="nc bnc" id="L229" title="All 2 branches missed.">            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {</span>
-<span class="nc" id="L230">                return ResponseEntity.status(403).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;Access denied&quot;));</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {</span>
+<span class="fc" id="L230">                return ResponseEntity.status(403).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;Access denied&quot;));</span>
             }
 
             // Áp dụng voucher
-<span class="nc" id="L234">            voucherService.applyVoucherToOrder(voucherCode, order);</span>
-<span class="nc" id="L235">            orderService.save(order);</span>
+<span class="fc" id="L234">            voucherService.applyVoucherToOrder(voucherCode, order);</span>
+<span class="fc" id="L235">            orderService.save(order);</span>
 
-<span class="nc" id="L237">            return ResponseEntity.ok(Map.of(</span>
-<span class="nc" id="L238">                    &quot;success&quot;, true,</span>
+<span class="fc" id="L237">            return ResponseEntity.ok(Map.of(</span>
+<span class="fc" id="L238">                    &quot;success&quot;, true,</span>
                     &quot;message&quot;, &quot;Voucher applied successfully&quot;,
-<span class="nc" id="L240">                    &quot;discountAmount&quot;, order.getVoucherDiscountAmount(),</span>
-<span class="nc" id="L241">                    &quot;newTotalAmount&quot;, order.getTotalAmount()</span>
+<span class="fc" id="L240">                    &quot;discountAmount&quot;, order.getVoucherDiscountAmount(),</span>
+<span class="fc" id="L241">                    &quot;newTotalAmount&quot;, order.getTotalAmount()</span>
             ));
 
 <span class="nc" id="L244">        } catch (Exception e) {</span>
@@ -251,14 +251,14 @@ public class OrderController {
      */
     @GetMapping(&quot;/available-vouchers&quot;)
     public ResponseEntity&lt;?&gt; getAvailableVouchers(HttpServletRequest httpRequest) {
-<span class="nc" id="L254">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
-<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (accountId == null) {</span>
-<span class="nc" id="L256">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
+<span class="fc" id="L254">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">        if (accountId == null) {</span>
+<span class="fc" id="L256">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
         }
 
         try {
-<span class="nc" id="L260">            var vouchers = voucherService.getAvailableVouchers();</span>
-<span class="nc" id="L261">            return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;vouchers&quot;, vouchers));</span>
+<span class="fc" id="L260">            var vouchers = voucherService.getAvailableVouchers();</span>
+<span class="fc" id="L261">            return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;vouchers&quot;, vouchers));</span>
 <span class="nc" id="L262">        } catch (Exception e) {</span>
 <span class="nc" id="L263">            return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, e.getMessage()));</span>
         }
@@ -269,23 +269,23 @@ public class OrderController {
      */
     @GetMapping(&quot;/check-voucher&quot;)
     public ResponseEntity&lt;?&gt; checkVoucher(@RequestParam String voucherCode, HttpServletRequest httpRequest) {
-<span class="nc" id="L272">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
-<span class="nc bnc" id="L273" title="All 2 branches missed.">        if (accountId == null) {</span>
+<span class="fc" id="L272">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">        if (accountId == null) {</span>
 <span class="nc" id="L274">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
         }
 
         try {
-<span class="nc" id="L278">            boolean isAvailable = voucherService.isVoucherAvailable(voucherCode);</span>
-<span class="nc bnc" id="L279" title="All 2 branches missed.">            if (isAvailable) {</span>
-<span class="nc" id="L280">                var voucher = voucherService.getVoucherByCode(voucherCode);</span>
-<span class="nc" id="L281">                return ResponseEntity.ok(Map.of(</span>
-<span class="nc" id="L282">                        &quot;success&quot;, true,</span>
-<span class="nc" id="L283">                        &quot;available&quot;, true,</span>
-<span class="nc" id="L284">                        &quot;discountAmount&quot;, voucher.get().getDiscountAmount(),</span>
-<span class="nc" id="L285">                        &quot;description&quot;, voucher.get().getDescription()</span>
+<span class="fc" id="L278">            boolean isAvailable = voucherService.isVoucherAvailable(voucherCode);</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">            if (isAvailable) {</span>
+<span class="fc" id="L280">                var voucher = voucherService.getVoucherByCode(voucherCode);</span>
+<span class="fc" id="L281">                return ResponseEntity.ok(Map.of(</span>
+<span class="fc" id="L282">                        &quot;success&quot;, true,</span>
+<span class="fc" id="L283">                        &quot;available&quot;, true,</span>
+<span class="fc" id="L284">                        &quot;discountAmount&quot;, voucher.get().getDiscountAmount(),</span>
+<span class="fc" id="L285">                        &quot;description&quot;, voucher.get().getDescription()</span>
                 ));
             } else {
-<span class="nc" id="L288">                return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;available&quot;, false));</span>
+<span class="fc" id="L288">                return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;available&quot;, false));</span>
             }
 <span class="nc" id="L290">        } catch (Exception e) {</span>
 <span class="nc" id="L291">            return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, e.getMessage()));</span>

@@ -38,184 +38,177 @@ import java.util.stream.Collectors;
     @Autowired
     private IOrderRepo orderRepo;
 
-    @Override
-    public TicketType createTicketType(TicketType ticketType) {
-<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (ticketType.getSoldQuantity() == null) {</span>
-<span class="nc" id="L44">            ticketType.setSoldQuantity(0);</span>
-        }
-<span class="nc" id="L46">        return ticketTypeRepo.save(ticketType);</span>
-    }
 
     @Override
     public Optional&lt;TicketType&gt; getTicketTypeById(Long id) {
-<span class="nc" id="L51">        return ticketTypeRepo.findById(id);</span>
+<span class="fc" id="L44">        return ticketTypeRepo.findById(id);</span>
     }
 
     @Override
     public List&lt;TicketType&gt; getAllTicketTypes() {
-<span class="nc" id="L56">        return ticketTypeRepo.findAll();</span>
+<span class="fc" id="L49">        return ticketTypeRepo.findAll();</span>
     }
 
     @Override
     public void updateTickets(Long eventId, List&lt;TicketUpdateRequest&gt; tickets) {
-<span class="fc bfc" id="L61" title="All 2 branches covered.">        for (TicketUpdateRequest request : tickets) {</span>
-<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (Boolean.TRUE.equals(request.getIsDeleted())) {</span>
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">                if (request.getTicketTypeId() != null) {</span>
-<span class="fc" id="L64">                    ticketTypeRepo.deleteById(request.getTicketTypeId());</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        for (TicketUpdateRequest request : tickets) {</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            if (Boolean.TRUE.equals(request.getIsDeleted())) {</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">                if (request.getTicketTypeId() != null) {</span>
+<span class="fc" id="L57">                    ticketTypeRepo.deleteById(request.getTicketTypeId());</span>
                 }
                 continue;
             }
 
-<span class="fc" id="L69">            TicketType ticket = ticketMapper.toTicketType(request);</span>
+<span class="fc" id="L62">            TicketType ticket = ticketMapper.toTicketType(request);</span>
 
-<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (Boolean.TRUE.equals(request.getIsNew())) {</span>
-<span class="fc" id="L72">                Event event = eventService.getEventById(eventId)</span>
-<span class="pc" id="L73">                        .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Event not found&quot;));</span>
-<span class="fc" id="L74">                ticket.setEvent(event);</span>
-<span class="fc" id="L75">            } else {</span>
-<span class="fc" id="L76">                TicketType existing = ticketTypeRepo.findById(request.getTicketTypeId())</span>
-<span class="pc" id="L77">                        .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Ticket not found&quot;));</span>
-<span class="fc" id="L78">                BeanUtils.copyProperties(ticket, existing, &quot;id&quot;, &quot;event&quot;);</span>
-<span class="fc" id="L79">                ticket = existing;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">            if (Boolean.TRUE.equals(request.getIsNew())) {</span>
+<span class="fc" id="L65">                Event event = eventService.getEventById(eventId)</span>
+<span class="pc" id="L66">                        .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Event not found&quot;));</span>
+<span class="fc" id="L67">                ticket.setEvent(event);</span>
+<span class="fc" id="L68">            } else {</span>
+<span class="fc" id="L69">                TicketType existing = ticketTypeRepo.findById(request.getTicketTypeId())</span>
+<span class="pc" id="L70">                        .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Ticket not found&quot;));</span>
+<span class="fc" id="L71">                BeanUtils.copyProperties(ticket, existing, &quot;id&quot;, &quot;event&quot;);</span>
+<span class="fc" id="L72">                ticket = existing;</span>
             }
 
-<span class="fc" id="L82">            ticketTypeRepo.save(ticket);</span>
-<span class="fc" id="L83">        }</span>
-<span class="fc" id="L84">    }</span>
+<span class="fc" id="L75">            ticketTypeRepo.save(ticket);</span>
+<span class="fc" id="L76">        }</span>
+<span class="fc" id="L77">    }</span>
 
     @Override
     public void deleteTicketType(Long id) {
-<span class="fc" id="L88">        TicketType ticketType = ticketTypeRepo.findById(id)</span>
-<span class="fc" id="L89">                .orElse(null);</span>
+<span class="fc" id="L81">        TicketType ticketType = ticketTypeRepo.findById(id)</span>
+<span class="fc" id="L82">                .orElse(null);</span>
         // Kiểm tra đã bán vé chưa
-<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        assert ticketType != null;</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        assert ticketType != null;</span>
 
         // Nếu có đơn hàng tham chiếu đến ticket type này thì không cho xóa
-<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (orderRepo.existsByTicketType_TicketTypeId(id)) {</span>
-<span class="fc" id="L95">            throw new IllegalStateException(&quot;Không thể xóa loại vé vì đã có đơn hàng liên quan&quot;);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (orderRepo.existsByTicketType_TicketTypeId(id)) {</span>
+<span class="fc" id="L88">            throw new IllegalStateException(&quot;Không thể xóa loại vé vì đã có đơn hàng liên quan&quot;);</span>
         }
 
         // Dự phòng: nếu soldQuantity &gt; 0 cũng không cho xóa
-<span class="pc bpc" id="L99" title="2 of 4 branches missed.">        if (ticketType.getSoldQuantity() != null &amp;&amp; ticketType.getSoldQuantity() &gt; 0) {</span>
-<span class="nc" id="L100">            throw new IllegalStateException(&quot;Không thể xóa loại vé đã bán&quot;);</span>
+<span class="pc bpc" id="L92" title="2 of 4 branches missed.">        if (ticketType.getSoldQuantity() != null &amp;&amp; ticketType.getSoldQuantity() &gt; 0) {</span>
+<span class="nc" id="L93">            throw new IllegalStateException(&quot;Không thể xóa loại vé đã bán&quot;);</span>
         }
 
-<span class="fc" id="L103">        ticketTypeRepo.delete(ticketType);</span>
-<span class="fc" id="L104">    }</span>
+<span class="fc" id="L96">        ticketTypeRepo.delete(ticketType);</span>
+<span class="fc" id="L97">    }</span>
 
     @Override
     public List&lt;TicketType&gt; getTicketTypesByEventId(Long eventId) {
-<span class="nc" id="L108">        return ticketTypeRepo.findByEventId(eventId);</span>
+<span class="nc" id="L101">        return ticketTypeRepo.findByEventId(eventId);</span>
     }
 
     @Override
     public List&lt;TicketType&gt; getAvailableTicketTypesByEventId(Long eventId) {
-<span class="nc" id="L113">        return ticketTypeRepo.findAvailableByEventId(eventId, LocalDateTime.now());</span>
+<span class="nc" id="L106">        return ticketTypeRepo.findAvailableByEventId(eventId, LocalDateTime.now());</span>
     }
 
     @Override
     public boolean canPurchaseTickets(Long ticketTypeId, Integer quantity) {
-<span class="nc" id="L118">        Optional&lt;TicketType&gt; ticketTypeOpt = ticketTypeRepo.findById(ticketTypeId);</span>
-<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (ticketTypeOpt.isEmpty()) {</span>
-<span class="nc" id="L120">            return false;</span>
+<span class="fc" id="L111">        Optional&lt;TicketType&gt; ticketTypeOpt = ticketTypeRepo.findById(ticketTypeId);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (ticketTypeOpt.isEmpty()) {</span>
+<span class="fc" id="L113">            return false;</span>
         }
-<span class="nc" id="L122">        return ticketTypeOpt.get().canPurchase();</span>
+<span class="fc" id="L115">        return ticketTypeOpt.get().canPurchase();</span>
     }
 
     @Override
     @Transactional
     public void reserveTickets(Long ticketTypeId) {
-<span class="nc" id="L128">        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)</span>
-<span class="nc" id="L129">                .orElse(null);</span>
+<span class="fc" id="L121">        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)</span>
+<span class="fc" id="L122">                .orElse(null);</span>
 
-<span class="nc bnc" id="L131" title="All 2 branches missed.">        assert ticketType != null;</span>
-<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (!ticketType.canPurchase()) {</span>
-<span class="nc" id="L133">            throw new IllegalStateException(&quot;Cannot reserve tickets for ticket type: &quot; + ticketTypeId);</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">        assert ticketType != null;</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        if (!ticketType.canPurchase()) {</span>
+<span class="fc" id="L126">            throw new IllegalStateException(&quot;Cannot reserve tickets for ticket type: &quot; + ticketTypeId);</span>
         }
 
-<span class="nc" id="L136">        ticketType.increaseSoldQuantity();</span>
-<span class="nc" id="L137">        ticketTypeRepo.save(ticketType);</span>
-<span class="nc" id="L138">    }</span>
+<span class="fc" id="L129">        ticketType.increaseSoldQuantity();</span>
+<span class="fc" id="L130">        ticketTypeRepo.save(ticketType);</span>
+<span class="fc" id="L131">    }</span>
 
     @Override
     @Transactional
     public void releaseTickets(Long ticketTypeId, Integer quantity) {
-<span class="nc" id="L143">        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)</span>
-<span class="nc" id="L144">                .orElse(null);</span>
+<span class="fc" id="L136">        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)</span>
+<span class="fc" id="L137">                .orElse(null);</span>
 
-<span class="nc bnc" id="L146" title="All 2 branches missed.">        assert ticketType != null;</span>
-<span class="nc" id="L147">        ticketType.decreaseSoldQuantity(quantity);</span>
-<span class="nc" id="L148">        ticketTypeRepo.save(ticketType);</span>
-<span class="nc" id="L149">    }</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        assert ticketType != null;</span>
+<span class="fc" id="L140">        ticketType.decreaseSoldQuantity(quantity);</span>
+<span class="fc" id="L141">        ticketTypeRepo.save(ticketType);</span>
+<span class="fc" id="L142">    }</span>
 
     @Override
     @Transactional
     public void confirmPurchase(Long ticketTypeId, Integer quantity) {
         // Trong trường hợp này, việc reserve đã tăng soldQuantity
         // Nên confirmPurchase chỉ cần log hoặc update trạng thái khác
-<span class="nc" id="L156">        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)</span>
-<span class="nc" id="L157">                .orElse(null);</span>
+<span class="nc" id="L149">        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)</span>
+<span class="nc" id="L150">                .orElse(null);</span>
 
         // Purchase confirmed
-<span class="nc" id="L160">    }</span>
+<span class="nc" id="L153">    }</span>
 
     @Override
     public Page&lt;TicketType&gt; getTicketTypesPageable(Pageable pageable) {
-<span class="nc" id="L164">        return ticketTypeRepo.findAll(pageable);</span>
+<span class="fc" id="L157">        return ticketTypeRepo.findAll(pageable);</span>
     }
 
     @Override
     public List&lt;TicketType&gt; getTicketTypesByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-<span class="nc" id="L169">        return ticketTypeRepo.findByPriceRange(minPrice, maxPrice);</span>
+<span class="nc" id="L162">        return ticketTypeRepo.findByPriceRange(minPrice, maxPrice);</span>
     }
 
     @Override
     public boolean isTicketTypeAvailable(Long ticketTypeId) {
-<span class="nc" id="L174">        return ticketTypeRepo.isAvailableNow(ticketTypeId, LocalDateTime.now());</span>
+<span class="nc" id="L167">        return ticketTypeRepo.isAvailableNow(ticketTypeId, LocalDateTime.now());</span>
     }
 
     @Override
     public Integer getTotalSoldByEventId(Long eventId) {
-<span class="nc" id="L179">        Integer result = ticketTypeRepo.getTotalSoldByEventId(eventId);</span>
-<span class="nc bnc" id="L180" title="All 2 branches missed.">        return result != null ? result : 0;</span>
+<span class="fc" id="L172">        Integer result = ticketTypeRepo.getTotalSoldByEventId(eventId);</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        return result != null ? result : 0;</span>
     }
 
     @Override
     public Integer getTotalAvailableByEventId(Long eventId) {
-<span class="nc" id="L185">        Integer result = ticketTypeRepo.getTotalAvailableByEventId(eventId);</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">        return result != null ? result : 0;</span>
+<span class="nc" id="L178">        Integer result = ticketTypeRepo.getTotalAvailableByEventId(eventId);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        return result != null ? result : 0;</span>
     }
 
     @Override
     @Transactional(readOnly = true)
     public List&lt;TicketTypeDTO&gt; getTicketTypeDTOsByEventId(Long eventId) {
-<span class="nc" id="L192">        List&lt;TicketType&gt; ticketTypeList = ticketTypeRepo.findByEventId(eventId);</span>
-<span class="nc" id="L193">        return ticketTypeRepo.findByEventId(eventId)</span>
-<span class="nc" id="L194">                .stream()</span>
-<span class="nc" id="L195">                .map(this::convertToDTO)</span>
-<span class="nc" id="L196">                .collect(Collectors.toList());</span>
+<span class="fc" id="L185">        List&lt;TicketType&gt; ticketTypeList = ticketTypeRepo.findByEventId(eventId);</span>
+<span class="fc" id="L186">        return ticketTypeRepo.findByEventId(eventId)</span>
+<span class="fc" id="L187">                .stream()</span>
+<span class="fc" id="L188">                .map(this::convertToDTO)</span>
+<span class="fc" id="L189">                .collect(Collectors.toList());</span>
     }
 
     @Override
     @Transactional(readOnly = true)
     public List&lt;TicketTypeDTO&gt; getAvailableTicketTypeDTOsByEventId(Long eventId) {
-<span class="nc" id="L202">        return ticketTypeRepo.findAvailableByEventIdIgnoreTime(eventId)</span>
-<span class="nc" id="L203">                .stream()</span>
-<span class="nc" id="L204">                .map(this::convertToDTO)</span>
-<span class="nc" id="L205">                .collect(Collectors.toList());</span>
+<span class="fc" id="L195">        return ticketTypeRepo.findAvailableByEventIdIgnoreTime(eventId)</span>
+<span class="fc" id="L196">                .stream()</span>
+<span class="fc" id="L197">                .map(this::convertToDTO)</span>
+<span class="fc" id="L198">                .collect(Collectors.toList());</span>
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional&lt;TicketTypeDTO&gt; getTicketTypeDTOById(Long ticketTypeId) {
-<span class="nc" id="L211">        return ticketTypeRepo.findById(ticketTypeId)</span>
-<span class="nc" id="L212">                .map(this::convertToDTO);</span>
+<span class="nc" id="L204">        return ticketTypeRepo.findById(ticketTypeId)</span>
+<span class="nc" id="L205">                .map(this::convertToDTO);</span>
     }
 
     @Override
     @Transactional
     public TicketType saveTicketType(TicketType ticketType) {
-<span class="nc" id="L218">        return ticketTypeRepo.save(ticketType);</span>
+<span class="fc" id="L211">        return ticketTypeRepo.save(ticketType);</span>
     }
 
 //    @Override
@@ -227,66 +220,66 @@ import java.util.stream.Collectors;
     @Override
     public TicketTypeDTO convertToDTO(TicketType ticketType) {
         try {
-<span class="nc" id="L230">            LocalDateTime now = LocalDateTime.now();</span>
-<span class="nc bnc" id="L231" title="All 2 branches missed.">            boolean isAvailable = ticketType.getAvailableQuantity() &gt; 0</span>
-<span class="nc bnc" id="L232" title="All 4 branches missed.">                    &amp;&amp; (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))</span>
-<span class="nc bnc" id="L233" title="All 4 branches missed.">                    &amp;&amp; (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));</span>
+<span class="fc" id="L223">            LocalDateTime now = LocalDateTime.now();</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">            boolean isAvailable = ticketType.getAvailableQuantity() &gt; 0</span>
+<span class="pc bpc" id="L225" title="1 of 4 branches missed.">                    &amp;&amp; (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))</span>
+<span class="pc bpc" id="L226" title="1 of 4 branches missed.">                    &amp;&amp; (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));</span>
 
-<span class="nc" id="L235">            boolean isSaleActive = ticketType.isSalePeriodActive();</span>
-<span class="nc bnc" id="L236" title="All 2 branches missed.">            boolean isSoldOut = ticketType.getAvailableQuantity() &lt;= 0;</span>
-<span class="nc bnc" id="L237" title="All 4 branches missed.">            boolean saleNotStarted = ticketType.getStartSaleDate() != null &amp;&amp; now.isBefore(ticketType.getStartSaleDate());</span>
-<span class="nc bnc" id="L238" title="All 4 branches missed.">            boolean saleOverdue = ticketType.getEndSaleDate() != null &amp;&amp; now.isAfter(ticketType.getEndSaleDate());</span>
+<span class="fc" id="L228">            boolean isSaleActive = ticketType.isSalePeriodActive();</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">            boolean isSoldOut = ticketType.getAvailableQuantity() &lt;= 0;</span>
+<span class="pc bpc" id="L230" title="1 of 4 branches missed.">            boolean saleNotStarted = ticketType.getStartSaleDate() != null &amp;&amp; now.isBefore(ticketType.getStartSaleDate());</span>
+<span class="pc bpc" id="L231" title="1 of 4 branches missed.">            boolean saleOverdue = ticketType.getEndSaleDate() != null &amp;&amp; now.isAfter(ticketType.getEndSaleDate());</span>
 
-<span class="nc" id="L240">            String saleStartCountdownText = null;</span>
-<span class="nc bnc" id="L241" title="All 2 branches missed.">            if (saleNotStarted) {</span>
-<span class="nc" id="L242">                LocalDateTime start = ticketType.getStartSaleDate();</span>
-<span class="nc" id="L243">                long days = java.time.Duration.between(now, start).toDays();</span>
-<span class="nc bnc" id="L244" title="All 2 branches missed.">                if (days &lt; 0) days = 0;</span>
-<span class="nc bnc" id="L245" title="All 2 branches missed.">                saleStartCountdownText = days + (days == 1 ? &quot; day&quot; : &quot; days&quot;);</span>
+<span class="fc" id="L233">            String saleStartCountdownText = null;</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">            if (saleNotStarted) {</span>
+<span class="fc" id="L235">                LocalDateTime start = ticketType.getStartSaleDate();</span>
+<span class="fc" id="L236">                long days = java.time.Duration.between(now, start).toDays();</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">                if (days &lt; 0) days = 0;</span>
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">                saleStartCountdownText = days + (days == 1 ? &quot; day&quot; : &quot; days&quot;);</span>
             }
 
-<span class="nc" id="L248">            TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()</span>
-<span class="nc" id="L249">                    .ticketTypeId(ticketType.getTicketTypeId())</span>
-<span class="nc" id="L250">                    .eventId(ticketType.getEvent().getId())</span>
-<span class="nc" id="L251">                    .eventTitle(ticketType.getEvent().getTitle())</span>
-<span class="nc" id="L252">                    .eventImageUrl(ticketType.getEvent().getImageUrl())</span>
-<span class="nc" id="L253">                    .name(ticketType.getName())</span>
-<span class="nc" id="L254">                    .description(ticketType.getDescription())</span>
-<span class="nc" id="L255">                    .price(ticketType.getPrice())</span>
-<span class="nc bnc" id="L256" title="All 2 branches missed.">                    .sale(ticketType.getSale() != null ? ticketType.getSale() : BigDecimal.ZERO)</span>
-<span class="nc" id="L257">                    .finalPrice(ticketType.getFinalPrice())</span>
-<span class="nc" id="L258">                    .totalQuantity(ticketType.getTotalQuantity())</span>
-<span class="nc" id="L259">                    .soldQuantity(ticketType.getSoldQuantity())</span>
-<span class="nc" id="L260">                    .availableQuantity(ticketType.getAvailableQuantity())</span>
-<span class="nc" id="L261">                    .startSaleDate(ticketType.getStartSaleDate())</span>
-<span class="nc" id="L262">                    .endSaleDate(ticketType.getEndSaleDate())</span>
-<span class="nc" id="L263">                    .isAvailable(isAvailable)</span>
-<span class="nc" id="L264">                    .isSaleActive(isSaleActive)</span>
-<span class="nc" id="L265">                    .isSoldOut(isSoldOut)</span>
-<span class="nc" id="L266">                    .saleNotStarted(saleNotStarted)</span>
-<span class="nc" id="L267">                    .saleStartCountdownText(saleStartCountdownText)</span>
-<span class="nc" id="L268">                    .saleOverdue(saleOverdue)</span>
-<span class="nc" id="L269">                    .build();</span>
-<span class="nc" id="L270">            return ticketTypeDTO;</span>
-<span class="nc" id="L271">        } catch (Exception e) {</span>
-<span class="nc" id="L272">            System.err.println(&quot;Error converting TicketType to DTO: &quot; + e.getMessage());</span>
-<span class="nc" id="L273">            e.printStackTrace();</span>
-<span class="nc" id="L274">            throw e;</span>
+<span class="fc" id="L241">            TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()</span>
+<span class="fc" id="L242">                    .ticketTypeId(ticketType.getTicketTypeId())</span>
+<span class="fc" id="L243">                    .eventId(ticketType.getEvent().getId())</span>
+<span class="fc" id="L244">                    .eventTitle(ticketType.getEvent().getTitle())</span>
+<span class="fc" id="L245">                    .eventImageUrl(ticketType.getEvent().getImageUrl())</span>
+<span class="fc" id="L246">                    .name(ticketType.getName())</span>
+<span class="fc" id="L247">                    .description(ticketType.getDescription())</span>
+<span class="fc" id="L248">                    .price(ticketType.getPrice())</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">                    .sale(ticketType.getSale() != null ? ticketType.getSale() : BigDecimal.ZERO)</span>
+<span class="fc" id="L250">                    .finalPrice(ticketType.getFinalPrice())</span>
+<span class="fc" id="L251">                    .totalQuantity(ticketType.getTotalQuantity())</span>
+<span class="fc" id="L252">                    .soldQuantity(ticketType.getSoldQuantity())</span>
+<span class="fc" id="L253">                    .availableQuantity(ticketType.getAvailableQuantity())</span>
+<span class="fc" id="L254">                    .startSaleDate(ticketType.getStartSaleDate())</span>
+<span class="fc" id="L255">                    .endSaleDate(ticketType.getEndSaleDate())</span>
+<span class="fc" id="L256">                    .isAvailable(isAvailable)</span>
+<span class="fc" id="L257">                    .isSaleActive(isSaleActive)</span>
+<span class="fc" id="L258">                    .isSoldOut(isSoldOut)</span>
+<span class="fc" id="L259">                    .saleNotStarted(saleNotStarted)</span>
+<span class="fc" id="L260">                    .saleStartCountdownText(saleStartCountdownText)</span>
+<span class="fc" id="L261">                    .saleOverdue(saleOverdue)</span>
+<span class="fc" id="L262">                    .build();</span>
+<span class="fc" id="L263">            return ticketTypeDTO;</span>
+<span class="fc" id="L264">        } catch (Exception e) {</span>
+<span class="fc" id="L265">            System.err.println(&quot;Error converting TicketType to DTO: &quot; + e.getMessage());</span>
+<span class="fc" id="L266">            e.printStackTrace();</span>
+<span class="fc" id="L267">            throw e;</span>
         }
     }
 
     @Override
     @Transactional(readOnly = true)
     public Integer getTotalSoldTickets(Long eventId) {
-<span class="nc" id="L281">        Integer total = ticketTypeRepo.getTotalSoldByEventId(eventId);</span>
-<span class="nc bnc" id="L282" title="All 2 branches missed.">        return total != null ? total : 0;</span>
+<span class="nc" id="L274">        Integer total = ticketTypeRepo.getTotalSoldByEventId(eventId);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        return total != null ? total : 0;</span>
     }
 
     @Override
     @Transactional(readOnly = true)
     public Integer getTotalTicketCapacity(Long eventId) {
-<span class="nc" id="L288">        Integer total = ticketTypeRepo.getTotalTicketCapacityByEventId(eventId);</span>
-<span class="nc bnc" id="L289" title="All 2 branches missed.">        return total != null ? total : 0;</span>
+<span class="nc" id="L281">        Integer total = ticketTypeRepo.getTotalTicketCapacityByEventId(eventId);</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        return total != null ? total : 0;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

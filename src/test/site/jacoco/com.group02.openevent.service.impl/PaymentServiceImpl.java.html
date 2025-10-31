@@ -47,35 +47,35 @@ public class PaymentServiceImpl implements PaymentService {
     public Payment createPaymentLinkForOrder(Order order, String returnUrl, String cancelUrl) {
         try {
             // Prepare PayOS payment request using SDK
-<span class="fc" id="L50">            long orderCode = System.currentTimeMillis() / 1000; // Use timestamp as order code</span>
+<span class="nc" id="L50">            long orderCode = System.currentTimeMillis() / 1000; // Use timestamp as order code</span>
             
             // Convert BigDecimal to long (PayOS expects amount in VNĐ, not cents)
-<span class="fc" id="L53">            long amount = order.getTotalAmount().longValue();</span>
+<span class="nc" id="L53">            long amount = order.getTotalAmount().longValue();</span>
             
             // PayOS description max 25 characters
-<span class="fc" id="L56">            String description = &quot;Order #&quot; + order.getOrderId();</span>
+<span class="nc" id="L56">            String description = &quot;Order #&quot; + order.getOrderId();</span>
             
             // Debug logging
-<span class="fc" id="L59">            logger.info(&quot;Order total amount: {} VNĐ, PayOS amount: {} VNĐ&quot;, order.getTotalAmount(), amount);</span>
+<span class="nc" id="L59">            logger.info(&quot;Order total amount: {} VNĐ, PayOS amount: {} VNĐ&quot;, order.getTotalAmount(), amount);</span>
 
             // Create payment item
-<span class="fc" id="L62">            PaymentLinkItem item = PaymentLinkItem.builder()</span>
-<span class="fc" id="L63">                .name(&quot;Event Registration - &quot; + order.getEvent().getTitle())</span>
-<span class="fc" id="L64">                .quantity(1)</span>
-<span class="fc" id="L65">                .price(amount)</span>
-<span class="fc" id="L66">                .build();</span>
+<span class="nc" id="L62">            PaymentLinkItem item = PaymentLinkItem.builder()</span>
+<span class="nc" id="L63">                .name(&quot;Event Registration - &quot; + order.getEvent().getTitle())</span>
+<span class="nc" id="L64">                .quantity(1)</span>
+<span class="nc" id="L65">                .price(amount)</span>
+<span class="nc" id="L66">                .build();</span>
 
             // Create payment request
-<span class="fc" id="L69">            CreatePaymentLinkRequest paymentRequest = CreatePaymentLinkRequest.builder()</span>
-<span class="fc" id="L70">                .orderCode(orderCode)</span>
-<span class="fc" id="L71">                .amount(amount)</span>
-<span class="fc" id="L72">                .description(description)</span>
-<span class="fc" id="L73">                .item(item)</span>
-<span class="fc" id="L74">                .returnUrl(returnUrl)</span>
-<span class="fc" id="L75">                .cancelUrl(cancelUrl)</span>
-<span class="fc" id="L76">                .build();</span>
+<span class="nc" id="L69">            CreatePaymentLinkRequest paymentRequest = CreatePaymentLinkRequest.builder()</span>
+<span class="nc" id="L70">                .orderCode(orderCode)</span>
+<span class="nc" id="L71">                .amount(amount)</span>
+<span class="nc" id="L72">                .description(description)</span>
+<span class="nc" id="L73">                .item(item)</span>
+<span class="nc" id="L74">                .returnUrl(returnUrl)</span>
+<span class="nc" id="L75">                .cancelUrl(cancelUrl)</span>
+<span class="nc" id="L76">                .build();</span>
 
-<span class="fc" id="L78">            logger.info(&quot;Creating PayOS payment link: orderCode={}, amount={}, description={}&quot;, orderCode, amount, description);</span>
+<span class="nc" id="L78">            logger.info(&quot;Creating PayOS payment link: orderCode={}, amount={}, description={}&quot;, orderCode, amount, description);</span>
 
             // Call PayOS SDK
 <span class="nc" id="L81">            CreatePaymentLinkResponse payOSResponse = payOS.paymentRequests().create(paymentRequest);</span>
@@ -102,9 +102,9 @@ public class PaymentServiceImpl implements PaymentService {
 
 <span class="nc" id="L103">            return paymentRepo.save(payment);</span>
 
-<span class="fc" id="L105">        } catch (Exception e) {</span>
-<span class="fc" id="L106">            logger.error(&quot;Error creating payment link: &quot;, e);</span>
-<span class="fc" id="L107">            throw new RuntimeException(&quot;Error creating payment link: &quot; + e.getMessage());</span>
+<span class="nc" id="L105">        } catch (Exception e) {</span>
+<span class="nc" id="L106">            logger.error(&quot;Error creating payment link: &quot;, e);</span>
+<span class="nc" id="L107">            throw new RuntimeException(&quot;Error creating payment link: &quot; + e.getMessage());</span>
         }
     }
 
@@ -122,60 +122,60 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public boolean verifyWebhook(PayOSWebhookData webhookData) {
         // PayOS SDK handles webhook verification internally
-<span class="nc bnc" id="L125" title="All 4 branches missed.">        return webhookData != null &amp;&amp; webhookData.getData() != null;</span>
+<span class="fc bfc" id="L125" title="All 4 branches covered.">        return webhookData != null &amp;&amp; webhookData.getData() != null;</span>
     }
 
     @Override
     public PaymentResult handlePaymentWebhook(PayOSWebhookData webhookData) {
-<span class="nc" id="L130">        logger.info(&quot;=== PAYMENT WEBHOOK PROCESSING ===&quot;);</span>
-<span class="nc" id="L131">        logger.info(&quot;Webhook data received: {}&quot;, webhookData);</span>
+<span class="fc" id="L130">        logger.info(&quot;=== PAYMENT WEBHOOK PROCESSING ===&quot;);</span>
+<span class="fc" id="L131">        logger.info(&quot;Webhook data received: {}&quot;, webhookData);</span>
         
         try {
-<span class="nc bnc" id="L134" title="All 2 branches missed.">            if (!verifyWebhook(webhookData)) {</span>
-<span class="nc" id="L135">                logger.error(&quot;Invalid webhook signature&quot;);</span>
-<span class="nc" id="L136">                return PaymentResult.failure(&quot;Invalid webhook signature&quot;);</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            if (!verifyWebhook(webhookData)) {</span>
+<span class="fc" id="L135">                logger.error(&quot;Invalid webhook signature&quot;);</span>
+<span class="fc" id="L136">                return PaymentResult.failure(&quot;Invalid webhook signature&quot;);</span>
             }
 
-<span class="nc" id="L139">            Long paymentLinkId = webhookData.getData().getPaymentLinkId();</span>
-<span class="nc" id="L140">            logger.info(&quot;Payment link ID from webhook: {}&quot;, paymentLinkId);</span>
+<span class="fc" id="L139">            Long paymentLinkId = webhookData.getData().getPaymentLinkId();</span>
+<span class="fc" id="L140">            logger.info(&quot;Payment link ID from webhook: {}&quot;, paymentLinkId);</span>
             
-<span class="nc bnc" id="L142" title="All 2 branches missed.">            if (paymentLinkId == null) {</span>
-<span class="nc" id="L143">                logger.error(&quot;Missing payment link ID in webhook&quot;);</span>
-<span class="nc" id="L144">                return PaymentResult.failure(&quot;Missing payment link ID in webhook&quot;);</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">            if (paymentLinkId == null) {</span>
+<span class="fc" id="L143">                logger.error(&quot;Missing payment link ID in webhook&quot;);</span>
+<span class="fc" id="L144">                return PaymentResult.failure(&quot;Missing payment link ID in webhook&quot;);</span>
             }
 
             // Find payment by PayOS payment link ID (as String)
-<span class="nc" id="L148">            logger.info(&quot;Searching for payment with PayOS ID: {}&quot;, paymentLinkId);</span>
-<span class="nc" id="L149">            Optional&lt;Payment&gt; paymentOpt = paymentRepo.findByPaymentLinkId(String.valueOf(paymentLinkId));</span>
+<span class="fc" id="L148">            logger.info(&quot;Searching for payment with PayOS ID: {}&quot;, paymentLinkId);</span>
+<span class="fc" id="L149">            Optional&lt;Payment&gt; paymentOpt = paymentRepo.findByPaymentLinkId(String.valueOf(paymentLinkId));</span>
             
-<span class="nc bnc" id="L151" title="All 2 branches missed.">            if (paymentOpt.isEmpty()) {</span>
-<span class="nc" id="L152">                logger.error(&quot;Payment not found for PayOS ID: {}&quot;, paymentLinkId);</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">            if (paymentOpt.isEmpty()) {</span>
+<span class="fc" id="L152">                logger.error(&quot;Payment not found for PayOS ID: {}&quot;, paymentLinkId);</span>
                 // Log all existing payments for debugging
-<span class="nc" id="L154">                List&lt;Payment&gt; allPayments = paymentRepo.findAll();</span>
-<span class="nc" id="L155">                logger.error(&quot;Available payments: {}&quot;, allPayments.stream()</span>
-<span class="nc" id="L156">                    .map(p -&gt; &quot;ID: &quot; + p.getPaymentId() + &quot;, PayOS ID: &quot; + p.getPaymentLinkId())</span>
-<span class="nc" id="L157">                    .collect(Collectors.toList()));</span>
-<span class="nc" id="L158">                return PaymentResult.failure(&quot;Payment not found for PayOS ID: &quot; + paymentLinkId);</span>
+<span class="fc" id="L154">                List&lt;Payment&gt; allPayments = paymentRepo.findAll();</span>
+<span class="fc" id="L155">                logger.error(&quot;Available payments: {}&quot;, allPayments.stream()</span>
+<span class="pc" id="L156">                    .map(p -&gt; &quot;ID: &quot; + p.getPaymentId() + &quot;, PayOS ID: &quot; + p.getPaymentLinkId())</span>
+<span class="fc" id="L157">                    .collect(Collectors.toList()));</span>
+<span class="fc" id="L158">                return PaymentResult.failure(&quot;Payment not found for PayOS ID: &quot; + paymentLinkId);</span>
             }
 
-<span class="nc" id="L161">            Payment payment = paymentOpt.get();</span>
-<span class="nc" id="L162">            Order order = payment.getOrder();</span>
-<span class="nc" id="L163">            logger.info(&quot;Found payment: {} for order: {}&quot;, payment.getPaymentId(), order.getOrderId());</span>
+<span class="fc" id="L161">            Payment payment = paymentOpt.get();</span>
+<span class="fc" id="L162">            Order order = payment.getOrder();</span>
+<span class="fc" id="L163">            logger.info(&quot;Found payment: {} for order: {}&quot;, payment.getPaymentId(), order.getOrderId());</span>
 
             // Update payment status
-<span class="nc" id="L166">            payment.setStatus(PaymentStatus.PAID);</span>
-<span class="nc" id="L167">            payment.setUpdatedAt(LocalDateTime.now());</span>
-<span class="nc" id="L168">            paymentRepo.save(payment);</span>
-<span class="nc" id="L169">            logger.info(&quot;Payment status updated to PAID&quot;);</span>
+<span class="fc" id="L166">            payment.setStatus(PaymentStatus.PAID);</span>
+<span class="fc" id="L167">            payment.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L168">            paymentRepo.save(payment);</span>
+<span class="fc" id="L169">            logger.info(&quot;Payment status updated to PAID&quot;);</span>
 
             // Update order status
-<span class="nc" id="L172">            order.setStatus(OrderStatus.PAID);</span>
-<span class="nc" id="L173">            order.setUpdatedAt(LocalDateTime.now());</span>
-<span class="nc" id="L174">            orderRepo.save(order);</span>
-<span class="nc" id="L175">            logger.info(&quot;Order status updated to PAID&quot;);</span>
+<span class="fc" id="L172">            order.setStatus(OrderStatus.PAID);</span>
+<span class="fc" id="L173">            order.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L174">            orderRepo.save(order);</span>
+<span class="fc" id="L175">            logger.info(&quot;Order status updated to PAID&quot;);</span>
 
-<span class="nc" id="L177">            logger.info(&quot;Payment webhook processed successfully for order: {}&quot;, order.getOrderId());</span>
-<span class="nc" id="L178">            return PaymentResult.success(&quot;Payment processed successfully&quot;);</span>
+<span class="fc" id="L177">            logger.info(&quot;Payment webhook processed successfully for order: {}&quot;, order.getOrderId());</span>
+<span class="fc" id="L178">            return PaymentResult.success(&quot;Payment processed successfully&quot;);</span>
 
 <span class="nc" id="L180">        } catch (Exception e) {</span>
 <span class="nc" id="L181">            logger.error(&quot;Error processing payment webhook: &quot;, e);</span>
@@ -185,7 +185,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResult handlePaymentWebhookFromPayOS(PayOSWebhookData webhookData) {
-<span class="nc" id="L188">        return handlePaymentWebhook(webhookData);</span>
+<span class="fc" id="L188">        return handlePaymentWebhook(webhookData);</span>
     }
 
     @Override
@@ -244,44 +244,44 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void updatePaymentStatus(Payment payment, PaymentStatus status, Long payosPaymentId) {
-<span class="nc" id="L247">        payment.setStatus(status);</span>
-<span class="nc bnc" id="L248" title="All 2 branches missed.">        if (payosPaymentId != null) {</span>
-<span class="nc" id="L249">            payment.setPayosPaymentId(payosPaymentId);</span>
+<span class="fc" id="L247">        payment.setStatus(status);</span>
+<span class="fc bfc" id="L248" title="All 2 branches covered.">        if (payosPaymentId != null) {</span>
+<span class="fc" id="L249">            payment.setPayosPaymentId(payosPaymentId);</span>
         }
-<span class="nc" id="L251">        payment.setUpdatedAt(LocalDateTime.now());</span>
-<span class="nc" id="L252">        paymentRepo.save(payment);</span>
-<span class="nc" id="L253">    }</span>
+<span class="fc" id="L251">        payment.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L252">        paymentRepo.save(payment);</span>
+<span class="fc" id="L253">    }</span>
 
     @Override
     public List&lt;Payment&gt; getPaymentsByCustomerId(Long customerId) {
-<span class="nc" id="L257">        return paymentRepo.findByOrder_Customer_CustomerId(customerId);</span>
+<span class="fc" id="L257">        return paymentRepo.findByOrder_Customer_CustomerId(customerId);</span>
     }
 
     @Override
     public List&lt;Payment&gt; getPaymentsByCustomerIdAndStatus(Long customerId, PaymentStatus status) {
-<span class="nc" id="L262">        return paymentRepo.findByOrder_Customer_CustomerIdAndStatus(customerId, status);</span>
+<span class="fc" id="L262">        return paymentRepo.findByOrder_Customer_CustomerIdAndStatus(customerId, status);</span>
     }
 
     @Override
     public boolean cancelPayment(Payment payment) {
         try {
-<span class="nc bnc" id="L268" title="All 2 branches missed.">            if (payment.getStatus() == PaymentStatus.PAID) {</span>
-<span class="nc" id="L269">                logger.warn(&quot;Cannot cancel paid payment: {}&quot;, payment.getPaymentId());</span>
-<span class="nc" id="L270">                return false;</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">            if (payment.getStatus() == PaymentStatus.PAID) {</span>
+<span class="fc" id="L269">                logger.warn(&quot;Cannot cancel paid payment: {}&quot;, payment.getPaymentId());</span>
+<span class="fc" id="L270">                return false;</span>
             }
 
-<span class="nc" id="L273">            payment.setStatus(PaymentStatus.CANCELLED);</span>
-<span class="nc" id="L274">            payment.setUpdatedAt(LocalDateTime.now());</span>
-<span class="nc" id="L275">            paymentRepo.save(payment);</span>
+<span class="fc" id="L273">            payment.setStatus(PaymentStatus.CANCELLED);</span>
+<span class="fc" id="L274">            payment.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L275">            paymentRepo.save(payment);</span>
 
             // Also cancel the order
-<span class="nc" id="L278">            Order order = payment.getOrder();</span>
-<span class="nc" id="L279">            order.setStatus(OrderStatus.CANCELLED);</span>
-<span class="nc" id="L280">            order.setUpdatedAt(LocalDateTime.now());</span>
-<span class="nc" id="L281">            orderRepo.save(order);</span>
+<span class="fc" id="L278">            Order order = payment.getOrder();</span>
+<span class="fc" id="L279">            order.setStatus(OrderStatus.CANCELLED);</span>
+<span class="fc" id="L280">            order.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L281">            orderRepo.save(order);</span>
 
-<span class="nc" id="L283">            logger.info(&quot;Payment cancelled: {}&quot;, payment.getPaymentId());</span>
-<span class="nc" id="L284">            return true;</span>
+<span class="fc" id="L283">            logger.info(&quot;Payment cancelled: {}&quot;, payment.getPaymentId());</span>
+<span class="fc" id="L284">            return true;</span>
 
 <span class="nc" id="L286">        } catch (Exception e) {</span>
 <span class="nc" id="L287">            logger.error(&quot;Error cancelling payment: &quot;, e);</span>
@@ -293,29 +293,29 @@ public class PaymentServiceImpl implements PaymentService {
     public void updateExpiredPayments() {
         try {
             // Find all pending payments that have expired
-<span class="nc" id="L296">            List&lt;Payment&gt; allPendingPayments = paymentRepo.findByStatus(PaymentStatus.PENDING);</span>
-<span class="nc" id="L297">            LocalDateTime now = LocalDateTime.now();</span>
-<span class="nc" id="L298">            List&lt;Payment&gt; expiredPayments = allPendingPayments.stream()</span>
-<span class="nc bnc" id="L299" title="All 4 branches missed.">                .filter(p -&gt; p.getExpiredAt() != null &amp;&amp; p.getExpiredAt().isBefore(now))</span>
-<span class="nc" id="L300">                .collect(Collectors.toList());</span>
+<span class="fc" id="L296">            List&lt;Payment&gt; allPendingPayments = paymentRepo.findByStatus(PaymentStatus.PENDING);</span>
+<span class="fc" id="L297">            LocalDateTime now = LocalDateTime.now();</span>
+<span class="fc" id="L298">            List&lt;Payment&gt; expiredPayments = allPendingPayments.stream()</span>
+<span class="fc bfc" id="L299" title="All 4 branches covered.">                .filter(p -&gt; p.getExpiredAt() != null &amp;&amp; p.getExpiredAt().isBefore(now))</span>
+<span class="fc" id="L300">                .collect(Collectors.toList());</span>
 
-<span class="nc bnc" id="L302" title="All 2 branches missed.">            for (Payment payment : expiredPayments) {</span>
-<span class="nc" id="L303">                payment.setStatus(PaymentStatus.EXPIRED);</span>
-<span class="nc" id="L304">                payment.setUpdatedAt(LocalDateTime.now());</span>
-<span class="nc" id="L305">                paymentRepo.save(payment);</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">            for (Payment payment : expiredPayments) {</span>
+<span class="fc" id="L303">                payment.setStatus(PaymentStatus.EXPIRED);</span>
+<span class="fc" id="L304">                payment.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L305">                paymentRepo.save(payment);</span>
 
                 // Also mark order as cancelled
-<span class="nc" id="L308">                Order order = payment.getOrder();</span>
-<span class="nc" id="L309">                order.setStatus(OrderStatus.CANCELLED);</span>
-<span class="nc" id="L310">                order.setUpdatedAt(LocalDateTime.now());</span>
-<span class="nc" id="L311">                orderRepo.save(order);</span>
-<span class="nc" id="L312">            }</span>
+<span class="fc" id="L308">                Order order = payment.getOrder();</span>
+<span class="fc" id="L309">                order.setStatus(OrderStatus.CANCELLED);</span>
+<span class="fc" id="L310">                order.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L311">                orderRepo.save(order);</span>
+<span class="fc" id="L312">            }</span>
 
-<span class="nc" id="L314">            logger.info(&quot;Updated {} expired payments&quot;, expiredPayments.size());</span>
+<span class="fc" id="L314">            logger.info(&quot;Updated {} expired payments&quot;, expiredPayments.size());</span>
 
 <span class="nc" id="L316">        } catch (Exception e) {</span>
 <span class="nc" id="L317">            logger.error(&quot;Error updating expired payments: &quot;, e);</span>
-<span class="nc" id="L318">        }</span>
-<span class="nc" id="L319">    }</span>
+<span class="fc" id="L318">        }</span>
+<span class="fc" id="L319">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

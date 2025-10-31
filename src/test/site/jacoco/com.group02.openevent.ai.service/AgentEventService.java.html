@@ -252,70 +252,76 @@ import java.util.Optional;
         Event event;
 <span class="fc" id="L253">        log.info(&quot;Saving event {}&quot;, draft.getEventType());</span>
 <span class="fc" id="L254">        log.info(&quot;Saving event from DTO type: {}&quot;, draft.getClass().getName());</span>
-<span class="pc bpc" id="L255" title="3 of 5 branches missed.">        switch (draft.getEventType()) {</span>
-            case WORKSHOP:
-<span class="nc" id="L257">                event = new WorkshopEvent();</span>
-<span class="nc" id="L258">                break;</span>
-            case MUSIC:
-<span class="fc" id="L260">                event = new MusicEvent();</span>
-<span class="fc" id="L261">                break;</span>
-            case FESTIVAL:
-<span class="nc" id="L263">                event = new FestivalEvent();</span>
-<span class="nc" id="L264">                break;</span>
-            case COMPETITION:
-<span class="nc" id="L266">                event = new CompetitionEvent();</span>
-<span class="nc" id="L267">                break;</span>
-            default:
-<span class="fc" id="L269">                log.warn(&quot;Unknown or null EventType received. Defaulting to generic Event.&quot;);</span>
-<span class="fc" id="L270">                event = new Event();</span>
-                break;
+<span class="fc" id="L255">        EventType draftType = draft.getEventType();</span>
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        if (draftType == null) {</span>
+<span class="fc" id="L257">            log.warn(&quot;Unknown or null EventType received. Defaulting to generic Event.&quot;);</span>
+<span class="fc" id="L258">            event = new Event();</span>
+        } else {
+<span class="pc bpc" id="L260" title="4 of 5 branches missed.">            switch (draftType) {</span>
+                case WORKSHOP:
+<span class="nc" id="L262">                    event = new WorkshopEvent();</span>
+<span class="nc" id="L263">                    break;</span>
+                case MUSIC:
+<span class="nc" id="L265">                    event = new MusicEvent();</span>
+<span class="nc" id="L266">                    break;</span>
+                case FESTIVAL:
+<span class="nc" id="L268">                    event = new FestivalEvent();</span>
+<span class="nc" id="L269">                    break;</span>
+                case COMPETITION:
+<span class="nc" id="L271">                    event = new CompetitionEvent();</span>
+<span class="nc" id="L272">                    break;</span>
+                default:
+<span class="fc" id="L274">                    log.warn(&quot;Unknown EventType received: {}. Defaulting to generic Event.&quot;, draftType);</span>
+<span class="fc" id="L275">                    event = new Event();</span>
+                    break;
+            }
         }
-<span class="fc" id="L273">        log.info(&quot;Saving event {}&quot;, event.getClass().getName());</span>
-<span class="fc" id="L274">        AIEventMapper.createEventFromRequest(draft, event);</span>
-<span class="fc" id="L275">        final Event finalEvent = event;</span>
-<span class="pc bpc" id="L276" title="1 of 2 branches missed.">        if (event.getSubEvents() != null) {</span>
-<span class="nc" id="L277">            event.getSubEvents().forEach(sub -&gt; sub.setParentEvent(finalEvent));</span>
+<span class="fc" id="L279">        log.info(&quot;Saving event {}&quot;, event.getClass().getName());</span>
+<span class="fc" id="L280">        AIEventMapper.createEventFromRequest(draft, event);</span>
+<span class="fc" id="L281">        final Event finalEvent = event;</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">        if (event.getSubEvents() != null) {</span>
+<span class="nc" id="L283">            event.getSubEvents().forEach(sub -&gt; sub.setParentEvent(finalEvent));</span>
         }
         // 2) Find or create Host (idempotent)
-<span class="fc" id="L280">        Host h = c.getHost();</span>
-<span class="pc bpc" id="L281" title="1 of 2 branches missed.">        if (h == null) {</span>
-<span class="fc" id="L282">            h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -&gt; {</span>
-<span class="fc" id="L283">                Host nh = new Host();</span>
-<span class="fc" id="L284">                nh.setCustomer(c);</span>
-<span class="fc" id="L285">                return hostService.save(nh);</span>
+<span class="fc" id="L286">        Host h = c.getHost();</span>
+<span class="pc bpc" id="L287" title="1 of 2 branches missed.">        if (h == null) {</span>
+<span class="fc" id="L288">            h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -&gt; {</span>
+<span class="fc" id="L289">                Host nh = new Host();</span>
+<span class="fc" id="L290">                nh.setCustomer(c);</span>
+<span class="fc" id="L291">                return hostService.save(nh);</span>
             });
         }
         
         // 3) Required host
-<span class="fc" id="L290">        finalEvent.setHost(h);</span>
+<span class="fc" id="L296">        finalEvent.setHost(h);</span>
         
         // 4) Optional organization
-<span class="fc bfc" id="L293" title="All 2 branches covered.">        if (organizationId != null) {</span>
-<span class="fc" id="L294">            Organization org = organizationService.findById(organizationId)</span>
-<span class="pc" id="L295">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Organization không tồn tại&quot;));</span>
-<span class="fc" id="L296">            finalEvent.setOrganization(org);</span>
-<span class="fc" id="L297">        } else {</span>
-<span class="fc" id="L298">            finalEvent.setOrganization(null);</span>
+<span class="fc bfc" id="L299" title="All 2 branches covered.">        if (organizationId != null) {</span>
+<span class="fc" id="L300">            Organization org = organizationService.findById(organizationId)</span>
+<span class="pc" id="L301">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Organization không tồn tại&quot;));</span>
+<span class="fc" id="L302">            finalEvent.setOrganization(org);</span>
+<span class="fc" id="L303">        } else {</span>
+<span class="fc" id="L304">            finalEvent.setOrganization(null);</span>
         }
         
         // 5) Safe defaults
-<span class="pc bpc" id="L302" title="1 of 2 branches missed.">        if (finalEvent.getStatus() == null) finalEvent.setStatus(EventStatus.DRAFT);</span>
-<span class="pc bpc" id="L303" title="1 of 2 branches missed.">        if (finalEvent.getEventType() == null) finalEvent.setEventType(EventType.OTHERS);</span>
-<span class="pc bpc" id="L304" title="1 of 2 branches missed.">        if (finalEvent.getCreatedAt() == null) finalEvent.setCreatedAt(LocalDateTime.now());</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">        if (finalEvent.getStatus() == null) finalEvent.setStatus(EventStatus.DRAFT);</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">        if (finalEvent.getEventType() == null) finalEvent.setEventType(EventType.OTHERS);</span>
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">        if (finalEvent.getCreatedAt() == null) finalEvent.setCreatedAt(LocalDateTime.now());</span>
 
         // 6) Lưu event và tạo nhắc nhở mặc định cho host
-<span class="fc" id="L307">        Event savedEvent = eventRepo.save(event);</span>
+<span class="fc" id="L313">        Event savedEvent = eventRepo.save(event);</span>
         
         // Tạo lịch nhắc nhở mặc định cho host khi tạo event
         try {
-<span class="fc" id="L311">            createOrUpdateEmailReminder(savedEvent.getId(), 5, userId);</span>
-<span class="fc" id="L312">            log.info(&quot;✅ Đã tạo lịch nhắc nhở mặc định cho host khi tạo event ID: {}&quot;, savedEvent.getId());</span>
-<span class="nc" id="L313">        } catch (Exception e) {</span>
-<span class="nc" id="L314">            log.error(&quot;❌ Lỗi khi tạo lịch nhắc nhở cho event ID: {} - {}&quot;, savedEvent.getId(), e.getMessage(), e);</span>
+<span class="fc" id="L317">            createOrUpdateEmailReminder(savedEvent.getId(), 5, userId);</span>
+<span class="fc" id="L318">            log.info(&quot;✅ Đã tạo lịch nhắc nhở mặc định cho host khi tạo event ID: {}&quot;, savedEvent.getId());</span>
+<span class="nc" id="L319">        } catch (Exception e) {</span>
+<span class="nc" id="L320">            log.error(&quot;❌ Lỗi khi tạo lịch nhắc nhở cho event ID: {} - {}&quot;, savedEvent.getId(), e.getMessage(), e);</span>
             // Không throw exception để không ảnh hưởng đến việc tạo event
-<span class="fc" id="L316">        }</span>
+<span class="fc" id="L322">        }</span>
 
-<span class="fc" id="L318">        return savedEvent;</span>
+<span class="fc" id="L324">        return savedEvent;</span>
     }
 
 

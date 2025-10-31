@@ -8,7 +8,6 @@ import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.PlaceService;
 import com.group02.openevent.util.TimeSlotUnit;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +21,6 @@ import java.util.Optional;
 
 /**
  * Controller để xử lý các chức năng AI liên quan đến Event
- *
  * @author Admin
  */
 @RestController
@@ -36,280 +34,264 @@ public class EventAIController {
     private final PlaceService placeService;
     private final ObjectMapper objectMapper;
 
-    @Autowired
     public EventAIController(AgentEventService agentEventService,
-                             EventService eventService,
-                             PlaceService placeService,
-<span class="fc" id="L43">                             ObjectMapper objectMapper) {</span>
-<span class="fc" id="L44">        this.agentEventService = agentEventService;</span>
-<span class="fc" id="L45">        this.eventService = eventService;</span>
-<span class="fc" id="L46">        this.placeService = placeService;</span>
-<span class="fc" id="L47">        this.objectMapper = objectMapper;</span>
-<span class="fc" id="L48">    }</span>
-
-    public EventAIController(AgentEventService agentEventService,
-                             EventService eventService,
-<span class="nc" id="L52">                             PlaceService placeService) {</span>
-<span class="nc" id="L53">        this.agentEventService = agentEventService;</span>
-<span class="nc" id="L54">        this.eventService = eventService;</span>
-<span class="nc" id="L55">        this.placeService = placeService;</span>
-<span class="nc" id="L56">        this.objectMapper = new ObjectMapper();</span>
-<span class="nc" id="L57">    }</span>
+                           EventService eventService,
+                           PlaceService placeService,
+<span class="fc" id="L40">                           ObjectMapper objectMapper) {</span>
+<span class="fc" id="L41">        this.agentEventService = agentEventService;</span>
+<span class="fc" id="L42">        this.eventService = eventService;</span>
+<span class="fc" id="L43">        this.placeService = placeService;</span>
+<span class="fc" id="L44">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L45">    }</span>
 
     /**
      * Thực hiện action tạo event từ AI
-     *
      * @param request Map chứa action và userId
      * @return ResponseEntity chứa kết quả
      */
     @PostMapping(&quot;/create&quot;)
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; createEvent(@RequestBody Map&lt;String, Object&gt; request) {
         try {
-<span class="fc" id="L68">            Object actionRaw = request.get(&quot;action&quot;);</span>
-<span class="fc" id="L69">            Action action = null;</span>
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">            if (actionRaw instanceof Action) {</span>
-<span class="nc" id="L71">                action = (Action) actionRaw;</span>
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">            } else if (actionRaw instanceof Map&lt;?, ?&gt; map) {</span>
-<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                action = (objectMapper != null ? objectMapper : new ObjectMapper())</span>
-<span class="fc" id="L74">                        .convertValue(map, Action.class);</span>
+<span class="fc" id="L55">            Object actionRaw = request.get(&quot;action&quot;);</span>
+<span class="fc" id="L56">            Action action = null;</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">            if (actionRaw instanceof Action) {</span>
+<span class="nc" id="L58">                action = (Action) actionRaw;</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">            } else if (actionRaw instanceof Map&lt;?,?&gt; map) {</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                action = (objectMapper != null ? objectMapper : new ObjectMapper())</span>
+<span class="fc" id="L61">                        .convertValue(map, Action.class);</span>
             }
-<span class="fc" id="L76">            Integer userId = (Integer) request.get(&quot;userId&quot;);</span>
-
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">            if (action == null) {</span>
-<span class="nc" id="L79">                return ResponseEntity.badRequest()</span>
-<span class="nc" id="L80">                        .body(Map.of(&quot;error&quot;, &quot;❌ Action không được để trống&quot;));</span>
+<span class="fc" id="L63">            Integer userId = (Integer) request.get(&quot;userId&quot;);</span>
+            
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">            if (action == null) {</span>
+<span class="fc" id="L66">                return ResponseEntity.badRequest()</span>
+<span class="fc" id="L67">                    .body(Map.of(&quot;error&quot;, &quot;❌ Action không được để trống&quot;));</span>
             }
-
-<span class="pc bpc" id="L83" title="2 of 4 branches missed.">            if (userId == null || userId &lt;= 0) {</span>
-<span class="nc" id="L84">                return ResponseEntity.badRequest()</span>
-<span class="nc" id="L85">                        .body(Map.of(&quot;error&quot;, &quot;❌ User ID không hợp lệ&quot;));</span>
+            
+<span class="nc bnc" id="L70" title="All 4 branches missed.">            if (userId == null || userId &lt;= 0) {</span>
+<span class="nc" id="L71">                return ResponseEntity.badRequest()</span>
+<span class="nc" id="L72">                    .body(Map.of(&quot;error&quot;, &quot;❌ User ID không hợp lệ&quot;));</span>
             }
-
-<span class="fc bfc" id="L88" title="All 2 branches covered.">            if (!&quot;ADD_EVENT&quot;.equals(action.getToolName())) {</span>
-<span class="fc" id="L89">                return ResponseEntity.badRequest()</span>
-<span class="fc" id="L90">                        .body(Map.of(&quot;error&quot;, &quot;❌ Chỉ hỗ trợ action ADD_EVENT&quot;));</span>
+            
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if (!&quot;ADD_EVENT&quot;.equals(action.getToolName())) {</span>
+<span class="nc" id="L76">                return ResponseEntity.badRequest()</span>
+<span class="nc" id="L77">                    .body(Map.of(&quot;error&quot;, &quot;❌ Chỉ hỗ trợ action ADD_EVENT&quot;));</span>
             }
-
-<span class="fc" id="L93">            agentEventService.saveEventFromAction(action, userId.longValue());</span>
-
-<span class="fc" id="L95">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="fc" id="L96">                    &quot;success&quot;, true,</span>
-                    &quot;message&quot;, &quot;✅ Đã tạo sự kiện thành công&quot;,
-<span class="fc" id="L98">                    &quot;eventTitle&quot;, action.getArgs().get(&quot;title&quot;)</span>
+            
+<span class="nc" id="L80">            agentEventService.saveEventFromAction(action, userId.longValue());</span>
+            
+<span class="nc" id="L82">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="nc" id="L83">                &quot;success&quot;, true,</span>
+                &quot;message&quot;, &quot;✅ Đã tạo sự kiện thành công&quot;,
+<span class="nc" id="L85">                &quot;eventTitle&quot;, action.getArgs().get(&quot;title&quot;)</span>
             );
-
-<span class="fc" id="L101">            return ResponseEntity.ok(result);</span>
-
-<span class="fc" id="L103">        } catch (Exception e) {</span>
-<span class="fc" id="L104">            e.printStackTrace();</span>
-<span class="fc" id="L105">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="fc" id="L106">                    &quot;success&quot;, false,</span>
-<span class="fc" id="L107">                    &quot;error&quot;, &quot;❌ Lỗi khi tạo sự kiện: &quot; + e.getMessage()</span>
+            
+<span class="nc" id="L88">            return ResponseEntity.ok(result);</span>
+            
+<span class="nc" id="L90">        } catch (Exception e) {</span>
+<span class="nc" id="L91">            e.printStackTrace();</span>
+<span class="nc" id="L92">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="nc" id="L93">                &quot;success&quot;, false,</span>
+<span class="nc" id="L94">                &quot;error&quot;, &quot;❌ Lỗi khi tạo sự kiện: &quot; + e.getMessage()</span>
             );
-<span class="fc" id="L109">            return ResponseEntity.internalServerError().body(result);</span>
+<span class="nc" id="L96">            return ResponseEntity.internalServerError().body(result);</span>
         }
     }
 
     /**
      * Thực hiện action cập nhật event từ AI
-     *
      * @param action Action từ AI
      * @return ResponseEntity chứa kết quả
      */
     @PostMapping(&quot;/update&quot;)
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; updateEvent(@RequestBody Action action) {
         try {
-<span class="fc bfc" id="L122" title="All 2 branches covered.">            if (!&quot;UPDATE_EVENT&quot;.equals(action.getToolName())) {</span>
-<span class="fc" id="L123">                return ResponseEntity.badRequest()</span>
-<span class="fc" id="L124">                        .body(Map.of(&quot;error&quot;, &quot;❌ Chỉ hỗ trợ action UPDATE_EVENT&quot;));</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            if (!&quot;UPDATE_EVENT&quot;.equals(action.getToolName())) {</span>
+<span class="fc" id="L109">                return ResponseEntity.badRequest()</span>
+<span class="fc" id="L110">                    .body(Map.of(&quot;error&quot;, &quot;❌ Chỉ hỗ trợ action UPDATE_EVENT&quot;));</span>
             }
-
-<span class="fc" id="L127">            agentEventService.updateEventFromAction(action);</span>
-
-<span class="fc" id="L129">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="fc" id="L130">                    &quot;success&quot;, true,</span>
-                    &quot;message&quot;, &quot;✅ Đã cập nhật sự kiện thành công&quot;
+            
+<span class="fc" id="L113">            agentEventService.updateEventFromAction(action);</span>
+            
+<span class="fc" id="L115">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="fc" id="L116">                &quot;success&quot;, true,</span>
+                &quot;message&quot;, &quot;✅ Đã cập nhật sự kiện thành công&quot;
             );
-
-<span class="fc" id="L134">            return ResponseEntity.ok(result);</span>
-
-<span class="fc" id="L136">        } catch (Exception e) {</span>
-<span class="fc" id="L137">            e.printStackTrace();</span>
-<span class="fc" id="L138">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="fc" id="L139">                    &quot;success&quot;, false,</span>
-<span class="fc" id="L140">                    &quot;error&quot;, &quot;❌ Lỗi khi cập nhật sự kiện: &quot; + e.getMessage()</span>
+            
+<span class="fc" id="L120">            return ResponseEntity.ok(result);</span>
+            
+<span class="fc" id="L122">        } catch (Exception e) {</span>
+<span class="fc" id="L123">            e.printStackTrace();</span>
+<span class="fc" id="L124">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="fc" id="L125">                &quot;success&quot;, false,</span>
+<span class="fc" id="L126">                &quot;error&quot;, &quot;❌ Lỗi khi cập nhật sự kiện: &quot; + e.getMessage()</span>
             );
-<span class="fc" id="L142">            return ResponseEntity.internalServerError().body(result);</span>
+<span class="fc" id="L128">            return ResponseEntity.internalServerError().body(result);</span>
         }
     }
 
     /**
      * Thực hiện action xóa event từ AI
-     *
      * @param action Action từ AI
      * @return ResponseEntity chứa kết quả
      */
     @PostMapping(&quot;/delete&quot;)
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; deleteEvent(@RequestBody Action action) {
         try {
-<span class="fc bfc" id="L155" title="All 2 branches covered.">            if (!&quot;DELETE_EVENT&quot;.equals(action.getToolName())) {</span>
-<span class="fc" id="L156">                return ResponseEntity.badRequest()</span>
-<span class="fc" id="L157">                        .body(Map.of(&quot;error&quot;, &quot;❌ Chỉ hỗ trợ action DELETE_EVENT&quot;));</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            if (!&quot;DELETE_EVENT&quot;.equals(action.getToolName())) {</span>
+<span class="fc" id="L141">                return ResponseEntity.badRequest()</span>
+<span class="fc" id="L142">                    .body(Map.of(&quot;error&quot;, &quot;❌ Chỉ hỗ trợ action DELETE_EVENT&quot;));</span>
             }
-
-<span class="fc" id="L160">            agentEventService.deleteEventFromAction(action);</span>
-
-<span class="fc" id="L162">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="fc" id="L163">                    &quot;success&quot;, true,</span>
-                    &quot;message&quot;, &quot;✅ Đã xóa sự kiện thành công&quot;
+            
+<span class="fc" id="L145">            agentEventService.deleteEventFromAction(action);</span>
+            
+<span class="fc" id="L147">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="fc" id="L148">                &quot;success&quot;, true,</span>
+                &quot;message&quot;, &quot;✅ Đã xóa sự kiện thành công&quot;
             );
-
-<span class="fc" id="L167">            return ResponseEntity.ok(result);</span>
-
-<span class="fc" id="L169">        } catch (Exception e) {</span>
-<span class="fc" id="L170">            e.printStackTrace();</span>
-<span class="fc" id="L171">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="fc" id="L172">                    &quot;success&quot;, false,</span>
-<span class="fc" id="L173">                    &quot;error&quot;, &quot;❌ Lỗi khi xóa sự kiện: &quot; + e.getMessage()</span>
+            
+<span class="fc" id="L152">            return ResponseEntity.ok(result);</span>
+            
+<span class="fc" id="L154">        } catch (Exception e) {</span>
+<span class="fc" id="L155">            e.printStackTrace();</span>
+<span class="fc" id="L156">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="fc" id="L157">                &quot;success&quot;, false,</span>
+<span class="fc" id="L158">                &quot;error&quot;, &quot;❌ Lỗi khi xóa sự kiện: &quot; + e.getMessage()</span>
             );
-<span class="fc" id="L175">            return ResponseEntity.internalServerError().body(result);</span>
+<span class="fc" id="L160">            return ResponseEntity.internalServerError().body(result);</span>
         }
     }
 
     /**
      * Lấy danh sách thời gian rảnh
-     *
      * @param request Map chứa thông tin yêu cầu
      * @return ResponseEntity chứa danh sách thời gian rảnh
      */
     @PostMapping(&quot;/free-time&quot;)
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getFreeTime(@RequestBody Map&lt;String, Object&gt; request) {
         try {
-<span class="fc" id="L188">            String timeContext = (String) request.getOrDefault(&quot;timeContext&quot;, &quot;THIS_WEEK&quot;);</span>
-<span class="fc" id="L189">            String placeName = (String) request.getOrDefault(&quot;place&quot;, &quot;&quot;);</span>
-
+<span class="fc" id="L172">            String timeContext = (String) request.getOrDefault(&quot;timeContext&quot;, &quot;THIS_WEEK&quot;);</span>
+<span class="fc" id="L173">            String placeName = (String) request.getOrDefault(&quot;place&quot;, &quot;&quot;);</span>
+            
             List&lt;Event&gt; events;
-<span class="pc bpc" id="L192" title="1 of 2 branches missed.">            if (!placeName.isEmpty()) {</span>
-<span class="nc" id="L193">                Optional&lt;com.group02.openevent.model.event.Place&gt; placeOpt =</span>
-<span class="nc" id="L194">                        placeService.findPlaceByName(placeName);</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">                if (placeOpt.isPresent()) {</span>
-<span class="nc" id="L196">                    events = eventService.getEventsByPlace(placeOpt.get().getId());</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">            if (!placeName.isEmpty()) {</span>
+<span class="fc" id="L177">                Optional&lt;com.group02.openevent.model.event.Place&gt; placeOpt = </span>
+<span class="fc" id="L178">                    placeService.findPlaceByName(placeName);</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">                if (placeOpt.isPresent()) {</span>
+<span class="nc" id="L180">                    events = eventService.getEventsByPlace(placeOpt.get().getId());</span>
                 } else {
-<span class="nc" id="L198">                    return ResponseEntity.badRequest()</span>
-<span class="nc" id="L199">                            .body(Map.of(&quot;error&quot;, &quot;❌ Không tìm thấy địa điểm: &quot; + placeName));</span>
+<span class="fc" id="L182">                    return ResponseEntity.badRequest()</span>
+<span class="fc" id="L183">                        .body(Map.of(&quot;error&quot;, &quot;❌ Không tìm thấy địa điểm: &quot; + placeName));</span>
                 }
-<span class="nc" id="L201">            } else {</span>
-<span class="fc" id="L202">                events = eventService.getAllEvents();</span>
+<span class="nc" id="L185">            } else {</span>
+<span class="fc" id="L186">                events = eventService.getAllEvents();</span>
             }
-
+            
             // Lọc theo ngữ cảnh thời gian
             List&lt;Event&gt; filteredEvents;
-<span class="pc bpc" id="L207" title="1 of 5 branches missed.">            switch (timeContext) {</span>
-<span class="fc" id="L208">                case &quot;TODAY&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsToday(events);</span>
-<span class="fc" id="L209">                case &quot;TOMORROW&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsTomorrow(events);</span>
-<span class="fc" id="L210">                case &quot;THIS_WEEK&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsThisWeek(events);</span>
-<span class="fc" id="L211">                case &quot;NEXT_WEEK&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsNextWeek(events);</span>
-<span class="nc" id="L212">                default -&gt; filteredEvents = events;</span>
+<span class="pc bpc" id="L191" title="1 of 5 branches missed.">            switch (timeContext) {</span>
+<span class="fc" id="L192">                case &quot;TODAY&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsToday(events);</span>
+<span class="fc" id="L193">                case &quot;TOMORROW&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsTomorrow(events);</span>
+<span class="fc" id="L194">                case &quot;THIS_WEEK&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsThisWeek(events);</span>
+<span class="fc" id="L195">                case &quot;NEXT_WEEK&quot; -&gt; filteredEvents = TimeSlotUnit.filterEventsNextWeek(events);</span>
+<span class="nc" id="L196">                default -&gt; filteredEvents = events;</span>
             }
-
-<span class="fc" id="L215">            List&lt;TimeSlot&gt; freeSlots = TimeSlotUnit.findFreeTime(filteredEvents);</span>
-
-<span class="fc" id="L217">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="fc" id="L218">                    &quot;success&quot;, true,</span>
-                    &quot;freeSlots&quot;, freeSlots,
-                    &quot;timeContext&quot;, timeContext,
-                    &quot;place&quot;, placeName,
-<span class="fc" id="L222">                    &quot;totalFreeSlots&quot;, freeSlots.size()</span>
+            
+<span class="fc" id="L199">            List&lt;TimeSlot&gt; freeSlots = TimeSlotUnit.findFreeTime(filteredEvents);</span>
+            
+<span class="fc" id="L201">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="fc" id="L202">                &quot;success&quot;, true,</span>
+                &quot;freeSlots&quot;, freeSlots,
+                &quot;timeContext&quot;, timeContext,
+                &quot;place&quot;, placeName,
+<span class="fc" id="L206">                &quot;totalFreeSlots&quot;, freeSlots.size()</span>
             );
-
-<span class="fc" id="L225">            return ResponseEntity.ok(result);</span>
-
-<span class="nc" id="L227">        } catch (Exception e) {</span>
-<span class="nc" id="L228">            e.printStackTrace();</span>
-<span class="nc" id="L229">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="nc" id="L230">                    &quot;success&quot;, false,</span>
-<span class="nc" id="L231">                    &quot;error&quot;, &quot;❌ Lỗi khi lấy thời gian rảnh: &quot; + e.getMessage()</span>
+            
+<span class="fc" id="L209">            return ResponseEntity.ok(result);</span>
+            
+<span class="nc" id="L211">        } catch (Exception e) {</span>
+<span class="nc" id="L212">            e.printStackTrace();</span>
+<span class="nc" id="L213">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="nc" id="L214">                &quot;success&quot;, false,</span>
+<span class="nc" id="L215">                &quot;error&quot;, &quot;❌ Lỗi khi lấy thời gian rảnh: &quot; + e.getMessage()</span>
             );
-<span class="nc" id="L233">            return ResponseEntity.internalServerError().body(result);</span>
+<span class="nc" id="L217">            return ResponseEntity.internalServerError().body(result);</span>
         }
     }
 
     /**
      * Kiểm tra xung đột thời gian cho event
-     *
      * @param request Map chứa thông tin event
      * @return ResponseEntity chứa kết quả kiểm tra
      */
     @PostMapping(&quot;/check-conflict&quot;)
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; checkTimeConflict(@RequestBody Map&lt;String, Object&gt; request) {
         try {
-<span class="fc" id="L246">            LocalDateTime startTime = LocalDateTime.parse((String) request.get(&quot;startTime&quot;));</span>
-<span class="fc" id="L247">            LocalDateTime endTime = LocalDateTime.parse((String) request.get(&quot;endTime&quot;));</span>
-<span class="fc" id="L248">            String placeName = (String) request.get(&quot;place&quot;);</span>
-
-<span class="fc" id="L250">            List&lt;com.group02.openevent.model.event.Place&gt; places = List.of();</span>
-<span class="pc bpc" id="L251" title="1 of 4 branches missed.">            if (placeName != null &amp;&amp; !placeName.isEmpty()) {</span>
-<span class="fc" id="L252">                Optional&lt;com.group02.openevent.model.event.Place&gt; placeOpt =</span>
-<span class="fc" id="L253">                        placeService.findPlaceByName(placeName);</span>
-<span class="pc bpc" id="L254" title="1 of 2 branches missed.">                if (placeOpt.isPresent()) {</span>
-<span class="nc" id="L255">                    places = List.of(placeOpt.get());</span>
+<span class="fc" id="L229">            LocalDateTime startTime = LocalDateTime.parse((String) request.get(&quot;startTime&quot;));</span>
+<span class="fc" id="L230">            LocalDateTime endTime = LocalDateTime.parse((String) request.get(&quot;endTime&quot;));</span>
+<span class="fc" id="L231">            String placeName = (String) request.get(&quot;place&quot;);</span>
+            
+<span class="fc" id="L233">            List&lt;com.group02.openevent.model.event.Place&gt; places = List.of();</span>
+<span class="pc bpc" id="L234" title="1 of 4 branches missed.">            if (placeName != null &amp;&amp; !placeName.isEmpty()) {</span>
+<span class="fc" id="L235">                Optional&lt;com.group02.openevent.model.event.Place&gt; placeOpt = </span>
+<span class="fc" id="L236">                    placeService.findPlaceByName(placeName);</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">                if (placeOpt.isPresent()) {</span>
+<span class="nc" id="L238">                    places = List.of(placeOpt.get());</span>
                 }
             }
-
-<span class="fc" id="L259">            List&lt;Event&gt; conflicts = eventService.isTimeConflict(startTime, endTime, places);</span>
-
-<span class="fc" id="L261">            Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
-<span class="pc bpc" id="L262" title="1 of 2 branches missed.">            result.put(&quot;hasConflict&quot;, !conflicts.isEmpty());</span>
-<span class="fc" id="L263">            result.put(&quot;conflicts&quot;, conflicts);</span>
-<span class="fc" id="L264">            result.put(&quot;conflictCount&quot;, conflicts.size());</span>
-
-<span class="pc bpc" id="L266" title="1 of 2 branches missed.">            if (!conflicts.isEmpty()) {</span>
-<span class="nc" id="L267">                result.put(&quot;message&quot;, &quot;⚠️ Phát hiện &quot; + conflicts.size() + &quot; xung đột thời gian&quot;);</span>
+            
+<span class="fc" id="L242">            List&lt;Event&gt; conflicts = eventService.isTimeConflict(startTime, endTime, places);</span>
+            
+<span class="fc" id="L244">            Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">            result.put(&quot;hasConflict&quot;, !conflicts.isEmpty());</span>
+<span class="fc" id="L246">            result.put(&quot;conflicts&quot;, conflicts);</span>
+<span class="fc" id="L247">            result.put(&quot;conflictCount&quot;, conflicts.size());</span>
+            
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">            if (!conflicts.isEmpty()) {</span>
+<span class="nc" id="L250">                result.put(&quot;message&quot;, &quot;⚠️ Phát hiện &quot; + conflicts.size() + &quot; xung đột thời gian&quot;);</span>
             } else {
-<span class="fc" id="L269">                result.put(&quot;message&quot;, &quot;✅ Không có xung đột thời gian&quot;);</span>
+<span class="fc" id="L252">                result.put(&quot;message&quot;, &quot;✅ Không có xung đột thời gian&quot;);</span>
             }
-
-<span class="fc" id="L272">            return ResponseEntity.ok(result);</span>
-
-<span class="nc" id="L274">        } catch (Exception e) {</span>
-<span class="nc" id="L275">            e.printStackTrace();</span>
-<span class="nc" id="L276">            Map&lt;String, Object&gt; result = Map.of(</span>
-<span class="nc" id="L277">                    &quot;hasConflict&quot;, false,</span>
-<span class="nc" id="L278">                    &quot;error&quot;, &quot;❌ Lỗi khi kiểm tra xung đột: &quot; + e.getMessage()</span>
+            
+<span class="fc" id="L255">            return ResponseEntity.ok(result);</span>
+            
+<span class="fc" id="L257">        } catch (Exception e) {</span>
+<span class="fc" id="L258">            e.printStackTrace();</span>
+<span class="fc" id="L259">            Map&lt;String, Object&gt; result = Map.of(</span>
+<span class="fc" id="L260">                &quot;hasConflict&quot;, false,</span>
+<span class="fc" id="L261">                &quot;error&quot;, &quot;❌ Lỗi khi kiểm tra xung đột: &quot; + e.getMessage()</span>
             );
-<span class="nc" id="L280">            return ResponseEntity.internalServerError().body(result);</span>
+<span class="fc" id="L263">            return ResponseEntity.internalServerError().body(result);</span>
         }
     }
 
     /**
      * Lấy thống kê events
-     *
      * @return ResponseEntity chứa thống kê
      */
     @GetMapping(&quot;/stats&quot;)
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getEventStats() {
         try {
-<span class="fc" id="L292">            List&lt;Event&gt; allEvents = eventService.getAllEvents();</span>
-
-<span class="fc" id="L294">            long totalEvents = allEvents.size();</span>
-<span class="fc" id="L295">            long todayEvents = TimeSlotUnit.filterEventsToday(allEvents).size();</span>
-<span class="fc" id="L296">            long tomorrowEvents = TimeSlotUnit.filterEventsTomorrow(allEvents).size();</span>
-<span class="fc" id="L297">            long thisWeekEvents = TimeSlotUnit.filterEventsThisWeek(allEvents).size();</span>
-
-<span class="fc" id="L299">            Map&lt;String, Object&gt; stats = Map.of(</span>
-<span class="fc" id="L300">                    &quot;totalEvents&quot;, totalEvents,</span>
-<span class="fc" id="L301">                    &quot;todayEvents&quot;, todayEvents,</span>
-<span class="fc" id="L302">                    &quot;tomorrowEvents&quot;, tomorrowEvents,</span>
-<span class="fc" id="L303">                    &quot;thisWeekEvents&quot;, thisWeekEvents,</span>
-<span class="fc" id="L304">                    &quot;lastUpdated&quot;, LocalDateTime.now().format(DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;))</span>
+<span class="fc" id="L274">            List&lt;Event&gt; allEvents = eventService.getAllEvents();</span>
+            
+<span class="fc" id="L276">            long totalEvents = allEvents.size();</span>
+<span class="fc" id="L277">            long todayEvents = TimeSlotUnit.filterEventsToday(allEvents).size();</span>
+<span class="fc" id="L278">            long tomorrowEvents = TimeSlotUnit.filterEventsTomorrow(allEvents).size();</span>
+<span class="fc" id="L279">            long thisWeekEvents = TimeSlotUnit.filterEventsThisWeek(allEvents).size();</span>
+            
+<span class="fc" id="L281">            Map&lt;String, Object&gt; stats = Map.of(</span>
+<span class="fc" id="L282">                &quot;totalEvents&quot;, totalEvents,</span>
+<span class="fc" id="L283">                &quot;todayEvents&quot;, todayEvents,</span>
+<span class="fc" id="L284">                &quot;tomorrowEvents&quot;, tomorrowEvents,</span>
+<span class="fc" id="L285">                &quot;thisWeekEvents&quot;, thisWeekEvents,</span>
+<span class="fc" id="L286">                &quot;lastUpdated&quot;, LocalDateTime.now().format(DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;))</span>
             );
-
-<span class="fc" id="L307">            return ResponseEntity.ok(stats);</span>
-
-<span class="nc" id="L309">        } catch (Exception e) {</span>
-<span class="nc" id="L310">            e.printStackTrace();</span>
-<span class="nc" id="L311">            Map&lt;String, Object&gt; result = Map.of(&quot;error&quot;, &quot;❌ Lỗi khi lấy thống kê: &quot; + e.getMessage());</span>
-<span class="nc" id="L312">            return ResponseEntity.internalServerError().body(result);</span>
+            
+<span class="fc" id="L289">            return ResponseEntity.ok(stats);</span>
+            
+<span class="fc" id="L291">        } catch (Exception e) {</span>
+<span class="fc" id="L292">            e.printStackTrace();</span>
+<span class="fc" id="L293">            Map&lt;String, Object&gt; result = Map.of(&quot;error&quot;, &quot;❌ Lỗi khi lấy thống kê: &quot; + e.getMessage());</span>
+<span class="fc" id="L294">            return ResponseEntity.internalServerError().body(result);</span>
         }
     }
 }

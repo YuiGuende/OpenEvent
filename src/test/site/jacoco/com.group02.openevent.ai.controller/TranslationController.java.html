@@ -33,28 +33,28 @@ import java.util.concurrent.CompletableFuture;
             @RequestParam String text,
             @RequestParam String sourceLang,
             @RequestParam String targetLang) {
-
+        
         try {
 <span class="fc bfc" id="L38" title="All 4 branches covered.">            if (!isValidCode(sourceLang) || !isValidCode(targetLang)) {</span>
 <span class="fc" id="L39">                return ResponseEntity.badRequest()</span>
-<span class="fc" id="L40">                        .body(Map.of(&quot;error&quot;, &quot;Invalid language code&quot;));</span>
+<span class="fc" id="L40">                    .body(Map.of(&quot;error&quot;, &quot;Invalid language code&quot;));</span>
             }
 <span class="fc" id="L42">            Language source = Language.fromCode(sourceLang);</span>
 <span class="fc" id="L43">            Language target = Language.fromCode(targetLang);</span>
-
+            
 <span class="fc" id="L45">            String translatedText = translationService.translate(text, source, target);</span>
-
+            
 <span class="fc" id="L47">            return ResponseEntity.ok(Map.of(</span>
-                    &quot;originalText&quot;, text,
-                    &quot;translatedText&quot;, translatedText,
-<span class="fc" id="L50">                    &quot;sourceLanguage&quot;, source.getName(),</span>
-<span class="fc" id="L51">                    &quot;targetLanguage&quot;, target.getName()</span>
+                &quot;originalText&quot;, text,
+                &quot;translatedText&quot;, translatedText,
+<span class="fc" id="L50">                &quot;sourceLanguage&quot;, source.getName(),</span>
+<span class="fc" id="L51">                &quot;targetLanguage&quot;, target.getName()</span>
             ));
-
-<span class="nc" id="L54">        } catch (Exception e) {</span>
-<span class="nc" id="L55">            log.error(&quot;Translation failed&quot;, e);</span>
-<span class="nc" id="L56">            return ResponseEntity.internalServerError()</span>
-<span class="nc" id="L57">                    .body(Map.of(&quot;error&quot;, &quot;Translation failed: &quot; + e.getMessage()));</span>
+            
+<span class="fc" id="L54">        } catch (Exception e) {</span>
+<span class="fc" id="L55">            log.error(&quot;Translation failed&quot;, e);</span>
+<span class="fc" id="L56">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L57">                .body(Map.of(&quot;error&quot;, &quot;Translation failed: &quot; + e.getMessage()));</span>
         }
     }
 
@@ -108,15 +108,15 @@ import java.util.concurrent.CompletableFuture;
     @GetMapping(&quot;/languages&quot;)
     public CompletableFuture&lt;ResponseEntity&lt;Map&lt;String, Object&gt;&gt;&gt; getSupportedLanguages() {
 <span class="nc" id="L110">        return libreTranslateService.getSupportedLanguages()</span>
-<span class="nc" id="L111">                .thenApply(languages -&gt; ResponseEntity.ok(Map.of(</span>
-                        &quot;languages&quot;, languages,
-<span class="nc" id="L113">                        &quot;count&quot;, languages.size()</span>
-                )))
-<span class="nc" id="L115">                .exceptionally(throwable -&gt; {</span>
-<span class="nc" id="L116">                    log.error(&quot;Failed to get supported languages&quot;, throwable);</span>
-<span class="nc" id="L117">                    return ResponseEntity.internalServerError()</span>
-<span class="nc" id="L118">                            .body(Map.of(&quot;error&quot;, &quot;Failed to get supported languages: &quot; + throwable.getMessage()));</span>
-                });
+<span class="nc" id="L111">            .thenApply(languages -&gt; ResponseEntity.ok(Map.of(</span>
+                &quot;languages&quot;, languages,
+<span class="nc" id="L113">                &quot;count&quot;, languages.size()</span>
+            )))
+<span class="nc" id="L115">            .exceptionally(throwable -&gt; {</span>
+<span class="nc" id="L116">                log.error(&quot;Failed to get supported languages&quot;, throwable);</span>
+<span class="nc" id="L117">                return ResponseEntity.internalServerError()</span>
+<span class="nc" id="L118">                    .body(Map.of(&quot;error&quot;, &quot;Failed to get supported languages: &quot; + throwable.getMessage()));</span>
+            });
     }
 
     /**
@@ -126,17 +126,17 @@ import java.util.concurrent.CompletableFuture;
     public ResponseEntity&lt;?&gt; testConnection() {
         try {
 <span class="fc" id="L128">            boolean isAvailable = translationService.testConnection();</span>
-
+            
 <span class="fc" id="L130">            return ResponseEntity.ok(Map.of(</span>
-<span class="fc" id="L131">                    &quot;available&quot;, isAvailable,</span>
-                    &quot;service&quot;, &quot;LibreTranslate&quot;,
-<span class="fc" id="L133">                    &quot;cacheSize&quot;, translationService.getCacheSize()</span>
+<span class="fc" id="L131">                &quot;available&quot;, isAvailable,</span>
+                &quot;service&quot;, &quot;LibreTranslate&quot;,
+<span class="fc" id="L133">                &quot;cacheSize&quot;, translationService.getCacheSize()</span>
             ));
-
-<span class="nc" id="L136">        } catch (Exception e) {</span>
-<span class="nc" id="L137">            log.error(&quot;Connection test failed&quot;, e);</span>
-<span class="nc" id="L138">            return ResponseEntity.internalServerError()</span>
-<span class="nc" id="L139">                    .body(Map.of(&quot;error&quot;, &quot;Connection test failed: &quot; + e.getMessage()));</span>
+            
+<span class="fc" id="L136">        } catch (Exception e) {</span>
+<span class="fc" id="L137">            log.error(&quot;Connection test failed&quot;, e);</span>
+<span class="fc" id="L138">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L139">                .body(Map.of(&quot;error&quot;, &quot;Connection test failed: &quot; + e.getMessage()));</span>
         }
     }
 
@@ -147,16 +147,16 @@ import java.util.concurrent.CompletableFuture;
     public ResponseEntity&lt;?&gt; clearCache() {
         try {
 <span class="fc" id="L149">            translationService.clearCache();</span>
-
+            
 <span class="fc" id="L151">            return ResponseEntity.ok(Map.of(</span>
-                    &quot;message&quot;, &quot;Translation cache cleared successfully&quot;,
-<span class="fc" id="L153">                    &quot;cacheSize&quot;, translationService.getCacheSize()</span>
+                &quot;message&quot;, &quot;Translation cache cleared successfully&quot;,
+<span class="fc" id="L153">                &quot;cacheSize&quot;, translationService.getCacheSize()</span>
             ));
-
-<span class="nc" id="L156">        } catch (Exception e) {</span>
-<span class="nc" id="L157">            log.error(&quot;Failed to clear cache&quot;, e);</span>
-<span class="nc" id="L158">            return ResponseEntity.internalServerError()</span>
-<span class="nc" id="L159">                    .body(Map.of(&quot;error&quot;, &quot;Failed to clear cache: &quot; + e.getMessage()));</span>
+            
+<span class="fc" id="L156">        } catch (Exception e) {</span>
+<span class="fc" id="L157">            log.error(&quot;Failed to clear cache&quot;, e);</span>
+<span class="fc" id="L158">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L159">                .body(Map.of(&quot;error&quot;, &quot;Failed to clear cache: &quot; + e.getMessage()));</span>
         }
     }
 
@@ -168,18 +168,18 @@ import java.util.concurrent.CompletableFuture;
         try {
 <span class="fc" id="L169">            boolean isAvailable = translationService.isAvailable();</span>
 <span class="fc" id="L170">            int cacheSize = translationService.getCacheSize();</span>
-
+            
 <span class="fc" id="L172">            return ResponseEntity.ok(Map.of(</span>
-<span class="fc" id="L173">                    &quot;available&quot;, isAvailable,</span>
-                    &quot;service&quot;, &quot;LibreTranslate&quot;,
-<span class="fc" id="L175">                    &quot;cacheSize&quot;, cacheSize,</span>
-<span class="pc bpc" id="L176" title="1 of 2 branches missed.">                    &quot;status&quot;, isAvailable ? &quot;healthy&quot; : &quot;unavailable&quot;</span>
+<span class="fc" id="L173">                &quot;available&quot;, isAvailable,</span>
+                &quot;service&quot;, &quot;LibreTranslate&quot;,
+<span class="fc" id="L175">                &quot;cacheSize&quot;, cacheSize,</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">                &quot;status&quot;, isAvailable ? &quot;healthy&quot; : &quot;unavailable&quot;</span>
             ));
-
-<span class="nc" id="L179">        } catch (Exception e) {</span>
-<span class="nc" id="L180">            log.error(&quot;Failed to get status&quot;, e);</span>
-<span class="nc" id="L181">            return ResponseEntity.internalServerError()</span>
-<span class="nc" id="L182">                    .body(Map.of(&quot;error&quot;, &quot;Failed to get status: &quot; + e.getMessage()));</span>
+            
+<span class="fc" id="L179">        } catch (Exception e) {</span>
+<span class="fc" id="L180">            log.error(&quot;Failed to get status&quot;, e);</span>
+<span class="fc" id="L181">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L182">                .body(Map.of(&quot;error&quot;, &quot;Failed to get status: &quot; + e.getMessage()));</span>
         }
     }
 
@@ -190,26 +190,26 @@ import java.util.concurrent.CompletableFuture;
     public ResponseEntity&lt;?&gt; translateAIResponse(
             @RequestParam String aiResponse,
             @RequestParam String userLanguage) {
-
+        
         try {
 <span class="fc bfc" id="L195" title="All 2 branches covered.">            if (!isValidCode(userLanguage)) {</span>
 <span class="fc" id="L196">                return ResponseEntity.badRequest()</span>
-<span class="fc" id="L197">                        .body(Map.of(&quot;error&quot;, &quot;Invalid user language code&quot;));</span>
+<span class="fc" id="L197">                    .body(Map.of(&quot;error&quot;, &quot;Invalid user language code&quot;));</span>
             }
 <span class="fc" id="L199">            Language userLang = Language.fromCode(userLanguage);</span>
-
+            
 <span class="fc" id="L201">            String translatedResponse = translationService.translateAIResponse(aiResponse, userLang);</span>
-
+            
 <span class="fc" id="L203">            return ResponseEntity.ok(Map.of(</span>
-                    &quot;originalResponse&quot;, aiResponse,
-                    &quot;translatedResponse&quot;, translatedResponse,
-<span class="fc" id="L206">                    &quot;userLanguage&quot;, userLang.getName()</span>
+                &quot;originalResponse&quot;, aiResponse,
+                &quot;translatedResponse&quot;, translatedResponse,
+<span class="fc" id="L206">                &quot;userLanguage&quot;, userLang.getName()</span>
             ));
-
-<span class="nc" id="L209">        } catch (Exception e) {</span>
-<span class="nc" id="L210">            log.error(&quot;AI response translation failed&quot;, e);</span>
-<span class="nc" id="L211">            return ResponseEntity.internalServerError()</span>
-<span class="nc" id="L212">                    .body(Map.of(&quot;error&quot;, &quot;AI response translation failed: &quot; + e.getMessage()));</span>
+            
+<span class="fc" id="L209">        } catch (Exception e) {</span>
+<span class="fc" id="L210">            log.error(&quot;AI response translation failed&quot;, e);</span>
+<span class="fc" id="L211">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L212">                .body(Map.of(&quot;error&quot;, &quot;AI response translation failed: &quot; + e.getMessage()));</span>
         }
     }
 
@@ -220,26 +220,26 @@ import java.util.concurrent.CompletableFuture;
     public ResponseEntity&lt;?&gt; translateUserInput(
             @RequestParam String userInput,
             @RequestParam String userLanguage) {
-
+        
         try {
 <span class="fc bfc" id="L225" title="All 2 branches covered.">            if (!isValidCode(userLanguage)) {</span>
 <span class="fc" id="L226">                return ResponseEntity.badRequest()</span>
-<span class="fc" id="L227">                        .body(Map.of(&quot;error&quot;, &quot;Invalid user language code&quot;));</span>
+<span class="fc" id="L227">                    .body(Map.of(&quot;error&quot;, &quot;Invalid user language code&quot;));</span>
             }
 <span class="fc" id="L229">            Language userLang = Language.fromCode(userLanguage);</span>
-
+            
 <span class="fc" id="L231">            String translatedInput = translationService.translateUserInput(userInput, userLang);</span>
-
+            
 <span class="fc" id="L233">            return ResponseEntity.ok(Map.of(</span>
-                    &quot;originalInput&quot;, userInput,
-                    &quot;translatedInput&quot;, translatedInput,
-<span class="fc" id="L236">                    &quot;userLanguage&quot;, userLang.getName()</span>
+                &quot;originalInput&quot;, userInput,
+                &quot;translatedInput&quot;, translatedInput,
+<span class="fc" id="L236">                &quot;userLanguage&quot;, userLang.getName()</span>
             ));
-
-<span class="nc" id="L239">        } catch (Exception e) {</span>
-<span class="nc" id="L240">            log.error(&quot;User input translation failed&quot;, e);</span>
-<span class="nc" id="L241">            return ResponseEntity.internalServerError()</span>
-<span class="nc" id="L242">                    .body(Map.of(&quot;error&quot;, &quot;User input translation failed: &quot; + e.getMessage()));</span>
+            
+<span class="fc" id="L239">        } catch (Exception e) {</span>
+<span class="fc" id="L240">            log.error(&quot;User input translation failed&quot;, e);</span>
+<span class="fc" id="L241">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L242">                .body(Map.of(&quot;error&quot;, &quot;User input translation failed: &quot; + e.getMessage()));</span>
         }
     }
 }

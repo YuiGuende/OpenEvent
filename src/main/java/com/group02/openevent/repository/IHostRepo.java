@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface IHostRepo extends JpaRepository<Host, Long> {
     Optional<Host> findByCustomer_CustomerId(Long customerId);
+    Host getHostById(Long id);
 }

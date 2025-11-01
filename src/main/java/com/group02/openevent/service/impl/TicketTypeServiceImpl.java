@@ -1,10 +1,18 @@
 package com.group02.openevent.service.impl;
 
+import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.dto.ticket.TicketTypeDTO;
+import com.group02.openevent.mapper.TicketMapper;
+import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.TicketTypeService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,14 +30,14 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
     @Autowired
     private ITicketTypeRepo ticketTypeRepo;
+    @Autowired
+    private TicketMapper ticketMapper;
+    @Autowired
+    @Lazy
+    private EventService eventService;
+    @Autowired
+    private IOrderRepo orderRepo;
 
-    @Override
-    public TicketType createTicketType(TicketType ticketType) {
-        if (ticketType.getSoldQuantity() == null) {
-            ticketType.setSoldQuantity(0);
-        }
-        return ticketTypeRepo.save(ticketType);
-    }
 
     @Override
     public Optional<TicketType> getTicketTypeById(Long id) {
@@ -42,19 +50,33 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     }
 
     @Override
-    public TicketType updateTicketType(Long id, TicketType updatedTicketType) {
-        return ticketTypeRepo.findById(id)
-                .map(existing -> {
-                    existing.setName(updatedTicketType.getName());
-                    existing.setDescription(updatedTicketType.getDescription());
-                    existing.setPrice(updatedTicketType.getPrice());
-                    existing.setTotalQuantity(updatedTicketType.getTotalQuantity());
-                    existing.setStartSaleDate(updatedTicketType.getStartSaleDate());
-                    existing.setEndSaleDate(updatedTicketType.getEndSaleDate());
-                    // Không update soldQuantity qua API này
-                    return ticketTypeRepo.save(existing);
-                })
-                .orElse(null);
+    public void updateTickets(Long eventId, List<TicketUpdateRequest> tickets) {
+        for (TicketUpdateRequest request : tickets) {
+            if (Boolean.TRUE.equals(request.getIsDeleted())) {
+                if (request.getTicketTypeId() != null) {
+                    ticketTypeRepo.deleteById(request.getTicketTypeId());
+                }
+                continue;
+            }
+
+            TicketType ticket = ticketMapper.toTicketType(request);
+
+            if (Boolean.TRUE.equals(request.getIsNew())) {
+                Event event = eventService.getEventById(eventId)
+                        .orElseThrow(() -> new EntityNotFoundException("Event not found"));
+                ticket.setEvent(event);
+                // Ensure INSERT for new tickets (avoid trying to UPDATE a non-existent row)
+                ticket.setTicketTypeId(null);
+            } else {
+                TicketType existing = ticketTypeRepo.findById(request.getTicketTypeId())
+                        .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+                // Do not override identifier or relations
+                BeanUtils.copyProperties(ticket, existing, "ticketTypeId", "event");
+                ticket = existing;
+            }
+
+            ticketTypeRepo.save(ticket);
+        }
     }
 
     @Override
@@ -63,8 +85,15 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                 .orElse(null);
         // Kiểm tra đã bán vé chưa
         assert ticketType != null;
-        if (ticketType.getSoldQuantity() > 0) {
-            throw new IllegalStateException("Cannot delete ticket type with sold tickets");
+
+        // Nếu có đơn hàng tham chiếu đến ticket type này thì không cho xóa
+        if (orderRepo.existsByTicketType_TicketTypeId(id)) {
+            throw new IllegalStateException("Không thể xóa loại vé vì đã có đơn hàng liên quan");
+        }
+
+        // Dự phòng: nếu soldQuantity > 0 cũng không cho xóa
+        if (ticketType.getSoldQuantity() != null && ticketType.getSoldQuantity() > 0) {
+            throw new IllegalStateException("Không thể xóa loại vé đã bán");
         }
 
         ticketTypeRepo.delete(ticketType);
@@ -86,21 +115,21 @@ public class TicketTypeServiceImpl implements TicketTypeService {
         if (ticketTypeOpt.isEmpty()) {
             return false;
         }
-        return ticketTypeOpt.get().canPurchase(quantity);
+        return ticketTypeOpt.get().canPurchase();
     }
 
     @Override
     @Transactional
-    public void reserveTickets(Long ticketTypeId, Integer quantity) {
+    public void reserveTickets(Long ticketTypeId) {
         TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)
                 .orElse(null);
 
         assert ticketType != null;
-        if (!ticketType.canPurchase(quantity)) {
-            throw new IllegalStateException("Cannot reserve " + quantity + " tickets for ticket type: " + ticketTypeId);
+        if (!ticketType.canPurchase()) {
+            throw new IllegalStateException("Cannot reserve tickets for ticket type: " + ticketTypeId);
         }
 
-        ticketType.increaseSoldQuantity(quantity);
+        ticketType.increaseSoldQuantity();
         ticketTypeRepo.save(ticketType);
     }
 
@@ -157,7 +186,6 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Transactional(readOnly = true)
     public List<TicketTypeDTO> getTicketTypeDTOsByEventId(Long eventId) {
         List<TicketType> ticketTypeList = ticketTypeRepo.findByEventId(eventId);
-        System.out.println("ticketTypeList=================369==========: " + ticketTypeList.size());
         return ticketTypeRepo.findByEventId(eventId)
                 .stream()
                 .map(this::convertToDTO)
@@ -194,31 +222,53 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
     @Override
     public TicketTypeDTO convertToDTO(TicketType ticketType) {
-        System.out.println("ticketType===>" + ticketType);
-        LocalDateTime now = LocalDateTime.now();
-        boolean isAvailable = ticketType.getAvailableQuantity() > 0
-                && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
-                && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
-        System.out.println("isAvailable===>" + isAvailable);
-        TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
-                .ticketTypeId(ticketType.getTicketTypeId())
-                .eventId(ticketType.getEvent().getId())
-                .eventTitle(ticketType.getEvent().getTitle())
-                .eventImageUrl(ticketType.getEvent().getImageUrl())
-                .name(ticketType.getName())
-                .description(ticketType.getDescription())
-                .price(ticketType.getPrice())
-                .sale(ticketType.getSale())
-                .finalPrice(ticketType.getFinalPrice())
-                .totalQuantity(ticketType.getTotalQuantity())
-                .soldQuantity(ticketType.getSoldQuantity())
-                .availableQuantity(ticketType.getAvailableQuantity())
-                .startSaleDate(ticketType.getStartSaleDate())
-                .endSaleDate(ticketType.getEndSaleDate())
-                .isAvailable(isAvailable)
-                .build();
-        System.out.println("ticketTypeDTO==>" + ticketTypeDTO);
-        return ticketTypeDTO;
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            boolean isAvailable = ticketType.getAvailableQuantity() > 0
+                    && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
+                    && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
+
+            boolean isSaleActive = ticketType.isSalePeriodActive();
+            boolean isSoldOut = ticketType.getAvailableQuantity() <= 0;
+            boolean saleNotStarted = ticketType.getStartSaleDate() != null && now.isBefore(ticketType.getStartSaleDate());
+            boolean saleOverdue = ticketType.getEndSaleDate() != null && now.isAfter(ticketType.getEndSaleDate());
+
+            String saleStartCountdownText = null;
+            if (saleNotStarted) {
+                LocalDateTime start = ticketType.getStartSaleDate();
+                long days = java.time.Duration.between(now, start).toDays();
+                if (days < 0) days = 0;
+                saleStartCountdownText = days + (days == 1 ? " day" : " days");
+            }
+
+            TicketTypeDTO ticketTypeDTO = TicketTypeDTO.builder()
+                    .ticketTypeId(ticketType.getTicketTypeId())
+                    .eventId(ticketType.getEvent().getId())
+                    .eventTitle(ticketType.getEvent().getTitle())
+                    .eventImageUrl(ticketType.getEvent().getImageUrl())
+                    .name(ticketType.getName())
+                    .description(ticketType.getDescription())
+                    .price(ticketType.getPrice())
+                    .sale(ticketType.getSale() != null ? ticketType.getSale() : BigDecimal.ZERO)
+                    .finalPrice(ticketType.getFinalPrice())
+                    .totalQuantity(ticketType.getTotalQuantity())
+                    .soldQuantity(ticketType.getSoldQuantity())
+                    .availableQuantity(ticketType.getAvailableQuantity())
+                    .startSaleDate(ticketType.getStartSaleDate())
+                    .endSaleDate(ticketType.getEndSaleDate())
+                    .isAvailable(isAvailable)
+                    .isSaleActive(isSaleActive)
+                    .isSoldOut(isSoldOut)
+                    .saleNotStarted(saleNotStarted)
+                    .saleStartCountdownText(saleStartCountdownText)
+                    .saleOverdue(saleOverdue)
+                    .build();
+            return ticketTypeDTO;
+        } catch (Exception e) {
+            System.err.println("Error converting TicketType to DTO: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override

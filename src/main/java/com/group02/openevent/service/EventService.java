@@ -3,23 +3,25 @@ package com.group02.openevent.service;
 
 
 import com.group02.openevent.dto.home.EventCardDTO;
+import com.group02.openevent.dto.request.update.EventUpdateRequest;
 import com.group02.openevent.model.event.*;
-import com.group02.openevent.dto.request.EventCreationRequest;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.user.Host;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface EventService {
-
     CompetitionEvent saveCompetitionEvent(CompetitionEvent competitionEvent);
     FestivalEvent saveFestivalEvent(FestivalEvent festivalEvent);
     WorkshopEvent saveWorkshopEvent(WorkshopEvent workshopEvent);
@@ -37,7 +39,7 @@ public interface EventService {
     Optional<Event> getFirstEventByTitle(String title);
     Optional<Event> getFirstPublicEventByTitle(String title);
 //  Optional<Event> getNextUpcomingEventByUserId(int userId);
-    List<Event> getEventsByPlace(int placeId);
+    List<Event> getEventsByPlace(Long placeId);
 
     // Methods for AI support
 
@@ -54,10 +56,17 @@ public interface EventService {
     List<EventCardDTO> getPosterEvents();
     List<EventCardDTO> getRecommendedEvents(int limit);
     EventCardDTO convertToDTO(Event event);
-    EventResponse saveEvent(EventCreationRequest eventCreationRequest);
+    EventResponse saveEvent(EventCreationRequest event,Long hostId);
+    EventResponse updateEvent(Long id, EventUpdateRequest event);
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
     List<EventCardDTO> getCustomerEvents(Long customerId);
     List<EventCardDTO> getLiveEvents(int i);
+    List<Event> getEventByHostId(Long id);
+     Event getEventResponseById(Long id);
+    Page<Event> getEventsByDepartment(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
     Optional<Event> getNextUpcomingEventByUserId(Long userId);
 
+    List<EventCardDTO> searchEvents(String keyword, String type, LocalDate startDate, LocalDate endDate);
+
+    long countUniqueParticipantsByEventId(Long id);
 }

@@ -4,83 +4,163 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Success - OpenEvent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Tailwind configuration for orange and green theme */
+        :root {
+            --color-orange: #FF9800;
+            --color-green: #4CAF50;
+            --color-orange-light: #FFF3E0;
+            --color-green-light: #E8F5E9;
+        }
+
+        .bg-orange { background-color: var(--color-orange); }
+        .bg-orange-light { background-color: var(--color-orange-light); }
+        .bg-green { background-color: var(--color-green); }
+        .bg-green-light { background-color: var(--color-green-light); }
+        .text-orange { color: var(--color-orange); }
+        .text-green { color: var(--color-green); }
+        .border-orange { border-color: var(--color-orange); }
+        .border-green { border-color: var(--color-green); }
+    </style>
 </head>
-<body>
-    <h1>Payment Successful!</h1>
-    
-    <!-- Success Message -->
-    <div th:if="${successMessage}" style="color: green; margin: 20px 0; padding: 10px; border: 1px solid green; background-color: #e6ffe6;">
-        <p th:text="${successMessage}"></p>
-    </div>
-    
-    <!-- Error Message -->
-    <div th:if="${errorMessage}" style="color: red; margin: 20px 0; padding: 10px; border: 1px solid red; background-color: #ffe6e6;">
-        <p th:text="${errorMessage}"></p>
-    </div>
-    
-           <!-- Ticket Information -->
-           <div th:if="${ticket}" style="margin: 20px 0; padding: 15px; border: 2px solid #4CAF50; background-color: #f9f9f9;">
-               <h2>🎫 Your Ticket</h2>
-               <div style="margin: 10px 0;">
-                   <p><strong>Ticket ID:</strong> <span th:text="${ticket.ticketId}" style="font-family: monospace; font-weight: bold; color: #2196F3;"></span></p>
-                   <p><strong>Event:</strong> <span th:text="${ticket.ticketType.event.title}"></span></p>
-                   <p><strong>Ticket Type:</strong> <span th:text="${ticket.ticketType.name}"></span></p>
-                   <p><strong>Price:</strong> <span th:text="${ticket.ticketType.price}"> VND</span></p>
-                   <p><strong>Purchase Date:</strong> <span th:text="${#temporals.format(ticket.purchaseDate, 'dd/MM/yyyy HH:mm')}"></span></p>
-               </div>
-               
-               <div style="margin-top: 15px; padding: 10px; background-color: #e8f5e8; border-radius: 5px;">
-                   <p style="margin: 0; color: #2e7d32;"><strong>📱 Save this ticket!</strong> Show your ticket ID at the event entrance.</p>
-               </div>
-           </div>
-    
-    <div id="paymentInfo" th:unless="${ticket}">
-        <p>Thank you for your payment. Your registration has been confirmed.</p>
-        <div id="orderDetails">
-            <!-- Order details will be loaded here -->
+<body class="bg-gray-50 font-sans">
+<!-- Main container with responsive padding and max-width -->
+<div class="min-h-screen flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+    <div class="w-full max-w-2xl">
+
+        <!-- Success header section with green accent -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-light rounded-full mb-4">
+                <svg class="w-8 h-8 text-green" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h1>
+            <p class="text-gray-600 text-base sm:text-lg">Đơn hàng của bạn đã được xác nhận</p>
+        </div>
+
+        <!-- Success message alert with green background -->
+        <div th:if="${successMessage}" class="mb-6 p-4 bg-green-light border-l-4 border-green rounded">
+            <p class="text-green font-medium" th:text="${successMessage}"></p>
+        </div>
+
+        <!-- Error message alert with orange background -->
+        <div th:if="${errorMessage}" class="mb-6 p-4 bg-orange-light border-l-4 border-orange rounded">
+            <p class="text-orange font-medium" th:text="${errorMessage}"></p>
+        </div>
+
+        <!-- Ticket information card with green border -->
+        <div th:if="${ticket}" class="mb-8 bg-white rounded-lg shadow-md border-t-4 border-green overflow-hidden">
+            <div class="p-6 sm:p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <span class="text-2xl mr-2">🎫</span>
+                    Thông tin vé của bạn
+                </h2>
+
+                <!-- Ticket details grid layout -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded">
+                        <p class="text-gray-600 text-sm font-semibold mb-1">Mã vé</p>
+                        <p class="text-gray-900 font-mono font-bold text-lg text-orange" th:text="${ticket.ticketId}"></p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded">
+                        <p class="text-gray-600 text-sm font-semibold mb-1">Sự kiện</p>
+                        <p class="text-gray-900 font-semibold" th:text="${ticket.ticketType.event.title}"></p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded">
+                        <p class="text-gray-600 text-sm font-semibold mb-1">Loại vé</p>
+                        <p class="text-gray-900 font-semibold" th:text="${ticket.ticketType.name}"></p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded">
+                        <p class="text-gray-600 text-sm font-semibold mb-1">Giá</p>
+                        <p class="text-gray-900 font-semibold text-orange" th:text="${ticket.ticketType.price} + ' VND'"></p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded sm:col-span-2">
+                        <p class="text-gray-600 text-sm font-semibold mb-1">Ngày mua</p>
+                        <p class="text-gray-900 font-semibold" th:text="${#temporals.format(ticket.purchaseDate, 'dd/MM/yyyy HH:mm')}"></p>
+                    </div>
+                </div>
+
+                <!-- Important notice with orange accent -->
+                <div class="bg-orange-light border-l-4 border-orange p-4 rounded">
+                    <p class="text-orange font-semibold flex items-center">
+                        <span class="text-xl mr-2">📱</span>
+                        Lưu lại mã vé này! Hãy xuất trình mã vé tại cổng vào sự kiện.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment info section for non-ticket orders -->
+        <div id="paymentInfo" th:unless="${ticket}" class="mb-8 bg-white rounded-lg shadow-md p-6 sm:p-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Thông tin thanh toán</h2>
+            <p class="text-gray-600 mb-4">Cảm ơn bạn đã thanh toán. Đăng ký của bạn đã được xác nhận.</p>
+            <div id="orderDetails" class="bg-gray-50 p-4 rounded">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Action buttons with responsive layout -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/" class="inline-flex items-center justify-center px-6 py-3 bg-green text-white font-semibold rounded-lg hover:bg-opacity-90 transition-all duration-200 shadow-md hover:shadow-lg">
+                <span>← Quay lại trang chủ</span>
+            </a>
+            <a href="/api/payment/history" class="inline-flex items-center justify-center px-6 py-3 bg-orange text-white font-semibold rounded-lg hover:bg-opacity-90 transition-all duration-200 shadow-md hover:shadow-lg">
+                <span>Xem lịch sử thanh toán →</span>
+            </a>
         </div>
     </div>
-    
-    <div style="margin-top: 20px;">
-        <a href="/">Back to Home</a>
-        <a href="/api/payment/history" style="margin-left: 20px;">View Payment History</a>
-    </div>
+</div>
 
-    <script>
-        function getQueryParam(name) {
-            const url = new URL(window.location.href);
-            return url.searchParams.get(name);
+<!-- Existing JavaScript logic preserved -->
+<script>
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+
+    async function loadOrderDetails() {
+        const orderCode = getQueryParam('orderCode');
+        if (!orderCode) {
+            document.getElementById('orderDetails').innerHTML = '<p class="text-gray-600">Không tìm thấy mã đơn hàng</p>';
+            return;
         }
 
-        async function loadOrderDetails() {
-            const orderCode = getQueryParam('orderCode');
-            if (!orderCode) {
-                document.getElementById('orderDetails').innerHTML = '<p>Order code not found</p>';
-                return;
-            }
+        try {
+            const response = await fetch(`/api/payment/status/${orderCode}`);
+            const data = await response.json();
 
-            try {
-                const response = await fetch(`/api/payment/status/${orderCode}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    const orderDetails = document.getElementById('orderDetails');
-                    orderDetails.innerHTML = `
-                        <h3>Order Details</h3>
-                        <p><strong>Order Code:</strong> ${data.orderCode}</p>
-                        <p><strong>Status:</strong> ${data.orderStatus}</p>
-                        ${data.paymentStatus ? `<p><strong>Payment Status:</strong> ${data.paymentStatus}</p>` : ''}
+            if (data.success) {
+                const orderDetails = document.getElementById('orderDetails');
+                orderDetails.innerHTML = `
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-gray-600 text-sm font-semibold">Mã đơn hàng</p>
+                                <p class="text-gray-900 font-semibold">${data.orderCode}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm font-semibold">Trạng thái đơn hàng</p>
+                                <p class="text-gray-900 font-semibold text-green">${data.orderStatus}</p>
+                            </div>
+                            ${data.paymentStatus ? `
+                            <div>
+                                <p class="text-gray-600 text-sm font-semibold">Trạng thái thanh toán</p>
+                                <p class="text-gray-900 font-semibold text-green">${data.paymentStatus}</p>
+                            </div>
+                            ` : ''}
+                        </div>
                     `;
-                } else {
-                    document.getElementById('orderDetails').innerHTML = `<p>Error: ${data.message}</p>`;
-                }
-            } catch (error) {
-                console.error('Error loading order details:', error);
-                document.getElementById('orderDetails').innerHTML = '<p>Error loading order details</p>';
+            } else {
+                document.getElementById('orderDetails').innerHTML = `<p class="text-orange font-semibold">Lỗi: ${data.message}</p>`;
             }
+        } catch (error) {
+            console.error('Error loading order details:', error);
+            document.getElementById('orderDetails').innerHTML = '<p class="text-orange font-semibold">Lỗi khi tải thông tin đơn hàng</p>';
         }
+    }
 
-        window.onload = loadOrderDetails;
-    </script>
+    window.onload = loadOrderDetails;
+</script>
 </body>
 </html>

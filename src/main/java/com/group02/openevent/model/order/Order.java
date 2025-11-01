@@ -6,6 +6,7 @@ import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.voucher.Voucher;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -18,27 +19,30 @@ public class Order {
     @Column(name = "order_id")
     private Long orderId;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_customer"))
     @JsonIgnoreProperties({"orders", "passwordHash", "account"})
     private Customer customer;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_event"))
     @JsonIgnoreProperties({"orders", "ticketTypes", "eventImages", "host"})
     private Event event;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_type_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_order_tickettype"))
     @JsonIgnoreProperties({"event", "orders"})
     private TicketType ticketType;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = OrderStatusConverter.class)
     @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
+
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity = 1;
 
     // Pricing fields
     @Column(name = "original_price", precision = 10, scale = 2, nullable = false)
@@ -94,90 +98,199 @@ public class Order {
     // Business Logic Methods
     public void calculateTotalAmount() {
         if (ticketType != null) {
-            this.originalPrice = ticketType.getPrice();
-            
+            if (ticketType.isSalePeriodActive()) {
+                this.originalPrice = ticketType.getPrice().subtract(ticketType.getSale());
+            } else {
+                this.originalPrice = ticketType.getPrice();
+            }
             // Calculate host discount amount
             if (hostDiscountPercent != null && hostDiscountPercent.compareTo(BigDecimal.ZERO) > 0) {
                 this.hostDiscountAmount = originalPrice.multiply(hostDiscountPercent.divide(new BigDecimal("100")));
             }
-            
-            // Calculate final total amount
-            this.totalAmount = originalPrice.subtract(hostDiscountAmount).subtract(voucherDiscountAmount);
-            
-            // Ensure total amount is not negative
-            if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
-                this.totalAmount = BigDecimal.ZERO;
+
+            // Calculate price after discounts
+            BigDecimal priceAfterDiscounts = originalPrice.subtract(hostDiscountAmount).subtract(voucherDiscountAmount);
+
+            // Ensure price after discounts is not negative
+            if (priceAfterDiscounts.compareTo(BigDecimal.ZERO) < 0) {
+                priceAfterDiscounts = BigDecimal.ZERO;
             }
+
+            // Calculate VAT (10%) on price after discounts
+            BigDecimal vat = priceAfterDiscounts.multiply(new BigDecimal("0.10"));
+
+            // Final total amount = price after discounts + VAT
+            this.totalAmount = priceAfterDiscounts.add(vat);
+
+
         } else {
             this.originalPrice = BigDecimal.ZERO;
             this.totalAmount = BigDecimal.ZERO;
         }
     }
 
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
+    public Long getOrderId() {
+        return orderId;
+    }
 
-    public Customer getCustomer() { return customer; }
-    public void setCustomer(Customer customer) { this.customer = customer; }
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
 
-    public Event getEvent() { return event; }
-    public void setEvent(Event event) { this.event = event; }
+    public Customer getCustomer() {
+        return customer;
+    }
 
-    public TicketType getTicketType() { return ticketType; }
-    public void setTicketType(TicketType ticketType) { 
-        this.ticketType = ticketType; 
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
+    }
+
+    public TicketType getTicketType() {
+        return ticketType;
+    }
+
+    public void setTicketType(TicketType ticketType) {
+        this.ticketType = ticketType;
         calculateTotalAmount();
     }
 
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
+    public OrderStatus getStatus() {
+        return status;
+    }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
 
-    public String getParticipantName() { return participantName; }
-    public void setParticipantName(String participantName) { this.participantName = participantName; }
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
 
-    public String getParticipantEmail() { return participantEmail; }
-    public void setParticipantEmail(String participantEmail) { this.participantEmail = participantEmail; }
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
 
-    public String getParticipantPhone() { return participantPhone; }
-    public void setParticipantPhone(String participantPhone) { this.participantPhone = participantPhone; }
+    public String getParticipantName() {
+        return participantName;
+    }
 
-    public String getParticipantOrganization() { return participantOrganization; }
-    public void setParticipantOrganization(String participantOrganization) { this.participantOrganization = participantOrganization; }
+    public void setParticipantName(String participantName) {
+        this.participantName = participantName;
+    }
 
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public String getParticipantEmail() {
+        return participantEmail;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setParticipantEmail(String participantEmail) {
+        this.participantEmail = participantEmail;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getParticipantPhone() {
+        return participantPhone;
+    }
+
+    public void setParticipantPhone(String participantPhone) {
+        this.participantPhone = participantPhone;
+    }
+
+    public String getParticipantOrganization() {
+        return participantOrganization;
+    }
+
+    public void setParticipantOrganization(String participantOrganization) {
+        this.participantOrganization = participantOrganization;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // New getters and setters for pricing fields
-    public BigDecimal getOriginalPrice() { return originalPrice; }
-    public void setOriginalPrice(BigDecimal originalPrice) { this.originalPrice = originalPrice; }
+    public BigDecimal getOriginalPrice() {
+        return originalPrice;
+    }
 
-    public BigDecimal getHostDiscountPercent() { return hostDiscountPercent; }
-    public void setHostDiscountPercent(BigDecimal hostDiscountPercent) { 
-        this.hostDiscountPercent = hostDiscountPercent; 
+    public void setOriginalPrice(BigDecimal originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public BigDecimal getHostDiscountPercent() {
+        return hostDiscountPercent;
+    }
+
+    public void setHostDiscountPercent(BigDecimal hostDiscountPercent) {
+        this.hostDiscountPercent = hostDiscountPercent;
         calculateTotalAmount();
     }
 
-    public BigDecimal getHostDiscountAmount() { return hostDiscountAmount; }
-    public void setHostDiscountAmount(BigDecimal hostDiscountAmount) { this.hostDiscountAmount = hostDiscountAmount; }
+    public BigDecimal getHostDiscountAmount() {
+        return hostDiscountAmount;
+    }
 
-    public BigDecimal getVoucherDiscountAmount() { return voucherDiscountAmount; }
-    public void setVoucherDiscountAmount(BigDecimal voucherDiscountAmount) { 
-        this.voucherDiscountAmount = voucherDiscountAmount; 
+    public void setHostDiscountAmount(BigDecimal hostDiscountAmount) {
+        this.hostDiscountAmount = hostDiscountAmount;
+    }
+
+    public BigDecimal getVoucherDiscountAmount() {
+        return voucherDiscountAmount;
+    }
+
+    public void setVoucherDiscountAmount(BigDecimal voucherDiscountAmount) {
+        this.voucherDiscountAmount = voucherDiscountAmount;
         calculateTotalAmount();
     }
 
-    public Voucher getVoucher() { return voucher; }
-    public void setVoucher(Voucher voucher) { this.voucher = voucher; }
+    public Voucher getVoucher() {
+        return voucher;
+    }
 
-    public String getVoucherCode() { return voucherCode; }
-    public void setVoucherCode(String voucherCode) { this.voucherCode = voucherCode; }
+    public void setVoucher(Voucher voucher) {
+        this.voucher = voucher;
+    }
+
+    public String getVoucherCode() {
+        return voucherCode;
+    }
+
+    public void setVoucherCode(String voucherCode) {
+        this.voucherCode = voucherCode;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+        calculateTotalAmount();
+    }
 }

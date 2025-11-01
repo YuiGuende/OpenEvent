@@ -1,5 +1,6 @@
 package com.group02.openevent.service;
 
+import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.dto.ticket.TicketTypeDTO;
 import com.group02.openevent.model.ticket.TicketType;
 import org.springframework.data.domain.Page;
@@ -10,15 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TicketTypeService {
-    TicketType createTicketType(TicketType ticketType);
     Optional<TicketType> getTicketTypeById(Long id);
     List<TicketType> getAllTicketTypes();
-    TicketType updateTicketType(Long id, TicketType updatedTicketType);
+    void updateTickets(Long eventId, List<TicketUpdateRequest> tickets);
     void deleteTicketType(Long id);
     List<TicketType> getTicketTypesByEventId(Long eventId);
     List<TicketType> getAvailableTicketTypesByEventId(Long eventId);
     boolean canPurchaseTickets(Long ticketTypeId, Integer quantity);
-    void reserveTickets(Long ticketTypeId, Integer quantity);
+    void reserveTickets(Long ticketTypeId);
     void releaseTickets(Long ticketTypeId, Integer quantity);
     void confirmPurchase(Long ticketTypeId, Integer quantity);
     Page<TicketType> getTicketTypesPageable(Pageable pageable);

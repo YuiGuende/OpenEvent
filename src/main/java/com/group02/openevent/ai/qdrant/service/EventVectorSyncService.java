@@ -180,7 +180,9 @@ public class EventVectorSyncService {
                 "Sự kiện tuần sau",
                 "Tuần tới có gì không?",
                 "Lịch trình hôm nay như thế nào?",
-                "Cho tôi biết sự kiện hôm nay"
+                "Cho tôi biết sự kiện hôm nay",
+                "sự kiện hot gần đây",
+                "sự kiện nổi bật"
         );
         seedBatch(intents, "prompt", "type", "prompt_summary_time", "prompt");
     }

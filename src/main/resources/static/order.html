@@ -167,6 +167,28 @@
     <main class="order-container">
         <h1>Quản lý đơn hàng</h1>
 
+        <!-- Filters & Sorting -->
+        <div class="order-filters" style="display:flex; gap:12px; align-items:center; margin:12px 0 20px; flex-wrap: wrap;">
+            <div>
+                <label for="statusFilter" style="margin-right:6px; font-weight:500;">Trạng thái:</label>
+                <select id="statusFilter">
+                    <option value="ALL">Tất cả</option>
+                    <option value="PENDING">Chờ thanh toán</option>
+                    <option value="PAID">Đã thanh toán</option>
+                    <option value="CANCELLED">Đã hủy</option>
+                </select>
+            </div>
+            <div>
+                <label for="sortSelect" style="margin-right:6px; font-weight:500;">Sắp xếp:</label>
+                <select id="sortSelect">
+                    <option value="NEWEST">Mới nhất</option>
+                    <option value="OLDEST">Cũ nhất</option>
+                    <option value="PRICE_HIGH">Giá cao nhất</option>
+                    <option value="PRICE_LOW">Giá thấp nhất</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Order Creation Form -->
         <div class="order-form">
             <h2>Tạo đơn hàng mới</h2>
@@ -205,10 +227,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Loại vé:</label>
-                    <div id="ticketTypesContainer">
-                        <!-- Ticket type rows will be added dynamically -->
-                    </div>
+                    <label for="ticketTypeId">Loại vé:</label>
+                    <select id="ticketTypeId" name="ticketTypeId" required>
+                        <option value="">Chọn loại vé</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Số lượng:</label>
+                    <input type="number" id="quantity" name="quantity" min="1" value="1" required>
                 </div>
 
                 <div class="order-total">
@@ -222,6 +250,15 @@
         <!-- Orders List -->
         <div id="ordersContainer">
             <!-- Orders will be loaded dynamically -->
+        </div>
+        
+        <!-- Order Detail Modal -->
+        <div id="orderDetailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+            <div style="background:#fff; max-width:700px; margin:60px auto; padding:20px; border-radius:8px; position:relative;">
+                <button data-close-modal style="position:absolute; top:10px; right:10px; background:#eee; border:none; border-radius:4px; padding:6px 10px; cursor:pointer;">Đóng</button>
+                <h3 style="margin-top:0;">Chi tiết đơn hàng</h3>
+                <div id="orderDetailBody"></div>
+            </div>
         </div>
     </main>
 
@@ -258,32 +295,46 @@
                 const response = await fetch(`/api/ticket-types/event/${eventId}`);
                 if (response.ok) {
                     const ticketTypes = await response.json();
-                    const container = document.getElementById('ticketTypesContainer');
+                    const select = document.getElementById('ticketTypeId');
                     
-                    container.innerHTML = '';
+                    select.innerHTML = '<option value="">Chọn loại vé</option>';
                     
                     ticketTypes.forEach(ticketType => {
-                        const row = document.createElement('div');
-                        row.className = 'ticket-type-row';
-                        row.innerHTML = `
-                            <select class="ticket-type-select" data-ticket-type-id="${ticketType.ticketTypeId}">
-                                <option value="">Chọn loại vé</option>
-                                <option value="${ticketType.ticketTypeId}" 
-                                        data-price="${ticketType.price}" 
-                                        data-max-quantity="${ticketType.availableQuantity}">
-                                    ${ticketType.name} - ${new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(ticketType.price)}
-                                </option>
-                            </select>
-                            <input type="number" class="quantity-input" min="0" max="${ticketType.availableQuantity}" value="0" disabled>
-                            <span class="ticket-type-price">--</span>
-                        `;
-                        container.appendChild(row);
+                        const option = document.createElement('option');
+                        option.value = ticketType.ticketTypeId;
+                        option.textContent = `${ticketType.name} - ${new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(ticketType.price)}`;
+                        option.dataset.price = ticketType.price;
+                        option.dataset.maxQuantity = ticketType.availableQuantity;
+                        select.appendChild(option);
                     });
                 }
             } catch (error) {
                 console.error('Error loading ticket types:', error);
             }
         });
+
+        // Update total when ticket type or quantity changes
+        document.getElementById('ticketTypeId').addEventListener('change', updateOrderTotal);
+        document.getElementById('quantity').addEventListener('change', updateOrderTotal);
+
+        function updateOrderTotal() {
+            const ticketTypeSelect = document.getElementById('ticketTypeId');
+            const quantityInput = document.getElementById('quantity');
+            const totalElement = document.getElementById('orderTotal');
+            
+            if (ticketTypeSelect.value && quantityInput.value) {
+                const price = parseFloat(ticketTypeSelect.selectedOptions[0]?.dataset.price || 0);
+                const quantity = parseInt(quantityInput.value) || 0;
+                const total = price * quantity;
+                
+                totalElement.textContent = new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(total);
+            } else {
+                totalElement.textContent = '0 VND';
+            }
+        }
     </script>
 </body>
 </html>

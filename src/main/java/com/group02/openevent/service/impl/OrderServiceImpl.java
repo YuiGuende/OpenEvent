@@ -2,41 +2,45 @@ package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
+import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.ai.service.AgentEventService;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.TicketTypeService;
-import lombok.extern.slf4j.Slf4j;
+import com.group02.openevent.service.VoucherService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     private final IOrderRepo orderRepo;
     private final IEventRepo eventRepo;
     private final ITicketTypeRepo ticketTypeRepo;
     private final TicketTypeService ticketTypeService;
+    private final VoucherService voucherService;
 
     public OrderServiceImpl(IOrderRepo orderRepo, IEventRepo eventRepo, 
-                           ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService) {
+                           ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService,
+                           VoucherService voucherService) {
         this.orderRepo = orderRepo;
         this.eventRepo = eventRepo;
         this.ticketTypeRepo = ticketTypeRepo;
         this.ticketTypeService = ticketTypeService;
+        this.voucherService = voucherService;
     }
 
     @Override
@@ -68,46 +72,31 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Order createOrderWithTicketTypes(CreateOrderWithTicketTypeRequest request, Customer customer) {
-        log.info("🔍 DEBUG: Starting createOrderWithTicketTypes - eventId: {}, customerId: {}", 
-                request.getEventId(), customer.getCustomerId());
-        
         try {
             // Validate event exists
-            log.info("🔍 DEBUG: Looking for event with id: {}", request.getEventId());
             Event event = eventRepo.findById(request.getEventId())
                     .orElseThrow(() -> new IllegalArgumentException("Event not found: " + request.getEventId()));
-            log.info("🔍 DEBUG: Event found - title: {}, status: {}", event.getTitle(), event.getStatus());
 
             // For simplicity, we'll take the first ticket type from the request
             // In a real scenario, you might want to handle multiple ticket types differently
-            if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+            if (request.getTicketTypeId() == null) {
                 throw new IllegalArgumentException("At least one ticket type must be specified");
             }
 
-            CreateOrderWithTicketTypeRequest.OrderItemRequest firstItem = request.getOrderItems().get(0);
-            
             // Validate ticket type exists and is available
-            log.info("🔍 DEBUG: Looking for ticket type with id: {}", firstItem.getTicketTypeId());
-            TicketType ticketType = ticketTypeRepo.findById(firstItem.getTicketTypeId())
-                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + firstItem.getTicketTypeId()));
-            log.info("🔍 DEBUG: Ticket type found - name: {}, price: {}, available: {}", 
-                    ticketType.getName(), ticketType.getFinalPrice(), ticketType.getAvailableQuantity());
+            TicketType ticketType = ticketTypeRepo.findById(request.getTicketTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + request.getTicketTypeId()));
 
             // Check if ticket type can be purchased (always quantity 1 for simplified order)
-            log.info("🔍 DEBUG: Checking if tickets can be purchased...");
-            if (!ticketTypeService.canPurchaseTickets(firstItem.getTicketTypeId(), 1)) {
-                log.error("❌ DEBUG: Cannot purchase tickets - available: {}", ticketType.getAvailableQuantity());
+            if (!ticketTypeService.canPurchaseTickets(request.getTicketTypeId(), 1)) {
                 throw new IllegalStateException("Cannot purchase ticket of type: " + ticketType.getName() + 
                     " (Available: " + ticketType.getAvailableQuantity() + ")");
             }
 
             // Reserve tickets (always quantity 1 for simplified order)
-            log.info("🔍 DEBUG: Reserving tickets...");
-            ticketTypeService.reserveTickets(firstItem.getTicketTypeId(), 1);
-            log.info("🔍 DEBUG: Tickets reserved successfully");
+            ticketTypeService.reserveTickets(request.getTicketTypeId());
 
             // Create order
-            log.info("🔍 DEBUG: Creating Order object...");
             Order order = new Order();
             order.setCustomer(customer);
             order.setEvent(event);
@@ -119,22 +108,35 @@ public class OrderServiceImpl implements OrderService {
             order.setNotes(request.getNotes());
             order.setStatus(OrderStatus.PENDING);
 
-            // Calculate total amount
-            log.info("🔍 DEBUG: Calculating total amount...");
-            order.calculateTotalAmount();
-            log.info("🔍 DEBUG: Total amount calculated: {}", order.getTotalAmount());
+            // Set host discount from event
+            if (event.getHost() != null && event.getHost().getHostDiscountPercent() != null) {
+                order.setHostDiscountPercent(event.getHost().getHostDiscountPercent());
+            }
 
-            // Save order
-            log.info("🔍 DEBUG: Saving order to database...");
+            // Calculate total amount first
+            order.calculateTotalAmount();
+
+            // Save order first to get ID
             Order savedOrder = orderRepo.save(order);
-            log.info("✅ DEBUG: Order saved successfully - orderId: {}, status: {}", 
-                    savedOrder.getOrderId(), savedOrder.getStatus());
+
+            // Process voucher code if provided (after order is saved)
+            if (request.getVoucherCode() != null && !request.getVoucherCode().trim().isEmpty()) {
+                try {
+                    // Apply voucher to saved order
+                    voucherService.applyVoucherToOrder(request.getVoucherCode(), savedOrder);
+                    
+                    // Recalculate total amount after voucher
+                    savedOrder.calculateTotalAmount();
+                    savedOrder = orderRepo.save(savedOrder);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // Continue without voucher if it fails
+                }
+            }
             
             return savedOrder;
             
         } catch (Exception e) {
-            log.error("❌ DEBUG: Exception in createOrderWithTicketTypes: {}", e.getMessage(), e);
-            log.error("❌ DEBUG: Exception stack trace:", e);
             throw e;
         }
     }
@@ -147,6 +149,40 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> getOrdersByCustomerId(Long customerId) {
         return orderRepo.findByCustomerId(customerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserOrderDTO> getOrderDTOsByCustomerId(Long customerId, OrderStatus status) {
+        List<Order> orders = new ArrayList<>(orderRepo.findByCustomerId(customerId));
+        if (status != null) {
+            orders = orders.stream()
+                    .filter(o -> o.getStatus() == status)
+                    .collect(Collectors.toList());
+        }
+        orders.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        return orders.stream().map(this::mapToUserOrderDTO).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserOrderDTO> getOrderDTOsByCustomer(Customer customer, OrderStatus status) {
+        return getOrderDTOsByCustomerId(customer.getCustomerId(), status);
+    }
+
+    private UserOrderDTO mapToUserOrderDTO(Order order) {
+        return UserOrderDTO.builder()
+                .orderId(order.getOrderId())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .eventId(order.getEvent() != null ? order.getEvent().getId() : null)
+                .eventTitle(order.getEvent() != null ? order.getEvent().getTitle() : null)
+                .eventImageUrl(order.getEvent() != null ? order.getEvent().getImageUrl() : null)
+                .eventStartsAt(order.getEvent() != null ? order.getEvent().getStartsAt() : null)
+                .ticketTypeId(order.getTicketType() != null ? order.getTicketType().getTicketTypeId() : null)
+                .ticketTypeName(order.getTicketType() != null ? order.getTicketType().getName() : null)
+                .totalAmount(order.getTotalAmount())
+                .build();
     }
 
     @Override
@@ -185,7 +221,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Update order status
-        order.setStatus(OrderStatus.CONFIRMED);
+        order.setStatus(OrderStatus.PAID);
         orderRepo.save(order);
     }
 
@@ -206,8 +242,7 @@ public class OrderServiceImpl implements OrderService {
         // PENDING orders (unpaid) are not counted as registered
         return orders.stream()
                 .anyMatch(order -> order.getEvent().getId().equals(eventId) && 
-                         (order.getStatus() == OrderStatus.CONFIRMED || 
-                          order.getStatus() == OrderStatus.PAID));
+                         (order.getStatus() == OrderStatus.PAID));
     }
 
     @Override

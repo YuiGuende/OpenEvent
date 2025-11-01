@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EnhancedAIController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.ai.controller</a> &gt; <span class="el_source">EnhancedAIController.java</span></div><h1>EnhancedAIController.java</h1><pre class="source lang-java linenums">package com.group02.openevent.ai.controller;
+
+import com.group02.openevent.ai.model.Language;
+import com.group02.openevent.ai.security.AISecurityService;
+import com.group02.openevent.ai.security.RateLimitingService;
+import com.group02.openevent.ai.service.LanguageDetectionService;
+import com.group02.openevent.ai.service.TranslationService;
+import com.group02.openevent.dto.ai.*;
+import com.group02.openevent.models.ai.ChatMessage;
+import com.group02.openevent.security.SessionUtils;
+import com.group02.openevent.security.UserSession;
+import com.group02.openevent.services.ai.ChatSessionService;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpSession;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Enhanced AI Controller with multi-language support and security measures
+ */
+@RestController
+@RequestMapping(&quot;/api/ai/chat/enhanced&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+@Tag(name = &quot;Enhanced AI Chat&quot;, description = &quot;Multi-language AI Chat API with security measures&quot;)
+<span class="fc" id="L34">@RequiredArgsConstructor</span>
+<span class="fc" id="L35">@Slf4j</span>
+public class EnhancedAIController {
+
+    private final ChatSessionService chatSessionService;
+    private final LanguageDetectionService languageDetectionService;
+    private final TranslationService translationService;
+    private final AISecurityService securityService;
+    private final RateLimitingService rateLimitingService;
+
+    @Operation(summary = &quot;List sessions with language support&quot;)
+    @GetMapping(&quot;/sessions&quot;)
+    public ResponseEntity&lt;List&lt;SessionItem&gt;&gt; sessions(
+            @RequestParam(required = false, defaultValue = &quot;vi&quot;) String language,
+            HttpSession httpSession) {
+        
+<span class="fc" id="L50">        UserSession us = SessionUtils.requireUser(httpSession);</span>
+<span class="fc" id="L51">        String userId = us.getUserId().toString();</span>
+        
+        // Check rate limit
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (!rateLimitingService.isAllowed(userId, RateLimitingService.RateLimitType.AI_CHAT)) {</span>
+<span class="fc" id="L55">            return ResponseEntity.status(429).build();</span>
+        }
+        
+<span class="fc" id="L58">        List&lt;SessionItem&gt; sessions = chatSessionService.list(us.getUserId());</span>
+<span class="fc" id="L59">        return ResponseEntity.ok(sessions);</span>
+    }
+
+    @Operation(summary = &quot;Create session with language preference&quot;)
+    @PostMapping(&quot;/sessions&quot;)
+    public ResponseEntity&lt;NewSessionRes&gt; createSession(
+            @RequestBody NewSessionReq req,
+            @RequestParam(required = false, defaultValue = &quot;vi&quot;) String language,
+            HttpSession httpSession) {
+        
+<span class="fc" id="L69">        UserSession us = SessionUtils.requireUser(httpSession);</span>
+<span class="fc" id="L70">        String userId = us.getUserId().toString();</span>
+        
+        // Check rate limit
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (!rateLimitingService.isAllowed(userId, RateLimitingService.RateLimitType.AI_CHAT)) {</span>
+<span class="fc" id="L74">            return ResponseEntity.status(429).build();</span>
+        }
+        
+        // Validate language
+<span class="fc" id="L78">        Language userLanguage = Language.fromCode(language);</span>
+<span class="pc bpc" id="L79" title="2 of 4 branches missed.">        String title = (req.title() == null || req.title().isBlank()) ? &quot;Phiên mới&quot; : req.title();</span>
+        
+        // Translate title if needed
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (userLanguage != Language.VIETNAMESE) {</span>
+<span class="fc" id="L83">            title = translationService.translate(title, Language.VIETNAMESE, userLanguage);</span>
+        }
+        
+<span class="fc" id="L86">        NewSessionRes result = chatSessionService.create(us.getUserId(), title);</span>
+<span class="fc" id="L87">        return ResponseEntity.ok(result);</span>
+    }
+
+    @Operation(summary = &quot;Get session history with language support&quot;)
+    @GetMapping(&quot;/history&quot;)
+    public ResponseEntity&lt;List&lt;ChatMessage&gt;&gt; history(
+            @RequestParam String sessionId,
+            @RequestParam(required = false, defaultValue = &quot;vi&quot;) String language,
+            HttpSession httpSession) {
+        
+<span class="fc" id="L97">        UserSession us = SessionUtils.requireUser(httpSession);</span>
+<span class="fc" id="L98">        String userId = us.getUserId().toString();</span>
+        
+        // Check rate limit
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (!rateLimitingService.isAllowed(userId, RateLimitingService.RateLimitType.AI_CHAT)) {</span>
+<span class="fc" id="L102">            return ResponseEntity.status(429).build();</span>
+        }
+        
+<span class="fc" id="L105">        List&lt;ChatMessage&gt; messages = chatSessionService.history(us.getUserId(), sessionId);</span>
+        
+        // Translate messages if needed
+<span class="fc" id="L108">        Language userLanguage = Language.fromCode(language);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (userLanguage != Language.VIETNAMESE) {</span>
+<span class="fc" id="L110">            messages = messages.stream()</span>
+<span class="fc" id="L111">                    .map(msg -&gt; {</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">                        if (msg.getIsFromUser()) {</span>
+                            // Translate user messages to Vietnamese for processing
+<span class="nc" id="L114">                            String translated = translationService.translateUserInput(msg.getMessage(), userLanguage);</span>
+<span class="nc" id="L115">                            msg.setMessage(translated);</span>
+<span class="nc" id="L116">                        } else {</span>
+                            // Translate AI responses to user's language
+<span class="nc" id="L118">                            String translated = translationService.translateAIResponse(msg.getMessage(), userLanguage);</span>
+<span class="nc" id="L119">                            msg.setMessage(translated);</span>
+                        }
+<span class="nc" id="L121">                        return msg;</span>
+                    })
+<span class="fc" id="L123">                    .toList();</span>
+        }
+        
+<span class="fc" id="L126">        return ResponseEntity.ok(messages);</span>
+    }
+
+    @Operation(summary = &quot;Enhanced chat with multi-language support&quot;)
+    @PostMapping
+    public ResponseEntity&lt;ChatReply&gt; chat(
+            @RequestBody ChatRequest req,
+            @RequestParam(required = false, defaultValue = &quot;vi&quot;) String language,
+            HttpSession httpSession) {
+        
+<span class="fc" id="L136">        UserSession us = SessionUtils.requireUser(httpSession);</span>
+<span class="fc" id="L137">        String userId = us.getUserId().toString();</span>
+        
+        // Check rate limit
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (!rateLimitingService.isAllowed(userId, RateLimitingService.RateLimitType.AI_CHAT)) {</span>
+<span class="fc" id="L141">            return ResponseEntity.status(429).body(new ChatReply(</span>
+                &quot;Rate limit exceeded. Please try again later.&quot;, 
+<span class="fc" id="L143">                false, </span>
+<span class="fc" id="L144">                LocalDateTime.now()</span>
+            ));
+        }
+        
+        // Validate and sanitize input
+<span class="fc" id="L149">        AISecurityService.ValidationResult validation = securityService.validateInput(</span>
+<span class="fc" id="L150">            req.message(), </span>
+            AISecurityService.InputType.MESSAGE
+        );
+        
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        if (!validation.isValid()) {</span>
+<span class="nc" id="L155">            return ResponseEntity.badRequest().body(new ChatReply(</span>
+<span class="nc" id="L156">                &quot;❌ &quot; + validation.getErrorMessage(), </span>
+<span class="nc" id="L157">                false, </span>
+<span class="nc" id="L158">                LocalDateTime.now()</span>
+            ));
+        }
+        
+        // Detect user language if not specified
+<span class="fc" id="L163">        Language userLanguage = Language.fromCode(language);</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">        if (&quot;auto&quot;.equals(language)) {</span>
+<span class="fc" id="L165">            userLanguage = languageDetectionService.detectLanguage(req.message());</span>
+        }
+        
+        // Translate user input to Vietnamese for AI processing
+<span class="fc" id="L169">        String processedMessage = validation.getSanitizedInput();</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        if (userLanguage != Language.VIETNAMESE) {</span>
+<span class="fc" id="L171">            processedMessage = translationService.translateUserInput(processedMessage, userLanguage);</span>
+        }
+        
+        // Create chat request with processed message
+<span class="fc" id="L175">        ChatRequest processedReq = new ChatRequest(processedMessage, us.getUserId(), req.sessionId());</span>
+        
+        // Process chat
+<span class="fc" id="L178">        ChatReply reply = chatSessionService.chat(processedReq);</span>
+        
+        // Translate AI response to user's language
+<span class="fc" id="L181">        String translatedResponse = reply.message();</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (userLanguage != Language.VIETNAMESE) {</span>
+<span class="fc" id="L183">            translatedResponse = translationService.translateAIResponse(reply.message(), userLanguage);</span>
+        }
+        
+        // Validate AI response
+<span class="fc" id="L187">        AISecurityService.ValidationResult responseValidation = securityService.validateAIResponse(translatedResponse);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        if (!responseValidation.isValid()) {</span>
+<span class="fc" id="L189">            translatedResponse = &quot;❌ &quot; + responseValidation.getErrorMessage();</span>
+        }
+        
+<span class="fc" id="L192">        return ResponseEntity.ok(new ChatReply(translatedResponse, reply.shouldReload(), reply.timestamp()));</span>
+    }
+
+    @Operation(summary = &quot;Detect language of input text&quot;)
+    @PostMapping(&quot;/detect-language&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; detectLanguage(
+            @RequestBody Map&lt;String, String&gt; request,
+            HttpSession httpSession) {
+        
+<span class="fc" id="L201">        UserSession us = SessionUtils.requireUser(httpSession);</span>
+<span class="fc" id="L202">        String userId = us.getUserId().toString();</span>
+        
+        // Check rate limit
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (!rateLimitingService.isAllowed(userId, RateLimitingService.RateLimitType.AI_TRANSLATION)) {</span>
+<span class="fc" id="L206">            return ResponseEntity.status(429).build();</span>
+        }
+        
+<span class="fc" id="L209">        String text = request.get(&quot;text&quot;);</span>
+<span class="pc bpc" id="L210" title="2 of 4 branches missed.">        if (text == null || text.trim().isEmpty()) {</span>
+<span class="fc" id="L211">            return ResponseEntity.badRequest().body(Map.of(&quot;error&quot;, &quot;Text is required&quot;));</span>
+        }
+        
+        // Validate input
+<span class="nc" id="L215">        AISecurityService.ValidationResult validation = securityService.validateInput(</span>
+            text, 
+            AISecurityService.InputType.GENERAL
+        );
+        
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (!validation.isValid()) {</span>
+<span class="nc" id="L221">            return ResponseEntity.badRequest().body(Map.of(&quot;error&quot;, validation.getErrorMessage()));</span>
+        }
+        
+<span class="nc" id="L224">        Language detectedLanguage = languageDetectionService.detectLanguage(validation.getSanitizedInput());</span>
+<span class="nc" id="L225">        double confidence = languageDetectionService.getDetectionConfidence(validation.getSanitizedInput(), detectedLanguage);</span>
+<span class="nc" id="L226">        boolean isMixed = languageDetectionService.isMixedLanguage(validation.getSanitizedInput());</span>
+        
+<span class="nc" id="L228">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L229">        result.put(&quot;language&quot;, detectedLanguage.getCode());</span>
+<span class="nc" id="L230">        result.put(&quot;languageName&quot;, detectedLanguage.getName());</span>
+<span class="nc" id="L231">        result.put(&quot;nativeName&quot;, detectedLanguage.getNativeName());</span>
+<span class="nc" id="L232">        result.put(&quot;confidence&quot;, confidence);</span>
+<span class="nc" id="L233">        result.put(&quot;isMixedLanguage&quot;, isMixed);</span>
+        
+<span class="nc" id="L235">        return ResponseEntity.ok(result);</span>
+    }
+
+    @Operation(summary = &quot;Translate text&quot;)
+    @PostMapping(&quot;/translate&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; translate(
+            @RequestBody Map&lt;String, String&gt; request,
+            HttpSession httpSession) {
+        
+<span class="fc" id="L244">        UserSession us = SessionUtils.requireUser(httpSession);</span>
+<span class="fc" id="L245">        String userId = us.getUserId().toString();</span>
+        
+        // Check rate limit
+<span class="fc bfc" id="L248" title="All 2 branches covered.">        if (!rateLimitingService.isAllowed(userId, RateLimitingService.RateLimitType.AI_TRANSLATION)) {</span>
+<span class="fc" id="L249">            return ResponseEntity.status(429).build();</span>
+        }
+        
+<span class="fc" id="L252">        String text = request.get(&quot;text&quot;);</span>
+<span class="fc" id="L253">        String sourceLang = request.getOrDefault(&quot;sourceLang&quot;, &quot;auto&quot;);</span>
+<span class="fc" id="L254">        String targetLang = request.getOrDefault(&quot;targetLang&quot;, &quot;vi&quot;);</span>
+        
+<span class="pc bpc" id="L256" title="2 of 4 branches missed.">        if (text == null || text.trim().isEmpty()) {</span>
+<span class="nc" id="L257">            return ResponseEntity.badRequest().body(Map.of(&quot;error&quot;, &quot;Text is required&quot;));</span>
+        }
+        
+        // Validate input
+<span class="fc" id="L261">        AISecurityService.ValidationResult validation = securityService.validateInput(</span>
+            text, 
+            AISecurityService.InputType.GENERAL
+        );
+        
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        if (!validation.isValid()) {</span>
+<span class="nc" id="L267">            return ResponseEntity.badRequest().body(Map.of(&quot;error&quot;, validation.getErrorMessage()));</span>
+        }
+        
+        Language sourceLanguage;
+<span class="fc bfc" id="L271" title="All 2 branches covered.">        if (&quot;auto&quot;.equals(sourceLang)) {</span>
+<span class="fc" id="L272">            sourceLanguage = languageDetectionService.detectLanguage(validation.getSanitizedInput());</span>
+        } else {
+<span class="fc" id="L274">            sourceLanguage = Language.fromCode(sourceLang);</span>
+        }
+        
+<span class="fc" id="L277">        Language targetLanguage = Language.fromCode(targetLang);</span>
+        
+<span class="fc" id="L279">        String translatedText = translationService.translate(</span>
+<span class="fc" id="L280">            validation.getSanitizedInput(), </span>
+            sourceLanguage, 
+            targetLanguage
+        );
+        
+<span class="fc" id="L285">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L286">        result.put(&quot;originalText&quot;, text);</span>
+<span class="fc" id="L287">        result.put(&quot;translatedText&quot;, translatedText);</span>
+<span class="fc" id="L288">        result.put(&quot;sourceLanguage&quot;, sourceLanguage.getCode());</span>
+<span class="fc" id="L289">        result.put(&quot;targetLanguage&quot;, targetLanguage.getCode());</span>
+<span class="fc" id="L290">        result.put(&quot;sourceLanguageName&quot;, sourceLanguage.getName());</span>
+<span class="fc" id="L291">        result.put(&quot;targetLanguageName&quot;, targetLanguage.getName());</span>
+        
+<span class="fc" id="L293">        return ResponseEntity.ok(result);</span>
+    }
+
+    @Operation(summary = &quot;Get rate limit information&quot;)
+    @GetMapping(&quot;/rate-limit&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getRateLimitInfo(HttpSession httpSession) {
+<span class="fc" id="L299">        UserSession us = SessionUtils.requireUser(httpSession);</span>
+<span class="fc" id="L300">        String userId = us.getUserId().toString();</span>
+        
+<span class="fc" id="L302">        Map&lt;RateLimitingService.RateLimitType, RateLimitingService.RateLimitInfo&gt; rateLimitInfo = </span>
+<span class="fc" id="L303">            rateLimitingService.getAllRateLimitInfo(userId);</span>
+        
+<span class="fc" id="L305">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L306">        rateLimitInfo.forEach((type, info) -&gt; {</span>
+<span class="nc" id="L307">            Map&lt;String, Object&gt; typeInfo = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L308">            typeInfo.put(&quot;maxRequests&quot;, info.getMaxRequests());</span>
+<span class="nc" id="L309">            typeInfo.put(&quot;remainingRequests&quot;, info.getRemainingRequests());</span>
+<span class="nc" id="L310">            typeInfo.put(&quot;resetTime&quot;, info.getResetTime());</span>
+<span class="nc" id="L311">            typeInfo.put(&quot;isLimitExceeded&quot;, info.isLimitExceeded());</span>
+<span class="nc" id="L312">            result.put(type.name(), typeInfo);</span>
+<span class="nc" id="L313">        });</span>
+        
+<span class="fc" id="L315">        return ResponseEntity.ok(result);</span>
+    }
+
+    @Operation(summary = &quot;Get supported languages&quot;)
+    @GetMapping(&quot;/languages&quot;)
+    public ResponseEntity&lt;List&lt;Map&lt;String, String&gt;&gt;&gt; getSupportedLanguages() {
+<span class="fc" id="L321">        List&lt;Map&lt;String, String&gt;&gt; languages = Arrays.stream(Language.values())</span>
+<span class="fc" id="L322">                .map(lang -&gt; {</span>
+<span class="fc" id="L323">                    Map&lt;String, String&gt; langInfo = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L324">                    langInfo.put(&quot;code&quot;, lang.getCode());</span>
+<span class="fc" id="L325">                    langInfo.put(&quot;name&quot;, lang.getName());</span>
+<span class="fc" id="L326">                    langInfo.put(&quot;nativeName&quot;, lang.getNativeName());</span>
+<span class="fc" id="L327">                    return langInfo;</span>
+                })
+<span class="fc" id="L329">                .toList();</span>
+        
+<span class="fc" id="L331">        return ResponseEntity.ok(languages);</span>
+    }
+
+    @GetMapping(&quot;/health&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; health() {
+<span class="fc" id="L336">        Map&lt;String, Object&gt; health = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L337">        health.put(&quot;status&quot;, &quot;UP&quot;);</span>
+<span class="fc" id="L338">        health.put(&quot;translationAvailable&quot;, translationService.isAvailable());</span>
+<span class="fc" id="L339">        health.put(&quot;translationCacheSize&quot;, translationService.getCacheSize());</span>
+<span class="fc" id="L340">        health.put(&quot;supportedLanguages&quot;, Language.values().length);</span>
+<span class="fc" id="L341">        return ResponseEntity.ok(health);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

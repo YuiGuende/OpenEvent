@@ -215,12 +215,7 @@ public class OrderAIService {
             request.setParticipantPhone(pendingOrder.getParticipantPhone());
             request.setParticipantOrganization(pendingOrder.getParticipantOrganization());
             request.setNotes(pendingOrder.getNotes());
-
-            CreateOrderWithTicketTypeRequest.OrderItemRequest orderItem =
-                new CreateOrderWithTicketTypeRequest.OrderItemRequest();
-            orderItem.setTicketTypeId(pendingOrder.getTicketType().getTicketTypeId());
-            orderItem.setQuantity(1);
-            request.setOrderItems(List.of(orderItem));
+            request.setTicketTypeId(pendingOrder.getTicketType().getTicketTypeId());
 
             // Create order
             log.info("🔍 DEBUG: Creating order with OrderService...");

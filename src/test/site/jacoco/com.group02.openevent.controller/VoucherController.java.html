@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VoucherController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.controller</a> &gt; <span class="el_source">VoucherController.java</span></div><h1>VoucherController.java</h1><pre class="source lang-java linenums">package com.group02.openevent.controller;
+
+import com.group02.openevent.model.voucher.Voucher;
+import com.group02.openevent.service.VoucherService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/api/vouchers&quot;)
+<span class="fc" id="L15">public class VoucherController {</span>
+    
+    @Autowired
+    private VoucherService voucherService;
+    
+    /**
+     * Validate voucher code for frontend
+     */
+    @GetMapping(&quot;/validate/{voucherCode}&quot;)
+    public ResponseEntity&lt;?&gt; validateVoucher(@PathVariable String voucherCode, HttpServletRequest httpRequest) {
+<span class="fc" id="L25">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (accountId == null) {</span>
+<span class="fc" id="L27">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
+        }
+
+        try {
+<span class="fc" id="L31">            boolean isAvailable = voucherService.isVoucherAvailable(voucherCode);</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">            if (isAvailable) {</span>
+<span class="fc" id="L33">                Optional&lt;Voucher&gt; voucherOpt = voucherService.getVoucherByCode(voucherCode);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">                if (voucherOpt.isPresent()) {</span>
+<span class="fc" id="L35">                    Voucher voucher = voucherOpt.get();</span>
+<span class="fc" id="L36">                    return ResponseEntity.ok(Map.of(</span>
+<span class="fc" id="L37">                        &quot;success&quot;, true,</span>
+<span class="fc" id="L38">                        &quot;voucher&quot;, Map.of(</span>
+<span class="fc" id="L39">                            &quot;code&quot;, voucher.getCode(),</span>
+<span class="fc" id="L40">                            &quot;discountAmount&quot;, voucher.getDiscountAmount(),</span>
+<span class="fc" id="L41">                            &quot;description&quot;, voucher.getDescription()</span>
+                        )
+                    ));
+                }
+            }
+            
+<span class="fc" id="L47">            return ResponseEntity.ok(Map.of(</span>
+<span class="fc" id="L48">                &quot;success&quot;, false,</span>
+                &quot;message&quot;, &quot;Mã voucher không hợp lệ hoặc đã hết hạn&quot;
+            ));
+            
+<span class="fc" id="L52">        } catch (Exception e) {</span>
+<span class="fc" id="L53">            return ResponseEntity.badRequest().body(Map.of(</span>
+<span class="fc" id="L54">                &quot;success&quot;, false, </span>
+<span class="fc" id="L55">                &quot;message&quot;, e.getMessage()</span>
+            ));
+        }
+    }
+    
+    /**
+     * Get available vouchers
+     */
+    @GetMapping(&quot;/available&quot;)
+    public ResponseEntity&lt;?&gt; getAvailableVouchers(HttpServletRequest httpRequest) {
+<span class="fc" id="L65">        Long accountId = (Long) httpRequest.getAttribute(&quot;currentUserId&quot;);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (accountId == null) {</span>
+<span class="fc" id="L67">            return ResponseEntity.status(401).body(Map.of(&quot;success&quot;, false, &quot;message&quot;, &quot;User not logged in&quot;));</span>
+        }
+
+        try {
+<span class="fc" id="L71">            var vouchers = voucherService.getAvailableVouchers();</span>
+<span class="fc" id="L72">            return ResponseEntity.ok(Map.of(&quot;success&quot;, true, &quot;vouchers&quot;, vouchers));</span>
+<span class="fc" id="L73">        } catch (Exception e) {</span>
+<span class="fc" id="L74">            return ResponseEntity.badRequest().body(Map.of(&quot;success&quot;, false, &quot;message&quot;, e.getMessage()));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

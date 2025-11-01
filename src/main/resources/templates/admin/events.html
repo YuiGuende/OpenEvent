@@ -181,7 +181,7 @@
 
                 <!-- Filters -->
                 <div class="filter-section">
-                    <form th:action="@{/admin/events}" method="get" class="row g-3">
+                    <form th:action="@{/templates/admin/events}" method="get" class="row g-3">
                         <div class="col-md-3">
                             <label for="eventType" class="form-label">Event Type</label>
                             <select class="form-select" id="eventType" name="eventType">
@@ -227,7 +227,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-search"></i> Filter
                                 </button>
-                                <a th:href="@{/admin/events}" class="btn btn-outline-secondary">
+                                <a th:href="@{/templates/admin/events}" class="btn btn-outline-secondary">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </a>
                             </div>
@@ -345,7 +345,7 @@
                     <ul class="pagination justify-content-center">
                         <li class="page-item" th:classappend="${events.first} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/events(page=${events.number - 1}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                               th:href="@{/templates/admin/events(page=${events.number - 1}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}">
                                 Previous
                             </a>
                         </li>
@@ -354,13 +354,13 @@
                             class="page-item"
                             th:classappend="${i == events.number} ? 'active'">
                             <a class="page-link"
-                               th:href="@{/admin/events(page=${i}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                               th:href="@{/templates/admin/events(page=${i}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}"
                                th:text="${i + 1}">1</a>
                         </li>
 
                         <li class="page-item" th:classappend="${events.last} ? 'disabled'">
                             <a class="page-link"
-                               th:href="@{/admin/events(page=${events.number + 1}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                               th:href="@{/templates/admin/events(page=${events.number + 1}, size=${events.size}, eventType=${selectedEventType}, status=${selectedStatus}, sortBy=${sortBy}, sortDir=${sortDir})}">
                                 Next
                             </a>
                         </li>

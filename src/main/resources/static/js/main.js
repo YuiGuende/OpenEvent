@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 chip.classList.add('is-active');
 
                 // Here you would typically filter content
-                console.log('Filter changed to:', chip.textContent);
             });
         });
     });
@@ -78,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 const query = e.target.value.trim();
                 if (query) {
-                    console.log('Searching for:', query);
                     // Here you would implement actual search
                 }
             }
@@ -108,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentPage > 1) {
                 currentPage--;
                 updatePager();
-                console.log('Go to page:', currentPage);
             }
         });
 
@@ -116,7 +113,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentPage < totalPages) {
                 currentPage++;
                 updatePager();
-                console.log('Go to page:', currentPage);
             }
         });
 
@@ -175,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    console.log('OpenEvent UI initialized successfully!');
 });
 
 // Hero Slider functionality

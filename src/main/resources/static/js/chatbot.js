@@ -355,13 +355,48 @@ async function sendMessageToApi(message, retryCount = 0) {
         const data = await response.json();
         showTyping(false);
 
-        // Xử lý nếu backend yêu cầu tải lại trang
-        if (data.message && data.message.includes("__RELOAD__")) {
-            const cleanMessage = data.message.replace("__RELOAD__", "").trim();
-            displayMessage('bot', cleanMessage);
-            setTimeout(() => location.reload(), 1500); // Chờ 1.5s rồi tải lại
-        } else {
-            displayMessage('bot', data.message || 'Xin lỗi, tôi chưa hiểu ý bạn.');
+        // 1. Tách tin nhắn và tín hiệu
+        let botMessage = data.message || 'Xin lỗi, tôi chưa hiểu ý bạn.';
+        let redirectUrl = null;
+        let doReload = false;
+
+        // 2. Kiểm tra tín hiệu REDIRECT trước
+        if (botMessage.includes("__REDIRECT:")) {
+            const match = botMessage.match(/__REDIRECT:([^]*)__/);
+            if (match && match[1]) {
+                redirectUrl = match[1];
+                botMessage = botMessage.replace(match[0], "").trim(); // Xóa tín hiệu
+            }
+        } else if (botMessage.includes("__RELOAD__")) { // Kiểm tra RELOAD
+            doReload = true;
+            botMessage = botMessage.replace("__RELOAD__", "").trim(); // Xóa tín hiệu
+        }
+
+        // 3. Hiển thị tin nhắn sạch cho người dùng
+        displayMessage('bot', botMessage);
+
+        // 4. (Rất quan trọng) Lưu lịch sử chat
+        // (Bạn nên có logic lưu history vào sessionStorage/localStorage ở đây
+        // để không bị mất chat khi chuyển trang)
+        try {
+            const currentSessionId = getCurrentSessionId();
+            saveChatHistory(currentSessionId);
+        } catch (e) { console.warn('Không thể lưu chat history', e); }
+
+
+        // 5. Thực hiện hành động (Redirect hoặc Reload)
+        if (redirectUrl) {
+            displayMessage('bot', '🤖 Chuyển hướng trong 1.5 giây...');
+            setTimeout(() => {
+                // Đảm bảo URL là đầy đủ nếu cần
+                // Nếu API_BASE_URL là "/openevent" và redirectUrl là "/events"
+                // thì nó sẽ thành "/openevent/events"
+                window.location.href = API_BASE_URL + redirectUrl;
+            }, 1500);
+        } else if (doReload) {
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
         }
 
     } catch (error) {

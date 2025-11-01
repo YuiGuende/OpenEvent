@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đơn hàng - Department Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .event-thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{department/layout :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản lý đơn hàng</h2>
+    </div>
+
+    Filters
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="/department/orders" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option th:each="status : ${orderStatuses}"
+                                th:value="${status}"
+                                th:text="${status}"
+                                th:selected="${status == selectedStatus}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    Orders List
+    <div th:if="${orders.content.size() > 0}">
+        <div th:each="order : ${orders.content}" class="order-card">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <img th:src="${order.eventImageUrl}"
+                         th:alt="${order.eventTitle}"
+                         class="event-thumbnail"
+                         onerror="this.src='/placeholder.svg?height=80&width=80'">
+                </div>
+                <div class="col">
+                    <h5 class="mb-1" th:text="${order.eventTitle}">Event Title</h5>
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-person"></i>
+                        <span th:text="${order.customerName}">Customer Name</span>
+                        <span th:if="${order.participantName != null}">
+                                (Người tham gia: <span th:text="${order.participantName}"></span>)
+                            </span>
+                    </p>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-ticket"></i>
+                        <span th:text="${order.ticketTypeName}">Ticket Type</span>
+                    </p>
+                </div>
+                <div class="col-auto text-end">
+                    <h5 class="text-primary mb-2" th:text="${order.formattedAmount}">100,000đ</h5>
+                    <span class="badge"
+                          th:classappend="${order.statusBadgeClass}"
+                          th:text="${order.status}">Status</span>
+                    <p class="text-muted small mb-0 mt-1">
+                        <i class="bi bi-clock"></i>
+                        <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        Pagination
+        <nav th:if="${orders.totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/department/orders(page=${orders.number - 1}, size=${orders.size}, status=${selectedStatus})}">
+                        Trước
+                    </a>
+                </li>
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}"
+                    th:classappend="${i == orders.number} ? 'active'">
+                    <a class="page-link" th:href="@{/department/orders(page=${i}, size=${orders.size}, status=${selectedStatus})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/department/orders(page=${orders.number + 1}, size=${orders.size}, status=${selectedStatus})}">
+                        Sau
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div th:if="${orders.content.size() == 0}" class="text-center py-5">
+        <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+        <p class="text-muted mt-3">Không có đơn hàng nào</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

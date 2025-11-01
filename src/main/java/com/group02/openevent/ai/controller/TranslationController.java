@@ -35,13 +35,12 @@ public class TranslationController {
             @RequestParam String targetLang) {
         
         try {
-            Language source = Language.fromCode(sourceLang);
-            Language target = Language.fromCode(targetLang);
-            
-            if (source == null || target == null) {
+            if (!isValidCode(sourceLang) || !isValidCode(targetLang)) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid language code"));
             }
+            Language source = Language.fromCode(sourceLang);
+            Language target = Language.fromCode(targetLang);
             
             String translatedText = translationService.translate(text, source, target);
             
@@ -63,45 +62,45 @@ public class TranslationController {
      * Translate text asynchronously
      */
     @PostMapping("/translate-async")
-    public CompletableFuture<ResponseEntity<Map<String, Object>>> translateAsync(
+    public ResponseEntity<Map<String, Object>> translateAsync(
             @RequestParam String text,
             @RequestParam String sourceLang,
             @RequestParam String targetLang) {
         
         try {
+            if (!isValidCode(sourceLang) || !isValidCode(targetLang)) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Invalid language code"));
+            }
             Language source = Language.fromCode(sourceLang);
             Language target = Language.fromCode(targetLang);
-            
-            if (source == null || target == null) {
-                return CompletableFuture.completedFuture(
-                    ResponseEntity.badRequest()
-                        .body(Map.of("error", "Invalid language code"))
-                );
-            }
-            
-            return translationService.translateAsync(text, source, target)
-                .thenApply(translatedText -> {
-                    Map<String, Object> response = Map.of(
-                        "originalText", text,
-                        "translatedText", translatedText,
-                        "sourceLanguage", source.getName(),
-                        "targetLanguage", target.getName()
-                    );
-                    return ResponseEntity.ok(response);
-                })
-                .exceptionally(throwable -> {
-                    log.error("Async translation failed", throwable);
-                    Map<String, Object> errorResponse = Map.of("error", "Translation failed: " + throwable.getMessage());
-                    return ResponseEntity.internalServerError().body(errorResponse);
-                });
-            
-        } catch (Exception e) {
-            log.error("Translation setup failed", e);
-            return CompletableFuture.completedFuture(
-                ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Translation setup failed: " + e.getMessage()))
+
+            String translatedText = translationService.translateAsync(text, source, target).get();
+
+            Map<String, Object> response = Map.of(
+                    "originalText", text,
+                    "translatedText", translatedText,
+                    "sourceLanguage", source.getName(),
+                    "targetLanguage", target.getName()
             );
+            return ResponseEntity.ok(response);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            log.error("Async translation interrupted", ie);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Translation interrupted"));
+        } catch (Exception e) {
+            log.error("Async translation failed", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Translation failed: " + e.getMessage()));
         }
+    }
+
+    private boolean isValidCode(String code) {
+        for (Language lang : Language.values()) {
+            if (lang.getCode().equalsIgnoreCase(code)) return true;
+        }
+        return false;
     }
 
     /**
@@ -194,12 +193,11 @@ public class TranslationController {
             @RequestParam String userLanguage) {
         
         try {
-            Language userLang = Language.fromCode(userLanguage);
-            
-            if (userLang == null) {
+            if (!isValidCode(userLanguage)) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid user language code"));
             }
+            Language userLang = Language.fromCode(userLanguage);
             
             String translatedResponse = translationService.translateAIResponse(aiResponse, userLang);
             
@@ -225,12 +223,11 @@ public class TranslationController {
             @RequestParam String userLanguage) {
         
         try {
-            Language userLang = Language.fromCode(userLanguage);
-            
-            if (userLang == null) {
+            if (!isValidCode(userLanguage)) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid user language code"));
             }
+            Language userLang = Language.fromCode(userLanguage);
             
             String translatedInput = translationService.translateUserInput(userInput, userLang);
             

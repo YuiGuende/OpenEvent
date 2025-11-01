@@ -1,6 +1,5 @@
 package com.group02.openevent.ai.controller;
 
-import com.group02.openevent.ai.service.EventAIAgent;
 import com.group02.openevent.ai.util.SessionManager;
 import com.group02.openevent.model.ai.ChatHistory;
 import com.group02.openevent.repository.IChatHistoryRepo;
@@ -133,9 +132,12 @@ public class ChatController {
             String newSessionId = "SESSION_" + System.currentTimeMillis();
             session.setAttribute("sessionId", newSessionId);
             
-            // Tạo AI Agent mới cho session này (sử dụng default agent)
-            EventAIAgent newAgent = SessionManager.get(newSessionId);
-            SessionManager.put(newSessionId, newAgent);
+            // Khởi tạo AI Agent cho session nếu có cấu hình sẵn; nếu chưa sẵn sàng thì bỏ qua để không 500
+            try {
+                SessionManager.getOrCreate(newSessionId);
+            } catch (Exception ignore) {
+                // Hệ thống AI chưa sẵn sàng (ví dụ default agent chưa set) -> vẫn trả về 200 với sessionId
+            }
             
             Map<String, String> result = Map.of(
                 "sessionId", newSessionId,

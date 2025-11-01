@@ -72,13 +72,24 @@ async function handleLogin(e) {
             }
         } else {
             // Handle success response
-            if (resultEl) {
-                resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
-                resultEl.style.color = 'green';
+            try {
+                const json = await res.json();
+                if (json.redirectPath) {
+                    if (resultEl) {
+                        resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
+                        resultEl.style.color = 'green';
+                    }
+                    setTimeout(() => {
+                        window.location.href = json.redirectPath;
+                    }, 1000);
+                    return;
+                }
+            } catch (parseError) {
+                if (resultEl) {
+                    resultEl.textContent = 'Đăng nhập thành công!';
+                    resultEl.style.color = 'green';
+                }
             }
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 1000);
         }
     } catch (err) {
         const resultEl = document.getElementById('loginResult');

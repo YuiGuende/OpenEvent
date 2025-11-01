@@ -56,4 +56,30 @@ public class CloudinaryUtil {
         return (String) uploadResult.get("secure_url");
     }
 
+    public String uploadFile(MultipartFile file) throws IOException {
+        // Fix 2: Đảm bảo file tạm luôn được xóa bằng try-finally
+        File tempFile = null;
+        try {
+            // Tạo file tạm thời
+            tempFile = File.createTempFile("upload-", file.getOriginalFilename());
+            // Chuyển dữ liệu từ MultipartFile sang File
+            file.transferTo(tempFile);
+
+            // Upload file lên Cloudinary
+            Map uploadResult = cloudinary.uploader().upload(tempFile, ObjectUtils.asMap(
+                    "resource_type", "auto" // "auto" cho phép Cloudinary tự nhận diện
+            ));
+
+            // Trả về URL an toàn
+            return (String) uploadResult.get("secure_url");
+        }
+        finally {
+            // Luôn luôn xóa file tạm sau khi hoàn tất (dù thành công hay thất bại)
+            // để tránh rò rỉ bộ nhớ (disk space leak).
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
+        }
+    }
+
 }

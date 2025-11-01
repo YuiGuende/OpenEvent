@@ -1,0 +1,299 @@
+<!-- Main Content -->
+<div class="container" th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="page-header mb-4">
+                        <h2 class="card-title mb-2">
+                            <i class="bi bi-file-earmark-plus"></i> Tạo Form cho Sự kiện
+                        </h2>
+                        <p class="text-muted">
+                            Sự kiện: <strong th:text="${event.title}">Event Name</strong>
+                        </p>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div th:if="${param.success != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill"></i> 
+                        <span th:if="${param.success[0] == 'form_created'}">Form đã được tạo thành công!</span>
+                        <span th:if="${param.success[0] == 'form_deleted'}">Form đã được xóa thành công!</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div th:if="${param.error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                        <span th:if="${param.error[0] == 'form_creation_failed'}">
+                            Lỗi khi tạo form: <span th:text="${param.message != null ? param.message[0] : 'Không xác định'}"></span>
+                        </span>
+                        <span th:if="${param.error[0] == 'delete_failed'}">Lỗi khi xóa form!</span>
+                        <span th:if="${param.error[0] == 'missing_event_id'}">Thiếu thông tin event ID!</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Hướng dẫn
+                        </h6>
+                        <p class="mb-0 small">
+                            Chọn loại form bạn muốn tạo. Mỗi form sẽ có các câu hỏi tùy chỉnh để thu thập thông tin từ người tham dự.
+                        </p>
+                    </div>
+
+                    <!-- Forms Creation Cards -->
+                    <div class="row g-4 mt-2">
+                        <!-- Register Form Card -->
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm form-type-card">
+                                <div class="card-body text-center">
+                                    <div class="form-icon-wrapper mb-3">
+                                        <div class="form-icon bg-primary bg-opacity-10 text-primary mx-auto">
+                                            <i class="bi bi-person-plus-fill"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="card-title mb-3">Form Đăng ký</h4>
+                                    <p class="card-text text-muted small mb-4">
+                                        Tạo form để người tham dự điền thông tin khi đăng ký sự kiện. Form này sẽ được hiển thị sau khi thanh toán.
+                                    </p>
+                                    <div class="form-features mb-4">
+                                        <ul class="list-unstyled small text-start">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Thu thập thông tin cơ bản
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Hiển thị sau khi thanh toán
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Tùy chỉnh câu hỏi
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <a th:href="@{'/forms/create/' + ${eventId} + '?type=REGISTER'}" 
+                                       class="btn btn-primary w-100">
+                                        <i class="bi bi-plus-circle"></i> Tạo Form Đăng ký
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Check-in Form Card -->
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm form-type-card">
+                                <div class="card-body text-center">
+                                    <div class="form-icon-wrapper mb-3">
+                                        <div class="form-icon bg-success bg-opacity-10 text-success mx-auto">
+                                            <i class="bi bi-box-arrow-in-right"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="card-title mb-3">Form Check-in</h4>
+                                    <p class="card-text text-muted small mb-4">
+                                        Tạo form để người tham dự điền thông tin khi check-in tại sự kiện. Form này sẽ được hiển thị khi quét QR code check-in.
+                                    </p>
+                                    <div class="form-features mb-4">
+                                        <ul class="list-unstyled small text-start">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Thu thập thông tin khi đến
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Kết nối với QR code
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Xác nhận tham dự
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <a th:href="@{'/forms/create/' + ${eventId} + '?type=CHECKIN'}" 
+                                       class="btn btn-success w-100">
+                                        <i class="bi bi-plus-circle"></i> Tạo Form Check-in
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Form Card -->
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm form-type-card">
+                                <div class="card-body text-center">
+                                    <div class="form-icon-wrapper mb-3">
+                                        <div class="form-icon bg-warning bg-opacity-10 text-warning mx-auto">
+                                            <i class="bi bi-chat-left-text"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="card-title mb-3">Form Feedback</h4>
+                                    <p class="card-text text-muted small mb-4">
+                                        Tạo form để thu thập phản hồi từ người tham dự sau khi sự kiện kết thúc. Form này sẽ được hiển thị khi check-out.
+                                    </p>
+                                    <div class="form-features mb-4">
+                                        <ul class="list-unstyled small text-start">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Thu thập phản hồi
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Đánh giá sự kiện
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Cải thiện chất lượng
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <a th:href="@{'/forms/create/' + ${eventId} + '?type=FEEDBACK'}" 
+                                       class="btn btn-warning w-100">
+                                        <i class="bi bi-plus-circle"></i> Tạo Form Feedback
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Existing Forms Info -->
+                    <div class="mt-5">
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-ul"></i> Forms đã tạo
+                            </h5>
+                            <small class="text-muted">Quản lý và xem các form đã tạo</small>
+                        </div>
+                        
+                        <!-- Forms List -->
+                        <div th:if="${forms != null and !#lists.isEmpty(forms)}" class="forms-list">
+                            <div class="row g-3">
+                                <div class="col-md-6 col-lg-4" th:each="form : ${forms}">
+                                    <div class="card form-item-card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="card-title mb-0" th:text="${form.formTitle}">Form Title</h6>
+                                                <span class="badge" 
+                                                      th:classappend="${form.formType.name() == 'REGISTER'} ? 'bg-primary' : 
+                                                                      (${form.formType.name() == 'CHECKIN'} ? 'bg-success' : 'bg-warning')"
+                                                      th:text="${form.formType.name()}">TYPE</span>
+                                            </div>
+                                            <p class="card-text small text-muted mb-2" 
+                                               th:text="${form.formDescription != null ? form.formDescription : 'Không có mô tả'}">
+                                                Form description
+                                            </p>
+                                            <div class="form-meta mb-3">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-question-circle"></i>
+                                                    <span th:text="${form.questions != null ? form.questions.size() : 0}">0</span> câu hỏi
+                                                </small>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar"></i>
+                                                    Tạo: <span th:text="${#temporals.format(form.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                                </small>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <a th:href="@{'/forms/form/' + ${form.formId} + '/responses?eventId=' + ${eventId}}" 
+                                                   class="btn btn-sm btn-outline-primary flex-fill">
+                                                    <i class="bi bi-eye"></i> Xem
+                                                </a>
+                                            </div>
+                                            <div class="mt-2">
+                                                <form th:action="@{'/forms/' + ${form.formId} + '/delete'}" 
+                                                      method="post" 
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa form này?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                                        <i class="bi bi-trash"></i> Xóa
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div th:if="${forms == null or #lists.isEmpty(forms)}" class="empty-state">
+                            <div class="alert alert-secondary" role="alert">
+                                <i class="bi bi-info-circle"></i>
+                                <small>
+                                    Chưa có form nào được tạo. Bạn có thể tạo form bằng cách chọn loại form phía trên.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-icon-wrapper {
+        margin-top: 10px;
+    }
+    
+    .form-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+    }
+    
+    .form-type-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 2px solid transparent;
+    }
+    
+    .form-type-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+        border-color: #e9ecef;
+    }
+    
+    .page-header {
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 15px;
+    }
+    
+    .form-features {
+        min-height: 120px;
+    }
+    
+    .card-title {
+        font-weight: 600;
+    }
+    
+    /* Form Item Card Styling */
+    .form-item-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .form-item-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        border-color: #007bff;
+    }
+    
+    .form-item-card .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #343a40;
+    }
+    
+    .form-item-card .badge {
+        font-size: 0.7rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    .form-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .form-meta i {
+        margin-right: 5px;
+    }
+    
+    .empty-state {
+        padding: 20px 0;
+    }
+</style>
+

@@ -252,23 +252,29 @@ public class AgentEventService {
         Event event;
         log.info("Saving event {}", draft.getEventType());
         log.info("Saving event from DTO type: {}", draft.getClass().getName());
-        switch (draft.getEventType()) {
-            case WORKSHOP:
-                event = new WorkshopEvent();
-                break;
-            case MUSIC:
-                event = new MusicEvent();
-                break;
-            case FESTIVAL:
-                event = new FestivalEvent();
-                break;
-            case COMPETITION:
-                event = new CompetitionEvent();
-                break;
-            default:
-                log.warn("Unknown or null EventType received. Defaulting to generic Event.");
-                event = new Event();
-                break;
+        EventType draftType = draft.getEventType();
+        if (draftType == null) {
+            log.warn("Unknown or null EventType received. Defaulting to generic Event.");
+            event = new Event();
+        } else {
+            switch (draftType) {
+                case WORKSHOP:
+                    event = new WorkshopEvent();
+                    break;
+                case MUSIC:
+                    event = new MusicEvent();
+                    break;
+                case FESTIVAL:
+                    event = new FestivalEvent();
+                    break;
+                case COMPETITION:
+                    event = new CompetitionEvent();
+                    break;
+                default:
+                    log.warn("Unknown EventType received: {}. Defaulting to generic Event.", draftType);
+                    event = new Event();
+                    break;
+            }
         }
         log.info("Saving event {}", event.getClass().getName());
         AIEventMapper.createEventFromRequest(draft, event);
@@ -279,15 +285,11 @@ public class AgentEventService {
         // 2) Find or create Host (idempotent)
         Host h = c.getHost();
         if (h == null) {
+            log.info("This customer has no host");
             h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -> {
                 Host nh = new Host();
                 nh.setCustomer(c);
-                // Set default host name from account email if available
-                if (c.getAccount() != null && c.getAccount().getEmail() != null) {
-                    nh.setHostName(c.getAccount().getEmail().split("@")[0]);
-                } else {
-                    nh.setHostName("Host_" + c.getCustomerId());
-                }
+                log.info("Create host corresponding to customer id {}", c.getCustomerId());
                 return hostService.save(nh);
             });
         }

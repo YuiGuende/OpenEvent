@@ -89,4 +89,11 @@ public interface PaymentService {
      * @return PaymentResult
      */
     PaymentResult handlePaymentWebhookFromPayOS(PayOSWebhookData webhookData);
+    
+    /**
+     * Xử lý webhook trực tiếp từ PayOS SDK WebhookData
+     * @param webhookData Dữ liệu webhook từ PayOS SDK
+     * @return PaymentResult
+     */
+    PaymentResult handlePaymentWebhookDirectly(vn.payos.model.webhooks.WebhookData webhookData);
 }

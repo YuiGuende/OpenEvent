@@ -26,7 +26,7 @@ CREATE TABLE `account` (
   `account_id` int NOT NULL AUTO_INCREMENT,
   `email` varchar(100) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `role` enum('ADMIN','HOST','USER') NOT NULL,
+  `role` enum('ADMIN','HOST','CUSTOMER') NOT NULL,
   PRIMARY KEY (`account_id`),
   UNIQUE KEY `UKq0uja26qgu1atulenwup9rxyr` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -38,7 +38,7 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
-INSERT INTO `account` VALUES (1,'admin@gmail.com','$2a$10$mW0wPx/RGy5Tc2j3llkf5Oe8pWExQzegLIcApf5X32/7Lzt8CLFO2','ADMIN'),(2,'phongle@gmail.com','$2a$10$tB3RbXF9tvPn4ajHto7K..RkBcgMYQPC6nEppWsbVind1lwzR7sku','USER');
+INSERT INTO `account` VALUES (1,'admin@gmail.com','$2a$10$mW0wPx/RGy5Tc2j3llkf5Oe8pWExQzegLIcApf5X32/7Lzt8CLFO2','ADMIN'),(2,'phongle@gmail.com','$2a$10$tB3RbXF9tvPn4ajHto7K..RkBcgMYQPC6nEppWsbVind1lwzR7sku','CUSTOMER');
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -81,6 +81,7 @@ DROP TABLE IF EXISTS `event`;
 CREATE TABLE `event` (
   `event_type` varchar(31) NOT NULL,
   `id` int NOT NULL,
+  `version` bigint DEFAULT '0',
   `benefits` text,
   `created_at` datetime(6) NOT NULL,
   `description` text,

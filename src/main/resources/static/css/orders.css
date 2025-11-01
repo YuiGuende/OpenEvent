@@ -1,0 +1,74 @@
+/* Reduced custom CSS, using Bootstrap and Tailwind classes instead */
+:root {
+    --orange-primary: #ff6b35;
+    --orange-secondary: #ff8c42;
+    --green-primary: #22c55e;
+    --green-secondary: #16a34a;
+}
+
+/* Custom gradient backgrounds */
+.bg-gradient-orange {
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+}
+
+.bg-gradient-green {
+    background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+}
+
+/* Custom hover effects */
+.btn-export:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.orders-table tbody tr:hover {
+    background-color: #fef3f0;
+}
+
+/* Custom status badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-paid { background: #d1fae5; color: #065f46; }
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
+.status-expired { background: #e5e7eb; color: #374151; }
+.status-refunded { background: #dbeafe; color: #1e40af; }
+
+/* Custom table header */
+.orders-table thead {
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+}
+
+.orders-table thead th {
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+/* Modal header gradient */
+.modal-header-gradient {
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+    color: white;
+}
+
+/* Custom focus state */
+.form-control:focus {
+    border-color: var(--orange-primary);
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+}
+
+/* Active filter button */
+.status-option.active {
+    background: var(--orange-primary);
+    border-color: var(--orange-primary);
+    color: white;
+}

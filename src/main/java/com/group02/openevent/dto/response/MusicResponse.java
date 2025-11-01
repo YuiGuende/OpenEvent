@@ -11,6 +11,4 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MusicResponse extends EventResponse{
     String musicType;
-    String genre;
-    Integer performerCount;
 }

@@ -1,15 +1,5 @@
-<!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open.events - Events</title>
-    <link rel="stylesheet" th:href="@{/css/host.css}">
-    <link rel="stylesheet" th:href="@{/css/event.css}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-<main class="main-content event-wrapper">
+
+<div th:fragment="content">
     <div class="page-header">
         <div class="breadcrumbs">
             <span class="link" data-link="host" style="cursor:pointer">Bảng điều khiển</span>
@@ -28,16 +18,15 @@
     <div class="event-search-bar">
         <input type="text" class="event-search-input" placeholder="Tìm kiếm theo tên sự kiện"/>
         <select class="event-search-select">
-            <option>Closest start date</option>
-            <option>Furthest start date</option>
-            <option>Closest end date</option>
-            <option>Furthest end date</option>
+            <option>Tất cả</option>
+            <option>Đang diễn ra</option>
+            <option>Sắp diễn ra</option>
+            <option>Đã kết thúc</option>
             <option>Oldest first</option>
         </select>
         <button class="btn-create-event">
             <i class="fas fa-calendar-plus"></i> Tạo sự kiện
         </button>
-
     </div>
 
     <div class="event-tabs">
@@ -47,101 +36,172 @@
     </div>
 
     <div class="events-list">
-        <div class="event-card">
+        <div class="event-card" th:each="event : ${events}">
             <div class="event-image">
-                <img alt="Event"
+                <img alt="Event Image"
+                     th:src="${event.imageUrl}"
                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='100%25' height='100%25' fill='%236f42c1'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Segoe UI' font-size='12'%3EEvent%3C/text%3E%3C/svg%3E">
             </div>
             <div class="event-details">
-                <h3 class="event-title">sadsdasd</h3>
-                <p class="event-subtitle">duc le</p>
+                <h3 class="event-title" th:text="${event.title}">Tên Sự Kiện</h3>
+
+                <p class="event-subtitle" th:text="${event.eventType}">Loại Sự Kiện</p>
+
                 <div class="event-info">
-                    <span class="date-box">SEP 26</span>
-                    <span class="time">9:00 PM - 11:00 PM</span>
-                    <span class="status-badge draft">DRAFT • SẮP TỚI</span>
+                    <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
+
+                    <span class="time"
+                          th:text="|${#temporals.format(event.startsAt, 'h:mm a')}|"></span>
+
+                    <span class="date-box" th:text="${#temporals.format(event.endsAt, 'MMM dd')}"></span>
+
+                    <span class="time"
+                          th:text="|${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
+
+                    <span th:classappend="${event.status.name() == 'DRAFT' ? 'draft' : 'live'}"
+                          class="status-badge"
+                          th:text="${event.status.name() == 'DRAFT' ? 'DRAFT • SẮP TỚI' : 'LIVE • ĐANG DIỄN RA'}">DRAFT • SẮP TỚI</span>
                 </div>
+
                 <div class="event-sales">
                     <i class="fas fa-users"></i>
-                    <span>0 đã bán</span>
+                    <span th:text="|0 đã bán|">0 đã bán</span>
                 </div>
             </div>
-            <button class="action-btn"><i class="fas fa-ellipsis-v"></i></button>
+            <div class="event-actions">
+                <button class="action-btn" th:attr="data-event-id=${event.id}">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+
+                <div class="dropdown-menu" style="display: none;">
+                    <ul>
+                        <li>
+                            <a th:href="@{'/event/' + ${event.id}}">
+                                <i class="far fa-eye"></i> Xem trang sự kiện
+                            </a>
+                        </li>
+                        <li>
+                            <a th:href="@{'/manage/event/' + ${event.id}+'/getting-stared'}">
+                                <i class="fas fa-cog"></i> Quản lý sự kiện
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fas fa-qrcode"></i> Check-in
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="delete-action">
+                                <i class="fas fa-trash-alt"></i> Lưu trữ sự kiện
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
-</main>
-<div id="createEventModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
 
-        <h2>✨ Tạo sự kiện của bạn</h2>
-        <p class="subtitle">Hãy cho chúng tôi biết về sự kiện của bạn</p>
+    <!-- Modal -->
+    <div id="createEventModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
 
-        <form
-                action="#"
-                role="form"
-                method="post"
-                th:action="@{/api/events/saveEvent}"
-                th:object="${eventForm}"
-        >
-            <label>Tên sự kiện *</label>
-            <input type="text" th:field="*{title}" placeholder="Nhập tên sự kiện">
+            <h2>✨ Tạo sự kiện của bạn</h2>
+            <p class="subtitle">Hãy cho chúng tôi biết về sự kiện của bạn</p>
 
-            <label>Thể loại sự kiện</label>
-            <select th:field="*{eventType}">
-                <option th:each=" p : ${listTypeEvent}" th:value="${p}" th:text="${p}"></option>
-            </select>
+            <form th:action="@{/api/events/saveEvent}" th:object="${eventForm}" method="post">
+                <label>Tên sự kiện *</label>
+                <input type="text" th:field="*{title}" placeholder="Nhập tên sự kiện">
 
-            <label>Mô tả sự kiện</label>
-            <textarea th:field="*{description}" placeholder="Hãy cho mọi người biết điều gì sẽ có tại sự kiện..."></textarea>
+                <label>Thể loại sự kiện</label>
+                <select th:field="*{eventType}">
+                    <option th:each="p : ${listTypeEvent}" th:value="${p}" th:text="${p}"></option>
+                </select>
 
-            <div>
-                <lable> Hạn đăng ký sự kiện </lable>
-                <input th:field="*{enrollDeadline}" type="datetime-local">
-            </div>
-            
-            
-            <div class="date-time">
+                <label>Mô tả sự kiện</label>
+                <textarea th:field="*{description}"
+                          placeholder="Hãy cho mọi người biết điều gì sẽ có tại sự kiện..."></textarea>
+
                 <div>
-                    <label>Ngày & giờ bắt đầu *</label>
-                    <input th:field="*{startsAt}" type="datetime-local">
+                    <label>Hạn đăng ký sự kiện</label>
+                    <input th:field="*{enrollDeadline}" type="datetime-local">
                 </div>
-                <div>
-                    <label>Ngày & giờ kết thúc</label>
-                    <input th:field="*{endsAt}" type="datetime-local">
-                </div>
-            </div>
 
-            <button type="submit" class="submit-btn">📅 Tiếp tục thiết lập</button>
-        </form>
+                <div class="date-time">
+                    <div>
+                        <label>Ngày & giờ bắt đầu *</label>
+                        <input th:field="*{startsAt}" type="datetime-local">
+                    </div>
+                    <div>
+                        <label>Ngày & giờ kết thúc</label>
+                        <input th:field="*{endsAt}" type="datetime-local">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">📅 Tiếp tục thiết lập</button>
+            </form>
+        </div>
     </div>
+
 </div>
 
-<script th:src="@{/js/host.js}"></script>
 <script>
-    document.getElementById('nav-dashboard')?.addEventListener('click', () => window.location.href = '/host');
-    document.querySelector('[data-link="host"]')?.addEventListener('click', () => window.location.href = '/host');
+    // Modal functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('createEventModal');
+        const openBtn = document.querySelector('.btn-create-event');
+        const closeBtn = document.querySelector('.close');
 
-    // document.querySelector('.btn-create-event')?.addEventListener('click', function() {
-    //     window.location.href = '/create';
-    // });
-    const modal = document.getElementById("createEventModal");
-    const btn = document.querySelector(".btn-create-event");
-    const closeBtn = document.querySelector(".modal .close");
-
-    btn.addEventListener("click", () => {
-        modal.style.display = "flex"; // hiện pop-up
-    });
-
-    closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
-
-    window.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.style.display = "none";
+        // Open modal
+        if (openBtn) {
+            openBtn.addEventListener('click', function () {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
         }
-    });
 
+        // Close modal
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Form validation
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const title = document.querySelector('input[th\\:field="*{title}"]');
+                const startsAt = document.querySelector('input[th\\:field="*{startsAt}"]');
+
+                if (!title.value.trim()) {
+                    e.preventDefault();
+                    alert('Vui lòng nhập tên sự kiện');
+                    title.focus();
+                    return;
+                }
+
+                if (!startsAt.value) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn ngày và giờ bắt đầu');
+                    startsAt.focus();
+                    return;
+                }
+            });
+        }
+
+        // Dropdown menu functionality
+
+    });
 </script>
-</body>
-</html>
+

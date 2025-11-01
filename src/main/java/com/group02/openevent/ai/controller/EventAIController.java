@@ -9,6 +9,7 @@ import com.group02.openevent.service.PlaceService;
 import com.group02.openevent.util.TimeSlotUnit;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -31,13 +32,16 @@ public class EventAIController {
     private final AgentEventService agentEventService;
     private final EventService eventService;
     private final PlaceService placeService;
+    private final ObjectMapper objectMapper;
 
     public EventAIController(AgentEventService agentEventService,
                            EventService eventService,
-                           PlaceService placeService) {
+                           PlaceService placeService,
+                           ObjectMapper objectMapper) {
         this.agentEventService = agentEventService;
         this.eventService = eventService;
         this.placeService = placeService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -48,7 +52,14 @@ public class EventAIController {
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createEvent(@RequestBody Map<String, Object> request) {
         try {
-            Action action = (Action) request.get("action");
+            Object actionRaw = request.get("action");
+            Action action = null;
+            if (actionRaw instanceof Action) {
+                action = (Action) actionRaw;
+            } else if (actionRaw instanceof Map<?,?> map) {
+                action = (objectMapper != null ? objectMapper : new ObjectMapper())
+                        .convertValue(map, Action.class);
+            }
             Integer userId = (Integer) request.get("userId");
             
             if (action == null) {

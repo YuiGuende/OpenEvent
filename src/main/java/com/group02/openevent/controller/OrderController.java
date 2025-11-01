@@ -4,9 +4,9 @@ import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.repository.IUserRepo;
-import com.group02.openevent.repository.IEventRepo;
-import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.model.account.Account;
+import com.group02.openevent.repository.ICustomerRepo;
+import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.VoucherService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,16 +26,14 @@ import java.util.Optional;
 public class OrderController {
 
     private final OrderService orderService;
-    private final IUserRepo userRepo;
-    private final IEventRepo eventRepo;
-    private final ITicketTypeRepo ticketTypeRepo;
+    private final ICustomerRepo customerRepo;
+    private final IAccountRepo accountRepo;
     private final VoucherService voucherService;
 
-    public OrderController(OrderService orderService, IUserRepo userRepo, IEventRepo eventRepo, ITicketTypeRepo ticketTypeRepo, VoucherService voucherService) {
+    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, VoucherService voucherService) {
         this.orderService = orderService;
-        this.userRepo = userRepo;
-        this.eventRepo = eventRepo;
-        this.ticketTypeRepo = ticketTypeRepo;
+        this.customerRepo = customerRepo;
+        this.accountRepo = accountRepo;
         this.voucherService = voucherService;
     }
 
@@ -76,16 +74,24 @@ public class OrderController {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
             }
 
-            Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
             if (customer == null) {
-                return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
+                // Tự động tạo Customer nếu chưa có
+                Account account = accountRepo.findById(accountId)
+                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
+                
+                customer = new Customer();
+                customer.setAccount(account);
+                customer.setEmail(account.getEmail());
+                customer.setPoints(0);
+                customer = customerRepo.save(customer);
             }
 
             // Check if customer already registered (paid) for this event
             if (orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
                 return ResponseEntity.badRequest().body(Map.of(
-                    "success", false, 
-                    "message", "You have already registered for this event"
+                        "success", false,
+                        "message", "You have already registered for this event"
                 ));
             }
 
@@ -93,36 +99,35 @@ public class OrderController {
             Optional<Order> pendingOrder = orderService.getPendingOrderForEvent(customer.getCustomerId(), request.getEventId());
             if (pendingOrder.isPresent()) {
                 Order existingOrder = pendingOrder.get();
-                
+
                 // Cancel the old pending order
                 orderService.cancelOrder(existingOrder.getOrderId());
-                
+
                 // Log the cancellation
-                System.out.println("Cancelled old pending order: " + existingOrder.getOrderId() + " for customer: " + customer.getCustomerId());
             }
 
             Order order = orderService.createOrderWithTicketTypes(request, customer);
-            
+
             // Return simplified response to avoid JSON serialization issues
             Map<String, Object> response = Map.of(
-                "success", true, 
-                "orderId", order.getOrderId(),
-                "totalAmount", order.getTotalAmount(),
-                "status", order.getStatus().toString()
+                    "success", true,
+                    "orderId", order.getOrderId(),
+                    "totalAmount", order.getTotalAmount(),
+                    "status", order.getStatus().toString()
             );
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
-            
+
             String errorMessage = e.getMessage();
             if (errorMessage == null || errorMessage.trim().isEmpty()) {
                 errorMessage = "Order creation failed: " + e.getClass().getSimpleName();
             }
-            
+
             return ResponseEntity.badRequest().body(Map.of(
-                "success", false, 
-                "message", errorMessage
+                    "success", false,
+                    "message", errorMessage
             ));
         }
     }
@@ -137,9 +142,17 @@ public class OrderController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
-        Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
+        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
         if (customer == null) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
+            // Tự động tạo Customer nếu chưa có
+            Account account = accountRepo.findById(accountId)
+                    .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
+            
+            customer = new Customer();
+            customer.setAccount(account);
+            customer.setEmail(account.getEmail());
+            customer.setPoints(0);
+            customer = customerRepo.save(customer);
         }
 
         List<Order> orders = orderService.getOrdersByCustomer(customer);
@@ -152,21 +165,36 @@ public class OrderController {
      */
     @GetMapping("/check-registration/{eventId}")
     public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest) {
-        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
-        if (accountId == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
-        }
+        try {
+            Long accountId = (Long) httpRequest.getAttribute("currentUserId");
+            if (accountId == null) {
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
+            }
 
-        Customer customer = userRepo.findByAccount_AccountId(accountId).orElse(null);
-        if (customer == null) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Customer not found"));
-        }
+            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+            if (customer == null) {
+                // Tự động tạo Customer nếu chưa có
+                Account account = accountRepo.findById(accountId)
+                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
+                
+                customer = new Customer();
+                customer.setAccount(account);
+                customer.setEmail(account.getEmail());
+                customer.setPoints(0);
+                customer = customerRepo.save(customer);
+            }
 
-        boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "isRegistered", isRegistered
-        ));
+            boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "isRegistered", isRegistered
+            ));
+        } catch (Exception e) { // <-- THÊM CATCH Ở ĐÂY
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage() // Sẽ trả về "DB error" như test mong đợi
+            ));
+        }
     }
 
     /**
@@ -222,7 +250,7 @@ public class OrderController {
             }
 
             Order order = orderOpt.get();
-            
+
             // Kiểm tra quyền sở hữu order
             if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
                 return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied"));
@@ -233,10 +261,10 @@ public class OrderController {
             orderService.save(order);
 
             return ResponseEntity.ok(Map.of(
-                "success", true, 
-                "message", "Voucher applied successfully",
-                "discountAmount", order.getVoucherDiscountAmount(),
-                "newTotalAmount", order.getTotalAmount()
+                    "success", true,
+                    "message", "Voucher applied successfully",
+                    "discountAmount", order.getVoucherDiscountAmount(),
+                    "newTotalAmount", order.getTotalAmount()
             ));
 
         } catch (Exception e) {
@@ -277,10 +305,10 @@ public class OrderController {
             if (isAvailable) {
                 var voucher = voucherService.getVoucherByCode(voucherCode);
                 return ResponseEntity.ok(Map.of(
-                    "success", true, 
-                    "available", true,
-                    "discountAmount", voucher.get().getDiscountAmount(),
-                    "description", voucher.get().getDescription()
+                        "success", true,
+                        "available", true,
+                        "discountAmount", voucher.get().getDiscountAmount(),
+                        "description", voucher.get().getDescription()
                 ));
             } else {
                 return ResponseEntity.ok(Map.of("success", true, "available", false));

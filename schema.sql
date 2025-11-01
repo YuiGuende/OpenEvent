@@ -6,8 +6,9 @@ CREATE TABLE account
 (
     account_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(100) NOT NULL UNIQUE,
+    phone_number VARCHAR(20),
     password_hash VARCHAR(255) NOT NULL,
-    role          ENUM('ADMIN','HOST','CUSTOMER') NOT NULL
+    role          ENUM('ADMIN','CUSTOMER','HOST','DEPARTMENT') NOT NULL
 );
 
 CREATE TABLE organization
@@ -20,7 +21,8 @@ CREATE TABLE organization
     org_name    VARCHAR(150) NOT NULL,
     phone       VARCHAR(20),
     updated_at  DATETIME(6),
-    website     VARCHAR(200)
+    website     VARCHAR(200),
+    representative_id BIGINT
 );
 
 CREATE TABLE place
@@ -70,6 +72,9 @@ CREATE TABLE customer
     CONSTRAINT fk_user_org FOREIGN KEY (organization_id) REFERENCES organization (org_id)
 );
 
+-- Add foreign key constraint for organization representative
+ALTER TABLE organization ADD CONSTRAINT fk_org_customer FOREIGN KEY (representative_id) REFERENCES customer (customer_id);
+
 -- User Sessions Table
 CREATE TABLE user_sessions
 (
@@ -90,22 +95,28 @@ CREATE TABLE user_sessions
 CREATE TABLE event
 (
     id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    version          BIGINT DEFAULT 0,
     event_type       VARCHAR(31)  NOT NULL,
     event_title      VARCHAR(150) NOT NULL,
     description      TEXT,
+    image_url        LONGTEXT,
+    capacity         INT,
+    public_date      DATETIME(6),
     starts_at        DATETIME(6) NOT NULL,
     ends_at          DATETIME(6) NOT NULL,
     enroll_deadline  DATETIME(6) NOT NULL,
     status           ENUM('CANCEL','DRAFT','FINISH','ONGOING','PUBLIC') NOT NULL,
-    image_url        VARCHAR(255),
     points           INT DEFAULT 0,
     benefits         TEXT,
     learning_objects TEXT,
+    poster           BOOLEAN DEFAULT FALSE,
+    host_id          BIGINT,
+    org_id           BIGINT,
     
     -- Thời gian thay đổi trạng thái
     created_at       DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     draft_at         DATETIME(6),
-    public_at      DATETIME(6),
+    public_at        DATETIME(6),
     ongoing_at       DATETIME(6),
     finish_at        DATETIME(6),
     cancel_at        DATETIME(6),
@@ -141,6 +152,7 @@ CREATE TABLE event_schedule
 CREATE TABLE music_event
 (
     event_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    music_type      VARCHAR(100),
     genre           VARCHAR(100),
     performer_count INT,
     CONSTRAINT fk_music_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
@@ -149,6 +161,7 @@ CREATE TABLE music_event
 CREATE TABLE workshop_event
 (
     event_id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    materials_link    VARCHAR(500),
     max_participants  INT,
     skill_level       VARCHAR(50),
     prerequisites     TEXT,
@@ -171,6 +184,15 @@ CREATE TABLE conference_event
     max_attendees    INT,
     agenda           TEXT,
     CONSTRAINT fk_conference_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+CREATE TABLE festival_event
+(
+    event_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    culture          VARCHAR(100),
+    traditions       TEXT,
+    activities       TEXT,
+    CONSTRAINT fk_festival_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
 );
 
 CREATE TABLE event_speaker
@@ -202,6 +224,7 @@ CREATE TABLE ticket_type
     price            DECIMAL(38,2) NOT NULL,
     total_quantity   INT NOT NULL,
     sold_quantity    INT NOT NULL DEFAULT 0,
+    sale             DECIMAL(38,2) DEFAULT 0,
     start_sale_date  DATETIME(6) DEFAULT NULL,
     end_sale_date    DATETIME(6) DEFAULT NULL,
     CONSTRAINT fk_tickettype_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
@@ -213,12 +236,15 @@ CREATE TABLE host
     host_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
     created_at  DATETIME(6) NOT NULL,
     organize_id BIGINT,
-    event_id    BIGINT NOT NULL,
     customer_id BIGINT NOT NULL,
-    CONSTRAINT fk_host_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_host_user FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
+    host_discount_percent DECIMAL(5,2) DEFAULT 0.00,
+    CONSTRAINT fk_host_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
     CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
 );
+
+-- Add foreign key constraints for event table after related tables are created
+ALTER TABLE event ADD CONSTRAINT fk_event_host FOREIGN KEY (host_id) REFERENCES host (host_id);
+ALTER TABLE event ADD CONSTRAINT fk_event_org FOREIGN KEY (org_id) REFERENCES organization (org_id);
 
 -- Bảng event_guests: mối quan hệ User tham gia Event (Guest)
 CREATE TABLE event_guests
@@ -266,6 +292,7 @@ CREATE TABLE orders
     customer_id              BIGINT NOT NULL,
     event_id                 BIGINT NOT NULL,
     ticket_type_id           BIGINT NOT NULL,
+    quantity                 INT NOT NULL DEFAULT 1,
     status                   ENUM('PENDING','CONFIRMED','PAID','CANCELLED','EXPIRED','REFUNDED') NOT NULL DEFAULT 'PENDING',
     
     -- Pricing fields
@@ -339,7 +366,61 @@ CREATE TABLE payments
 
 -- Migration completed: Simplified Order system (no OrderItem, no Ticket)
 
--- 7. Reports / Notifications / Requests
+-- 8. Event Attendance (Check-in/Check-out System)
+CREATE TABLE event_attendance
+(
+    attendance_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Link to order (if customer bought ticket)
+    order_id        BIGINT DEFAULT NULL,
+    
+    -- Event info
+    event_id        BIGINT NOT NULL,
+    
+    -- Customer info (if logged in)
+    customer_id     BIGINT DEFAULT NULL,
+    
+    -- Self-filled info (for walk-ins or manual check-in)
+    full_name       VARCHAR(200) NOT NULL,
+    email           VARCHAR(200),
+    phone           VARCHAR(50),
+    organization    VARCHAR(200),
+    
+    -- Check-in/out timestamps
+    check_in_time   DATETIME(6) DEFAULT NULL,
+    check_out_time  DATETIME(6) DEFAULT NULL,
+    
+    -- Status
+    status          ENUM('PENDING','CHECKED_IN','CHECKED_OUT') NOT NULL DEFAULT 'PENDING',
+    
+    -- Metadata
+    created_at      DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at      DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    
+    -- Foreign Keys
+    CONSTRAINT fk_attendance_order 
+        FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL,
+    
+    CONSTRAINT fk_attendance_event 
+        FOREIGN KEY (event_id) REFERENCES event(id) ON DELETE CASCADE,
+    
+    CONSTRAINT fk_attendance_customer 
+        FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE SET NULL,
+    
+    -- Constraints: 1 email chỉ check-in 1 lần cho 1 event
+    UNIQUE KEY uk_email_event (event_id, email),
+    
+    -- Indexes for performance
+    INDEX idx_event_status (event_id, status),
+    INDEX idx_checkin_time (check_in_time)
+);
+
+-- Add QR tokens to event table for check-in/check-out
+ALTER TABLE event 
+ADD COLUMN checkin_qr_token VARCHAR(255) UNIQUE DEFAULT NULL,
+ADD COLUMN checkout_qr_token VARCHAR(255) UNIQUE DEFAULT NULL;
+
+-- 9. Reports / Notifications / Requests
 CREATE TABLE reports
 (
     report_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -488,20 +569,21 @@ INSERT INTO customer (email, phone_number, points, account_id, organization_id) 
 ('user3@openevent.com', '0901234572', 25, 6, 3);
 
 -- Sample events
-INSERT INTO event (event_type, event_title, description, starts_at, ends_at, enroll_deadline, status, image_url, points, benefits, learning_objects, created_at, public_at) VALUES
-('MUSIC', 'Spring Music Festival 2024', 'Annual spring music festival featuring local and international artists', '2024-04-15 18:00:00', '2024-04-15 23:00:00', '2024-04-10 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 20, 'Free drinks and snacks, Meet & greet with artists', 'Experience diverse music genres, Network with music enthusiasts', NOW(), NOW()),
-('WORKSHOP', 'AI & Machine Learning Workshop', 'Hands-on workshop covering basics of AI and ML with practical examples', '2024-04-20 09:00:00', '2024-04-20 17:00:00', '2024-04-18 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 50, 'Certificate of completion, Course materials, Lunch included', 'Learn AI fundamentals, Build your first ML model, Understand data preprocessing', NOW(), NOW()),
-('OTHERS', 'Digital Marketing Summit 2024', 'Premier conference for digital marketing professionals and enthusiasts', '2024-05-05 08:00:00', '2024-05-05 18:00:00', '2024-05-01 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 30, 'Networking opportunities, Conference materials, Refreshments', 'Latest marketing trends, Social media strategies, ROI optimization techniques', NOW(), NOW()),
-('CompetitionEvent', 'Coding Challenge 2024', 'Annual programming competition for students and professionals', '2024-05-12 10:00:00', '2024-05-12 16:00:00', '2024-05-08 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 40, 'Cash prizes, Certificates, Job opportunities', 'Problem-solving skills, Algorithm optimization, Team collaboration', NOW(), NOW()),
-('MUSIC', 'Jazz Night at the Park', 'Relaxing evening of jazz music in outdoor setting', '2024-04-25 19:00:00', '2024-04-25 22:00:00', '2024-04-23 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 15, 'Outdoor seating, Light refreshments', 'Appreciate jazz music, Relaxing atmosphere', NOW(), NOW());
+INSERT INTO event (event_type, event_title, description, starts_at, ends_at, enroll_deadline, status, image_url, points, benefits, learning_objects, poster, org_id, created_at, public_at) VALUES
+('MUSIC', 'Spring Music Festival 2024', 'Annual spring music festival featuring local and international artists', '2024-04-15 18:00:00', '2024-04-15 23:00:00', '2024-04-10 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 20, 'Free drinks and snacks, Meet & greet with artists', 'Experience diverse music genres, Network with music enthusiasts', TRUE, 3, NOW(), NOW()),
+('WORKSHOP', 'AI & Machine Learning Workshop', 'Hands-on workshop covering basics of AI and ML with practical examples', '2024-04-20 09:00:00', '2024-04-20 17:00:00', '2024-04-18 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 50, 'Certificate of completion, Course materials, Lunch included', 'Learn AI fundamentals, Build your first ML model, Understand data preprocessing', FALSE, 1, NOW(), NOW()),
+('OTHERS', 'Digital Marketing Summit 2024', 'Premier conference for digital marketing professionals and enthusiasts', '2024-05-05 08:00:00', '2024-05-05 18:00:00', '2024-05-01 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 30, 'Networking opportunities, Conference materials, Refreshments', 'Latest marketing trends, Social media strategies, ROI optimization techniques', FALSE, 2, NOW(), NOW()),
+('COMPETITION', 'Coding Challenge 2024', 'Annual programming competition for students and professionals', '2024-05-12 10:00:00', '2024-05-12 16:00:00', '2024-05-08 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 40, 'Cash prizes, Certificates, Job opportunities', 'Problem-solving skills, Algorithm optimization, Team collaboration', FALSE, 1, NOW(), NOW()),
+('MUSIC', 'Jazz Night at the Park', 'Relaxing evening of jazz music in outdoor setting', '2024-04-25 19:00:00', '2024-04-25 22:00:00', '2024-04-23 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 15, 'Outdoor seating, Light refreshments', 'Appreciate jazz music, Relaxing atmosphere', FALSE, 3, NOW(), NOW()),
+('FESTIVAL', 'Cultural Festival 2024', 'Multi-day cultural festival celebrating local traditions and arts', '2024-06-01 10:00:00', '2024-06-03 22:00:00', '2024-05-28 23:59:59', 'PUBLIC', 'https://via.placeholder.com/400x300', 35, 'Cultural experiences, Traditional food, Art exhibitions', 'Learn about local culture, Traditional crafts, Community engagement', FALSE, 3, NOW(), NOW());
 
 -- Sample event-specific details
-INSERT INTO music_event (event_id, genre, performer_count) VALUES
-(1, 'Pop, Rock, Electronic', 8),
-(5, 'Jazz, Blues', 4);
+INSERT INTO music_event (event_id, music_type, genre, performer_count) VALUES
+(1, 'Live Concert', 'Pop, Rock, Electronic', 8),
+(5, 'Jazz Performance', 'Jazz, Blues', 4);
 
-INSERT INTO workshop_event (event_id, max_participants, skill_level, prerequisites) VALUES
-(2, 50, 'Beginner to Intermediate', 'Basic programming knowledge preferred');
+INSERT INTO workshop_event (event_id, materials_link, max_participants, skill_level, prerequisites) VALUES
+(2, 'https://workshop-materials.com/ai-ml-2024', 50, 'Beginner to Intermediate', 'Basic programming knowledge preferred');
 
 INSERT INTO conference_event (event_id, conference_type, max_attendees, agenda) VALUES
 (3, 'Professional Development', 200, 'Keynote speeches, Panel discussions, Networking sessions');
@@ -509,13 +591,17 @@ INSERT INTO conference_event (event_id, conference_type, max_attendees, agenda) 
 INSERT INTO competition_event (event_id, prize_pool, competition_type, rules) VALUES
 (4, '10,000,000 VND', 'Individual and Team', 'Max 4 hours, Any programming language allowed');
 
+INSERT INTO festival_event (event_id, culture, traditions, activities) VALUES
+(6, 'Vietnamese Culture', 'Traditional Vietnamese customs and heritage', 'Cultural performances, Traditional food, Art workshops, Community games');
+
 -- Sample event places
 INSERT INTO event_place (event_id, place_id) VALUES
 (1, 8), -- Spring Music Festival - Outdoor Stage
 (2, 1), -- AI Workshop - Alpha Auditorium  
 (3, 4), -- Digital Marketing Summit - Beta Main Hall
 (4, 2), -- Coding Challenge - Alpha Conference Room A
-(5, 8); -- Jazz Night - Outdoor Stage
+(5, 8), -- Jazz Night - Outdoor Stage
+(6, 4); -- Cultural Festival - Beta Main Hall
 
 -- Sample event speakers
 INSERT INTO event_speaker (event_id, speaker_id, role) VALUES
@@ -523,7 +609,8 @@ INSERT INTO event_speaker (event_id, speaker_id, role) VALUES
 (1, 4, 'ARTIST'),
 (2, 1, 'SPEAKER'),
 (3, 2, 'SPEAKER'),
-(5, 3, 'PERFORMER');
+(5, 3, 'PERFORMER'),
+(6, 5, 'OTHER'); -- Cultural Festival - Chef Anna as cultural expert
 
 -- Sample event images
 INSERT INTO event_image (event_id, url, order_index, main_poster) VALUES
@@ -532,38 +619,52 @@ INSERT INTO event_image (event_id, url, order_index, main_poster) VALUES
 (2, 'https://via.placeholder.com/800x600/45B7D1/FFFFFF?text=AI+Workshop', 1, TRUE),
 (3, 'https://via.placeholder.com/800x600/96CEB4/FFFFFF?text=Marketing+Summit', 1, TRUE),
 (4, 'https://via.placeholder.com/800x600/FFEAA7/000000?text=Coding+Challenge', 1, TRUE),
-(5, 'https://via.placeholder.com/800x600/DDA0DD/000000?text=Jazz+Night', 1, TRUE);
+(5, 'https://via.placeholder.com/800x600/DDA0DD/000000?text=Jazz+Night', 1, TRUE),
+(6, 'https://via.placeholder.com/800x600/F39C12/FFFFFF?text=Cultural+Festival', 1, TRUE);
 
 -- Sample ticket types (Updated with current dates for testing)
-INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sold_quantity, start_sale_date, end_sale_date) VALUES
+INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sold_quantity, sale, start_sale_date, end_sale_date) VALUES
 -- Spring Music Festival
-(1, 'Early Bird', 'Early bird discount ticket', 2000.00, 100, 25, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(1, 'General Admission', 'Standard admission ticket', 3000.00, 200, 45, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(1, 'VIP Pass', 'VIP access with premium benefits', 5000.00, 50, 12, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'Early Bird', 'Early bird discount ticket', 10000.00, 100, 25, 200.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'General Admission', 'Standard admission ticket', 36000.00, 200, 45, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(1, 'VIP Pass', 'VIP access with premium benefits', 100000.00, 50, 12, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- AI Workshop
-(2, 'Student Ticket', 'Discounted price for students', 1000.00, 30, 8, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(2, 'Professional Ticket', 'Regular price for professionals', 3500.00, 20, 5, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(2, 'Student Ticket', 'Discounted price for students', 1000.00, 30, 8, 100.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(2, 'Professional Ticket', 'Regular price for professionals', 3500.00, 20, 5, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- Digital Marketing Summit
-(3, 'Standard Pass', 'Access to all sessions', 2500.00, 150, 32, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(3, 'Premium Pass', 'All sessions + networking dinner', 4000.00, 50, 18, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(3, 'Standard Pass', 'Access to all sessions', 2500.00, 150, 32, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(3, 'Premium Pass', 'All sessions + networking dinner', 4000.00, 50, 18, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- Coding Challenge
-(4, 'Individual Entry', 'Single participant entry', 1500.00, 80, 15, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(4, 'Team Entry', 'Team of up to 4 members', 4500.00, 20, 6, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(4, 'Individual Entry', 'Single participant entry', 1500.00, 80, 15, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(4, 'Team Entry', 'Team of up to 4 members', 4500.00, 20, 6, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
 
 -- Jazz Night
-(5, 'General Seating', 'Standard outdoor seating', 1800.00, 120, 28, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
-(5, 'Premium Seating', 'Front row seating with table service', 3200.00, 40, 12, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
+(5, 'General Seating', 'Standard outdoor seating', 1800.00, 120, 28, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(5, 'Premium Seating', 'Front row seating with table service', 3200.00, 40, 12, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+
+-- Cultural Festival
+(6, 'Day Pass', 'Single day access to festival', 1500.00, 200, 45, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59'),
+(6, 'Full Festival Pass', 'Access to all 3 days', 4000.00, 100, 22, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
 
 -- Sample hosts
-INSERT INTO host (created_at, event_id, customer_id, organize_id) VALUES
-(NOW(), 1, 1, 3), -- Host1 organizes Spring Music Festival for Creative Arts Center
-(NOW(), 2, 1, 1), -- Host1 organizes AI Workshop for HCMC University  
-(NOW(), 3, 2, 2), -- Host2 organizes Marketing Summit for Tech Hub Vietnam
-(NOW(), 4, 1, 1), -- Host1 organizes Coding Challenge for HCMC University
-(NOW(), 5, 2, 3); -- Host2 organizes Jazz Night for Creative Arts Center
+INSERT INTO host (created_at, customer_id, organize_id, host_discount_percent) VALUES
+(NOW(), 1, 3, 10.00), -- Host1 for Creative Arts Center with 10% discount
+(NOW(), 1, 1, 5.00), -- Host1 for HCMC University with 5% discount
+(NOW(), 2, 2, 15.00), -- Host2 for Tech Hub Vietnam with 15% discount
+(NOW(), 1, 1, 0.00), -- Host1 for HCMC University with no discount
+(NOW(), 2, 3, 8.00), -- Host2 for Creative Arts Center with 8% discount
+(NOW(), 2, 3, 12.00); -- Host2 for Creative Arts Center with 12% discount
+
+-- Update event table to set host_id after hosts are created
+UPDATE event SET host_id = 1 WHERE id = 1; -- Spring Music Festival -> Host1
+UPDATE event SET host_id = 2 WHERE id = 2; -- AI Workshop -> Host1  
+UPDATE event SET host_id = 3 WHERE id = 3; -- Marketing Summit -> Host2
+UPDATE event SET host_id = 4 WHERE id = 4; -- Coding Challenge -> Host1
+UPDATE event SET host_id = 5 WHERE id = 5; -- Jazz Night -> Host2
+UPDATE event SET host_id = 6 WHERE id = 6; -- Cultural Festival -> Host2
 
 -- Sample event guests (some users already joined events)
 INSERT INTO event_guests (customer_id, event_id, joined_at, status) VALUES
@@ -601,7 +702,7 @@ INSERT INTO host_subscriptions (host_id, plan_id, start_date, end_date) VALUES
 (2, 3, '2024-02-01 00:00:00', '2025-02-01 00:00:00');
 
 -- Initialize event sequence
-INSERT INTO event_sequence (next_val) VALUES (6);
+INSERT INTO event_sequence (next_val) VALUES (7);
 
 -- Sample reports
 INSERT INTO reports (customer_id, event_id, content, type, status, created_at) VALUES
@@ -641,5 +742,65 @@ INSERT INTO orders (customer_id, event_id, ticket_type_id, status, original_pric
 INSERT INTO voucher_usage (voucher_id, order_id, discount_applied, used_at) VALUES
 (1, 6, 50000.00, NOW()),
 (2, 8, 20000.00, NOW());
+
+-- 14. Feedback Form System
+-- Bảng lưu form feedback của từng event
+CREATE TABLE event_forms (
+    form_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id BIGINT NOT NULL,
+    form_title VARCHAR(200) NOT NULL,
+    form_description TEXT,
+    -- Type of form: REGISTER (post-payment), CHECKIN (before attendance), FEEDBACK (post-checkout)
+    form_type ENUM('REGISTER','CHECKIN','FEEDBACK') NOT NULL DEFAULT 'FEEDBACK',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_eventform_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE
+);
+
+-- Bảng lưu các câu hỏi trong form
+CREATE TABLE form_questions (
+    question_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    form_id BIGINT NOT NULL,
+    question_text VARCHAR(500) NOT NULL,
+    question_type ENUM('TEXT', 'EMAIL', 'PHONE', 'SELECT', 'CHECKBOX', 'RADIO', 'TEXTAREA') NOT NULL,
+    is_required BOOLEAN DEFAULT FALSE,
+    question_options TEXT, -- JSON cho SELECT, CHECKBOX, RADIO
+    question_order INT DEFAULT 1,
+    created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_question_form FOREIGN KEY (form_id) REFERENCES event_forms (form_id) ON DELETE CASCADE
+);
+
+-- Bảng lưu câu trả lời của user
+CREATE TABLE form_responses (
+    response_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    form_id BIGINT NOT NULL,
+    customer_id BIGINT NOT NULL,
+    -- Optional link to the buyer's order when submitting REGISTER/FEEDBACK forms
+    order_id BIGINT DEFAULT NULL,
+    -- Optional link to attendance record when submitting CHECKIN/FEEDBACK forms
+    attendance_id BIGINT DEFAULT NULL,
+    question_id BIGINT NOT NULL,
+    response_value TEXT NOT NULL,
+    submitted_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_response_form FOREIGN KEY (form_id) REFERENCES event_forms (form_id) ON DELETE CASCADE,
+    CONSTRAINT fk_response_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON DELETE CASCADE,
+    CONSTRAINT fk_response_question FOREIGN KEY (question_id) REFERENCES form_questions (question_id) ON DELETE CASCADE,
+    CONSTRAINT fk_response_order FOREIGN KEY (order_id) REFERENCES orders (order_id) ON DELETE SET NULL,
+    CONSTRAINT fk_response_attendance FOREIGN KEY (attendance_id) REFERENCES event_attendance (attendance_id) ON DELETE SET NULL
+);
+
+-- Indexes for Feedback Form System
+CREATE INDEX idx_eventforms_event_id ON event_forms (event_id);
+-- Ensure one active form per type per event (optional uniqueness by type)
+CREATE UNIQUE INDEX uk_event_form_type ON event_forms (event_id, form_type);
+CREATE INDEX idx_eventforms_active ON event_forms (is_active);
+CREATE INDEX idx_formquestions_form_id ON form_questions (form_id);
+CREATE INDEX idx_formquestions_order ON form_questions (form_id, question_order);
+CREATE INDEX idx_formresponses_form_id ON form_responses (form_id);
+CREATE INDEX idx_formresponses_customer_id ON form_responses (customer_id);
+CREATE INDEX idx_formresponses_question_id ON form_responses (question_id);
+CREATE INDEX idx_formresponses_submitted_at ON form_responses (submitted_at);
+CREATE INDEX idx_formresponses_order_id ON form_responses (order_id);
+CREATE INDEX idx_formresponses_attendance_id ON form_responses (attendance_id);
 
 SELECT 'Sample data inserted successfully!' as status;

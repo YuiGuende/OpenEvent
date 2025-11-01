@@ -17,6 +17,49 @@
     
     <button id="joinEventBtn" onclick="joinEvent()">Join Event</button>
     
+    <!-- Feedback Form Buttons -->
+    <div class="mt-3">
+        <!-- Host: Create Feedback Form Button -->
+        <a th:href="@{'/forms/create/' + ${eventId} + '?type=FEEDBACK'}" 
+           class="btn btn-warning mr-2" 
+           style="background-color: #ff6b35; border-color: #ff6b35; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+            📝 Create Feedback Form
+        </a>
+        <!-- Host: Create Register Form Button -->
+        <a th:href="@{'/forms/create/' + ${eventId} + '?type=REGISTER'}" 
+           class="btn btn-outline-primary mr-2" 
+           style="border-color: #0d6efd; color: #0d6efd; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+            📝 Create Register Form
+        </a>
+        <!-- Host: Create Check-in Form Button -->
+        <a th:href="@{'/forms/create/' + ${eventId} + '?type=CHECKIN'}" 
+           class="btn btn-outline-secondary mr-2" 
+           style="border-color: #6c757d; color: #6c757d; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+            📝 Create Check-in Form
+        </a>
+        
+        <!-- User: Submit Form Button -->
+        <a th:href="@{'/forms/' + ${eventId}}" 
+           class="btn btn-info mr-2" 
+           style="background-color: #17a2b8; border-color: #17a2b8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+            📝 Submit Form
+        </a>
+        
+        <!-- Host: View Responses Button -->
+        <a th:href="@{'/forms/responses/' + ${eventId}}" 
+           class="btn btn-success" 
+           style="background-color: #28a745; border-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            📊 View Responses
+        </a>
+        
+        <!-- Host: Show Attendance QR Page (displays both QR codes for scanning) -->
+        <a th:href="@{'/events/' + ${eventId} + '/attendance'}"
+           class="btn btn-primary"
+           style="background-color: #007bff; border-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-left: 10px;">
+            📱 Show Check-in/Check-out QR
+        </a>
+    </div>
+    
     <p><a href="/">Back to Home</a></p>
 
     <script>
@@ -84,7 +127,7 @@
             const locations = {
                 'MusicEvent': 'Outdoor Stage, HCMC',
                 'WorkshopEvent': 'Workshop Room 1, Hanoi',
-                'CompetitionEvent': 'Main Auditorium, Da Nang',
+                'COMPETITION': 'Main Auditorium, Da Nang',
                 'ConferenceEvent': 'Conference Hall, HCMC'
             };
             return locations[eventType] || 'TBA';
@@ -95,7 +138,7 @@
             const types = {
                 'MusicEvent': 'Music Festival',
                 'WorkshopEvent': 'Workshop',
-                'CompetitionEvent': 'Competition',
+                'COMPETITION': 'Competition',
                 'FestivalEvent': 'Festival',
                 'ConferenceEvent': 'Conference'
             };
@@ -126,7 +169,7 @@
                 eventInfo.appendChild(skillElement);
             }
             
-            if (event.type === 'CompetitionEvent' && event.prizePool) {
+            if (event.type === 'COMPETITION' && event.prizePool) {
                 const prizeElement = document.createElement('p');
                 prizeElement.innerHTML = '<strong>Prize Pool:</strong> <span>' + event.prizePool + '</span>';
                 eventInfo.appendChild(prizeElement);
@@ -147,7 +190,7 @@
 
         // Check if customer is authenticated
         function checkAuthentication() {
-            fetch('/api/current-customer')
+            fetch('/api/current-user')
                 .then(response => response.json())
                 .then(data => {
                     if (data.authenticated) {
@@ -169,8 +212,9 @@
                 // User is logged in, redirect to registration form
                 window.location.href = '/event/' + eventId + '/register';
             } else {
-                // User not logged in, redirect to login
-                window.location.href = '/login';
+                // User not logged in, redirect to login with current URL
+                const currentUrl = window.location.pathname;
+                window.location.href = '/login?redirect=' + encodeURIComponent(currentUrl);
             }
         }
 

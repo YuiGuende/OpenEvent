@@ -2,10 +2,16 @@ package com.group02.openevent.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.account.Account;
+import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "customer")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,14 +24,27 @@ public class Customer {
     @JsonIgnoreProperties({"passwordHash"})
     private Account account;
 
+    @Column(name = "email", length = 100)
+    private String email;
+
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id", 
+            foreignKey = @ForeignKey(name = "fk_user_org"))
+    private Organization organization;
+
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
     @Column(name = "points", nullable = false)
     private Integer points = 0;
 
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Host host;
+
+    @Column(unique = true, length = 100)
+    private String memberID;
 
     public Customer() {
     }
@@ -68,5 +87,21 @@ public class Customer {
 
     public void setPoints(Integer points) {
         this.points = points;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 } 

@@ -1,0 +1,59 @@
+### Test Competition API - Create New Competition Event
+
+POST http://localhost:8080/api/competition
+Content-Type: application/json
+
+{
+  "title": "FPT Innovation Hackathon 2025",
+  "description": "Hackathon for FPT students to build AI-powered solutions for real-world problems. Join us for an exciting 48-hour coding competition!",
+  "capacity": 50,
+  "startsAt": "2025-10-15T18:00:00",
+  "endsAt": "2025-10-17T18:00:00",
+  "eventType": "COMPETITION",
+  "benefits": "Prizes, internships, networking opportunities, certificates",
+  "venueAddress": "FPT University Da Nang, Ngu Hanh Son, Da Nang",
+  "guidelines": "1. Bring your laptop and charger. 2. Arrive 30 minutes early for registration. 3. No internet access during competition rounds. 4. Follow competition rules strictly. 5. Respect other participants and judges."
+}
+
+###
+
+### Test Competition API - Get All Competitions
+
+GET http://localhost:8080/api/competition
+
+###
+
+### Test Competition API - Get Competition by ID
+
+GET http://localhost:8080/api/competition/1
+
+###
+
+### Test Competition API - Create Competition with Missing Title (Should return 400)
+
+POST http://localhost:8080/api/competition
+Content-Type: application/json
+
+{
+  "description": "Test competition without title",
+  "capacity": 30,
+  "startsAt": "2025-10-15T18:00:00",
+  "endsAt": "2025-10-15T20:00:00",
+  "eventType": "COMPETITION"
+}
+
+###
+
+### Test Competition API - Create Competition with Invalid Date (Should return 400)
+
+POST http://localhost:8080/api/competition
+Content-Type: application/json
+
+{
+  "title": "Test Competition with Invalid Date",
+  "description": "Test competition with end date before start date",
+  "capacity": 30,
+  "startsAt": "2025-10-15T18:00:00",
+  "endsAt": "2025-10-14T20:00:00",
+  "eventType": "COMPETITION"
+}

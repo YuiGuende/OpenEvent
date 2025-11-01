@@ -1,9 +1,10 @@
 package com.group02.openevent.model.event;
 
+import com.group02.openevent.model.enums.CompetitionFormat;
 import jakarta.persistence.*;
 
 @Entity
-@DiscriminatorValue("CompetitionEvent")
+@DiscriminatorValue("COMPETITION")
 public class CompetitionEvent  extends Event{
 
     @Column(name = "competition_type")
@@ -15,16 +16,47 @@ public class CompetitionEvent  extends Event{
     @Column(name = "prize_pool")
     private String prizePool;
 
+    @Column(columnDefinition = "TEXT")
+    private String eligibility; // điều kiện tham gia
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "format")
+    private CompetitionFormat format; // SOLO hoặc TEAM, CLASS, UNIVERSITY
+
+    @Column(columnDefinition = "TEXT")
+    private String judgingCriteria; // tiêu chí chấm điểm
+
+
     public CompetitionEvent() {
     }
 
-    public CompetitionEvent( String competitionType, String rules, String prizePool) {
-        this.competitionType = competitionType;
-        this.rules = rules;
-        this.prizePool = prizePool;
-    }
+
     // Getter & Setter
 
+
+    public String getEligibility() {
+        return eligibility;
+    }
+
+    public void setEligibility(String eligibility) {
+        this.eligibility = eligibility;
+    }
+
+    public CompetitionFormat getFormat() {
+        return format;
+    }
+
+    public void setFormat(CompetitionFormat format) {
+        this.format = format;
+    }
+
+    public String getJudgingCriteria() {
+        return judgingCriteria;
+    }
+
+    public void setJudgingCriteria(String judgingCriteria) {
+        this.judgingCriteria = judgingCriteria;
+    }
 
     public String getCompetitionType() {
         return competitionType;

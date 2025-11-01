@@ -1,8 +1,10 @@
 package com.group02.openevent.model.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group02.openevent.model.enums.Building;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -12,15 +14,15 @@ public class Place {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "place_id")
-    private Integer id;
+    private Long id;
 
-    @ManyToMany(mappedBy = "places")
-    private List<Event> events;
+    @ManyToMany(mappedBy = "places", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Event> events = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Building building = Building.NONE;
-
 
     @Column(name = "place_name", nullable = false, length = 150)
     private String placeName;
@@ -28,7 +30,7 @@ public class Place {
     public Place() {
     }
 
-    public Place(Integer id, List<Event> events, Building building, String placeName) {
+    public Place(Long id, List<Event> events, Building building, String placeName) {
         this.id = id;
         this.events = events;
         this.building = building;
@@ -40,12 +42,15 @@ public class Place {
         this.placeName = placeName;
     }
 
+    public Place(long l, String oldA, String b0) {
+    }
+
     // Getter & Setter
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

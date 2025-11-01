@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TranslationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.ai.controller</a> &gt; <span class="el_source">TranslationController.java</span></div><h1>TranslationController.java</h1><pre class="source lang-java linenums">package com.group02.openevent.ai.controller;
+
+import com.group02.openevent.ai.model.Language;
+import com.group02.openevent.ai.service.LibreTranslateService;
+import com.group02.openevent.ai.service.TranslationService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Controller for translation services
+ */
+@RestController
+@RequestMapping(&quot;/api/ai/translation&quot;)
+<span class="fc" id="L19">@Slf4j</span>
+<span class="fc" id="L20">public class TranslationController {</span>
+
+    @Autowired
+    private TranslationService translationService;
+
+    @Autowired
+    private LibreTranslateService libreTranslateService;
+
+    /**
+     * Translate text from one language to another
+     */
+    @PostMapping(&quot;/translate&quot;)
+    public ResponseEntity&lt;?&gt; translate(
+            @RequestParam String text,
+            @RequestParam String sourceLang,
+            @RequestParam String targetLang) {
+        
+        try {
+<span class="fc bfc" id="L38" title="All 4 branches covered.">            if (!isValidCode(sourceLang) || !isValidCode(targetLang)) {</span>
+<span class="fc" id="L39">                return ResponseEntity.badRequest()</span>
+<span class="fc" id="L40">                    .body(Map.of(&quot;error&quot;, &quot;Invalid language code&quot;));</span>
+            }
+<span class="fc" id="L42">            Language source = Language.fromCode(sourceLang);</span>
+<span class="fc" id="L43">            Language target = Language.fromCode(targetLang);</span>
+            
+<span class="fc" id="L45">            String translatedText = translationService.translate(text, source, target);</span>
+            
+<span class="fc" id="L47">            return ResponseEntity.ok(Map.of(</span>
+                &quot;originalText&quot;, text,
+                &quot;translatedText&quot;, translatedText,
+<span class="fc" id="L50">                &quot;sourceLanguage&quot;, source.getName(),</span>
+<span class="fc" id="L51">                &quot;targetLanguage&quot;, target.getName()</span>
+            ));
+            
+<span class="fc" id="L54">        } catch (Exception e) {</span>
+<span class="fc" id="L55">            log.error(&quot;Translation failed&quot;, e);</span>
+<span class="fc" id="L56">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L57">                .body(Map.of(&quot;error&quot;, &quot;Translation failed: &quot; + e.getMessage()));</span>
+        }
+    }
+
+    /**
+     * Translate text asynchronously
+     */
+    @PostMapping(&quot;/translate-async&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; translateAsync(
+            @RequestParam String text,
+            @RequestParam String sourceLang,
+            @RequestParam String targetLang) {
+        
+        try {
+<span class="pc bpc" id="L71" title="2 of 4 branches missed.">            if (!isValidCode(sourceLang) || !isValidCode(targetLang)) {</span>
+<span class="nc" id="L72">                return ResponseEntity.badRequest()</span>
+<span class="nc" id="L73">                        .body(Map.of(&quot;error&quot;, &quot;Invalid language code&quot;));</span>
+            }
+<span class="fc" id="L75">            Language source = Language.fromCode(sourceLang);</span>
+<span class="fc" id="L76">            Language target = Language.fromCode(targetLang);</span>
+
+<span class="fc" id="L78">            String translatedText = translationService.translateAsync(text, source, target).get();</span>
+
+<span class="fc" id="L80">            Map&lt;String, Object&gt; response = Map.of(</span>
+                    &quot;originalText&quot;, text,
+                    &quot;translatedText&quot;, translatedText,
+<span class="fc" id="L83">                    &quot;sourceLanguage&quot;, source.getName(),</span>
+<span class="fc" id="L84">                    &quot;targetLanguage&quot;, target.getName()</span>
+            );
+<span class="fc" id="L86">            return ResponseEntity.ok(response);</span>
+<span class="nc" id="L87">        } catch (InterruptedException ie) {</span>
+<span class="nc" id="L88">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L89">            log.error(&quot;Async translation interrupted&quot;, ie);</span>
+<span class="nc" id="L90">            return ResponseEntity.internalServerError()</span>
+<span class="nc" id="L91">                    .body(Map.of(&quot;error&quot;, &quot;Translation interrupted&quot;));</span>
+<span class="fc" id="L92">        } catch (Exception e) {</span>
+<span class="fc" id="L93">            log.error(&quot;Async translation failed&quot;, e);</span>
+<span class="fc" id="L94">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L95">                    .body(Map.of(&quot;error&quot;, &quot;Translation failed: &quot; + e.getMessage()));</span>
+        }
+    }
+
+    private boolean isValidCode(String code) {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        for (Language lang : Language.values()) {</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            if (lang.getCode().equalsIgnoreCase(code)) return true;</span>
+        }
+<span class="fc" id="L103">        return false;</span>
+    }
+
+    /**
+     * Get supported languages
+     */
+    @GetMapping(&quot;/languages&quot;)
+    public CompletableFuture&lt;ResponseEntity&lt;Map&lt;String, Object&gt;&gt;&gt; getSupportedLanguages() {
+<span class="nc" id="L111">        return libreTranslateService.getSupportedLanguages()</span>
+<span class="nc" id="L112">            .thenApply(languages -&gt; ResponseEntity.ok(Map.of(</span>
+                &quot;languages&quot;, languages,
+<span class="nc" id="L114">                &quot;count&quot;, languages.size()</span>
+            )))
+<span class="nc" id="L116">            .exceptionally(throwable -&gt; {</span>
+<span class="nc" id="L117">                log.error(&quot;Failed to get supported languages&quot;, throwable);</span>
+<span class="nc" id="L118">                return ResponseEntity.internalServerError()</span>
+<span class="nc" id="L119">                    .body(Map.of(&quot;error&quot;, &quot;Failed to get supported languages: &quot; + throwable.getMessage()));</span>
+            });
+    }
+
+    /**
+     * Test translation service connection
+     */
+    @GetMapping(&quot;/test&quot;)
+    public ResponseEntity&lt;?&gt; testConnection() {
+        try {
+<span class="fc" id="L129">            boolean isAvailable = translationService.testConnection();</span>
+            
+<span class="fc" id="L131">            return ResponseEntity.ok(Map.of(</span>
+<span class="fc" id="L132">                &quot;available&quot;, isAvailable,</span>
+                &quot;service&quot;, &quot;LibreTranslate&quot;,
+<span class="fc" id="L134">                &quot;cacheSize&quot;, translationService.getCacheSize()</span>
+            ));
+            
+<span class="fc" id="L137">        } catch (Exception e) {</span>
+<span class="fc" id="L138">            log.error(&quot;Connection test failed&quot;, e);</span>
+<span class="fc" id="L139">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L140">                .body(Map.of(&quot;error&quot;, &quot;Connection test failed: &quot; + e.getMessage()));</span>
+        }
+    }
+
+    /**
+     * Clear translation cache
+     */
+    @PostMapping(&quot;/clear-cache&quot;)
+    public ResponseEntity&lt;?&gt; clearCache() {
+        try {
+<span class="fc" id="L150">            translationService.clearCache();</span>
+            
+<span class="fc" id="L152">            return ResponseEntity.ok(Map.of(</span>
+                &quot;message&quot;, &quot;Translation cache cleared successfully&quot;,
+<span class="fc" id="L154">                &quot;cacheSize&quot;, translationService.getCacheSize()</span>
+            ));
+            
+<span class="fc" id="L157">        } catch (Exception e) {</span>
+<span class="fc" id="L158">            log.error(&quot;Failed to clear cache&quot;, e);</span>
+<span class="fc" id="L159">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L160">                .body(Map.of(&quot;error&quot;, &quot;Failed to clear cache: &quot; + e.getMessage()));</span>
+        }
+    }
+
+    /**
+     * Get translation service status
+     */
+    @GetMapping(&quot;/status&quot;)
+    public ResponseEntity&lt;?&gt; getStatus() {
+        try {
+<span class="fc" id="L170">            boolean isAvailable = translationService.isAvailable();</span>
+<span class="fc" id="L171">            int cacheSize = translationService.getCacheSize();</span>
+            
+<span class="fc" id="L173">            return ResponseEntity.ok(Map.of(</span>
+<span class="fc" id="L174">                &quot;available&quot;, isAvailable,</span>
+                &quot;service&quot;, &quot;LibreTranslate&quot;,
+<span class="fc" id="L176">                &quot;cacheSize&quot;, cacheSize,</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">                &quot;status&quot;, isAvailable ? &quot;healthy&quot; : &quot;unavailable&quot;</span>
+            ));
+            
+<span class="fc" id="L180">        } catch (Exception e) {</span>
+<span class="fc" id="L181">            log.error(&quot;Failed to get status&quot;, e);</span>
+<span class="fc" id="L182">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L183">                .body(Map.of(&quot;error&quot;, &quot;Failed to get status: &quot; + e.getMessage()));</span>
+        }
+    }
+
+    /**
+     * Translate AI response to user's preferred language
+     */
+    @PostMapping(&quot;/ai-response&quot;)
+    public ResponseEntity&lt;?&gt; translateAIResponse(
+            @RequestParam String aiResponse,
+            @RequestParam String userLanguage) {
+        
+        try {
+<span class="fc bfc" id="L196" title="All 2 branches covered.">            if (!isValidCode(userLanguage)) {</span>
+<span class="fc" id="L197">                return ResponseEntity.badRequest()</span>
+<span class="fc" id="L198">                    .body(Map.of(&quot;error&quot;, &quot;Invalid user language code&quot;));</span>
+            }
+<span class="fc" id="L200">            Language userLang = Language.fromCode(userLanguage);</span>
+            
+<span class="fc" id="L202">            String translatedResponse = translationService.translateAIResponse(aiResponse, userLang);</span>
+            
+<span class="fc" id="L204">            return ResponseEntity.ok(Map.of(</span>
+                &quot;originalResponse&quot;, aiResponse,
+                &quot;translatedResponse&quot;, translatedResponse,
+<span class="fc" id="L207">                &quot;userLanguage&quot;, userLang.getName()</span>
+            ));
+            
+<span class="fc" id="L210">        } catch (Exception e) {</span>
+<span class="fc" id="L211">            log.error(&quot;AI response translation failed&quot;, e);</span>
+<span class="fc" id="L212">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L213">                .body(Map.of(&quot;error&quot;, &quot;AI response translation failed: &quot; + e.getMessage()));</span>
+        }
+    }
+
+    /**
+     * Translate user input to Vietnamese for AI processing
+     */
+    @PostMapping(&quot;/user-input&quot;)
+    public ResponseEntity&lt;?&gt; translateUserInput(
+            @RequestParam String userInput,
+            @RequestParam String userLanguage) {
+        
+        try {
+<span class="fc bfc" id="L226" title="All 2 branches covered.">            if (!isValidCode(userLanguage)) {</span>
+<span class="fc" id="L227">                return ResponseEntity.badRequest()</span>
+<span class="fc" id="L228">                    .body(Map.of(&quot;error&quot;, &quot;Invalid user language code&quot;));</span>
+            }
+<span class="fc" id="L230">            Language userLang = Language.fromCode(userLanguage);</span>
+            
+<span class="fc" id="L232">            String translatedInput = translationService.translateUserInput(userInput, userLang);</span>
+            
+<span class="fc" id="L234">            return ResponseEntity.ok(Map.of(</span>
+                &quot;originalInput&quot;, userInput,
+                &quot;translatedInput&quot;, translatedInput,
+<span class="fc" id="L237">                &quot;userLanguage&quot;, userLang.getName()</span>
+            ));
+            
+<span class="fc" id="L240">        } catch (Exception e) {</span>
+<span class="fc" id="L241">            log.error(&quot;User input translation failed&quot;, e);</span>
+<span class="fc" id="L242">            return ResponseEntity.internalServerError()</span>
+<span class="fc" id="L243">                .body(Map.of(&quot;error&quot;, &quot;User input translation failed: &quot; + e.getMessage()));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

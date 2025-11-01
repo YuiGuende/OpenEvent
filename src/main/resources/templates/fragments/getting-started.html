@@ -1,0 +1,122 @@
+<div th:fragment="content" >
+<div class="success-banner">
+    <div class="success-content">
+        <div class="success-icon">
+            <i class="bi bi-party-popper"></i>
+        </div>
+        <div class="success-text">
+            <h1 class="success-title">Chúc mừng bạn đã tạo sự kiện thành công!</h1>
+            <p class="success-description">
+                Trước khi sự kiện của bạn có thể phát trực tiếp, bạn cần thực hiện một vài việc.<br>
+                Hoàn thành tất cả các bước dưới đây để bắt đầu.
+            </p>
+            <div class="progress-bar-container">
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <span class="progress-text">25% hoàn thành</span>
+            </div>
+        </div>
+    </div>
+    <div class="success-illustration">
+        <img src="/placeholder.svg?height=200&width=200" alt="Celebration" class="balloons-img">
+    </div>
+</div>
+
+<!-- Action Cards Grid -->
+<div class="action-cards-grid">
+    <!-- Card 1: Thêm vé -->
+    <div class="action-card">
+        <div class="card-icon card-icon-primary">
+            <i class="bi bi-ticket-perforated"></i>
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">Thêm vé</h3>
+            <p class="card-description">
+                Tạo vé cho sự kiện của bạn, đặt giá và quản lý số lượng có sẵn.
+            </p>
+            <a th:href="@{'/manage/event/' + ${eventId} + '/ticket'}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i>
+                Thêm vé
+            </a>
+        </div>
+    </div>
+
+    <!-- Card 2: Thiết lập sự kiện -->
+    <div class="action-card">
+        <div class="card-icon card-icon-secondary">
+            <i class="bi bi-sliders"></i>
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">Thiết lập sự kiện của bạn</h3>
+            <p class="card-description">
+                Thêm chi tiết sự kiện và quản lý cài đặt sự kiện.
+            </p>
+            <a th:href="@{'/manage/event/' + ${eventId} + '/settings'}" class="btn btn-outline-primary" id="setupEventBtn">
+                <i class="bi bi-gear"></i>
+                Thiết lập sự kiện của bạn
+            </a>
+        </div>
+    </div>
+
+    <!-- Card 3: Kết nối Stripe -->
+    <div class="action-card">
+        <div class="card-icon card-icon-info">
+            <i class="bi bi-credit-card"></i>
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">Kết nối với Stripe</h3>
+            <p class="card-description">
+                Kết nối tài khoản Stripe của bạn để bắt đầu nhận thanh toán.
+            </p>
+            <button class="btn btn-outline-primary">
+                <i class="bi bi-stripe"></i>
+                Kết nối với Stripe
+            </button>
+        </div>
+    </div>
+
+    <!-- Card 4: Tùy chỉnh trang -->
+    <div class="action-card card-completed">
+        <div class="card-icon card-icon-success">
+            <i class="bi bi-palette"></i>
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">
+                Tùy chỉnh trang sự kiện của bạn
+                <i class="bi bi-check-circle-fill text-success ms-2"></i>
+            </h3>
+            <p class="card-description">
+                Tùy chỉnh trang sự kiện của bạn để phù hợp với thương hiệu và phong cách của bạn.
+            </p>
+            <button class="btn btn-outline-primary">
+                <i class="bi bi-brush"></i>
+                Tùy chỉnh trang sự kiện của bạn
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Info Section -->
+<div class="info-section">
+    <div class="info-card">
+        <div class="info-icon">
+            <i class="bi bi-lightbulb"></i>
+        </div>
+        <div class="info-content">
+            <h4>Mẹo hữu ích</h4>
+            <p>Hãy đảm bảo thêm hình ảnh chất lượng cao và mô tả chi tiết để thu hút nhiều người tham gia hơn.</p>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-icon">
+            <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <div class="info-content">
+            <h4>Tăng doanh số</h4>
+            <p>Chia sẻ sự kiện của bạn trên mạng xã hội và sử dụng mã khuyến mãi để tăng số lượng vé bán ra.</p>
+        </div>
+    </div>
+</div>
+</div>

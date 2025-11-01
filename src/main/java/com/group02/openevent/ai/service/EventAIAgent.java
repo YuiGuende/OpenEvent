@@ -591,6 +591,7 @@ hoặc
                                    List<Message> context,
                                    HttpServletResponse response) throws Exception {
 
+
         // Kiểm tra câu hỏi có ngoài phạm vi không
         if (isOutOfScope(userInput)) {
             return handleOutOfScopeQuestion();
@@ -602,6 +603,7 @@ hoặc
         }
 
         boolean shouldReload = false;
+        String redirectUrl = null;
         StringBuilder systemResult = new StringBuilder();
 
         /* ===== Pending theo SESSION ===== */
@@ -810,7 +812,8 @@ hoặc
                                 log.info("Creating event: title={}, userId={}, orgId={}", event.getTitle(), userId, orgId);
                                 Event saved = agentEventService.createEventByCustomer(userId, event, orgId);
                                 systemResult.append("✅ Đã thêm sự kiện: ").append(saved.getTitle()).append("\n");
-                                shouldReload = true;
+//                                shouldReload = true;
+                                redirectUrl = "/events?create=true";
 
                                 // (Tùy chọn) upsert vector vào Qdrant — có thể bật lại khi cần
                                 // float[] eventVec = embeddingService.getEmbedding(saved.getTitle());

@@ -20,7 +20,7 @@ import java.util.List;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventResponse {
-    Long id;
+    Integer id;
     String title;
     String imageUrl;
     @Enumerated(EnumType.STRING)

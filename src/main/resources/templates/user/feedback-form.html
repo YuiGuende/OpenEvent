@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .question-item {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+        }
+        .required {
+            color: #dc3545;
+        }
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <h2><i class="fas fa-comment-dots"></i> <span th:text="${form != null ? form.formTitle : 'Form'}">Form</span></h2>
+                <p th:text="${form != null ? form.formDescription : 'Please fill in the form'}">Please fill in the form</p>
+            </div>
+            
+            <!-- No Form Message -->
+            <div th:if="${noFormMessage}" class="alert alert-info text-center" style="margin: 20px 0;">
+                <i class="fas fa-info-circle"></i>
+                <span th:text="${noFormMessage}">Chưa có form feedback nào cho sự kiện này.</span>
+            </div>
+            
+            <form th:if="${form} != null" th:action="@{/forms/feedback/submit(eventId=${eventId})}" method="post" id="feedbackForm">
+                <input type="hidden" name="formId" th:value="${form.formId}" id="formIdInput">
+                <input type="hidden" name="customerId" value="1"> <!-- TODO: Get from session -->
+                
+                <div th:each="question, iterStat : ${form.questions}" class="question-item">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <span th:text="${question.questionText}">Question text</span>
+                            <span th:if="${question.isRequired}" class="required">*</span>
+                        </label>
+                        
+                        <!-- Text Input -->
+                        <input th:if="${question.questionType.name() == 'TEXT'}" 
+                               type="text" class="form-control" 
+                               th:name="'responses[' + ${iterStat.index} + '].responseValue'"
+                               th:required="${question.isRequired}">
+                        
+                        <!-- Email Input -->
+                        <input th:if="${question.questionType.name() == 'EMAIL'}" 
+                               type="email" class="form-control" 
+                               th:name="'responses[' + ${iterStat.index} + '].responseValue'"
+                               th:required="${question.isRequired}">
+                        
+                        <!-- Phone Input -->
+                        <input th:if="${question.questionType.name() == 'PHONE'}" 
+                               type="tel" class="form-control" 
+                               th:name="'responses[' + ${iterStat.index} + '].responseValue'"
+                               th:required="${question.isRequired}">
+                        
+                        <!-- Textarea -->
+                        <textarea th:if="${question.questionType.name() == 'TEXTAREA'}" 
+                                  class="form-control" rows="4"
+                                  th:name="'responses[' + ${iterStat.index} + '].responseValue'"
+                                  th:required="${question.isRequired}"></textarea>
+                        
+                        <!-- Select Dropdown -->
+                        <select th:if="${question.questionType.name() == 'SELECT'}" 
+                                class="form-select"
+                                th:name="'responses[' + ${iterStat.index} + '].responseValue'"
+                                th:required="${question.isRequired}">
+                            <option value="">Choose an option</option>
+                            <option th:each="option : ${question.optionsList}" 
+                                    th:value="${option}" th:text="${option}"></option>
+                        </select>
+                        
+                        <!-- Radio Buttons -->
+                        <div th:if="${question.questionType.name() == 'RADIO'}">
+                            <div th:each="option, optStat : ${question.optionsList}" 
+                                 class="form-check">
+                                <input class="form-check-input" type="radio" 
+                                       th:name="'responses[' + ${iterStat.index} + '].responseValue'"
+                                       th:value="${option}" th:id="'radio_' + ${iterStat.index} + '_' + ${optStat.index}"
+                                       th:required="${question.isRequired}">
+                                <label class="form-check-label" 
+                                       th:for="'radio_' + ${iterStat.index} + '_' + ${optStat.index}"
+                                       th:text="${option}"></label>
+                            </div>
+                        </div>
+                        
+                        <!-- Checkboxes -->
+                        <div th:if="${question.questionType.name() == 'CHECKBOX'}">
+                            <div th:each="option, optStat : ${question.optionsList}" 
+                                 class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       th:name="'responses[' + ${iterStat.index} + '].responseValue'"
+                                       th:value="${option}" th:id="'checkbox_' + ${iterStat.index} + '_' + ${optStat.index}">
+                                <label class="form-check-label" 
+                                       th:for="'checkbox_' + ${iterStat.index} + '_' + ${optStat.index}"
+                                       th:text="${option}"></label>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden field for question ID -->
+                        <input type="hidden" th:name="'responses[' + ${iterStat.index} + '].questionId'" 
+                               th:value="${question.questionId}">
+                    </div>
+                </div>
+
+                <div id="id-qrcode"></div>
+                
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-file-alt"></i> Submit Form
+                    </button>
+                    <a th:href="@{'/events/' + ${eventId}}" class="btn btn-secondary btn-lg ms-2">
+                        <i class="fas fa-arrow-left"></i> Back to Event
+                    </a>
+                </div>
+            </form>
+            
+            <!-- If no form available, hide submit form -->
+            <div th:if="${form} == null" class="text-center">
+                <a th:href="@{'/events/' + ${eventId}}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back to Event
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle checkbox values (convert to comma-separated string)
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('feedbackForm');
+            
+            form.addEventListener('submit', function(e) {
+                // Find all checkbox groups and convert to comma-separated values
+                const checkboxGroups = {};
+                
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    const name = checkbox.name;
+                    if (!checkboxGroups[name]) {
+                        checkboxGroups[name] = [];
+                    }
+                    if (checkbox.checked) {
+                        checkboxGroups[name].push(checkbox.value);
+                    }
+                });
+                
+                // Replace checkbox inputs with hidden inputs containing comma-separated values
+                Object.keys(checkboxGroups).forEach(name => {
+                    const checkboxes = document.querySelectorAll(`input[name="${name}"]`);
+                    checkboxes.forEach(checkbox => {
+                        checkbox.disabled = true; // Disable to prevent submission
+                    });
+                    
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = name;
+                    hiddenInput.value = checkboxGroups[name].join(',');
+                    form.appendChild(hiddenInput);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

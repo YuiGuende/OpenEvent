@@ -1,0 +1,698 @@
+/* Simple Orange Hover CSS */
+
+/* Reset margins and padding for full-screen banner */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
+}
+
+body {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Override theme styles that add margins */
+.section-padding-compact {
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+}
+
+.section-padding {
+    margin-top: 0 !important;
+}
+
+/* Ensure banner takes full viewport */
+.hero--slider {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.hero--compact {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hero Banner Slider CSS */
+.hero {
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.hero-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+    margin: 0;
+    padding: 0;
+}
+
+.hero-slide {
+    min-width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 15px 80px 0;
+    margin: 0;
+}
+
+.hero-actions {
+    display: flex;
+    align-items: center;
+}
+
+.hero-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.hero-nav:hover {
+    background: rgba(255, 107, 53, 0.8);
+    border-color: #FF6B35;
+}
+
+.hero-nav.prev {
+    left: 30px;
+}
+
+.hero-nav.next {
+    right: 30px;
+}
+
+.hero-progress {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.hero-progress-bar {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.hero-progress-bar.active {
+    background: #FF6B35;
+    width: 60px;
+}
+
+.hero-progress-bar:hover {
+    background: rgba(255, 107, 53, 0.7);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-nav {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .hero-nav.prev {
+        left: 15px;
+    }
+
+    .hero-nav.next {
+        right: 15px;
+    }
+
+    .hero-progress {
+        bottom: 20px;
+    }
+
+    .hero-progress-bar {
+        width: 30px;
+    }
+
+    .hero-progress-bar.active {
+        width: 45px;
+    }
+}
+
+/* Schedule tabs hover effect */
+.schedule-tab-title .nav-link:hover {
+    background-color: #FF6B35 !important;
+    color: white !important;
+}
+
+.schedule-tab-title .nav-link.active {
+    background-color: #FF6B35 !important;
+    color: white !important;
+}
+
+/* Activity cards hover effect */
+.card-header:hover {
+    background-color: #FF6B35 !important;
+    color: white !important;
+}
+
+/* Ticket Cards - Equal Height */
+.price-block-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    background: white;
+    padding: 30px;
+}
+
+.price-block-wrapper:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Fixed height sections */
+.price-block-wrapper .icon {
+    flex-shrink: 0;
+    margin-bottom: 20px;
+}
+
+.price-block-wrapper .colmun-title {
+    flex-shrink: 0;
+    margin-bottom: 15px;
+}
+
+.price-block-wrapper .price {
+    flex-shrink: 0;
+    margin-bottom: 20px;
+}
+
+/* Description section takes remaining space */
+.price-block-wrapper .pricing-list {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+/* Button always at bottom */
+.price-block-wrapper .btn {
+    margin-top: auto;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* Row container for equal height cards */
+#pricing .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    min-height: 600px; /* Ensure minimum height */
+}
+
+#pricing .col-lg-4 {
+    display: flex;
+    margin-bottom: 30px;
+    align-items: stretch;
+}
+
+/* Ticket Packages Section Spacing */
+#pricing {
+    padding-top: 40px !important; /* Giảm padding trên từ default */
+    padding-bottom: 60px !important;
+}
+
+#pricing .section-title-header {
+    margin-bottom: 10px; /* Giảm khoảng cách từ title xuống cards */
+}
+
+#pricing .section-title {
+    margin-bottom: 8px; /* Giảm khoảng cách dưới title chính */
+}
+
+#pricing .section-title-header p {
+    margin-bottom: 5px; /* Giảm margin dưới subtitle xuống gần cards */
+}
+
+/* Responsive for mobile */
+@media (max-width: 768px) {
+    #pricing .col-lg-4 {
+        flex-direction: column;
+    }
+
+    .price-block-wrapper {
+        margin-bottom: 30px;
+    }
+
+    #pricing {
+        padding-top: 30px !important;
+        padding-bottom: 40px !important;
+    }
+}
+
+/* Event Guidelines Section - Beautiful UI */
+#event-slides {
+    background: linear-gradient(135deg, #FFF8F5 0%, #FFE8DC 100%);
+    padding: 60px 0;
+}
+
+#event-slides .section-title {
+    color: var(--orange-dark, #E55A2B);
+    font-weight: 700;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+#event-slides .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(135deg, #FF6B35, #FF8C42);
+    border-radius: 2px;
+}
+
+#event-slides .section-title-header p {
+    color: #6C757D;
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+/* Google Maps Container */
+#event-slides .video {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#event-slides .video:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+#event-slides .video iframe {
+    border-radius: 15px;
+}
+
+/* Google Maps Button */
+#event-slides .btn-outline-primary {
+    border: 2px solid #FF6B35;
+    color: #FF6B35;
+    background: transparent;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+#event-slides .btn-outline-primary:hover {
+    background: #FF6B35;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+}
+
+/* Guidelines Content */
+#event-slides .intro-desc {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #495057;
+    margin-bottom: 30px;
+}
+
+#event-slides .intro-title {
+    color: #FF6B35;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+#event-slides .intro-title::before {
+    content: '';
+    position: absolute;
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 25px;
+    background: linear-gradient(135deg, #FF6B35, #FF8C42);
+    border-radius: 2px;
+}
+
+/* Guidelines List */
+#event-slides .list-specification {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#event-slides .list-specification li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 18px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+#event-slides .list-specification li:hover {
+    transform: translateX(8px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-left-color: #FF6B35;
+}
+
+#event-slides .list-specification li i {
+    color: #FF6B35;
+    font-size: 20px;
+    margin-right: 18px;
+    margin-top: 3px;
+    flex-shrink: 0;
+    background: rgba(255, 107, 53, 0.1);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#event-slides .list-specification li span {
+    color: #495057;
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 500;
+    flex: 1;
+}
+
+/* Highlight key words */
+#event-slides .list-specification li span:first-child {
+    font-weight: 600;
+}
+
+/* Responsive for Event Guidelines */
+@media (max-width: 768px) {
+    #event-slides {
+        padding: 40px 0;
+    }
+
+    #event-slides .video {
+        margin-bottom: 30px;
+    }
+
+    #event-slides .intro-title {
+        font-size: 20px;
+    }
+
+    #event-slides .list-specification li {
+        padding: 15px 18px;
+        margin-bottom: 10px;
+    }
+
+    #event-slides .list-specification li i {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+        margin-right: 15px;
+    }
+
+    #event-slides .list-specification li span {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+}
+
+/* About Section - Equal Height Cards */
+#about .row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#about .row.align-items-stretch {
+    align-items: stretch;
+}
+
+#about .col-lg-4,
+#about .col-md-6 {
+    display: flex;
+    margin-bottom: 30px;
+}
+
+#about .about-item {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.17);
+    transition: all 300ms ease-in-out;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#about .about-item:hover {
+    box-shadow: 1px 3px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+#about .about-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+#about .about-text {
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+#about .about-text h3 {
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+#about .about-text h3 a {
+    color: #212121;
+}
+
+#about .about-text h3 a:hover {
+    color: #ff6a00;
+}
+
+#about .about-text p {
+    flex: 1;
+    margin-bottom: 15px;
+}
+
+#about .about-text .btn {
+    margin-top: auto;
+    align-self: flex-start;
+}
+
+/* Responsive for About Section */
+@media (max-width: 768px) {
+    #about .about-item img {
+        height: 200px;
+    }
+}
+
+/* Countdown Section - Beautiful Purple Gradient */
+.countdown-timer {
+    padding: 60px 0 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    background:  #7a7f94;
+    position: relative;
+}
+
+.countdown-timer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.countdown-timer .container {
+    position: relative;
+    z-index: 2;
+}
+
+.countdown-timer .heading-count h2 {
+    color: white;
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.time-countdown {
+    margin-bottom: 30px;
+}
+
+.time-countdown #clock {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.time-countdown .countdown-item {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px 15px;
+    min-width: 80px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.time-countdown .countdown-item:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.time-countdown .countdown-item .number {
+    display: block;
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.time-countdown .countdown-item .label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.countdown-timer .btn-common {
+    background: #FF6B35;
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.countdown-timer .btn-common:hover {
+    background: #e55a2b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    color: white;
+}
+
+/* Decorative separator */
+.countdown-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+    gap: 20px;
+}
+
+.separator-line {
+    width: 60px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.separator-icon {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 20px;
+}
+
+/* Responsive for Countdown */
+@media (max-width: 768px) {
+    .countdown-timer {
+        padding: 40px 0 !important;
+    }
+
+    .countdown-timer .heading-count h2 {
+        font-size: 24px;
+        margin-bottom: 30px;
+    }
+
+    .time-countdown .countdown-item {
+        min-width: 70px;
+        padding: 15px 10px;
+    }
+
+    .time-countdown .countdown-item .number {
+        font-size: 24px;
+    }
+
+    .time-countdown #clock {
+        gap: 15px;
+    }
+}

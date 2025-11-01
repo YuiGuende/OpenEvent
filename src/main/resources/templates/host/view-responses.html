@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Responses</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .response-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .response-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            margin-bottom: 35px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        .response-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .response-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            margin-bottom: 8px;
+        }
+        .form-type-section {
+            margin-bottom: 50px;
+        }
+        .form-type-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-type-header.register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-type-header.checkin {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .form-type-header.feedback {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        .response-list {
+            max-width: 600px;
+        }
+        .response-list > div {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            transition: all 0.2s ease;
+        }
+        .response-list > div:hover {
+            background: #e9ecef;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .response-list > div:last-child {
+            border-bottom: none !important;
+            margin-bottom: 0;
+        }
+        .response-list strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .response-list span {
+            display: block;
+            color: #495057;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .table-responsive {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .table thead th {
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%) !important;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 16px 12px;
+            border: none;
+        }
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        .table tbody tr:hover {
+            background-color: #f8f9fa !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .table tbody tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+        .table tbody tr:nth-child(odd) {
+            background-color: #fdfdfd;
+        }
+        .table tbody td {
+            padding: 16px 12px;
+            vertical-align: middle;
+            border-color: #e9ecef;
+        }
+        .table tbody td strong {
+            color: #212529;
+            font-weight: 600;
+        }
+        .form-type-header {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .form-type-header h3 {
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .form-type-header p {
+            margin-bottom: 0;
+            font-size: 1.05rem;
+            opacity: 0.95;
+        }
+        .response-header {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .empty-state {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 60px 40px;
+            border: 2px dashed #dee2e6;
+        }
+        .empty-state h4 {
+            color: #6c757d;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        .empty-state p {
+            color: #adb5bd;
+            margin-bottom: 0;
+        }
+        /* Color coding for different form types */
+        .response-list > div.checkin-item {
+            border-left-color: #28a745;
+        }
+        .response-list > div.feedback-item {
+            border-left-color: #ffc107;
+        }
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .response-container {
+                padding: 15px 10px;
+            }
+            .response-header {
+                padding: 25px 15px;
+            }
+            .response-header h2 {
+                font-size: 1.8rem;
+            }
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            .response-list {
+                max-width: 100%;
+            }
+        }
+        /* Badge styling for form type */
+        .form-type-header p {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .form-type-header p span {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="response-container">
+            <div class="response-header">
+                <h2><i class="fas fa-chart-bar"></i> Form Responses</h2>
+                <p th:if="${form != null}">
+                    Form: <strong th:text="${form.formTitle}">Form Title</strong> 
+                    (<span th:text="${form.formType.name()}">TYPE</span>)
+                </p>
+                <p th:if="${form == null}">View and analyze responses from event participants</p>
+            </div>
+            
+            <!-- Back Button -->
+            <div class="text-center mb-5">
+                <a th:href="@{'/manage/event/' + ${eventId} + '/create-forms'}" 
+                   class="btn btn-outline-secondary btn-lg px-4"
+                   th:if="${formId != null}">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Forms
+                </a>
+                <a th:href="@{'/events/' + ${eventId}}" 
+                   class="btn btn-outline-secondary btn-lg px-4"
+                   th:if="${formId == null}">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Event
+                </a>
+            </div>
+
+            <!-- Register Form Responses -->
+            <div class="form-type-section" th:if="${form == null or form.formType.name() == 'REGISTER'}">
+                <div class="form-type-header register">
+                    <h3><i class="fas fa-user-plus"></i> Register Form Responses</h3>
+                    <p>Total: <span th:text="${groupedRegisterResponses != null ? groupedRegisterResponses.size() : 0}">0</span> submissions</p>
+                </div>
+                
+                <div th:if="${groupedRegisterResponses == null or groupedRegisterResponses.isEmpty()}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>No register responses yet</h4>
+                    <p>Participants haven't submitted register forms for this event.</p>
+                </div>
+                
+                <div th:if="${groupedRegisterResponses != null and !groupedRegisterResponses.isEmpty()}" class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th><i class="fas fa-user"></i> Customer Name</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-question-circle"></i> Questions & Responses</th>
+                                <th><i class="fas fa-clock"></i> Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry, iterStat : ${groupedRegisterResponses}">
+                                <td th:text="${iterStat.index + 1}">1</td>
+                                <td>
+                                    <strong th:text="${entry.value[0].customerName ?: 'N/A'}">Customer Name</strong>
+                                </td>
+                                <td>
+                                    <span th:text="${entry.value[0].customerEmail ?: 'N/A'}">email@example.com</span>
+                                </td>
+                                <td>
+                                    <div class="response-list">
+                                        <div th:each="response : ${entry.value}" th:if="${!#lists.isEmpty(entry.value)}">
+                                            <strong class="text-primary" th:text="${response.questionText ?: 'N/A'}">Question:</strong>
+                                            <span th:text="${response.responseValue ?: 'N/A'}">Response</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted" 
+                                           th:text="${entry.value[0].submittedAt != null ? #temporals.format(entry.value[0].submittedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                        01/01/2024 12:00
+                                    </small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Check-in Form Responses -->
+            <div class="form-type-section" th:if="${form == null or form.formType.name() == 'CHECKIN'}">
+                <div class="form-type-header checkin">
+                    <h3><i class="fas fa-sign-in-alt"></i> Check-in Form Responses</h3>
+                    <p>Total: <span th:text="${groupedCheckinResponses != null ? groupedCheckinResponses.size() : 0}">0</span> submissions</p>
+                </div>
+                
+                <div th:if="${groupedCheckinResponses == null or groupedCheckinResponses.isEmpty()}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>No check-in responses yet</h4>
+                    <p>Participants haven't submitted check-in forms for this event.</p>
+                </div>
+                
+                <div th:if="${groupedCheckinResponses != null and !groupedCheckinResponses.isEmpty()}" class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th><i class="fas fa-user"></i> Customer Name</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-question-circle"></i> Questions & Responses</th>
+                                <th><i class="fas fa-clock"></i> Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry, iterStat : ${groupedCheckinResponses}">
+                                <td th:text="${iterStat.index + 1}">1</td>
+                                <td>
+                                    <strong th:text="${entry.value[0].customerName ?: 'N/A'}">Customer Name</strong>
+                                </td>
+                                <td>
+                                    <span th:text="${entry.value[0].customerEmail ?: 'N/A'}">email@example.com</span>
+                                </td>
+                                <td>
+                                    <div class="response-list">
+                                        <div th:each="response : ${entry.value}" class="checkin-item" th:if="${!#lists.isEmpty(entry.value)}">
+                                            <strong class="text-success" th:text="${response.questionText ?: 'N/A'}">Question:</strong>
+                                            <span th:text="${response.responseValue ?: 'N/A'}">Response</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted" 
+                                           th:text="${entry.value[0].submittedAt != null ? #temporals.format(entry.value[0].submittedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                        01/01/2024 12:00
+                                    </small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Feedback Form Responses -->
+            <div class="form-type-section" th:if="${form == null or form.formType.name() == 'FEEDBACK'}">
+                <div class="form-type-header feedback">
+                    <h3><i class="fas fa-comment-dots"></i> Feedback Form Responses</h3>
+                    <p>Total: <span th:text="${groupedFeedbackResponses != null ? groupedFeedbackResponses.size() : 0}">0</span> submissions</p>
+                </div>
+                
+                <div th:if="${groupedFeedbackResponses == null or groupedFeedbackResponses.isEmpty()}" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>No feedback responses yet</h4>
+                    <p>Participants haven't submitted feedback forms for this event.</p>
+                </div>
+                
+                <div th:if="${groupedFeedbackResponses != null and !groupedFeedbackResponses.isEmpty()}" class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th><i class="fas fa-user"></i> Customer Name</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-question-circle"></i> Questions & Responses</th>
+                                <th><i class="fas fa-clock"></i> Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry, iterStat : ${groupedFeedbackResponses}">
+                                <td th:text="${iterStat.index + 1}">1</td>
+                                <td>
+                                    <strong th:text="${entry.value[0].customerName ?: 'N/A'}">Customer Name</strong>
+                                </td>
+                                <td>
+                                    <span th:text="${entry.value[0].customerEmail ?: 'N/A'}">email@example.com</span>
+                                </td>
+                                <td>
+                                    <div class="response-list">
+                                        <div th:each="response : ${entry.value}" class="feedback-item" th:if="${!#lists.isEmpty(entry.value)}">
+                                            <strong class="text-warning" th:text="${response.questionText ?: 'N/A'}">Question:</strong>
+                                            <span th:text="${response.responseValue ?: 'N/A'}">Response</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted" 
+                                           th:text="${entry.value[0].submittedAt != null ? #temporals.format(entry.value[0].submittedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                                        01/01/2024 12:00
+                                    </small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

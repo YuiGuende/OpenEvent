@@ -1,0 +1,642 @@
+/* Competition Theme CSS - Based on Music Theme */
+
+/* Reset margins and padding for full-screen banner */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
+    height: 100%;
+}
+
+body {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    line-height: 1.6;
+}
+
+/* Override theme styles that add margins */
+.section-padding-compact {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.section-padding {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.hero--slider {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.hero--compact {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hero Banner Slider CSS */
+.hero {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+}
+
+.hero-slide {
+    min-width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.hero-slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.hero-content {
+    position: absolute;
+    z-index: 2;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 15px 80px 0;
+    margin: 0;
+    top: 0;
+    left: 0;
+}
+
+.hero-actions {
+    display: flex;
+    align-items: center;
+}
+
+/* Navigation buttons */
+.hero-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 3;
+}
+
+.hero-nav:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.hero-nav.prev {
+    left: 20px;
+}
+
+.hero-nav.next {
+    right: 20px;
+}
+
+/* Progress bars */
+.hero-progress {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 10px;
+    z-index: 3;
+}
+
+.hero-progress-bar {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hero-progress-bar.active {
+    background: #FF6B35;
+    width: 60px;
+}
+
+.hero-progress-bar:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* Competition Countdown Section */
+.countdown-timer {
+    padding: 60px 0 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    position: relative;
+}
+
+.countdown-timer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.countdown-timer .container {
+    position: relative;
+    z-index: 2;
+}
+
+.countdown-timer .heading-count h2 {
+    color: white;
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.time-countdown {
+    margin-bottom: 30px;
+}
+
+.time-countdown #clock {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.time-countdown .countdown-item {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px 15px;
+    min-width: 80px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.time-countdown .countdown-item:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.time-countdown .countdown-item .number {
+    display: block;
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.time-countdown .countdown-item .label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.countdown-timer .btn-common {
+    background: #3498db;
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.countdown-timer .btn-common:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+    color: white;
+}
+
+/* Competition separator */
+.countdown-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+    gap: 20px;
+}
+
+.separator-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.3);
+    max-width: 100px;
+}
+
+.separator-icon {
+    background: #3498db;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+/* About Section - Equal Height Cards */
+#about .row {
+    align-items: stretch;
+}
+
+#about .about-item {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#about .about-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#about .about-text p {
+    flex: 1;
+}
+
+/* Blog Section - Equal Height Cards */
+#blog .row {
+    align-items: stretch;
+}
+
+#blog .blog-item {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#blog .descr {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#blog .descr p {
+    flex: 1;
+}
+
+/* Competition specific styles */
+.competition-badge {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.competition-level {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+/* Competition Details Table with Trophy */
+.competition-details-table {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 30px;
+    margin: 30px 0;
+    box-shadow: 0 10px 30px rgba(52, 152, 219, 0.1);
+    border: 2px solid rgba(52, 152, 219, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.competition-details-table::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
+    border-radius: 50%;
+}
+
+.competition-details-table::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(45deg, rgba(52, 152, 219, 0.05), rgba(41, 128, 185, 0.05));
+    border-radius: 50%;
+}
+
+.competition-trophy-center {
+    text-align: center;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 2;
+}
+
+.competition-trophy-icon {
+    font-size: 60px;
+    color: #3498db;
+    text-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.competition-details-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.competition-details-subtitle {
+    font-size: 14px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.competition-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.competition-detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #3498db;
+    transition: all 0.3s ease;
+}
+
+.competition-detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.15);
+}
+
+.competition-detail-card h5 {
+    color: #3498db;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.competition-detail-card p {
+    color: #555;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.competition-detail-card .detail-icon {
+    color: #3498db;
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.competition-prize {
+    background: linear-gradient(45deg, #f39c12, #e67e22);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.competition-prize h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.competition-prize .prize-amount {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Competition Rules Section */
+.competition-rules {
+    background: #f8f9fa;
+    border-left: 4px solid #FF6B35;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.competition-rules h4 {
+    color: #FF6B35;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.competition-rules ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.competition-rules li {
+    margin-bottom: 8px;
+    color: #555;
+}
+
+/* Competition Timeline */
+.competition-timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.competition-timeline::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #FF6B35;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 80px;
+    margin-bottom: 30px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 21px;
+    top: 8px;
+    width: 18px;
+    height: 18px;
+    background: #FF6B35;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 0 0 2px #FF6B35;
+}
+
+.timeline-item h5 {
+    color: #FF6B35;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.timeline-item p {
+    color: #666;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero {
+        height: auto;
+    }
+    
+    .hero-nav {
+        font-size: 20px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .hero-nav.prev {
+        left: 15px;
+    }
+    
+    .hero-nav.next {
+        right: 15px;
+    }
+    
+    .hero-progress {
+        bottom: 20px;
+    }
+    
+    .hero-progress-bar {
+        width: 30px;
+    }
+    
+    .hero-progress-bar.active {
+        width: 45px;
+    }
+    
+    .countdown-timer {
+        padding: 40px 0 !important;
+    }
+    
+    .countdown-timer .heading-count h2 {
+        font-size: 24px;
+        margin-bottom: 30px;
+    }
+    
+    .time-countdown .countdown-item {
+        min-width: 70px;
+        padding: 15px 10px;
+    }
+    
+    .time-countdown .countdown-item .number {
+        font-size: 24px;
+    }
+    
+    .time-countdown #clock {
+        gap: 15px;
+    }
+    
+    .timeline-item {
+        padding-left: 60px;
+    }
+    
+    .competition-timeline::before {
+        left: 20px;
+    }
+    
+    .timeline-item::before {
+        left: 11px;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .time-countdown .countdown-item {
+        min-width: 60px;
+        padding: 12px 8px;
+    }
+    
+    .time-countdown .countdown-item .number {
+        font-size: 20px;
+    }
+    
+    .time-countdown .countdown-item .label {
+        font-size: 10px;
+    }
+    
+    #about .about-item img {
+        height: 200px;
+    }
+}

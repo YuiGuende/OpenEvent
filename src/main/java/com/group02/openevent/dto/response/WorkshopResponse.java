@@ -12,7 +12,4 @@ import lombok.experimental.SuperBuilder;
 public class WorkshopResponse extends EventResponse{
     String topic;
     String materialsLink;
-    Integer maxParticipants;
-    String skillLevel;
-    String prerequisites;
 }

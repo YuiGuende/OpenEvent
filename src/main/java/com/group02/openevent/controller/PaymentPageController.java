@@ -27,8 +27,8 @@ public class PaymentPageController {
             Optional<Order> orderOpt = orderService.getById(orderId);
             if (orderOpt.isPresent()) {
                 Order order = orderOpt.get();
-                model.addAttribute("order", order);
-                model.addAttribute("successMessage", "Payment successful! Your order has been confirmed.");
+                // Redirect user to the REGISTER form for this event to collect registration info
+                return "redirect:/forms/register/" + order.getEvent().getId() + "?orderId=" + order.getOrderId();
             } else {
                 model.addAttribute("errorMessage", "Order not found.");
             }

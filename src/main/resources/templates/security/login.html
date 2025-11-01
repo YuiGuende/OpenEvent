@@ -11,10 +11,23 @@
 <div class="container">
 
     <div class="form-box login">
-        <form id="loginForm">
+        <form id="loginForm" th:action="@{/perform_login}" method="post">
+            <input type="hidden" name="redirectUrl" th:value="${redirectUrl}" th:if="${redirectUrl != null}">
+            <input type="hidden" name="checkinEventId" th:value="${param.eventId[0]}" th:if="${param.eventId != null}">
+            <input type="hidden" name="checkinAction" th:value="${param.action[0]}" th:if="${param.action != null}">
             <h1>Đăng nhập</h1>
+            
+            <!-- Check-in notification -->
+            <div th:if="${param.checkin != null}" class="checkin-notice">
+                <div class="notice-content">
+                    <h3>🎫 Check-in Event</h3>
+                    <p th:text="'Sự kiện: ' + ${param.eventTitle[0]}">Sự kiện: Live Music Night</p>
+                    <p th:text="'Hành động: ' + (${param.action[0]} == 'checkin' ? 'Check-in' : 'Check-out')">Hành động: Check-in</p>
+                    <p class="notice-text">Đăng nhập để tự động thực hiện check-in/check-out</p>
+                </div>
+            </div>
             <div class="input-box">
-                <input type="email" id="loginEmail" name="email" placeholder="Email" required>
+                <input type="email" id="loginEmail" name="username" placeholder="Email" required>
                 <i class='bx bx-customer'></i>
             </div>
             <div class="input-box">
@@ -38,7 +51,20 @@
 
     <div class="form-box register">
         <form id="registerForm" th:action="@{/register}" method="post">
+            <input type="hidden" name="redirectUrl" th:value="${redirectUrl}" th:if="${redirectUrl != null}">
+            <input type="hidden" name="checkinEventId" th:value="${param.eventId[0]}" th:if="${param.eventId != null}">
+            <input type="hidden" name="checkinAction" th:value="${param.action[0]}" th:if="${param.action != null}">
             <h1>Đăng ký</h1>
+            
+            <!-- Check-in notification for register -->
+            <div th:if="${param.checkin != null}" class="checkin-notice">
+                <div class="notice-content">
+                    <h3>🎫 Check-in Event</h3>
+                    <p th:text="'Sự kiện: ' + ${param.eventTitle[0]}">Sự kiện: Live Music Night</p>
+                    <p th:text="'Hành động: ' + (${param.action[0]} == 'checkin' ? 'Check-in' : 'Check-out')">Hành động: Check-in</p>
+                    <p class="notice-text">Đăng ký tài khoản để tự động thực hiện check-in/check-out</p>
+                </div>
+            </div>
             <div class="input-box">
                 <input type="email" id="regEmail" name="email" placeholder="Email" required>
                 <i class='bx bxl-gmail'></i>
@@ -54,10 +80,6 @@
             <div class="input-box">
                 <input type="text" id="regPhone" name="phone" placeholder="Số điện thoại" required>
                 <i class='bx bx-phone'></i>
-            </div>
-            <div class="input-box">
-                <input type="text" id="regOrg" name="organization" placeholder="Tổ chức">
-                <i class='bx bx-community'></i>
             </div>
             <button type="submit" class="btn" id="regBtn">Đăng ký</button>
             <div id="registerResult" style="color: red; margin-top: 10px;"></div>
@@ -83,7 +105,33 @@
 <!--<script th:src="@{/js/register.js}"></script>-->
 <script th:src="@{/js/auth.js}"></script>
 
-<script>
+    <style>
+        .checkin-notice {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .checkin-notice h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .checkin-notice p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .notice-text {
+            font-style: italic;
+            opacity: 0.9;
+        }
+    </style>
+
+    <script>
     function getQueryParam(name) {
         const url = new URL(window.location.href);
         return url.searchParams.get(name);

@@ -1,0 +1,590 @@
+/* Dashboard Styles */
+:root {
+    --color-primary-orange: #ff9500;
+    --color-primary-orange-light: #ffa500;
+    --color-primary-orange-lighter: #ffb84d;
+    --color-success-green: #10b981;
+    --color-success-green-light: #34d399;
+    --color-success-green-lighter: #6ee7b7;
+    --color-neutral-50: #f9fafb;
+    --color-neutral-100: #f3f4f6;
+    --color-neutral-200: #e5e7eb;
+    --color-neutral-300: #d1d5db;
+    --color-neutral-600: #4b5563;
+    --color-neutral-700: #374151;
+    --color-neutral-900: #1f2937;
+}
+
+.dashboard-container {
+    padding: 2rem;
+    background-color: var(--color-neutral-50);
+    min-height: 100vh;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    margin-bottom: 2rem;
+}
+
+.dashboard-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-neutral-900);
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1rem;
+    color: var(--color-neutral-600);
+    margin: 0;
+}
+
+/* KPI Grid */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-left: 4px solid;
+}
+
+.kpi-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.kpi-card-primary {
+    border-left-color: var(--color-primary-orange);
+}
+
+.kpi-card-success {
+    border-left-color: var(--color-success-green);
+}
+
+.kpi-card-info {
+    border-left-color: #3b82f6;
+}
+
+.kpi-card-warning {
+    border-left-color: #f59e0b;
+}
+
+.kpi-card-secondary {
+    border-left-color: #8b5cf6;
+}
+
+.kpi-card-accent {
+    border-left-color: #ec4899;
+}
+
+.kpi-icon {
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background-color: var(--color-neutral-100);
+}
+
+.kpi-card-primary .kpi-icon {
+    color: var(--color-primary-orange);
+    background-color: rgba(255, 149, 0, 0.1);
+}
+
+.kpi-card-success .kpi-icon {
+    color: var(--color-success-green);
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.kpi-card-info .kpi-icon {
+    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.kpi-card-warning .kpi-icon {
+    color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+.kpi-card-secondary .kpi-icon {
+    color: #8b5cf6;
+    background-color: rgba(139, 92, 246, 0.1);
+}
+
+.kpi-card-accent .kpi-icon {
+    color: #ec4899;
+    background-color: rgba(236, 72, 153, 0.1);
+}
+
+.kpi-content {
+    flex: 1;
+}
+
+.kpi-label {
+    font-size: 0.875rem;
+    color: var(--color-neutral-600);
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-neutral-900);
+    margin: 0 0 0.25rem 0;
+}
+
+.kpi-subtitle {
+    font-size: 0.75rem;
+    color: var(--color-neutral-300);
+    margin: 0;
+}
+
+/* Tabs Container */
+.tabs-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    border-bottom: 2px solid var(--color-neutral-200);
+    padding-bottom: 0;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-neutral-600);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.tab-btn:hover {
+    color: var(--color-primary-orange);
+}
+
+.tab-btn.active {
+    color: var(--color-primary-orange);
+    border-bottom-color: var(--color-primary-orange);
+}
+
+/* Charts Grid */
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card-full {
+    grid-column: 1 / -1;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chart-header {
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-neutral-900);
+    margin: 0 0 0.5rem 0;
+}
+
+.chart-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-neutral-600);
+    margin: 0;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    min-height: 250px;
+    transition: all 0.3s ease;
+}
+
+/* Responsive Chart Containers */
+.chart-wrapper canvas,
+.chart-wrapper > div {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
+}
+
+/* Ensure ApexCharts containers are responsive */
+.apexcharts-canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.apexcharts-svg {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.gauge-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-info {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.gauge-percentage {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-success-green);
+    margin: 0;
+}
+
+.gauge-label {
+    font-size: 0.875rem;
+    color: var(--color-neutral-600);
+    margin: 0.5rem 0 0 0;
+}
+
+.pie-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Details Card */
+.details-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--color-neutral-100);
+    padding-bottom: 1rem;
+}
+
+.details-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-neutral-900);
+    margin: 0;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.details-table thead {
+    background-color: var(--color-neutral-100);
+}
+
+.details-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-neutral-700);
+    border-bottom: 2px solid var(--color-neutral-200);
+}
+
+.details-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-neutral-200);
+    color: var(--color-neutral-700);
+}
+
+.details-table tbody tr:hover {
+    background-color: var(--color-neutral-50);
+}
+
+.ticket-name {
+    font-weight: 600;
+    color: var(--color-neutral-900);
+}
+
+.ticket-price {
+    color: var(--color-primary-orange);
+    font-weight: 600;
+}
+
+.ticket-total {
+    color: var(--color-neutral-700);
+}
+
+.ticket-sold .badge {
+    background-color: var(--color-success-green) !important;
+}
+
+.ticket-unsold .badge {
+    background-color: #f59e0b !important;
+}
+
+.ticket-checkin .badge {
+    background-color: #3b82f6 !important;
+}
+
+.ticket-rate {
+    min-width: 150px;
+}
+
+.progress {
+    background-color: var(--color-neutral-200);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: var(--color-success-green) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Status Badge Styling */
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 100px;
+}
+
+.status-paid {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--color-success-green);
+}
+
+.status-pending {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.status-cancelled {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.status-expired {
+    background-color: rgba(107, 114, 128, 0.2);
+    color: #6b7280;
+}
+
+.status-refunded {
+    background-color: rgba(139, 92, 246, 0.2);
+    color: #8b5cf6;
+}
+
+/* Button Styling */
+.btn-view-all {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-primary-orange);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-view-all:hover {
+    background-color: #ff7a00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+}
+
+/* Order Table Specific Styling */
+.order-id {
+    font-weight: 600;
+    color: var(--color-primary-orange);
+}
+
+.customer-name {
+    font-weight: 500;
+    color: var(--color-neutral-900);
+}
+
+.order-date {
+    color: var(--color-neutral-600);
+}
+
+.order-quantity {
+    text-align: center;
+    font-weight: 600;
+}
+
+.order-amount {
+    font-weight: 600;
+    color: var(--color-success-green);
+}
+
+.order-status {
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+
+    .dashboard-title {
+        font-size: 1.5rem;
+    }
+
+    .tabs-container {
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .tab-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .charts-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .chart-card-full {
+        grid-column: 1;
+    }
+
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .kpi-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 2rem;
+    }
+
+    .details-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .details-table {
+        font-size: 0.85rem;
+    }
+
+    .details-table th,
+    .details-table td {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 0.75rem;
+    }
+
+    .dashboard-title {
+        font-size: 1.25rem;
+    }
+
+    .tabs-container {
+        gap: 0.25rem;
+    }
+
+    .tab-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .kpi-card {
+        padding: 1rem;
+    }
+
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-wrapper {
+        height: 250px;
+        min-height: 200px;
+    }
+    
+    /* Force charts to resize on mobile */
+    .apexcharts-canvas,
+    .apexcharts-svg {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .details-table {
+        font-size: 0.75rem;
+    }
+
+    .details-table th,
+    .details-table td {
+        padding: 0.5rem;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+        min-width: 80px;
+    }
+}

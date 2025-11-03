@@ -5,4 +5,5 @@ public enum Role {
     CUSTOMER,
 	HOST,
     DEPARTMENT,
+    VOLUNTEER,
 } 

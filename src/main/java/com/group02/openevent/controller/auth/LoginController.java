@@ -63,41 +63,41 @@ public class LoginController {
 //        }
 //    }
 
-    @PostMapping("/register")
-    public String handleRegister(@RequestParam String email,
-                               @RequestParam String password,
-                               @RequestParam String phone,
-                               @RequestParam(required = false) String redirectUrl,
-                               HttpSession session,
-                               Model model) {
-        System.out.println("register is called");
-        try {
-            // Create register request
-            var registerRequest = new com.group02.openevent.dto.request.RegisterRequest();
-            registerRequest.setEmail(email);
-            registerRequest.setPassword(password);
-            registerRequest.setPhoneNumber(phone);
-            registerRequest.setRole(com.group02.openevent.model.enums.Role.CUSTOMER); // Default role
-            
-            var response = authService.register(registerRequest);
-            
-            // Store in session
-            session.setAttribute("ACCOUNT_ID", response.getAccountId());
-            session.setAttribute("ACCOUNT_ROLE", response.getRole());
-            
-            // Redirect to original URL if provided, otherwise go to home
-            if (redirectUrl != null && !redirectUrl.isEmpty()) {
-                return "redirect:" + redirectUrl;
-            }
-            return "redirect:/";
-        } catch (Exception e) {
-            model.addAttribute("error", "Đăng ký thất bại: " + e.getMessage());
-            if (redirectUrl != null && !redirectUrl.isEmpty()) {
-                model.addAttribute("redirectUrl", redirectUrl);
-            }
-            return "security/login";
-        }
-    }
+//    @PostMapping("/register")
+//    public String handleRegister(@RequestParam String email,
+//                               @RequestParam String password,
+//                               @RequestParam String phone,
+//                               @RequestParam(required = false) String redirectUrl,
+//                               HttpSession session,
+//                               Model model) {
+//        System.out.println("register is called");
+//        try {
+//            // Create register request
+//            var registerRequest = new com.group02.openevent.dto.request.RegisterRequest();
+//            registerRequest.setEmail(email);
+//            registerRequest.setPassword(password);
+//            registerRequest.setPhoneNumber(phone);
+//            registerRequest.setRole(com.group02.openevent.model.enums.Role.CUSTOMER); // Default role
+//
+//            var response = authService.register(registerRequest);
+//
+//            // Store in session
+//            session.setAttribute("ACCOUNT_ID", response.getAccountId());
+//            session.setAttribute("ACCOUNT_ROLE", response.getRole());
+//
+//            // Redirect to original URL if provided, otherwise go to home
+//            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+//                return "redirect:" + redirectUrl;
+//            }
+//            return "redirect:/";
+//        } catch (Exception e) {
+//            model.addAttribute("error", "Đăng ký thất bại: " + e.getMessage());
+//            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+//                model.addAttribute("redirectUrl", redirectUrl);
+//            }
+//            return "security/login";
+//        }
+//    }
 
     @GetMapping("/ticket")
     public String showTicketDemo() {

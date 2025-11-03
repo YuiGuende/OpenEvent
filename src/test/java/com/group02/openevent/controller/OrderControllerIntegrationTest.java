@@ -1,6 +1,8 @@
 package com.group02.openevent.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group02.openevent.ai.security.AISecurityService;
+import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
@@ -24,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -65,7 +68,11 @@ class OrderControllerIntegrationTest {
     private static final Long EVENT_ID = 10L;
     private static final Long CUSTOMER_ID = 100L;
     private static final Long ACCOUNT_ID = 200L;
+    @MockitoBean
+    private RateLimitingService rateLimitingService;
 
+    @MockitoBean
+    private AISecurityService aiSecurityService;
     @BeforeEach
     void setUp() throws Exception {
         Account account = new Account();

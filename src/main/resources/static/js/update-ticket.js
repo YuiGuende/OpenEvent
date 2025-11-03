@@ -61,7 +61,7 @@ class TicketManager {
     setupEventListeners() {
         console.log("Setting up event listeners...")
         
-        // Form submit
+        // Form submit - only setup if form exists (ticket page)
         const form = document.getElementById("ticket-form")
         if (form) {
             form.addEventListener("submit", (e) => {
@@ -71,7 +71,7 @@ class TicketManager {
             })
             console.log("Form submit listener attached")
         } else {
-            console.error("Form element not found!")
+            console.log("Ticket form not found - skipping form setup (likely on settings page)")
         }
 
         // Cancel edit
@@ -442,10 +442,41 @@ class TicketManager {
 
     confirmDelete() {
         if (this.deleteId) {
-            this.deleteTicket(this.deleteId)
+            const id = this.deleteId
             this.closeDeleteModal()
-            // Persist deletion immediately
-            this.saveTicketsToServer()
+            const t = this.tickets.find(x => x.id === id)
+
+            if (t && t.id && !isNaN(parseInt(t.id))) {
+                fetch(`/api/events/ticket/${parseInt(t.id)}`, { method: 'DELETE' })
+                    .then(async (res) => {
+                        if (!res.ok) {
+                            // Try to parse backend error
+                            try {
+                                const data = await res.json()
+                                const msg = data?.error || data?.message || 'Không thể xóa vé'
+                                throw new Error(msg)
+                            } catch (_) {
+                                const text = await res.text()
+                                throw new Error(text || 'Không thể xóa vé')
+                            }
+                        }
+                        // Server confirmed deletion → remove locally
+                        this.tickets = this.tickets.filter(x => x.id !== id)
+                        this.renderTickets()
+                        if (typeof this.showNotification === 'function') {
+                            this.showNotification('Đã xóa vé', 'success')
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Delete ticket error:', err)
+                        if (typeof this.showNotification === 'function') {
+                            this.showNotification(err?.message || 'Xóa vé thất bại', 'error')
+                        }
+                    })
+            } else {
+                // Vé mới (chưa lưu DB) → xóa local
+                this.deleteTicket(id)
+            }
         }
     }
 

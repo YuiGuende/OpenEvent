@@ -1,10 +1,18 @@
 package com.group02.openevent.service.impl;
 
+import com.group02.openevent.dto.request.TicketUpdateRequest;
 import com.group02.openevent.dto.ticket.TicketTypeDTO;
+import com.group02.openevent.mapper.TicketMapper;
+import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.TicketTypeService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,14 +30,14 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
     @Autowired
     private ITicketTypeRepo ticketTypeRepo;
+    @Autowired
+    private TicketMapper ticketMapper;
+    @Autowired
+    @Lazy
+    private EventService eventService;
+    @Autowired
+    private IOrderRepo orderRepo;
 
-    @Override
-    public TicketType createTicketType(TicketType ticketType) {
-        if (ticketType.getSoldQuantity() == null) {
-            ticketType.setSoldQuantity(0);
-        }
-        return ticketTypeRepo.save(ticketType);
-    }
 
     @Override
     public Optional<TicketType> getTicketTypeById(Long id) {
@@ -42,19 +50,33 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     }
 
     @Override
-    public TicketType updateTicketType(Long id, TicketType updatedTicketType) {
-        return ticketTypeRepo.findById(id)
-                .map(existing -> {
-                    existing.setName(updatedTicketType.getName());
-                    existing.setDescription(updatedTicketType.getDescription());
-                    existing.setPrice(updatedTicketType.getPrice());
-                    existing.setTotalQuantity(updatedTicketType.getTotalQuantity());
-                    existing.setStartSaleDate(updatedTicketType.getStartSaleDate());
-                    existing.setEndSaleDate(updatedTicketType.getEndSaleDate());
-                    // Không update soldQuantity qua API này
-                    return ticketTypeRepo.save(existing);
-                })
-                .orElse(null);
+    public void updateTickets(Long eventId, List<TicketUpdateRequest> tickets) {
+        for (TicketUpdateRequest request : tickets) {
+            if (Boolean.TRUE.equals(request.getIsDeleted())) {
+                if (request.getTicketTypeId() != null) {
+                    ticketTypeRepo.deleteById(request.getTicketTypeId());
+                }
+                continue;
+            }
+
+            TicketType ticket = ticketMapper.toTicketType(request);
+
+            if (Boolean.TRUE.equals(request.getIsNew())) {
+                Event event = eventService.getEventById(eventId)
+                        .orElseThrow(() -> new EntityNotFoundException("Event not found"));
+                ticket.setEvent(event);
+                // Ensure INSERT for new tickets (avoid trying to UPDATE a non-existent row)
+                ticket.setTicketTypeId(null);
+            } else {
+                TicketType existing = ticketTypeRepo.findById(request.getTicketTypeId())
+                        .orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+                // Do not override identifier or relations
+                BeanUtils.copyProperties(ticket, existing, "ticketTypeId", "event");
+                ticket = existing;
+            }
+
+            ticketTypeRepo.save(ticket);
+        }
     }
 
     @Override
@@ -63,8 +85,15 @@ public class TicketTypeServiceImpl implements TicketTypeService {
                 .orElse(null);
         // Kiểm tra đã bán vé chưa
         assert ticketType != null;
-        if (ticketType.getSoldQuantity() > 0) {
-            throw new IllegalStateException("Cannot delete ticket type with sold tickets");
+
+        // Nếu có đơn hàng tham chiếu đến ticket type này thì không cho xóa
+        if (orderRepo.existsByTicketType_TicketTypeId(id)) {
+            throw new IllegalStateException("Không thể xóa loại vé vì đã có đơn hàng liên quan");
+        }
+
+        // Dự phòng: nếu soldQuantity > 0 cũng không cho xóa
+        if (ticketType.getSoldQuantity() != null && ticketType.getSoldQuantity() > 0) {
+            throw new IllegalStateException("Không thể xóa loại vé đã bán");
         }
 
         ticketTypeRepo.delete(ticketType);
@@ -198,7 +227,7 @@ public class TicketTypeServiceImpl implements TicketTypeService {
             boolean isAvailable = ticketType.getAvailableQuantity() > 0
                     && (ticketType.getStartSaleDate() == null || now.isAfter(ticketType.getStartSaleDate()))
                     && (ticketType.getEndSaleDate() == null || now.isBefore(ticketType.getEndSaleDate()));
-            
+
             boolean isSaleActive = ticketType.isSalePeriodActive();
             boolean isSoldOut = ticketType.getAvailableQuantity() <= 0;
             boolean saleNotStarted = ticketType.getStartSaleDate() != null && now.isBefore(ticketType.getStartSaleDate());

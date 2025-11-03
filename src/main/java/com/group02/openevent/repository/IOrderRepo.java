@@ -13,14 +13,15 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+
 @Service
 public interface IOrderRepo extends JpaRepository<Order, Long> {
-    
+
     List<Order> findByCustomer(Customer customer);
-    
+
     @Query("SELECT o FROM Order o WHERE o.customer.customerId = :customerId")
     List<Order> findByCustomerId(@Param("customerId") Long customerId);
-    
+
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
     List<Order> findByEventId(@Param("eventId") Long eventId);
 
@@ -48,9 +49,19 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.event.department.accountId = :departmentId")
     Page<Order> findByDepartmentId(@Param("departmentId") Long departmentId, Pageable pageable);
 
+    @Query("SELECT o FROM Order o WHERE o.event.id = :eventId AND o.status = :status")
+    Page<Order> findByEventIdAndStatus(@Param("eventId") Long eventId,
+                                       @Param("status") OrderStatus status,
+                                       Pageable pageable);
+
+    @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
+    Page<Order> findByEventId(@Param("eventId") Long eventId, Pageable pageable);
+
     @Query("SELECT DISTINCT o.customer.account.accountId FROM Order o " +
             "WHERE o.event.id = :eventId AND o.status = 'PAID'")
     List<Long> findDistinctCustomerAccountIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
+
+    boolean existsByTicketType_TicketTypeId(Long ticketTypeId);
 
     /**
      * Check if there exists a PAID order for given event and participant email

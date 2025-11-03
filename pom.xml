@@ -32,13 +32,13 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
             <groupId>me.paulschwarz</groupId>
             <artifactId>spring-dotenv</artifactId>
             <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -60,16 +60,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>me.paulschwarz</groupId>
-            <artifactId>spring-dotenv</artifactId>
-            <version>3.0.0</version>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
 
         <dependency>
@@ -77,14 +79,26 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+            <version>2.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.6.3</version> </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok-mapstruct-binding</artifactId>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -95,28 +109,48 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>1.6.3</version>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
+
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>com.cloudinary</groupId>
             <artifactId>cloudinary-http44</artifactId>
             <version>1.39.0</version>
         </dependency>
-        <!-- PayOS SDK -->
         <dependency>
             <groupId>vn.payos</groupId>
             <artifactId>payos-java</artifactId>
             <version>2.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.openai</groupId>
+            <artifactId>openai-java</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qdrant</groupId>
+            <artifactId>client</artifactId>
+            <version>1.13.0</version>
+        </dependency>
 
-        <!-- QR Code Generation (ZXing) -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
@@ -129,9 +163,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.2.0</version>
         </dependency>
 
         <dependency>
@@ -139,15 +173,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8</artifactId>
             <version>2.35.0</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- (Tùy chọn) Thư viện cho Integration Test CSDL bằng Docker -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
@@ -158,6 +189,11 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>1.19.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -214,13 +250,34 @@
                         </goals>
                         <configuration>
                             <includes>
+                                <include>com/group02/openevent/controller/request/RequestController*.class</include>
                                 <include>com/group02/openevent/controller/OrderController*.class</include>
                                 <include>com/group02/openevent/controller/PaymentController*.class</include>
                                 <include>com/group02/openevent/controller/VoucherController*.class</include>
                                 <include>com/group02/openevent/service/impl/OrderServiceImpl*.class</include>
                                 <include>com/group02/openevent/service/impl/PaymentServiceImpl*.class</include>
                                 <include>com/group02/openevent/service/impl/VoucherServiceImpl*.class</include>
-                                <include>com/group02/openevent/model/order/Order*.class</include>
+                                <include>com/group02/openevent/service/impl/PlaceServiceImpl*.class</include>
+                                <include>com/group02/openevent/service/impl/TicketTypeServiceImpl*.class</include>
+                                <include>com/group02/openevent/service/impl/VoucherServiceImpl*.class</include>
+                                <include>com/group02/openevent/service/impl/EventServiceImpl*.class</include>
+                                <include>com/group02/openevent/service/impl/RequestServiceImpl*.class</include>
+                                <include>com/group02/openevent/ai/controller/AIUtilityController*.class</include>
+                                <include>com/group02/openevent/ai/controller/ChatController*.class</include>
+                                <include>com/group02/openevent/ai/controller/EmailTestController*.class</include>
+                                <include>com/group02/openevent/ai/controller/EnhancedAIController*.class</include>
+                                <include>com/group02/openevent/ai/controller/EventAIController*.class</include>
+                                <include>com/group02/openevent/ai/controller/TranslationController*.class</include>
+
+                                <include>com/group02/openevent/ai/service/AgentEventService*.class</include>
+                                <include>com/group02/openevent/ai/service/LanguageDetectionService*.class</include>
+                                <include>com/group02/openevent/ai/service/OrderAIService*.class</include>
+
+                                <include>com/group02/openevent/controller/form/EventFormController*.class</include>
+                                <include>com/group02/openevent/service/EventAttendanceService*.class</include>
+                                <include>com/group02/openevent/service/EventFormService*.class</include>
+
+
                             </includes>
                         </configuration>
                     </execution>

@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AgentEventService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">OpenEvent</a> &gt; <a href="index.source.html" class="el_package">com.group02.openevent.ai.service</a> &gt; <span class="el_source">AgentEventService.java</span></div><h1>AgentEventService.java</h1><pre class="source lang-java linenums">package com.group02.openevent.ai.service;
+
+import com.group02.openevent.ai.dto.Action;
+import com.group02.openevent.ai.dto.EventItem;
+import com.group02.openevent.ai.mapper.AIEventMapper;
+import com.group02.openevent.model.email.EmailReminder;
+import com.group02.openevent.model.event.*;
+import com.group02.openevent.model.enums.EventStatus;
+import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.organization.Organization;
+import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.Host;
+import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IEmailReminderRepo;
+import com.group02.openevent.service.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * Service để xử lý các hành động event từ AI Agent
+ * @author Admin
+ */
+@Service
+<span class="fc" id="L33">@Slf4j</span>
+<span class="fc" id="L34">public class AgentEventService {</span>
+    @Autowired
+    private EmailReminderService emailReminderService;
+    @Autowired
+    private EventService eventService;
+    @Autowired
+    private AIEventMapper AIEventMapper;
+    @Autowired
+    private CustomerService customerService;
+    @Autowired
+    private HostService hostService;
+    @Autowired
+    private OrganizationService organizationService;
+    @Autowired
+    private IEventRepo  eventRepo;
+    @Autowired
+    private IEmailReminderRepo emailReminderRepo;
+    /**
+     * Lưu yêu cầu nhắc nhở email vào cơ sở dữ liệu.
+     * @param eventId ID sự kiện cần nhắc nhở.
+     * @param remindMinutes Số phút nhắc trước thời gian bắt đầu sự kiện.
+     */
+    public void saveEmailReminder(Long eventId, int remindMinutes, Long userId) {
+        // 1. Tạo đối tượng EmailReminder
+<span class="nc" id="L58">        Event event = eventService.getEventByEventId(eventId)</span>
+<span class="nc" id="L59">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Không tìm thấy sự kiện có ID: &quot; + eventId + &quot; để tạo nhắc nhở.&quot;));</span>
+
+<span class="nc" id="L61">        EmailReminder reminder = new EmailReminder();</span>
+        // Gán Khóa ngoại Event object (Thay thế cho việc set eventId thô)
+<span class="nc" id="L63">        reminder.setEvent(event);</span>
+<span class="nc" id="L64">        reminder.setUserId(userId);</span>
+<span class="nc" id="L65">        reminder.setRemindMinutes(remindMinutes);</span>
+<span class="nc" id="L66">        reminder.setCreatedAt(LocalDateTime.now());</span>
+<span class="nc" id="L67">        reminder.setSent(false);</span>
+
+        // 3. Lưu vào Database
+<span class="nc" id="L70">        emailReminderService.save(reminder);</span>
+<span class="nc" id="L71">        System.out.println(&quot;lưu được rồi e&quot;);</span>
+<span class="nc" id="L72">    }</span>
+
+    /**
+     * Tạo hoặc cập nhật lịch nhắc nhở email mặc định cho sự kiện.
+     * @param eventId ID sự kiện cần nhắc nhở.
+     * @param remindMinutes Số phút nhắc trước thời gian bắt đầu sự kiện.
+     * @param userId ID của người dùng.
+     */
+    @Transactional
+    public void createOrUpdateEmailReminder(Long eventId, int remindMinutes, Long userId) {
+        try {
+            // Kiểm tra xem đã có lịch nhắc nhở cho sự kiện này chưa
+<span class="fc" id="L84">            Optional&lt;EmailReminder&gt; existingReminder = emailReminderRepo.findByEventIdAndUserId(eventId, userId);</span>
+            
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            if (existingReminder.isPresent()) {</span>
+                // Cập nhật lịch nhắc nhở hiện có
+<span class="fc" id="L88">                EmailReminder reminder = existingReminder.get();</span>
+<span class="fc" id="L89">                reminder.setRemindMinutes(remindMinutes);</span>
+<span class="fc" id="L90">                reminder.setCreatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L91">                reminder.setSent(false); // Reset trạng thái gửi</span>
+<span class="fc" id="L92">                emailReminderRepo.save(reminder);</span>
+<span class="fc" id="L93">                log.info(&quot;🔄 Đã cập nhật lịch nhắc nhở cho sự kiện ID: {} với {} phút trước&quot;, eventId, remindMinutes);</span>
+<span class="fc" id="L94">            } else {</span>
+                // Tạo lịch nhắc nhở mới
+<span class="fc" id="L96">                Event event = eventService.getEventByEventId(eventId)</span>
+<span class="fc" id="L97">                        .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Không tìm thấy sự kiện có ID: &quot; + eventId + &quot; để tạo nhắc nhở.&quot;));</span>
+
+<span class="fc" id="L99">                EmailReminder newReminder = new EmailReminder();</span>
+<span class="fc" id="L100">                newReminder.setEvent(event);</span>
+<span class="fc" id="L101">                newReminder.setUserId(userId);</span>
+<span class="fc" id="L102">                newReminder.setRemindMinutes(remindMinutes);</span>
+<span class="fc" id="L103">                newReminder.setCreatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L104">                newReminder.setSent(false);</span>
+
+<span class="fc" id="L106">                emailReminderRepo.save(newReminder);</span>
+<span class="fc" id="L107">                log.info(&quot;✅ Đã tạo lịch nhắc nhở mới cho sự kiện ID: {} với {} phút trước&quot;, eventId, remindMinutes);</span>
+            }
+<span class="fc" id="L109">        } catch (Exception e) {</span>
+<span class="fc" id="L110">            log.error(&quot;❌ Lỗi khi tạo/cập nhật lịch nhắc nhở cho sự kiện ID: {} - {}&quot;, eventId, e.getMessage(), e);</span>
+            // Không throw exception để không ảnh hưởng đến việc xác nhận đơn hàng
+<span class="fc" id="L112">        }</span>
+<span class="fc" id="L113">    }</span>
+
+    // ✅ Lưu sự kiện từ Action (ADD_EVENT) - New version with userId
+    public void saveEventFromAction(Action action, Long userId) {
+        try {
+<span class="fc" id="L118">            Map&lt;String, Object&gt; args = action.getArgs();</span>
+
+<span class="fc" id="L120">            EventItem event = new EventItem();</span>
+<span class="fc" id="L121">            event.setTitle((String) args.get(&quot;title&quot;));</span>
+<span class="fc" id="L122">            event.setDescription((String) args.getOrDefault(&quot;description&quot;, &quot;&quot;));</span>
+<span class="fc" id="L123">            event.setStartsAt(tryParseDateTime((String) args.get(&quot;start_time&quot;)));</span>
+<span class="fc" id="L124">            event.setEndsAt(tryParseDateTime((String) args.get(&quot;end_time&quot;)));</span>
+<span class="fc" id="L125">            event.setCreatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L126">            event.setEventStatus(EventStatus.DRAFT); // mặc định khi tạo</span>
+<span class="fc" id="L127">            event.setEventType(EventType.OTHERS);</span>
+
+            // Get organization_id if provided
+<span class="fc" id="L130">            Long organizationId = null;</span>
+<span class="pc bpc" id="L131" title="3 of 4 branches missed.">            if (args.containsKey(&quot;organization_id&quot;) &amp;&amp; args.get(&quot;organization_id&quot;) != null) {</span>
+<span class="nc" id="L132">                organizationId = Long.valueOf(args.get(&quot;organization_id&quot;).toString());</span>
+            }
+
+            // Use createEventByCustomer to handle host creation and organization assignment
+<span class="fc" id="L136">            Event savedEvent = createEventByCustomer(userId, event, organizationId);</span>
+<span class="fc" id="L137">            System.out.println(&quot;✅ Đã lưu sự kiện: &quot; + savedEvent.getTitle());</span>
+
+<span class="nc" id="L139">        } catch (Exception e) {</span>
+<span class="nc" id="L140">            e.printStackTrace();</span>
+<span class="nc" id="L141">            throw new RuntimeException(&quot;❌ Lỗi khi lưu sự kiện: &quot; + e.getMessage());</span>
+<span class="fc" id="L142">        }</span>
+<span class="fc" id="L143">    }</span>
+
+    public void saveEvent(Event event) {
+        try {
+<span class="nc" id="L147">            eventService.saveEvent(event);</span>
+<span class="nc" id="L148">            System.out.println(&quot;✅ Đã lưu sự kiện: &quot; + event.getTitle());</span>
+<span class="nc" id="L149">        } catch (Exception e) {</span>
+<span class="nc" id="L150">            e.printStackTrace();</span>
+<span class="nc" id="L151">            throw new RuntimeException(&quot;❌ Lỗi khi lưu sự kiện: &quot; + e.getMessage());</span>
+<span class="nc" id="L152">        }</span>
+<span class="nc" id="L153">    }</span>
+
+    // ✅ Cập nhật sự kiện từ Action (UPDATE_EVENT)
+    public void updateEventFromAction(Action action) {
+        try {
+<span class="fc" id="L158">            Map&lt;String, Object&gt; args = action.getArgs();</span>
+<span class="fc" id="L159">            Event existing = null;</span>
+
+<span class="fc bfc" id="L161" title="All 2 branches covered.">            if (args.containsKey(&quot;event_id&quot;)) {</span>
+<span class="fc" id="L162">                Long id = (Long) args.get(&quot;event_id&quot;);</span>
+<span class="fc" id="L163">                Optional&lt;Event&gt; eventOpt = eventService.getEventByEventId(id);</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">                if (eventOpt.isPresent()) {</span>
+<span class="fc" id="L165">                    existing = eventOpt.get();</span>
+                }
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">            } else if (args.containsKey(&quot;original_title&quot;)) {</span>
+<span class="fc" id="L168">                String oriTitle = (String) args.get(&quot;original_title&quot;);</span>
+<span class="fc" id="L169">                Optional&lt;Event&gt; eventOpt = eventService.getFirstEventByTitle(oriTitle);</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">                if (eventOpt.isPresent()) {</span>
+<span class="fc" id="L171">                    existing = eventOpt.get();</span>
+                }
+            }
+
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">            if (existing == null) {</span>
+<span class="nc" id="L176">                System.out.println(&quot;❌ Không tìm thấy sự kiện để cập nhật.&quot;);</span>
+<span class="nc" id="L177">                return;</span>
+            }
+
+<span class="fc bfc" id="L180" title="All 2 branches covered.">            if (args.containsKey(&quot;title&quot;)) existing.setTitle((String) args.get(&quot;title&quot;));</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">            if (args.containsKey(&quot;description&quot;)) existing.setDescription((String) args.get(&quot;description&quot;));</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">            if (args.containsKey(&quot;start_time&quot;)) existing.setStartsAt(tryParseDateTime((String) args.get(&quot;start_time&quot;)));</span>
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">            if (args.containsKey(&quot;end_time&quot;)) existing.setEndsAt(tryParseDateTime((String) args.get(&quot;end_time&quot;)));</span>
+
+<span class="fc" id="L185">            existing.setCreatedAt(LocalDateTime.now());</span>
+
+<span class="fc" id="L187">            eventService.saveEvent(existing);</span>
+<span class="fc" id="L188">            System.out.println(&quot;🔄 Đã cập nhật sự kiện: &quot; + existing.getTitle());</span>
+
+<span class="nc" id="L190">        } catch (Exception e) {</span>
+<span class="nc" id="L191">            e.printStackTrace();</span>
+<span class="nc" id="L192">            throw new RuntimeException(&quot;❌ Lỗi khi cập nhật sự kiện: &quot; + e.getMessage());</span>
+<span class="fc" id="L193">        }</span>
+<span class="fc" id="L194">    }</span>
+
+    // ✅ Xóa sự kiện từ Action (DELETE_EVENT)
+    public void deleteEventFromAction(Action action) {
+        try {
+<span class="fc" id="L199">            Map&lt;String, Object&gt; args = action.getArgs();</span>
+<span class="fc" id="L200">            boolean deleted = false;</span>
+
+<span class="fc bfc" id="L202" title="All 2 branches covered.">            if (args.containsKey(&quot;event_id&quot;)) {</span>
+<span class="fc" id="L203">                Long id = (Long) args.get(&quot;event_id&quot;);</span>
+<span class="fc" id="L204">                deleted = eventService.removeEvent(id);</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">            } else if (args.containsKey(&quot;title&quot;)) {</span>
+<span class="fc" id="L206">                String title = (String) args.get(&quot;title&quot;);</span>
+<span class="fc" id="L207">                deleted = eventService.deleteByTitle(title);</span>
+            }
+
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">            if (deleted) {</span>
+<span class="nc" id="L211">                System.out.println(&quot;🗑️ Đã xoá sự kiện thành công&quot;);</span>
+            } else {
+<span class="fc" id="L213">                System.out.println(&quot;⚠️ Không tìm thấy sự kiện để xoá.&quot;);</span>
+            }
+
+<span class="nc" id="L216">        } catch (Exception e) {</span>
+<span class="nc" id="L217">            e.printStackTrace();</span>
+<span class="nc" id="L218">            throw new RuntimeException(&quot;❌ Lỗi khi xóa sự kiện: &quot; + e.getMessage());</span>
+<span class="fc" id="L219">        }</span>
+<span class="fc" id="L220">    }</span>
+
+    // ✅ Parse datetime
+    private static LocalDateTime tryParseDateTime(String input) {
+<span class="fc" id="L224">        List&lt;String&gt; patterns = List.of(</span>
+                &quot;yyyy-MM-dd'T'HH:mm&quot;,
+                &quot;yyyy-MM-dd HH:mm&quot;,
+                &quot;dd/MM/yyyy HH:mm&quot;,
+                &quot;dd-MM-yyyy HH:mm&quot;
+        );
+
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        for (String pattern : patterns) {</span>
+            try {
+<span class="fc" id="L233">                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);</span>
+<span class="fc" id="L234">                return LocalDateTime.parse(input, formatter);</span>
+<span class="fc" id="L235">            } catch (Exception ignored) {}</span>
+<span class="fc" id="L236">        }</span>
+
+<span class="nc" id="L238">        throw new IllegalArgumentException(&quot;❌ Không thể parse ngày giờ: &quot; + input);</span>
+    }
+
+    /**
+     * Tạo sự kiện bởi Customer với auto-promote Customer thành Host nếu cần
+     * @param userId ID của user (accountId)
+     * @param draft Event draft cần tạo
+     * @param organizationId ID của organization (optional)
+     * @return Event đã được lưu
+     */
+    public Event createEventByCustomer(Long userId, EventItem draft, @Nullable Long organizationId) {
+        // 1) Load or create customer
+<span class="fc" id="L250">        Customer c = customerService.getOrCreateByUserId(userId);</span>
+
+        Event event;
+<span class="fc" id="L253">        log.info(&quot;Saving event {}&quot;, draft.getEventType());</span>
+<span class="fc" id="L254">        log.info(&quot;Saving event from DTO type: {}&quot;, draft.getClass().getName());</span>
+<span class="fc" id="L255">        EventType draftType = draft.getEventType();</span>
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        if (draftType == null) {</span>
+<span class="fc" id="L257">            log.warn(&quot;Unknown or null EventType received. Defaulting to generic Event.&quot;);</span>
+<span class="fc" id="L258">            event = new Event();</span>
+        } else {
+<span class="pc bpc" id="L260" title="4 of 5 branches missed.">            switch (draftType) {</span>
+                case WORKSHOP:
+<span class="nc" id="L262">                    event = new WorkshopEvent();</span>
+<span class="nc" id="L263">                    break;</span>
+                case MUSIC:
+<span class="nc" id="L265">                    event = new MusicEvent();</span>
+<span class="nc" id="L266">                    break;</span>
+                case FESTIVAL:
+<span class="nc" id="L268">                    event = new FestivalEvent();</span>
+<span class="nc" id="L269">                    break;</span>
+                case COMPETITION:
+<span class="nc" id="L271">                    event = new CompetitionEvent();</span>
+<span class="nc" id="L272">                    break;</span>
+                default:
+<span class="fc" id="L274">                    log.warn(&quot;Unknown EventType received: {}. Defaulting to generic Event.&quot;, draftType);</span>
+<span class="fc" id="L275">                    event = new Event();</span>
+                    break;
+            }
+        }
+<span class="fc" id="L279">        log.info(&quot;Saving event {}&quot;, event.getClass().getName());</span>
+<span class="fc" id="L280">        AIEventMapper.createEventFromRequest(draft, event);</span>
+<span class="fc" id="L281">        final Event finalEvent = event;</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">        if (event.getSubEvents() != null) {</span>
+<span class="nc" id="L283">            event.getSubEvents().forEach(sub -&gt; sub.setParentEvent(finalEvent));</span>
+        }
+        // 2) Find or create Host (idempotent)
+<span class="fc" id="L286">        Host h = c.getHost();</span>
+<span class="pc bpc" id="L287" title="1 of 2 branches missed.">        if (h == null) {</span>
+<span class="fc" id="L288">            log.info(&quot;This customer has no host&quot;);</span>
+<span class="fc" id="L289">            h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -&gt; {</span>
+<span class="fc" id="L290">                Host nh = new Host();</span>
+<span class="fc" id="L291">                nh.setCustomer(c);</span>
+<span class="fc" id="L292">                log.info(&quot;Create host corresponding to customer id {}&quot;, c.getCustomerId());</span>
+<span class="fc" id="L293">                return hostService.save(nh);</span>
+            });
+        }
+        
+        // 3) Required host
+<span class="fc" id="L298">        finalEvent.setHost(h);</span>
+        
+        // 4) Optional organization
+<span class="fc bfc" id="L301" title="All 2 branches covered.">        if (organizationId != null) {</span>
+<span class="fc" id="L302">            Organization org = organizationService.findById(organizationId)</span>
+<span class="pc" id="L303">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Organization không tồn tại&quot;));</span>
+<span class="fc" id="L304">            finalEvent.setOrganization(org);</span>
+<span class="fc" id="L305">        } else {</span>
+<span class="fc" id="L306">            finalEvent.setOrganization(null);</span>
+        }
+        
+        // 5) Safe defaults
+<span class="pc bpc" id="L310" title="1 of 2 branches missed.">        if (finalEvent.getStatus() == null) finalEvent.setStatus(EventStatus.DRAFT);</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (finalEvent.getEventType() == null) finalEvent.setEventType(EventType.OTHERS);</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">        if (finalEvent.getCreatedAt() == null) finalEvent.setCreatedAt(LocalDateTime.now());</span>
+
+        // 6) Lưu event và tạo nhắc nhở mặc định cho host
+<span class="fc" id="L315">        Event savedEvent = eventRepo.save(event);</span>
+        
+        // Tạo lịch nhắc nhở mặc định cho host khi tạo event
+        try {
+<span class="fc" id="L319">            createOrUpdateEmailReminder(savedEvent.getId(), 5, userId);</span>
+<span class="fc" id="L320">            log.info(&quot;✅ Đã tạo lịch nhắc nhở mặc định cho host khi tạo event ID: {}&quot;, savedEvent.getId());</span>
+<span class="nc" id="L321">        } catch (Exception e) {</span>
+<span class="nc" id="L322">            log.error(&quot;❌ Lỗi khi tạo lịch nhắc nhở cho event ID: {} - {}&quot;, savedEvent.getId(), e.getMessage(), e);</span>
+            // Không throw exception để không ảnh hưởng đến việc tạo event
+<span class="fc" id="L324">        }</span>
+
+<span class="fc" id="L326">        return savedEvent;</span>
+    }
+
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

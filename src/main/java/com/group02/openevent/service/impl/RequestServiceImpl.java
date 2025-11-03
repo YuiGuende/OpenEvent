@@ -114,15 +114,13 @@ public class RequestServiceImpl implements RequestService {
         Request request = Request.builder()
                 .type(createRequestDTO.getType())
                 .message(createRequestDTO.getMessage())
+                .sender(accountRepo.findById(createRequestDTO.getSenderId()).orElseThrow(() -> new RuntimeException("Sender not found")))
+                .receiver(accountRepo.findById(createRequestDTO.getReceiverId()).orElseThrow(() -> new RuntimeException("Receiver not found")))
                 .fileURL(createRequestDTO.getFileURL())
                 .targetUrl(createRequestDTO.getTargetUrl())
                 .status(RequestStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
-        //TODO
-        // Set relationships (you'll need to fetch these from their respective services)
-        // For now, we'll just set the IDs - you should inject AccountService and OrderService
-        // and fetch the actual entities
 
         if (createRequestDTO.getEventId() != null) {
             Event event = eventService.getEventById(createRequestDTO.getEventId())

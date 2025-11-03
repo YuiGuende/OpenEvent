@@ -227,7 +227,7 @@ body.sidebar-collapsed .main-content {
 
 /* Sidebar */
 .sidebar {
-    background: linear-gradient(180deg, #ff7e5f, #783402);
+    background: #282828;
     color: white;
     width: 280px;
     height: calc(100vh - 60px);
@@ -276,13 +276,13 @@ body.sidebar-collapsed .main-content {
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: #4d2f25;
     transform: translateX(5px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .nav-item.active {
-    background: rgba(255, 255, 255, 0.25);
+    background: #4d2f25;
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

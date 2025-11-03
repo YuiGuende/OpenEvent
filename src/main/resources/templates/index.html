@@ -1,71 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>OpenEvent — Static Preview</title>
-    <link rel="stylesheet" th:href="@{/css/main.css}"/>
-    <style>
-        /* Chỉnh lại bố cục thanh tìm kiếm cho đều */
-        .event-search {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1.5fr auto;
-            gap: 1rem;
-            align-items: end;
-        }
-        
-        .es-submit {
-            min-width: 140px;
-            white-space: nowrap;
-            margin-left: 1rem;
-        }
-        
-        /* Responsive cho mobile */
-        @media (max-width: 768px) {
-            .event-search {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-            
-            .es-submit {
-                min-width: auto;
-                width: 100%;
-                margin-left: 0;
-            }
-        }
-    </style>
-</head>
+<head th:replace="~{fragments/head :: head('Trang chủ')}"></head>
 
-<body class="page-bg">
-<div th:replace="fragments/header :: siteHeader('home')"></div>
+<body class="page-bg" th:data-user-id="${session.ACCOUNT_ID ?: 2}">
+<div th:replace="~{fragments/header :: siteHeader('home')}"></div>
 <main>
     <section class="hero hero--slider">
         <div class="hero-track" id="heroTrack">
             <div class="hero-slide"
                  th:each="event : ${posterEvents}"
                  th:style="|background-image: url('${event.imageUrl}')|">
-                <div class="container hero-content">
-                    <div class="hero-actions">
-                        <a class="btn btn-primary"
-                           th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}">
-                            Get Ticket
-                        </a>
-                        <a class="btn btn-ghost"
-                           th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}">
-                            Explore More
-                        </a>
-                    </div>
-                </div>
             </div>
 
             <div class="hero-slide" th:if="${#lists.isEmpty(posterEvents)}"
                  th:style="|background-image: url('@{/img/banner1.jpg}')|">
-                <div class="container hero-content">
-                    <div class="hero-actions">
-                        <a class="btn btn-primary" href="#">Get Ticket</a>
-                        <a class="btn btn-ghost" href="#">Explore More</a>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -77,46 +25,53 @@
         </div>
     </section>
 
-
-    <section class="section section-compact search-hero">
+    <!-- Search bar positioned like Booking.com -->
+    <div class="search-center-position">
         <div class="container">
             <div th:replace="fragments/searchbar :: searchBar"></div>
-
-
-            <div class="chip-row">
+            <div class="chip-row" style="margin-bottom: 0.5rem;">
                 <a class="chip is-active" th:href="@{/events(reco='for-you')}">For you</a>
                 <a class="chip" th:href="@{/events(reco='near-you')}">Near you</a>
                 <a class="chip" th:href="@{/events(reco='trending')}">Trending</a>
                 <a class="chip" th:href="@{/events(freeOnly=true)}">Free</a>
             </div>
         </div>
-    </section>
+    </div>
 
     <section class="section">
         <div class="container">
-            <div class="filter-row">
-                  <span class="filter-label">
-                      <span class="section-icon">📅</span>
-                      Your Events
-                  </span>
-                <a class="link" th:href="@{/events}">View All</a>
+            <div class="your-events-header">
+                <h2 class="section-title">Your Events</h2>
+                <!-- Debug info -->
+                <div style="background: #f0f0f0; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-size: 0.9rem; display: none;">
+                    <strong>Debug Info:</strong><br>
+                    MyEvents count: <span th:text="${#lists.size(myEvents)}">0</span><br>
+                    <div th:if="${!#lists.isEmpty(myEvents)}">
+                        First event title: <span th:text="${myEvents[0].title}">N/A</span><br>
+                        First event city: <span th:text="${myEvents[0].city}">N/A</span>
+                    </div>
+                    <div th:if="${#lists.isEmpty(myEvents)}">
+                        <span style="color: red;">No events found - showing hardcoded data</span>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-3" th:if="${!#lists.isEmpty(myEvents)}">
-                <article class="event-card" th:each="ev : ${myEvents}">
+                <article class="event-card-simple" th:each="ev : ${myEvents}">
                     <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
                        style="text-decoration: none; color: inherit;">
                         <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
                         <div class="card-body">
                             <h3 class="card-title" th:text="${ev.title}">Event title</h3>
-                            <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">City • Date • Duration</p>
+                            <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">
+                                City • Date • Duration</p>
                             <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
-
 
                             <div class="capacity">
                                 <div class="capacity-row">
                                     <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini" th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                    <span class="capacity-mini"
+                                          th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
@@ -133,71 +88,76 @@
                 </article>
             </div>
 
-            <div class="grid grid-3" th:if="${#lists.isEmpty(myEvents)}">
-                <article class="event-card">
-                    <img src="/img/event1.jpg" alt="UI/UX Bootcamp" class="event-cover"/>
-                    <div class="card-body">
-                        <h3 class="card-title">UI/UX Bootcamp</h3>
-                        <p class="card-meta">Hà Nội • 20/09/2025 • 3h</p>
-                        <p class="event-org">Organizer: Design Lab</p>
-                        <div class="capacity">
-                            <div class="capacity-row">
-                                <span>Registered: 90 / 150</span>
-                                <span class="capacity-mini">Price: Free</span>
-                            </div>
-                            <div class="bar">
-                                <div class="fill" style="width:60%"></div>
-                            </div>
-                        </div>
-                        <div class="event-tags">
-                            <span class="tag">#Workshop</span>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="event-card">
-                    <img src="/img/event2.jpg" alt="Summer Fest" class="event-cover"/>
-                    <div class="card-body">
-                        <h3 class="card-title">Summer Fest</h3>
-                        <p class="card-meta">HCM • 22/09/2025 • 2h</p>
-                        <p class="event-org">Organizer: Event Hub</p>
-                        <div class="capacity">
-                            <div class="capacity-row">
-                                <span>Registered: 480 / 600</span>
-                                <span class="capacity-mini">Price: 100k</span>
-                            </div>
-                            <div class="bar">
-                                <div class="fill" style="width:80%"></div>
-                            </div>
-                        </div>
-                        <div class="event-tags">
-                            <span class="tag">#Festival</span>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="event-card">
-                    <img src="/img/event3.jpg" alt="Open Campus Tour" class="event-cover"/>
-                    <div class="card-body">
-                        <h3 class="card-title">Open Campus Tour</h3>
-                        <p class="card-meta">Đà Nẵng • 17/09/2025 • 1.5h</p>
-                        <p class="event-org">Organizer: FPT University</p>
-                        <div class="capacity">
-                            <div class="capacity-row">
-                                <span>Registered: 150 / 150</span>
-                                <span class="capacity-mini">Price: Free</span>
-                            </div>
-                            <div class="bar">
-                                <div class="fill" style="width:100%"></div>
-                            </div>
-                        </div>
-                        <div class="event-tags">
-                            <span class="tag">#Conference</span>
-                            <span class="tag">Sold Out</span>
-                        </div>
-                    </div>
-                </article>
+            <!-- Empty state for new users -->
+            <div class="empty-events-simple" th:if="${#lists.isEmpty(myEvents)}">
+                <p>You haven't registered for any events yet. <a href="/events">Explore events</a> to get started!</p>
             </div>
+
+            <!--            <div class="grid grid-3" th:if="${#lists.isEmpty(myEvents)}">-->
+            <!--                <article class="event-card">-->
+            <!--                    <img src="/img/event1.jpg" alt="UI/UX Bootcamp" class="event-cover"/>-->
+            <!--                    <div class="card-body">-->
+            <!--                        <h3 class="card-title">UI/UX Bootcamp</h3>-->
+            <!--                        <p class="card-meta">Hà Nội • 20/09/2025 • 3h</p>-->
+            <!--                        <p class="event-org">Organizer: Design Lab</p>-->
+            <!--                        <div class="capacity">-->
+            <!--                            <div class="capacity-row">-->
+            <!--                                <span>Registered: 90 / 150</span>-->
+            <!--                                <span class="capacity-mini">Price: Free</span>-->
+            <!--                            </div>-->
+            <!--                            <div class="bar">-->
+            <!--                                <div class="fill" style="width:60%"></div>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+            <!--                        <div class="event-tags">-->
+            <!--                            <span class="tag">#Workshop</span>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </article>-->
+
+            <!--                <article class="event-card">-->
+            <!--                    <img src="/img/event2.jpg" alt="Summer Fest" class="event-cover"/>-->
+            <!--                    <div class="card-body">-->
+            <!--                        <h3 class="card-title">Summer Fest</h3>-->
+            <!--                        <p class="card-meta">HCM • 22/09/2025 • 2h</p>-->
+            <!--                        <p class="event-org">Organizer: Event Hub</p>-->
+            <!--                        <div class="capacity">-->
+            <!--                            <div class="capacity-row">-->
+            <!--                                <span>Registered: 480 / 600</span>-->
+            <!--                                <span class="capacity-mini">Price: 100k</span>-->
+            <!--                            </div>-->
+            <!--                            <div class="bar">-->
+            <!--                                <div class="fill" style="width:80%"></div>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+            <!--                        <div class="event-tags">-->
+            <!--                            <span class="tag">#Festival</span>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </article>-->
+
+            <!--                <article class="event-card">-->
+            <!--                    <img src="/img/event3.jpg" alt="Open Campus Tour" class="event-cover"/>-->
+            <!--                    <div class="card-body">-->
+            <!--                        <h3 class="card-title">Open Campus Tour</h3>-->
+            <!--                        <p class="card-meta">Đà Nẵng • 17/09/2025 • 1.5h</p>-->
+            <!--                        <p class="event-org">Organizer: FPT University</p>-->
+            <!--                        <div class="capacity">-->
+            <!--                            <div class="capacity-row">-->
+            <!--                                <span>Registered: 150 / 150</span>-->
+            <!--                                <span class="capacity-mini">Price: Free</span>-->
+            <!--                            </div>-->
+            <!--                            <div class="bar">-->
+            <!--                                <div class="fill" style="width:100%"></div>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+            <!--                        <div class="event-tags">-->
+            <!--                            <span class="tag">#Conference</span>-->
+            <!--                            <span class="tag">Sold Out</span>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </article>-->
+            <!--            </div>-->
 
             <div class="pager">
                 <button class="icon-btn" aria-label="Prev">‹</button>
@@ -207,13 +167,74 @@
         </div>
     </section>
 
+    <section class="section">
+        <div class="container">
+            <div class="latest-events-header">
+                <h2 class="section-title">Latest Events</h2>
+                <div class="pagination-controls" th:if="${!#lists.isEmpty(latestEvents)}">
+                    <button class="pagination-btn prev-btn" id="prevLatestBtn" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15.0898 4.08L8.56984 10.6C7.79984 11.37 7.79984 12.63 8.56984 13.4L15.0898 19.92"
+                                  stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                        </svg>
+                        <span>Previous</span>
+                    </button>
+                    <span class="pagination-info" id="latestPaginationInfo">1 of 1</span>
+                    <button class="pagination-btn next-btn" id="nextLatestBtn">
+                        <span>Next</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.91016 19.92L15.4302 13.4C16.2002 12.63 16.2002 11.37 15.4302 10.6L8.91016 4.08"
+                                  stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-3" th:if="${!#lists.isEmpty(latestEvents)}">
+                <article class="event-card-simple" th:each="ev : ${latestEvents}">
+                    <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
+                       style="text-decoration: none; color: inherit;">
+                        <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
+                        <div class="card-body">
+                            <h3 class="card-title" th:text="${ev.title}">Event title</h3>
+                            <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">
+                                City • Date • Duration</p>
+                            <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
+
+                            <div class="capacity">
+                                <div class="capacity-row">
+                                    <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                    <span class="capacity-mini"
+                                          th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                </div>
+                                <div class="bar">
+                                    <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
+                                </div>
+                            </div>
+
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
+                                <span class="badge badge-live" th:if="${ev.live}">Live</span>
+                                <span class="tag" th:if="${ev.soldOut}">Sold Out</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+            </div>
+
+            <!-- Empty state for latest events -->
+            <div class="empty-events-simple" th:if="${#lists.isEmpty(latestEvents)}">
+                <p>No latest events available. <a href="/events">Check out all events</a>!</p>
+            </div>
+        </div>
+    </section>
+
     <section class="section live">
         <div class="container">
-            <div class="filter-row">
-                  <span class="filter-label">
-                      <span class="section-icon">🔴</span>
-                      Live Events
-                  </span>
+            <div class="live-events-header">
+                <h2 class="section-title">Live Events</h2>
                 <div class="chip-group">
                     <button class="chip is-active" data-filter="all">All</button>
                     <button class="chip" data-filter="Music">Music</button>
@@ -232,13 +253,15 @@
                         <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
                         <div class="card-body">
                             <h3 class="card-title" th:text="${ev.title}">Event title</h3>
-                            <p class="card-meta" th:text="${ev.city + ' • Today • ' + ev.durationLabel}">City • Today • Duration</p>
+                            <p class="card-meta" th:text="${ev.city + ' • Today • ' + ev.durationLabel}">City • Today •
+                                Duration</p>
                             <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
                             <div class="capacity">
                                 <div class="capacity-row">
                                     <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini" th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                    <span class="capacity-mini"
+                                          th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                 </div>
                                 <div class="bar">
                                     <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
@@ -326,129 +349,8 @@
         </div>
     </section>
 
-    <section class="section">
-        <div class="container">
-            <div class="filter-row">
-                  <span class="filter-label">
-                      <span class="section-icon">💡</span>
-                      Recommended for You
-                  </span>
-                <div class="chip-group">
-                    <button class="chip is-active" data-reco="for-you">For you</button>
-                    <button class="chip" data-reco="near-you">Near you</button>
-                    <button class="chip" data-reco="trending">Trending</button>
-                    <button class="chip" data-reco="free">Free</button>
-                </div>
-            </div>
 
-            <div class="grid grid-3" th:if="${!#lists.isEmpty(recommendedEvents)}">
-                <article class="event-card" th:each="event : ${recommendedEvents}">
-                    <a th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
-                       style="text-decoration: none; color: inherit;">
-                        <img class="event-cover" th:src="${event.imageUrl}" th:alt="${event.title}"/>
-                        <div class="card-body">
-                            <h3 class="card-title" th:text="${event.title}">Event title</h3>
-                            <p class="card-meta"
-                               th:text="${event.city + ' • ' + event.dateLabel + ' • ' + event.durationLabel}">
-                                City • Date • Duration
-                            </p>
-                            <p class="event-org" th:text="${'Organizer: ' + event.organizer}">Organizer: ...</p>
-
-                            <div class="capacity">
-                                <div class="capacity-row">
-                                    <span th:text="${'Registered: ' + event.registered + ' / ' + event.capacity}">
-                                        Registered: 0 / 0
-                                    </span>
-                                    <span class="capacity-mini" th:text="${'Price: ' + event.priceLabel}">Price: Free</span>
-                                </div>
-                                <div class="bar">
-                                    <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
-                                </div>
-                            </div>
-
-                            <div class="event-tags">
-                                <span class="tag" th:text="${'#' + event.eventTypeTag}">#Tag</span>
-                                <span class="badge badge-live" th:if="${event.live}">Live</span>
-                                <span class="tag" th:if="${event.soldOut}">Sold Out</span>
-                            </div>
-                        </div>
-                    </a>
-                </article>
-            </div>
-
-            <div class="grid grid-3" th:if="${#lists.isEmpty(recommendedEvents)}">
-                <article class="event-card">
-                    <img src="/img/event2.jpg" alt="Tên sự kiện" class="event-cover"/>
-                    <div class="card-body">
-                        <h3 class="card-title">Data Viz 101</h3>
-                        <p class="card-meta">Hà Nội • 28/09/2025 • 2h</p>
-                        <p class="event-org">Organizer: DS Club</p>
-                        <div class="capacity">
-                            <div class="capacity-row">
-                                <span>Registered: 120 / 200</span>
-                                <span class="capacity-mini">Price: 70k</span>
-                            </div>
-                            <div class="bar">
-                                <div class="fill" style="width:60%"></div>
-                            </div>
-                        </div>
-                        <div class="event-tags">
-                            <span class="tag">#Workshop</span>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="event-card">
-                    <img src="/img/event1.jpg" alt="Tên sự kiện" class="event-cover"/>
-                    <div class="card-body">
-                        <h3 class="card-title">Startup Night</h3>
-                        <p class="card-meta">HCM • 30/09/2025 • 2.5h</p>
-                        <p class="event-org">Organizer: Startup Hub</p>
-                        <div class="capacity">
-                            <div class="capacity-row">
-                                <span>Registered: 300 / 500</span>
-                                <span class="capacity-mini">Price: Free</span>
-                            </div>
-                            <div class="bar">
-                                <div class="fill" style="width:60%"></div>
-                            </div>
-                        </div>
-                        <div class="event-tags">
-                            <span class="tag">#Conference</span>
-                            <span class="tag">#Free</span>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="event-card">
-                    <img src="/img/event3.jpg" alt="Tên sự kiện" class="event-cover"/>
-                    <div class="card-body">
-                        <h3 class="card-title">Campus Coding Jam</h3>
-                        <p class="card-meta">Đà Nẵng • 05/10/2025 • 3h</p>
-                        <p class="event-org">Organizer: Biz Club</p>
-                        <div class="capacity">
-                            <div class="capacity-row">
-                                <span>Registered: 150 / 180</span>
-                                <span class="capacity-mini">Price: 120k</span>
-                            </div>
-                            <div class="bar">
-                                <div class="fill" style="width:83%"></div>
-                            </div>
-                        </div>
-                        <div class="event-tags">
-                            <span class="tag">#Competition</span>
-                        </div>
-                    </div>
-                </article>
-            </div>
-
-            <div class="carousel-nav">
-                <button class="icon-btn" id="recoPrev" aria-label="Prev">‹</button>
-                <button class="icon-btn" id="recoNext" aria-label="Next">›</button>
-            </div>
-        </div>
-    </section>
-
+    <!--    top student -->
     <section class="section section-muted">
         <div class="container">
             <div class="honor-frame">
@@ -554,11 +456,143 @@
         </div>
     </section>
 
+
+    <section class="section">
+        <div class="container">
+            <div class="filter-row">
+                  <span class="filter-label">
+                      <span class="section-icon">💡</span>
+                      Recommended for You
+                  </span>
+                <div class="chip-group">
+                    <button class="chip is-active" data-reco="for-you">For you</button>
+                    <button class="chip" data-reco="near-you">Near you</button>
+                    <button class="chip" data-reco="trending">Trending</button>
+                    <button class="chip" data-reco="free">Free</button>
+                </div>
+            </div>
+
+            <div class="grid grid-3" th:if="${!#lists.isEmpty(recommendedEvents)}">
+                <article class="event-card" th:each="event : ${recommendedEvents}">
+                    <a th:href="@{/{eventType}/{id}(eventType=${event.eventType.name().toLowerCase()}, id=${event.id})}"
+                       style="text-decoration: none; color: inherit;">
+                        <img class="event-cover" th:src="${event.imageUrl}" th:alt="${event.title}"/>
+                        <div class="card-body">
+                            <h3 class="card-title" th:text="${event.title}">Event title</h3>
+                            <p class="card-meta"
+                               th:text="${event.city + ' • ' + event.dateLabel + ' • ' + event.durationLabel}">
+                                City • Date • Duration
+                            </p>
+                            <p class="event-org" th:text="${'Organizer: ' + event.organizer}">Organizer: ...</p>
+
+                            <div class="capacity">
+                                <div class="capacity-row">
+                                    <span th:text="${'Registered: ' + event.registered + ' / ' + event.capacity}">
+                                        Registered: 0 / 0
+                                    </span>
+                                    <span class="capacity-mini"
+                                          th:text="${'Price: ' + event.priceLabel}">Price: Free</span>
+                                </div>
+                                <div class="bar">
+                                    <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
+                                </div>
+                            </div>
+
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + event.eventTypeTag}">#Tag</span>
+                                <span class="badge badge-live" th:if="${event.live}">Live</span>
+                                <span class="tag" th:if="${event.soldOut}">Sold Out</span>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+            </div>
+
+            <div class="grid grid-3" th:if="${#lists.isEmpty(recommendedEvents)}">
+                <article class="event-card">
+                    <img src="/img/event2.jpg" alt="Tên sự kiện" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">Data Viz 101</h3>
+                        <p class="card-meta">Hà Nội • 28/09/2025 • 2h</p>
+                        <p class="event-org">Organizer: DS Club</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Registered: 120 / 200</span>
+                                <span class="capacity-mini">Price: 70k</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:60%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Workshop</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="event-card">
+                    <img src="/img/event1.jpg" alt="Tên sự kiện" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">Startup Night</h3>
+                        <p class="card-meta">HCM • 30/09/2025 • 2.5h</p>
+                        <p class="event-org">Organizer: Startup Hub</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Registered: 300 / 500</span>
+                                <span class="capacity-mini">Price: Free</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:60%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Conference</span>
+                            <span class="tag">#Free</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="event-card">
+                    <img src="/img/event3.jpg" alt="Tên sự kiện" class="event-cover"/>
+                    <div class="card-body">
+                        <h3 class="card-title">Campus Coding Jam</h3>
+                        <p class="card-meta">Đà Nẵng • 05/10/2025 • 3h</p>
+                        <p class="event-org">Organizer: Biz Club</p>
+                        <div class="capacity">
+                            <div class="capacity-row">
+                                <span>Registered: 150 / 180</span>
+                                <span class="capacity-mini">Price: 120k</span>
+                            </div>
+                            <div class="bar">
+                                <div class="fill" style="width:83%"></div>
+                            </div>
+                        </div>
+                        <div class="event-tags">
+                            <span class="tag">#Competition</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="carousel-nav">
+                <button class="icon-btn" id="recoPrev" aria-label="Prev">‹</button>
+                <button class="icon-btn" id="recoNext" aria-label="Next">›</button>
+            </div>
+        </div>
+    </section>
+
+
 </main>
 
 
 <div th:replace="fragments/footer :: siteFooter()"></div>
+<div id="openevent-chatbot-container"></div>
+<script th:src="@{/js/chatbot.js}"></script>
 
+<!-- Chatbot Fragment - Only for authenticated users -->
+<div th:if="${#authorization.expression('isAuthenticated()')}"
+     th:replace="~{fragments/chatbot :: chatbot(2)}">
+</div>
 <script th:src="@{/js/main.js}"></script>
 </body>
 </html>

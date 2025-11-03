@@ -51,8 +51,8 @@ public class MusicServiceImpl implements IMusicService {
                     dto.setBenefits(musicEvent.getBenefits());
                     dto.setVenueAddress(musicEvent.getVenueAddress());
                     dto.setGuidelines(musicEvent.getGuidelines());
-                    dto.setEnrollDeadline(musicEvent.getEnrollDeadline()); // ⭐️ THÊM MỚI
-                    dto.setStatus(musicEvent.getStatus());                 // ⭐️ THÊM MỚI
+                    dto.setEnrollDeadline(musicEvent.getEnrollDeadline());
+                    dto.setStatus(musicEvent.getStatus());
 
                     // === Mapping các trường đặc thù của MusicEvent (lớp con) ===
                     dto.setMusicType(musicEvent.getMusicType()); // ⭐️ THÊM MỚI

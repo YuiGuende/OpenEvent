@@ -59,7 +59,6 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalArgumentException("Email này đã được đăng ký");
 		}
 
-		// Luôn set role là CUSTOMER khi đăng ký, bỏ qua lựa chọn từ frontend
 		Role role = Role.CUSTOMER;
 
 		Account account = new Account();

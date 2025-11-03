@@ -1,5 +1,7 @@
 package com.group02.openevent.controller;
 
+import com.group02.openevent.ai.security.AISecurityService;
+import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.order.Order;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.payos.PayOS;
 
@@ -36,7 +39,11 @@ class PaymentControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @MockitoBean
+    private RateLimitingService rateLimitingService;
 
+    @MockitoBean
+    private AISecurityService aiSecurityService;
     @MockBean
     private SessionInterceptor sessionInterceptor;
     @MockBean

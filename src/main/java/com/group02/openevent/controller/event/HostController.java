@@ -1,19 +1,27 @@
 package com.group02.openevent.controller.event;
 
+import com.group02.openevent.dto.department.OrderDTO;
 import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
-import com.group02.openevent.service.EventService;
-import com.group02.openevent.service.IImageService;
+import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,11 +34,15 @@ public class HostController {
 
     private final EventService eventService;
     private final IImageService imageService;
+    private final HostService hostService;
+    private final CustomerService customerService;
 
     @Autowired
-    public HostController(EventService eventService, IImageService imageService) {
+    public HostController(EventService eventService, IImageService imageService, HostService hostService, CustomerService customerService) {
         this.eventService = eventService;
         this.imageService = imageService;
+        this.hostService = hostService;
+        this.customerService = customerService;
     }
 
     private Long getHostAccountId(HttpSession session) {
@@ -38,7 +50,12 @@ public class HostController {
         if (accountId == null) {
             throw new RuntimeException("User not logged in");
         }
-        return accountId;
+        Customer customer = customerService.getCustomerByAccountId(accountId);
+        Long hostId = customer.getHost().getId();
+        if (hostId == null) {
+            throw new RuntimeException("Host not found");
+        }
+        return hostId;
     }
 
     @GetMapping("/organizer")
@@ -57,21 +74,17 @@ public class HostController {
 
     @GetMapping("/fragment/dashboard")
     public String dashboard(Model model, HttpSession session) {
-        Long id = Long.parseLong("2");
-        List<Event> eventResponses = eventService.getEventByHostId(id);
+        List<Event> eventResponses = eventService.getEventByHostId(getHostAccountId(session));
         model.addAttribute("events", eventResponses);
         log.info("Events: " + eventResponses);
-        log.info("Host account ID: " + getHostAccountId(session));
         return "fragments/dashboard :: content";
     }
 
     @GetMapping("/fragment/events")
     public String events(Model model, HttpSession session) {
-        log.info("Host account ID: " + getHostAccountId(session));
-        Long id = Long.parseLong("2");
         EventCreationRequest request = new EventCreationRequest();
         model.addAttribute("eventForm", request);
-        List<Event> eventResponses = eventService.getEventByHostId(id);
+        List<Event> eventResponses = eventService.getEventByHostId(getHostAccountId(session));
         List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
         model.addAttribute("listTypeEvent", listTypeEvent);
         model.addAttribute("events", eventResponses);
@@ -82,6 +95,7 @@ public class HostController {
     public String settings(Model model) {
         return "fragments/settings :: content";
     }
+
 
 //    @GetMapping("/event/manage/{id}")
 //    public String manageEvent(@PathVariable Long id, Model model) {

@@ -54,7 +54,7 @@ public class EventHostAuthorizationAspect {
         }
         
         // Assuming Event entity has a hostId or userId field
-        if (!event.get().getHost().getId().equals(userId)) {
+        if (!event.get().getHost().getCustomer().getAccount().getAccountId().equals(userId)) {
             log.warn("User {} attempted to create request for event {} they don't host", userId, eventId);
             throw new AccessDeniedException("Only the event host can create approval requests for this event");
         }

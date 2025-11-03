@@ -52,6 +52,8 @@ h2 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
 .ticket.selected {
     border-color: #4CAF50;
     background: #f6fffa;
+    transform: scale(1.02); /* Phóng to nhẹ */
+    transition: all 0.3s ease-in-out; /* Hiệu ứng chuyển động mượt */
     box-shadow: 0 4px 14px rgba(0,0,0,0.15);
 }
 .ticket h3 { margin: 0; font-size: 16px; font-weight: 600; }

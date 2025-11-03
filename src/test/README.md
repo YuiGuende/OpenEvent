@@ -9,7 +9,7 @@ Tính năng được chọn để kiểm thử là luồng nghiệp vụ quan tr
 
 ### Workflow chi tiết
 
-Luồng nghiệp vụ này bao gồm các bước sau:
+Luồng nghiệp vụ này bao gồm các bước sau:q
 
 1.  **Tạo đơn hàng:** Khách hàng tạo một đơn đăng ký sự kiện, bao gồm việc chọn loại vé và tùy chọn áp dụng voucher. Đơn hàng này được lưu với trạng thái `OrderStatus.PENDING`.
 2.  **Khởi tạo thanh toán:** Khách hàng yêu cầu thanh toán bằng cách gọi endpoint `POST /api/payments/create-for-order/{orderId}`.

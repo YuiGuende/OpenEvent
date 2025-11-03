@@ -11,7 +11,7 @@ class ImageUploadManager {
 
     initEventListeners() {
         console.log('Setting up event listeners...');
-        
+
         // Poster upload
         const posterBtn = document.getElementById('posterUploadBtn');
         const posterInput = document.getElementById('posterUploadInput');
@@ -27,24 +27,24 @@ class ImageUploadManager {
             // Remove existing listeners to avoid duplicates
             posterBtn.removeEventListener('click', this.posterClickHandler);
             posterInput.removeEventListener('change', this.posterChangeHandler);
-            
+
             // Define handlers
             this.posterClickHandler = () => {
                 console.log('Poster upload button clicked');
                 posterInput.click();
             };
-            
+
             this.posterChangeHandler = (e) => {
                 console.log('Poster file selected:', e.target.files.length);
                 this.handleFileSelect(e, 'poster');
             };
-            
+
             // Add listeners
             posterBtn.addEventListener('click', this.posterClickHandler);
             posterInput.addEventListener('change', this.posterChangeHandler);
 
-        // Drag and drop for poster
-        this.setupDragAndDrop(posterArea, posterInput, 'poster');
+            // Drag and drop for poster
+            this.setupDragAndDrop(posterArea, posterInput, 'poster');
         }
 
         // Gallery upload
@@ -62,24 +62,24 @@ class ImageUploadManager {
             // Remove existing listeners to avoid duplicates
             galleryBtn.removeEventListener('click', this.galleryClickHandler);
             galleryInput.removeEventListener('change', this.galleryChangeHandler);
-            
+
             // Define handlers
             this.galleryClickHandler = () => {
                 console.log('Gallery upload button clicked');
                 galleryInput.click();
             };
-            
+
             this.galleryChangeHandler = (e) => {
                 console.log('Gallery file selected:', e.target.files.length);
                 this.handleFileSelect(e, 'gallery');
             };
-            
+
             // Add listeners
             galleryBtn.addEventListener('click', this.galleryClickHandler);
             galleryInput.addEventListener('change', this.galleryChangeHandler);
 
-        // Drag and drop for gallery
-        this.setupDragAndDrop(galleryArea, galleryInput, 'gallery');
+            // Drag and drop for gallery
+            this.setupDragAndDrop(galleryArea, galleryInput, 'gallery');
         }
     }
 
@@ -248,10 +248,10 @@ class ImageUploadManager {
             item.appendChild(orderBadge);
 
             // Main poster badge - tất cả poster đều có MAIN badge
-                const mainBadge = document.createElement('div');
-                mainBadge.className = 'main-poster-badge';
-                mainBadge.textContent = 'MAIN';
-                item.appendChild(mainBadge);
+            const mainBadge = document.createElement('div');
+            mainBadge.className = 'main-poster-badge';
+            mainBadge.textContent = 'MAIN';
+            item.appendChild(mainBadge);
         }
 
         return item;
@@ -263,18 +263,18 @@ class ImageUploadManager {
             this.removeImageFromDatabase(id, type);
         } else {
             // If it's a temporary image (has string ID), just remove from arrays
-        if (type === 'poster') {
-            this.posterImages = this.posterImages.filter(img => img.id !== id);
-            // Reorder remaining images
-            this.posterImages.forEach((img, index) => {
-                img.orderIndex = index;
-            });
-        } else {
-            this.galleryImages = this.galleryImages.filter(img => img.id !== id);
-        }
+            if (type === 'poster') {
+                this.posterImages = this.posterImages.filter(img => img.id !== id);
+                // Reorder remaining images
+                this.posterImages.forEach((img, index) => {
+                    img.orderIndex = index;
+                });
+            } else {
+                this.galleryImages = this.galleryImages.filter(img => img.id !== id);
+            }
 
-        this.updatePreview(type);
-        this.updateUploadButtons();
+            this.updatePreview(type);
+            this.updateUploadButtons();
         }
     }
 
@@ -285,14 +285,14 @@ class ImageUploadManager {
                 const response = await fetch(`/api/event-images/${imageId}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (response.ok) {
                     // Remove from DOM
                     const item = document.querySelector(`[data-id="${imageId}"]`);
                     if (item) {
                         item.remove();
                     }
-                    
+
                     // Nếu xóa poster (mainPoster = true), reload trang để cập nhật UI
                     if (type === 'poster') {
                         window.location.reload();
@@ -315,19 +315,19 @@ class ImageUploadManager {
             this.setAsMainPosterInDatabase(id);
         } else {
             // If it's a temporary image (has string ID), handle locally
-        const imageIndex = this.posterImages.findIndex(img => img.id === id);
-        if (imageIndex === -1) return;
+            const imageIndex = this.posterImages.findIndex(img => img.id === id);
+            if (imageIndex === -1) return;
 
-        // Move image to first position
-        const image = this.posterImages.splice(imageIndex, 1)[0];
-        this.posterImages.unshift(image);
+            // Move image to first position
+            const image = this.posterImages.splice(imageIndex, 1)[0];
+            this.posterImages.unshift(image);
 
-        // Reorder all images
-        this.posterImages.forEach((img, index) => {
-            img.orderIndex = index;
-        });
+            // Reorder all images
+            this.posterImages.forEach((img, index) => {
+                img.orderIndex = index;
+            });
 
-        this.updatePreview('poster');
+            this.updatePreview('poster');
         }
     }
 
@@ -337,7 +337,7 @@ class ImageUploadManager {
             const response = await fetch(`/api/event-images/${imageId}/set-main`, {
                 method: 'PUT'
             });
-            
+
             if (response.ok) {
                 // Reload the page to show updated data
                 window.location.reload();
@@ -446,19 +446,19 @@ class ImageUploadManager {
     async createImageInDatabase(imageData, type) {
         try {
             const eventId = window.location.pathname.split('/')[3]; // Get eventId from URL
-            
+
             // Upload image to Cloudinary first
             const imageUrl = await this.uploadImageToCloudinary(imageData.file);
-            
+
             const imageRequest = {
                 url: imageUrl,
                 orderIndex: imageData.orderIndex,
                 isMainPoster: type === 'poster', // true cho poster, false cho gallery
                 eventId: parseInt(eventId)
             };
-            
+
             console.log('Creating image in database:', imageRequest);
-            
+
             const response = await fetch('/api/event-images', {
                 method: 'POST',
                 headers: {
@@ -466,11 +466,11 @@ class ImageUploadManager {
                 },
                 body: JSON.stringify(imageRequest)
             });
-            
+
             if (response.ok) {
                 const createdImage = await response.json();
                 console.log('Image created successfully:', createdImage);
-                
+
                 // Update the imageData with the database ID
                 imageData.id = createdImage.id;
                 imageData.url = createdImage.url;
@@ -490,12 +490,12 @@ class ImageUploadManager {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const response = await fetch('/api/speakers/upload/image', {
                 method: 'POST',
                 body: formData
             });
-            
+
             if (response.ok) {
                 const result = await response.json();
                 return result.imageUrl;
@@ -507,14 +507,14 @@ class ImageUploadManager {
             throw error;
         }
     }
-    
+
     // Clean up event listeners
     cleanup() {
         const posterBtn = document.getElementById('posterUploadBtn');
         const posterInput = document.getElementById('posterUploadInput');
         const galleryBtn = document.getElementById('galleryUploadBtn');
         const galleryInput = document.getElementById('galleryUploadInput');
-        
+
         if (posterBtn && this.posterClickHandler) {
             posterBtn.removeEventListener('click', this.posterClickHandler);
         }
@@ -534,7 +534,7 @@ class ImageUploadManager {
 function checkAndInitializeUpload() {
     const posterBtn = document.getElementById('posterUploadBtn');
     const galleryBtn = document.getElementById('galleryUploadBtn');
-    
+
     if (posterBtn && galleryBtn) {
         initializeImageUploadManager();
         return true;
@@ -545,19 +545,19 @@ function checkAndInitializeUpload() {
 // Function to initialize image upload manager
 function initializeImageUploadManager() {
     console.log('Initializing ImageUploadManager...');
-    
+
     // Check if required elements exist
     const posterBtn = document.getElementById('posterUploadBtn');
     const galleryBtn = document.getElementById('galleryUploadBtn');
-    
+
     console.log('Poster button found:', !!posterBtn);
     console.log('Gallery button found:', !!galleryBtn);
-    
+
     if (window.imageUploadManager) {
         // Clean up existing instance
         window.imageUploadManager.cleanup();
     }
-    
+
     try {
         window.imageUploadManager = new ImageUploadManager();
         console.log('ImageUploadManager initialized successfully');
@@ -577,7 +577,7 @@ function initializeImageUploadManager() {
 // Initialize lineup and agenda buttons
 function initializeLineupAndAgendaButtons() {
     console.log('Initializing lineup and agenda buttons...');
-    
+
     // Lineup functionality
     const addLineupBtn = document.getElementById('addLineupBtn');
     if (addLineupBtn) {
@@ -616,22 +616,22 @@ function initializeLineupAndAgendaButtons() {
 // Initialize event title click functionality
 function initializeEventTitleClick() {
     console.log('Initializing event title click...');
-    
+
     const eventTitle = document.querySelector('.event-title');
     const eventOverviewForm = document.getElementById('eventOverviewForm');
-    
+
     if (eventTitle && eventOverviewForm) {
         console.log('Event title and form found, adding click listener');
-        
+
         // Define click handler
         const handleEventTitleClick = () => {
             console.log('Event title clicked, showing form');
             eventOverviewForm.style.display = 'block';
         };
-        
+
         // Remove existing listeners to avoid duplicates
         eventTitle.removeEventListener('click', handleEventTitleClick);
-        
+
         // Add click listener
         eventTitle.addEventListener('click', handleEventTitleClick);
     } else {
@@ -647,71 +647,71 @@ window.initializeEventFormListeners = function() {
     console.log('Initializing event form listeners...');
     // Wait for elements to be available
     setTimeout(() => {
-            console.log('UPDATE EVENT: Starting initialization...');
+        console.log('UPDATE EVENT: Starting initialization...');
         initializeImageUploadManager();
-            initializeLineupAndAgendaButtons();
-            if (typeof window.initializeEventTypeTabs === 'function') {
-                window.initializeEventTypeTabs();
-            }
-            initializeEventTitleClick();
-            
-            // Initialize save button
-            
-            // Load speakers from database
-            console.log('Attempting to load speakers from database...');
-            if (typeof window.populateLineupFromEvent === 'function') {
-                console.log('Calling populateLineupFromEvent...');
-                window.populateLineupFromEvent();
-            } else {
-                console.error('populateLineupFromEvent function not found!');
-            }
-            
-            // Load schedules from database
-            console.log('Attempting to load schedules from database...');
-            if (typeof window.populateSchedulesFromEvent === 'function') {
-                console.log('Calling populateSchedulesFromEvent...');
-                window.populateSchedulesFromEvent();
-            } else {
-                console.error('populateSchedulesFromEvent function not found!');
-            }
-            
-            // Load images from database
-            console.log('Attempting to load images from database...');
-            if (typeof window.populateImagesFromEvent === 'function') {
-                console.log('Calling populateImagesFromEvent...');
-                window.populateImagesFromEvent();
-            } else {
-                console.error('populateImagesFromEvent function not found!');
-            }
-            
-            // Load places from database
-            console.log('Attempting to load places from database...');
-            if (typeof window.populatePlacesFromEvent === 'function') {
-                console.log('Calling populatePlacesFromEvent...');
-                window.populatePlacesFromEvent();
-            } else {
-                console.error('populatePlacesFromEvent function not found!');
-            }
-            
-            // Load ticket types from database
-            console.log('Attempting to load ticket types from database...');
-            if (typeof window.populateTicketTypesFromEvent === 'function') {
-                console.log('Calling populateTicketTypesFromEvent...');
-                window.populateTicketTypesFromEvent();
-            } else {
-                console.error('populateTicketTypesFromEvent function not found!');
-            }
-            
-            // Initialize ticketManager for settings page if not exists
-            if (!window.ticketManager && typeof TicketManager !== 'undefined') {
-                console.log('Creating ticketManager for settings page...');
-                window.ticketManager = new TicketManager();
-                // Initialize with empty data since we're on settings page
-                window.ticketManager.initializeTicketTypes([]);
-            }
-            
-            console.log('UPDATE EVENT: Initialization completed');
-        }, 200);
+        initializeLineupAndAgendaButtons();
+        if (typeof window.initializeEventTypeTabs === 'function') {
+            window.initializeEventTypeTabs();
+        }
+        initializeEventTitleClick();
+
+        // Initialize save button
+
+        // Load speakers from database
+        console.log('Attempting to load speakers from database...');
+        if (typeof window.populateLineupFromEvent === 'function') {
+            console.log('Calling populateLineupFromEvent...');
+            window.populateLineupFromEvent();
+        } else {
+            console.error('populateLineupFromEvent function not found!');
+        }
+
+        // Load schedules from database
+        console.log('Attempting to load schedules from database...');
+        if (typeof window.populateSchedulesFromEvent === 'function') {
+            console.log('Calling populateSchedulesFromEvent...');
+            window.populateSchedulesFromEvent();
+        } else {
+            console.error('populateSchedulesFromEvent function not found!');
+        }
+
+        // Load images from database
+        console.log('Attempting to load images from database...');
+        if (typeof window.populateImagesFromEvent === 'function') {
+            console.log('Calling populateImagesFromEvent...');
+            window.populateImagesFromEvent();
+        } else {
+            console.error('populateImagesFromEvent function not found!');
+        }
+
+        // Load places from database - this will initialize PlaceManager
+        console.log('Attempting to load places from database...');
+        if (typeof window.populatePlacesFromEvent === 'function') {
+            console.log('Calling populatePlacesFromEvent...');
+            window.populatePlacesFromEvent();
+        } else {
+            console.error('populatePlacesFromEvent function not found!');
+        }
+
+        // Load ticket types from database
+        console.log('Attempting to load ticket types from database...');
+        if (typeof window.populateTicketTypesFromEvent === 'function') {
+            console.log('Calling populateTicketTypesFromEvent...');
+            window.populateTicketTypesFromEvent();
+        } else {
+            console.error('populateTicketTypesFromEvent function not found!');
+        }
+
+        // Initialize ticketManager for settings page if not exists
+        if (!window.ticketManager && typeof TicketManager !== 'undefined') {
+            console.log('Creating ticketManager for settings page...');
+            window.ticketManager = new TicketManager();
+            // Initialize with empty data since we're on settings page
+            window.ticketManager.initializeTicketTypes([]);
+        }
+
+        console.log('UPDATE EVENT: Initialization completed');
+    }, 200);
 
     // Add to form submission
     const form = document.querySelector('form');
@@ -728,21 +728,32 @@ window.initializeEventFormListeners = function() {
             try {
                 // First, submit the event form
                 const formData = new FormData(form);
-                
+
                 // Add places data to form
+                console.log('🔍 update-event.js: Checking placeManager...');
+                console.log('🔍 update-event.js: placeManager:', placeManager);
+                console.log('🔍 update-event.js: typeof placeManager:', typeof placeManager);
+                console.log('🔍 update-event.js: window.placeManager:', window.placeManager);
+
                 if (placeManager && typeof placeManager.getPlacesData === 'function') {
+                    console.log('🔍 update-event.js: Calling placeManager.getPlacesData()...');
                     const placesData = placeManager.getPlacesData();
+                    console.log('🔍 update-event.js: placesData received:', placesData);
                     formData.append('placesJson', JSON.stringify(placesData));
                     console.log('Added places data to form:', placesData);
+                } else {
+                    console.error('❌ update-event.js: placeManager not available or getPlacesData not a function');
+                    console.error('❌ placeManager:', placeManager);
+                    console.error('❌ typeof placeManager.getPlacesData:', typeof placeManager?.getPlacesData);
                 }
-                
+
                 // Add tickets data to form
                 if (window.ticketManager && typeof window.ticketManager.getTicketsData === 'function') {
                     const ticketsData = window.ticketManager.getTicketsData();
                     formData.append('ticketsJson', JSON.stringify(ticketsData));
                     console.log('Added tickets data to form:', ticketsData);
                 }
-                
+
                 const eventResponse = await fetch(form.action, {
                     method: 'POST',
                     body: formData

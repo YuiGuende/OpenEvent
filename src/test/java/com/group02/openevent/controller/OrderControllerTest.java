@@ -2,6 +2,8 @@ package com.group02.openevent.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group02.openevent.ai.security.AISecurityService;
+import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.account.Account;
@@ -74,6 +76,11 @@ class OrderControllerTest {
     @MockitoBean
     private VoucherService voucherService;
 
+    @MockitoBean
+    private RateLimitingService rateLimitingService;
+
+    @MockitoBean
+    private AISecurityService aiSecurityService;
     private Customer sampleCustomer;
     private Order sampleCreatedOrder;
     private CreateOrderWithTicketTypeRequest validRequestDTO;

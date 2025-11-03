@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
+import com.group02.openevent.service.TicketTypeService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -27,7 +29,9 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,11 +48,14 @@ public class EventController {
 
     private final ITicketTypeRepo ticketTypeRepo;
 
+    private  final TicketTypeService ticketTypeService;
+
     @Autowired
-    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo) {
+    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
+        this.ticketTypeService = ticketTypeService;
     }
     private Long getHostAccountId(HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
@@ -104,12 +111,10 @@ public class EventController {
 
     @PostMapping("/update/{id}")
     public String updateEvent(@PathVariable("id") Long id,
-                             @ModelAttribute EventUpdateRequest request,
-                             @RequestParam(value = "placesJson", required = false) String placesJson,
-                             @RequestParam(value = "ticketsJson", required = false) String ticketsJson,
-                             Model model){
-        log.info("Controller Update Event with ID: {}", id);
-        log.info("Event Type: {}", request.getEventType());
+                              @ModelAttribute EventUpdateRequest request,
+                              @RequestParam(value = "placesJson", required = false) String placesJson,
+                              @RequestParam(value = "ticketsJson", required = false) String ticketsJson,
+                              Model model){
 
         try {
             // Process places from JSON if provided
@@ -120,85 +125,26 @@ public class EventController {
                         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
                 List<PlaceUpdateRequest> placeRequests = objectMapper.readValue(placesJson, new TypeReference<List<PlaceUpdateRequest>>() {});
 
-                // Convert PlaceUpdateRequest to Place entities
+                // Convert PlaceUpdateRequest to Place entities (keep all places, including deleted ones)
                 List<Place> places = placeRequests.stream()
-                    .filter(pr -> !Boolean.TRUE.equals(pr.getIsDeleted())) // Filter out deleted places
-                    .map(pr -> {
-                        Place place = new Place();
-                        place.setId(pr.getId());
-                        place.setPlaceName(pr.getPlaceName());
-                        place.setBuilding(pr.getBuilding());
-                        return place;
-                    })
-                    .collect(Collectors.toList());
+                        .map(pr -> {
+                            Place place = new Place();
+                            place.setId(pr.getId());
+                            place.setPlaceName(pr.getPlaceName());
+                            place.setBuilding(pr.getBuilding());
+                            // Store isDeleted flag in a custom field or handle it in service layer
+                            return place;
+                        })
+                        .collect(Collectors.toList());
+
 
                 request.setPlaces(places);
-                log.info("Parsed {} places from JSON (after filtering deleted)", places.size());
+                request.setPlaceUpdateRequests(placeRequests);
+                log.info("Parsed {} places from JSON (including deleted places)", places.size());
             }
-
-            // Process tickets from JSON if provided
-            if (ticketsJson != null && !ticketsJson.trim().isEmpty()) {
-                log.info("Processing tickets JSON: {}", ticketsJson);
-                ObjectMapper objectMapper = new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                List<TicketUpdateRequest> ticketRequests = objectMapper.readValue(ticketsJson, new TypeReference<List<TicketUpdateRequest>>() {});
-
-                // Process each ticket
-                for (TicketUpdateRequest ticketRequest : ticketRequests) {
-                    if (Boolean.TRUE.equals(ticketRequest.getIsDeleted())) {
-                        // Delete ticket
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            ticketTypeRepo.deleteById(ticketRequest.getTicketTypeId());
-                            log.info("Deleted ticket with ID: {}", ticketRequest.getTicketTypeId());
-                        }
-                    } else if (Boolean.TRUE.equals(ticketRequest.getIsNew())) {
-                        // Create new ticket
-                        TicketType newTicket = new TicketType();
-                        newTicket.setName(ticketRequest.getName());
-                        newTicket.setDescription(ticketRequest.getDescription());
-                        newTicket.setPrice(ticketRequest.getPrice());
-                        newTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                        newTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                        newTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                        newTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                        newTicket.setSale(ticketRequest.getSale());
-
-                        // Set event (you'll need to get the event)
-                        Event event = eventService.getEventById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-                        newTicket.setEvent(event);
-
-                        ticketTypeRepo.save(newTicket);
-                        log.info("Created new ticket: {}", newTicket.getName());
-                    } else {
-                        // Update existing ticket
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            TicketType existingTicket = ticketTypeRepo.findById(ticketRequest.getTicketTypeId())
-                                    .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-                            existingTicket.setName(ticketRequest.getName());
-                            existingTicket.setDescription(ticketRequest.getDescription());
-                            existingTicket.setPrice(ticketRequest.getPrice());
-                            existingTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                            existingTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                            existingTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                            existingTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                            existingTicket.setSale(ticketRequest.getSale());
-
-                            ticketTypeRepo.save(existingTicket);
-                            log.info("Updated ticket with ID: {}", ticketRequest.getTicketTypeId());
-                        }
-                    }
-                }
-
-                log.info("Processed {} tickets from JSON", ticketRequests.size());
-            }
-
-        EventResponse updated = eventService.updateEvent(id, request);
-            log.info("Event updated successfully with type: {}", updated.getEventType());
-
-        model.addAttribute("updated", updated);
-        model.addAttribute("message", "Cập nhật thành công!");
+            EventResponse updated = eventService.updateEvent(id, request);
+            model.addAttribute("updated", updated);
+            model.addAttribute("message", "Cập nhật thành công!");
 
         } catch (Exception e) {
             log.error("Error updating event: ", e);
@@ -215,45 +161,12 @@ public class EventController {
                                                @RequestParam(value = "ticketsJson", required = false) String ticketsJson) {
         try {
             if (ticketsJson != null && !ticketsJson.trim().isEmpty()) {
-                ObjectMapper objectMapper = new ObjectMapper()
+                ObjectMapper mapper = new ObjectMapper()
                         .registerModule(new JavaTimeModule())
                         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                List<TicketUpdateRequest> ticketRequests = objectMapper.readValue(ticketsJson, new TypeReference<List<TicketUpdateRequest>>() {});
-
-                for (TicketUpdateRequest ticketRequest : ticketRequests) {
-                    if (Boolean.TRUE.equals(ticketRequest.getIsDeleted())) {
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            ticketTypeRepo.deleteById(ticketRequest.getTicketTypeId());
-                        }
-                    } else if (Boolean.TRUE.equals(ticketRequest.getIsNew())) {
-                        TicketType newTicket = new TicketType();
-                        newTicket.setName(ticketRequest.getName());
-                        newTicket.setDescription(ticketRequest.getDescription());
-                        newTicket.setPrice(ticketRequest.getPrice());
-                        newTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                        newTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                        newTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                        newTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                        newTicket.setSale(ticketRequest.getSale());
-                        Event event = eventService.getEventById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-                        newTicket.setEvent(event);
-                        ticketTypeRepo.save(newTicket);
-                    } else {
-                        if (ticketRequest.getTicketTypeId() != null) {
-                            TicketType existingTicket = ticketTypeRepo.findById(ticketRequest.getTicketTypeId())
-                                    .orElseThrow(() -> new RuntimeException("Ticket not found"));
-                            existingTicket.setName(ticketRequest.getName());
-                            existingTicket.setDescription(ticketRequest.getDescription());
-                            existingTicket.setPrice(ticketRequest.getPrice());
-                            existingTicket.setTotalQuantity(ticketRequest.getTotalQuantity());
-                            existingTicket.setSoldQuantity(ticketRequest.getSoldQuantity() != null ? ticketRequest.getSoldQuantity() : 0);
-                            existingTicket.setStartSaleDate(ticketRequest.getStartSaleDate());
-                            existingTicket.setEndSaleDate(ticketRequest.getEndSaleDate());
-                            existingTicket.setSale(ticketRequest.getSale());
-                            ticketTypeRepo.save(existingTicket);
-                        }
-                    }
-                }
+                List<TicketUpdateRequest> ticketRequests =
+                        mapper.readValue(ticketsJson, new TypeReference<>() {});
+                ticketTypeService.updateTickets(id, ticketRequests);
             }
             return ApiResponse.<Void>builder().message("Tickets updated").build();
         } catch (Exception e) {
@@ -287,126 +200,75 @@ public class EventController {
         }
     }
 
-    @PostMapping("/upload/image")
-    @ResponseBody
-    public ResponseEntity<Event> uploadImage(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("index") int index,
-            @RequestParam("mainPoster") boolean mainPoster,
-            @RequestParam("eventId") Long eventId) throws IOException {
-        String url = imageService.saveImage(file);
-        Optional<Event> optionalEvent = eventService.getEventById(eventId);
-        if (optionalEvent.isPresent()) {
-            Event event = optionalEvent.get();
-            EventImage eventImage = new EventImage(url, index, mainPoster, event);
-
-            optionalEvent.get().getEventImages().add(eventImage);
-
-
-            return ResponseEntity.ok(eventService.saveEvent(event));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @PostMapping("/upload/multiple-images")
     @ResponseBody
-    public ResponseEntity<Event> uploadMultipleImages(
+    public ResponseEntity<?> uploadMultipleImages(
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("orderIndexes") int[] orderIndexes,
             @RequestParam("mainPosters") boolean[] mainPosters,
-            @RequestParam("eventId") Long eventId) throws IOException {
-
-        Optional<Event> optionalEvent = eventService.getEventById(eventId);
-        if (!optionalEvent.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Event event = optionalEvent.get();
-
-        // Validate arrays length
-        if (files.length != orderIndexes.length || files.length != mainPosters.length) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        // Process each file
-        for (int i = 0; i < files.length; i++) {
-            MultipartFile file = files[i];
-            int orderIndex = orderIndexes[i];
-            boolean mainPoster = mainPosters[i];
-
-            // Validate file
-            if (file.isEmpty()) continue;
-
-            // Save image and get URL
-            String url = imageService.saveImage(file);
-
-            // Create EventImage
-            EventImage eventImage = new EventImage(url, orderIndex, mainPoster, event);
-            event.getEventImages().add(eventImage);
-        }
-
-        // Save event with new images
-        Event savedEvent = eventService.saveEvent(event);
-        return ResponseEntity.ok(savedEvent);
-    }
-
-    @PostMapping("/upload/images-batch")
-    @ResponseBody
-    public ResponseEntity<ApiResponse<String>> uploadImagesBatch(
-            @RequestParam("eventId") Long eventId,
-            @RequestParam("images") String imagesJson) {
-
+            @RequestParam("eventId") Long eventId) {
         try {
-            // Parse images data from JSON
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            java.util.List<java.util.Map<String, Object>> imagesData =
-                    mapper.readValue(imagesJson, java.util.List.class);
-
             Optional<Event> optionalEvent = eventService.getEventById(eventId);
             if (!optionalEvent.isPresent()) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Event not found"));
             }
 
             Event event = optionalEvent.get();
 
-            // Process each image data
-            for (java.util.Map<String, Object> imageData : imagesData) {
-                // This would need to be implemented based on your image service
-                // For now, we'll create a placeholder
-                String url = "placeholder_url_" + System.currentTimeMillis();
-                int orderIndex = (Integer) imageData.get("orderIndex");
-                boolean mainPoster = (Boolean) imageData.get("mainPoster");
+            // Validate arrays length
+            if (files.length != orderIndexes.length || files.length != mainPosters.length) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid input: arrays have mismatched lengths"));
+            }
 
+            if (event.getEventImages() == null)
+                event.setEventImages(new HashSet<>()); // tránh NullPointerException
+
+            // Process each file
+            for (int i = 0; i < files.length; i++) {
+                MultipartFile file = files[i];
+                int orderIndex = orderIndexes[i];
+                boolean mainPoster = mainPosters[i];
+
+                if (file.isEmpty()) continue;
+
+                String url = imageService.saveImage(file);
                 EventImage eventImage = new EventImage(url, orderIndex, mainPoster, event);
                 event.getEventImages().add(eventImage);
             }
 
-            // Save event
-            eventService.saveEvent(event);
-
-            ApiResponse<String> response = new ApiResponse<>();
-            response.setResult("Images uploaded successfully");
-            return ResponseEntity.ok(response);
+            Event savedEvent = eventService.saveEvent(event);
+            return ResponseEntity.ok(savedEvent);
 
         } catch (Exception e) {
-            log.error("Error uploading images batch", e);
-            ApiResponse<String> response = new ApiResponse<>();
-
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Internal server error", "message", e.getMessage()));
         }
     }
 
     // Delete a single ticket type by id (direct hard delete)
     @DeleteMapping("/ticket/{ticketTypeId}")
     @ResponseBody
-    public ApiResponse<Void> deleteTicket(@PathVariable("ticketTypeId") Long ticketTypeId) {
+    public org.springframework.http.ResponseEntity<ApiResponse<Void>> deleteTicket(@PathVariable("ticketTypeId") Long ticketTypeId) {
         try {
-            ticketTypeRepo.deleteById(ticketTypeId);
-            return ApiResponse.<Void>builder().message("Ticket deleted").build();
+            ticketTypeService.deleteTicketType(ticketTypeId);
+            ApiResponse<Void> ok = ApiResponse.<Void>builder().message("Đã xóa vé").build();
+            return org.springframework.http.ResponseEntity.ok(ok);
+        } catch (IllegalStateException ex) {
+            // Vi phạm nghiệp vụ (ví dụ: đã có order tham chiếu)
+            ApiResponse<Void> bad = ApiResponse.<Void>builder().message(ex.getMessage()).build();
+            return org.springframework.http.ResponseEntity.badRequest().body(bad);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            // Vi phạm ràng buộc FK ở DB
+            ApiResponse<Void> bad = ApiResponse.<Void>builder()
+                    .message("Không thể xóa vé vì đã có đơn hàng tham chiếu")
+                    .build();
+            return org.springframework.http.ResponseEntity.badRequest().body(bad);
         } catch (Exception e) {
             log.error("Error deleting ticket {}", ticketTypeId, e);
-            return ApiResponse.<Void>builder().message("Error: " + e.getMessage()).build();
+            ApiResponse<Void> err = ApiResponse.<Void>builder().message("Lỗi hệ thống khi xóa vé").build();
+            return org.springframework.http.ResponseEntity.status(500).body(err);
         }
     }
 

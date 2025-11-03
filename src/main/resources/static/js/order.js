@@ -2,6 +2,12 @@
 class OrderManager {
     constructor() {
         this.apiBase = '/api';
+        // State for filtering/sorting
+        this.allOrders = [];
+        this.filters = {
+            status: 'ALL', // ALL | PENDING | PAID | CANCELLED
+            sort: 'NEWEST' // NEWEST | OLDEST | PRICE_HIGH | PRICE_LOW
+        };
         this.init();
     }
 
@@ -18,6 +24,23 @@ class OrderManager {
         }
 
         // Note: Ticket type and quantity handling is now done in HTML directly
+
+        // Filters & Sorting
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                this.filters.status = e.target.value || 'ALL';
+                this.applyFiltersAndRender();
+            });
+        }
+
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                this.filters.sort = e.target.value || 'NEWEST';
+                this.applyFiltersAndRender();
+            });
+        }
 
         // Bind payment buttons
         const paymentButtons = document.querySelectorAll('.btn-payment');
@@ -39,16 +62,52 @@ class OrderManager {
                 credentials: 'include'
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    this.displayOrders(data.orders);
-                }
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
+
+            const data = await response.json();
+            // API có thể trả về: Array<Order> hoặc { success, orders }
+            let orders = [];
+            if (Array.isArray(data)) {
+                orders = data;
+            } else if (data && Array.isArray(data.orders)) {
+                orders = data.orders;
+            } else if (data && data.success && data.data && Array.isArray(data.data)) {
+                orders = data.data;
+            }
+
+            this.allOrders = orders;
+            this.applyFiltersAndRender();
         } catch (error) {
             console.error('Error loading orders:', error);
             this.showNotification('Lỗi khi tải danh sách đơn hàng', 'error');
         }
+    }
+
+    applyFiltersAndRender() {
+        // Filter by status
+        let filtered = this.allOrders.filter(order => {
+            if (!this.filters.status || this.filters.status === 'ALL') return true;
+            return order.status === this.filters.status;
+        });
+
+        // Sort
+        filtered.sort((a, b) => {
+            switch (this.filters.sort) {
+                case 'OLDEST':
+                    return new Date(a.createdAt) - new Date(b.createdAt);
+                case 'PRICE_HIGH':
+                    return (b.totalAmount || 0) - (a.totalAmount || 0);
+                case 'PRICE_LOW':
+                    return (a.totalAmount || 0) - (b.totalAmount || 0);
+                case 'NEWEST':
+                default:
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+            }
+        });
+
+        this.displayOrders(filtered);
     }
 
     displayOrders(orders) {
@@ -65,6 +124,12 @@ class OrderManager {
 
         // Re-bind events for new elements
         this.bindOrderEvents();
+
+        // Update total count text if available
+        const totalCountEl = document.getElementById('ordersCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = `${orders.length}`;
+        }
     }
 
     createOrderCard(order) {
@@ -129,6 +194,13 @@ class OrderManager {
             `);
         }
 
+        // Detail button
+        actions.push(`
+            <button class="btn btn-outline" data-action="view-details" data-order-id="${order.orderId}">
+                Xem chi tiết
+            </button>
+        `);
+
         return actions.join('');
     }
 
@@ -152,7 +224,7 @@ class OrderManager {
 
     async handleCreateOrder(event) {
         event.preventDefault();
-        
+
         const formData = new FormData(event.target);
         const orderData = this.collectOrderData(formData);
 
@@ -208,7 +280,7 @@ class OrderManager {
 
     async handlePayment(event) {
         const orderId = event.target.dataset.orderId;
-        
+
         try {
             const response = await fetch(`${this.apiBase}/payments/create-for-order/${orderId}`, {
                 method: 'POST',
@@ -231,7 +303,7 @@ class OrderManager {
 
     async handleCancelOrder(event) {
         const orderId = event.target.dataset.orderId;
-        
+
         if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
             return;
         }
@@ -269,6 +341,62 @@ class OrderManager {
         cancelButtons.forEach(button => {
             button.addEventListener('click', (e) => this.handleCancelOrder(e));
         });
+
+        const detailButtons = document.querySelectorAll('[data-action="view-details"]');
+        detailButtons.forEach(button => {
+            button.addEventListener('click', (e) => this.handleViewDetails(e));
+        });
+    }
+
+    handleViewDetails(event) {
+        const orderId = parseInt(event.currentTarget.dataset.orderId);
+        const order = this.allOrders.find(o => o.orderId === orderId);
+        if (!order) return;
+
+        const modal = document.getElementById('orderDetailModal');
+        const body = document.getElementById('orderDetailBody');
+        if (!modal || !body) return;
+
+        const items = order.orderItems || [];
+        const itemsHtml = items.map(item => `
+            <tr>
+                <td>${item.ticketType?.name || 'N/A'}</td>
+                <td class="text-center">${item.quantity}</td>
+                <td class="text-right">${this.formatCurrency(item.subtotal)}</td>
+            </tr>
+        `).join('');
+
+        body.innerHTML = `
+            <p><strong>Đơn hàng #${order.orderId}</strong></p>
+            <p><strong>Sự kiện:</strong> ${order.event?.title || 'N/A'}</p>
+            <p><strong>Trạng thái:</strong> ${this.getStatusText(order.status)}</p>
+            <p><strong>Tổng tiền:</strong> ${this.formatCurrency(order.totalAmount)}</p>
+            <p><strong>Ngày tạo:</strong> ${this.formatDate(order.createdAt)}</p>
+            <div class="table-responsive">
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th>Loại vé</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-right">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        modal.style.display = 'block';
+
+        const closeBtn = modal.querySelector('[data-close-modal]');
+        if (closeBtn) {
+            closeBtn.onclick = () => modal.style.display = 'none';
+        }
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        };
     }
 
     formatCurrency(amount) {
@@ -279,7 +407,10 @@ class OrderManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('vi-VN');
+        if (!dateString) return '';
+        const d = new Date(dateString);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toLocaleDateString('vi-VN');
     }
 
     showNotification(message, type = 'info') {

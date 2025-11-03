@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.group02.openevent.model.department.Department;
+import com.group02.openevent.model.email.EmailReminder;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
@@ -52,9 +53,6 @@ public class Event {
             generator = "event_sequence"
     )
     private Long id;
-
-    @Version
-    private Long version;
 
     private boolean poster;
 
@@ -125,7 +123,7 @@ public class Event {
     @JoinTable(name = "event_place",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
-    private List<Place> places;
+    private List<Place> places = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_id")
@@ -147,18 +145,17 @@ public class Event {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private List<TicketType> ticketTypes = new ArrayList<>();
-
     @Column(name = "venue_address", length = 500)
     private String venueAddress;
 
     @Column(name = "guidelines", columnDefinition = "TEXT")
     private String guidelines;
-
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmailReminder> emailReminders;
     public Event() {
     }
 
-
-    public Event(Long id, boolean poster, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages, Organization organization, String venueAddress, String guidelines) {
+    public Event(Long id, Event parentEvent, List<Event> subEvents, String title, String imageUrl, String description, Integer capacity, LocalDateTime publicDate, EventType eventType, LocalDateTime enrollDeadline, LocalDateTime startsAt, LocalDateTime endsAt, LocalDateTime createdAt, EventStatus status, String benefits, String learningObjects, Integer points, List<EventSchedule> schedules, List<Speaker> speakers, List<Place> places, Set<EventImage> eventImages) {
         this.id = id;
         this.poster = poster;
         this.parentEvent = parentEvent;
@@ -184,6 +181,9 @@ public class Event {
         this.organization = organization;
         this.venueAddress = venueAddress;
         this.guidelines = guidelines;
+    }
+
+    public Event(long l, String testEvent) {
     }
 
     @Override
@@ -223,6 +223,7 @@ public class Event {
         return maxTicketPice;
 
     }
+
     public double getMinTicketPice() {
         if (ticketTypes == null || ticketTypes.isEmpty()) {
             return 0;

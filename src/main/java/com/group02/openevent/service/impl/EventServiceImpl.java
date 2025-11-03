@@ -1,31 +1,40 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.home.EventCardDTO;
-import com.group02.openevent.dto.request.*;
-import com.group02.openevent.dto.request.create.*;
-import com.group02.openevent.dto.request.update.*;
+import com.group02.openevent.dto.request.PlaceUpdateRequest;
+import com.group02.openevent.dto.request.create.EventCreationRequest;
+import com.group02.openevent.dto.request.update.EventUpdateRequest;
 import com.group02.openevent.mapper.EventMapper;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.SpeakerRole;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.event.EventSchedule;
 import com.group02.openevent.model.event.MusicEvent;
 import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Host;
 import com.group02.openevent.repository.*;
+import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Service;
 import com.group02.openevent.service.OrderService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AccessLevel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,15 +57,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EventServiceImpl implements EventService {
     @Autowired
+    @Lazy
     OrderService orderService;
-    IMusicEventRepo musicEventRepo;
-    IWorkshopEventRepo iWorkshopEventRepo;
-    IFestivalEventRepo iFestivalEventRepo;
-    ICompetitionEventRepo iCompetitionEventRepo;
     IEventRepo eventRepo;
     EventMapper eventMapper;
     IOrganizationRepo organizationRepo;
-    ITicketTypeRepo ticketTypeRepo;
     IHostRepo hostRepo;
     IPlaceRepo placeRepo;
     @PersistenceContext
@@ -66,24 +72,30 @@ public class EventServiceImpl implements EventService {
         Event event;
         log.info("Saving event {}", request.getEventType());
         log.info("Saving event from DTO type: {}", request.getClass().getName());
-        switch (request.getEventType()) {
-            case WORKSHOP:
-                event = new WorkshopEvent();
-                break;
-            case MUSIC:
-                event = new MusicEvent();
-                break;
-            case FESTIVAL:
-                event = new FestivalEvent();
-                break;
-            case COMPETITION:
-                event = new CompetitionEvent();
-                break;
-            default:
-                // Khối này chỉ dành cho trường hợp EventType không hợp lệ hoặc không có
-                log.warn("Unknown or null EventType received. Defaulting to generic Event.");
-                event = new Event();
-                break;
+        EventType type = request.getEventType();
+        if (type == null) {
+            log.warn("Null EventType received. Defaulting to generic Event.");
+            event = new Event();
+        }else {
+            switch (request.getEventType()) {
+                case WORKSHOP:
+                    event = new WorkshopEvent();
+                    break;
+                case MUSIC:
+                    event = new MusicEvent();
+                    break;
+                case FESTIVAL:
+                    event = new FestivalEvent();
+                    break;
+                case COMPETITION:
+                    event = new CompetitionEvent();
+                    break;
+                default:
+                    // Khối này chỉ dành cho trường hợp EventType không hợp lệ hoặc không có
+                    log.warn("Unknown or null EventType received. Defaulting to generic Event.");
+                    event = new Event();
+                    break;
+            }
         }
         log.info("Saving event {}", event.getClass().getName());
         eventMapper.createEventFromRequest(request, event);
@@ -98,15 +110,11 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventResponse updateEvent(Long id, EventUpdateRequest request) {
-        log.info("Request type: {}", request.getClass().getName());
-        log.info("🔍 Raw request eventType = {}", request.getEventType());
 
         Event existing = eventRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Event not found with id " + id));
 
         Event event = existing; // Dùng biến này để xử lý chung
-        Long oldId = existing.getId(); // Giữ lại ID cũ để xóa // dùng biến này để xử lý chung
-        log.info("request eventType = {}", event.getEventType());
         eventMapper.updateEventFromRequest(request, event);
 
         // 🟢 Update organization, host, parent
@@ -128,8 +136,6 @@ public class EventServiceImpl implements EventService {
             event.setParentEvent(parent);
         }
 
-
-        // 🟢 Map subclass-specific fields
         switch (String.valueOf(request.getEventType())) {
             case "COMPETITION" -> {
                 CompetitionEvent comp = (CompetitionEvent) existing;
@@ -156,37 +162,64 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        // 🟢 Places - Handle places from JSON data
-        if (request.getPlaces() != null) {
-            log.info("Processing {} places for event {}", request.getPlaces().size(), id);
-
-            // Clear existing places relationship
+        // 🟢 Places - Handle places from JSON data with proper deletion support
+        if (request.getPlaceUpdateRequests() != null && !request.getPlaceUpdateRequests().isEmpty()) {
             event.getPlaces().clear();
 
-            // Process each place from request
+
+            for (PlaceUpdateRequest placeUpdateRequest : request.getPlaceUpdateRequests()) {
+                // Skip deleted places
+                if (Boolean.TRUE.equals(placeUpdateRequest.getIsDeleted())) {
+                    continue;
+                }
+
+                Place place;
+
+                if (placeUpdateRequest.getId() != null) {
+                    place = placeRepo.findById(placeUpdateRequest.getId())
+                            .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeUpdateRequest.getId()));
+                    if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) || 
+                        !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {
+                        place.setPlaceName(placeUpdateRequest.getPlaceName());
+                        place.setBuilding(placeUpdateRequest.getBuilding());
+                        place = placeRepo.save(place);
+                    }
+                } else {
+                    place = new Place();
+                    place.setPlaceName(placeUpdateRequest.getPlaceName());
+                    place.setBuilding(placeUpdateRequest.getBuilding());
+                    place = placeRepo.save(place);
+                }
+
+                event.getPlaces().add(place);
+
+            }
+
+        } else if (request.getPlaces() != null) {
+            event.getPlaces().clear();
+
             for (Place placeRequest : request.getPlaces()) {
                 Place place;
 
                 if (placeRequest.getId() != null) {
                     // Existing place - find by ID
-                    place = placeRepo.findById(Long.parseLong(placeRequest.getId().toString()))
+                    place = placeRepo.findById(placeRequest.getId())
                             .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeRequest.getId()));
                 } else {
-                    // New place - create new
                     place = new Place();
                     place.setPlaceName(placeRequest.getPlaceName());
                     place.setBuilding(placeRequest.getBuilding());
                     place = placeRepo.save(place);
                 }
-
-                // Add to event's places
                 event.getPlaces().add(place);
             }
 
-            log.info("Updated event with {} places", event.getPlaces().size());
+            log.info("Updated event with {} places (fallback mode)", event.getPlaces().size());
         }
         // ✅ Save cuối cùng
+        log.info("Saving event with {} places to database", event.getPlaces().size());
         Event saved = eventRepo.saveAndFlush(event);
+
         return eventMapper.toEventResponse(saved);
     }
 
@@ -194,6 +227,13 @@ public class EventServiceImpl implements EventService {
     @Override
     public MusicEvent saveMusicEvent(MusicEvent musicEvent) {
         return null;
+    }
+
+    public List<Event> getEventsByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return eventRepo.findAllById(ids);
     }
 
     @Override
@@ -329,6 +369,104 @@ public class EventServiceImpl implements EventService {
             return eventRepo.findAll(pageable);
         }
     }
+    @Override
+    public List<Event> isTimeConflict(LocalDateTime start, LocalDateTime end, List<Place> places) {
+        return eventRepo.findConflictedEvents(start, end, places);
+    }
+
+    @Override
+    public boolean removeEvent(Long id) {
+        if (eventRepo.existsById(id)) {
+            eventRepo.deleteById(id);
+            return true; // ✅ xóa thành công
+        } else {
+            return false; // ✅ không tìm thấy
+        }
+    }
+
+    @Override
+    public boolean deleteByTitle(String title) {
+        List<Event> events = eventRepo.findByTitle(title);
+        if (events.isEmpty()) {
+            return false; // ✅ không tìm thấy sự kiện
+        }
+        eventRepo.deleteAll(events);
+        return true; // ✅ xóa thành công
+    }
+
+    @Override
+    public List<Event> findByTitle(String title) {
+        return eventRepo.findByTitle(title);
+    }
+
+    @Override
+    public List<Event> findByTitleAndPublicStatus(String title) {
+        return eventRepo.findByTitleAndPublicStatus(title);
+    }
+
+    @Override
+    public List<Event> getAllEvents() {
+        return eventRepo.findAll();
+    }
+
+//    @Override
+//    public List<Event> getEventByUserId(Integer userId) {
+//        return eventRepo.getEventByUserId(userId);
+//    }
+
+    @Override
+    public Optional<Event> getEventByEventId(Long eventId) {
+        if (eventId == null) return Optional.empty();
+        return eventRepo.findById(eventId);
+    }
+
+    @Override
+    public Optional<Event> getFirstEventByTitle(String title) {
+        List<Event> events = eventRepo.findByTitle(title);
+        if (events.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(events.get(0)); // trả về sự kiện đầu tiên
+    }
+
+    @Override
+    public Optional<Event> getFirstPublicEventByTitle(String title) {
+        List<Event> events = eventRepo.findByTitleAndPublicStatus(title);
+        if (events.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(events.get(0)); // trả về sự kiện PUBLIC đầu tiên
+    }
+//    @Override
+//    public Optional<Event> getNextUpcomingEventByUserId(int userId) {
+//        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
+//    }
+    @Override
+    public List<Event> getEventsByPlace(Long placeId) {
+        return eventRepo.findByPlaceId(placeId);
+    }
+
+    @Override
+    public List<Event> getEventsBetween(LocalDateTime start, LocalDateTime end, Long userId) {
+        // TODO: Implement proper filtering by date range and user
+        // For now, return all events filtered by date range
+        return eventRepo.findAll().stream()
+                .filter(event -> event.getStartsAt().isAfter(start) || event.getStartsAt().isEqual(start))
+                .filter(event -> event.getEndsAt().isBefore(end) || event.getEndsAt().isEqual(end))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Optional<Event> getNextUpcomingEventByUserId(Long userId) {
+        // Gọi repository với điều kiện: sự kiện PHẢI BẮT ĐẦU sau thời điểm hiện tại
+        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
+    }
+
+    @Override
+    public List<Event> getEventByUserId(Long userId) {
+        // TODO: Implement proper user-based filtering
+        // For now, return all events
+        return eventRepo.findAll();
+    }
 
     @Override
     public Event updateEventStatus(Long eventId, EventStatus status) {
@@ -363,6 +501,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getRecentEvents(int limit) {
+        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdDate"));
         return eventRepo.findAll(PageRequest.of(0, limit)).getContent();
     }
 
@@ -425,4 +564,3 @@ public class EventServiceImpl implements EventService {
 
 
 }
-

@@ -14,4 +14,7 @@ public class PlaceUpdateRequest {
     private Building building;
     private Boolean isNew;
     private Boolean isDeleted;
+
+    public PlaceUpdateRequest(Long l, String hallA, String b1, boolean b) {
+    }
 }

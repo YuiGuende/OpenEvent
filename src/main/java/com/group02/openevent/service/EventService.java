@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,24 @@ public interface EventService {
     List<Event> getEventsByType(Class<? extends Event> eventType);
     Event saveEvent(Event event);
     Page<Event> listEvents(EventType eventType, EventStatus status, Pageable pageable);
+    List<Event> isTimeConflict(LocalDateTime start, LocalDateTime end, List<Place> places);
+    boolean removeEvent(Long id);
+    boolean deleteByTitle(String title);
+    List<Event> findByTitle(String title);
+    List<Event> findByTitleAndPublicStatus(String title);
+    List<Event> getAllEvents();
+    Optional<Event> getEventByEventId(Long eventId);
+    Optional<Event> getFirstEventByTitle(String title);
+    Optional<Event> getFirstPublicEventByTitle(String title);
+//  Optional<Event> getNextUpcomingEventByUserId(int userId);
+    List<Event> getEventsByPlace(Long placeId);
+
+    // Methods for AI support
+
+
+    List<Event> getEventsByIds(List<Long> ids);
+    List<Event> getEventsBetween(LocalDateTime start, LocalDateTime end, Long userId);
+    List<Event> getEventByUserId(Long userId);
     Event updateEventStatus(Long eventId, EventStatus status);
     Event approveEvent(Long eventId);
     long countEventsByStatus(EventStatus status);
@@ -45,6 +64,7 @@ public interface EventService {
     List<Event> getEventByHostId(Long id);
      Event getEventResponseById(Long id);
     Page<Event> getEventsByDepartment(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
+    Optional<Event> getNextUpcomingEventByUserId(Long userId);
 
     List<EventCardDTO> searchEvents(String keyword, String type, LocalDate startDate, LocalDate endDate);
 

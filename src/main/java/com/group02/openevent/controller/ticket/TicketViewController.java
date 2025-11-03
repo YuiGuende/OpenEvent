@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,9 @@ public class TicketViewController {
     private final TicketTypeService ticketTypeService;
 
     @GetMapping("/ticket/{eventId}")
-    public String viewTickets( @PathVariable Long eventId, Model model) {
+    public String viewTickets(@PathVariable Long eventId,
+                              @RequestParam(name = "selectedTicketId", required = false) Long selectedTicketId,
+                              Model model) {
         // Get event details
         Optional<Event> eventOpt = eventService.getEventById(eventId);
         if (eventOpt.isEmpty()) {
@@ -35,7 +38,7 @@ public class TicketViewController {
 
         model.addAttribute("event", event);
         model.addAttribute("tickets", tickets);
-
+        model.addAttribute("selectedTicketId", selectedTicketId);
         return "event/view-ticket";
     }
 }

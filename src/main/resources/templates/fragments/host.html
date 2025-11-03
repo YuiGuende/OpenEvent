@@ -1,0 +1,128 @@
+<!-- Main Content -->
+
+<!-- Page Header -->
+<div th:fragment="content">
+    <div class="page-header">
+        <div class="breadcrumbs">
+            <span>Sự kiện</span>
+            <i class="fas fa-chevron-right"></i>
+            <span>duc le</span>
+            <i class="fas fa-chevron-right"></i>
+            <span>Tạo sự kiện</span>
+        </div>
+        <div class="header-content">
+            <h1 class="page-title">duc le - Bảng điều khiển</h1>
+            <button class="btn-share">
+                <i class="fas fa-share"></i>
+                Chia sẻ trang nhà tổ chức
+            </button>
+        </div>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon purple">
+                <i class="fas fa-video"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">$0.00</div>
+                <div class="metric-label">Tổng doanh số</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon blue">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Sản phẩm đã bán</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon red">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Người tham dự</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon orange">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Tổng số đơn hàng</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon green">
+                <i class="fas fa-file-invoice"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">$0.00</div>
+                <div class="metric-label">Tổng thuế</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon light-green">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">$0.00</div>
+                <div class="metric-label">Tổng phí</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Sections -->
+    <div class="content-sections">
+        <!-- Recent Orders -->
+        <div class="section">
+            <h2 class="section-title">Đơn hàng gần đây</h2>
+            <div class="orders-card">
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Chưa có đơn hàng nào</h3>
+                    <p>Khi khách hàng mua vé, đơn hàng sẽ hiển thị tại đây</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="section">
+            <h2 class="section-title">Các sự kiện sắp tới</h2>
+            <div class="events-list">
+                <div class="event-card">
+                    <div class="event-image">
+                        <img alt="Event"
+                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='100%25' height='100%25' fill='%236f42c1'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Segoe UI' font-size='12'%3EEvent%3C/text%3E%3C/svg%3E">
+                    </div>
+                    <div class="event-details">
+                        <h3 class="event-title">Sự kiện demo</h3>
+                        <p class="event-subtitle">duc le</p>
+                        <div class="event-info">
+                            <span class="date-box">SEP 23</span>
+                            <span class="time">9:00 PM - 11:00 PM</span>
+                            <span class="status-badge draft">DRAFT</span>
+                        </div>
+                        <div class="event-sales">
+                            <i class="fas fa-users"></i>
+                            <span>0 đã bán</span>
+                        </div>
+                    </div>
+                    <button class="action-btn">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

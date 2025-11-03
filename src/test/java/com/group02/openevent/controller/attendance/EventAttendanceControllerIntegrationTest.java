@@ -1,5 +1,7 @@
 package com.group02.openevent.controller.attendance;
 
+import com.group02.openevent.ai.security.AISecurityService;
+import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.dto.attendance.AttendanceRequest;
 import com.group02.openevent.dto.attendance.AttendanceStatsDTO;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -51,7 +54,11 @@ class EventAttendanceControllerIntegrationTest {
 
     private static final Long EVENT_ID = 1L;
     private static final String EMAIL = "test@example.com";
+    @MockitoBean
+    private RateLimitingService rateLimitingService;
 
+    @MockitoBean
+    private AISecurityService aiSecurityService;
     @BeforeEach
     void setUp() throws Exception {
         event = new Event();
@@ -100,7 +107,7 @@ class EventAttendanceControllerIntegrationTest {
 
             // Act & Assert
             mockMvc.perform(get("/events/{eventId}/attendance", EVENT_ID))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().is4xxClientError());
         }
     }
 
@@ -323,7 +330,7 @@ class EventAttendanceControllerIntegrationTest {
 
             // Act & Assert
             mockMvc.perform(get("/events/qr-code/generate").param("url", url))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().is4xxClientError());
         }
     }
 }

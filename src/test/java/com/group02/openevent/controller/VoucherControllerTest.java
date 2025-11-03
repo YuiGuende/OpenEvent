@@ -1,6 +1,7 @@
 package com.group02.openevent.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group02.openevent.ai.security.AISecurityService;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.model.voucher.Voucher;
 import com.group02.openevent.model.voucher.VoucherStatus;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.group02.openevent.ai.security.RateLimitingService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -56,6 +58,12 @@ class VoucherControllerTest {
     private Voucher sampleVoucher;
     private final String VALID_VOUCHER_CODE = "SAVE10";
     private final Long TEST_USER_ID = 1L;
+
+    @MockitoBean
+    private RateLimitingService rateLimitingService;
+
+    @MockitoBean
+    private AISecurityService aiSecurityService;
 
     @BeforeEach
     void setUp() {

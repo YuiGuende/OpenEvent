@@ -1,5 +1,7 @@
 package com.group02.openevent.controller.form;
 
+import com.group02.openevent.ai.security.AISecurityService;
+import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.dto.form.*;
 import com.group02.openevent.model.form.EventForm;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -47,7 +50,11 @@ class EventFormControllerIntegrationTest {
     private static final Long EVENT_ID = 1L;
     private static final Long FORM_ID = 10L;
     private static final String EMAIL = "test@example.com";
+    @MockitoBean
+    private RateLimitingService rateLimitingService;
 
+    @MockitoBean
+    private AISecurityService aiSecurityService;
     @BeforeEach
     void setUp() throws Exception {
         // REGISTER Form

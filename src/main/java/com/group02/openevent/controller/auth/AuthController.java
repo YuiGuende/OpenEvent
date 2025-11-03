@@ -3,6 +3,7 @@ package com.group02.openevent.controller.auth;
 import com.group02.openevent.dto.response.AuthResponse;
 import com.group02.openevent.dto.request.LoginRequest;
 import com.group02.openevent.dto.request.RegisterRequest;
+import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ public class AuthController {
 
 	@PostMapping("/register")
 	public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        System.out.println("register is called");
 		try {
 			AuthResponse response = authService.register(request);
 			return ResponseEntity.ok(response);

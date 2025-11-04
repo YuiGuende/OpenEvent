@@ -21,6 +21,10 @@ class ImageUploadManager {
         console.log('Found existing images:', existingImages.length);
         
         if (existingImages && existingImages.length > 0) {
+            // Clear arrays first to avoid duplicates
+            this.posterImages = [];
+            this.galleryImages = [];
+            
             existingImages.forEach(imageData => {
                 // Convert database image to ImageUploadManager format
                 const imageEntry = {
@@ -40,6 +44,10 @@ class ImageUploadManager {
                     console.log('Added gallery image:', imageEntry);
                 }
             });
+            
+            // Sort posters by orderIndex after loading
+            this.posterImages.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+            console.log('Poster images after sorting:', this.posterImages.map(img => ({ id: img.id, orderIndex: img.orderIndex })));
             
             // Update preview to show existing images
             this.updatePreview('poster');
@@ -194,22 +202,47 @@ class ImageUploadManager {
             // Create temporary ID that won't conflict with database IDs (use negative number or string)
             const tempId = 'temp_' + Date.now() + '_' + Math.random();
 
+            // For poster: if this is the first poster or we want it to be the main (orderIndex = 0),
+            // we need to shift existing posters' orderIndex
+            let orderIndex = 0;
+            if (type === 'poster') {
+                // New poster should have orderIndex = 0 to be the main poster
+                // Shift all existing posters' orderIndex by 1
+                this.posterImages.forEach(img => {
+                    img.orderIndex = (img.orderIndex || 0) + 1;
+                });
+                orderIndex = 0;
+            }
+
             // Add to appropriate array
             const imageData = {
                 file: resizedFile,
                 previewUrl: previewUrl,
                 id: tempId, // Temporary ID (will be replaced with database ID)
-                orderIndex: type === 'poster' ? this.posterImages.length : 0,
+                orderIndex: orderIndex,
                 mainPoster: type === 'poster'
             };
 
+            console.log('=== processFile: Adding new image ===');
+            console.log('Type:', type);
+            console.log('Current posterImages length:', this.posterImages.length);
+            console.log('Current galleryImages length:', this.galleryImages.length);
+            console.log('New imageData:', imageData);
+
             if (type === 'poster') {
-                this.posterImages.push(imageData);
+                this.posterImages.unshift(imageData); // Add to beginning to maintain order
+                console.log('After adding - posterImages length:', this.posterImages.length);
+                console.log('All poster images:', this.posterImages.map(img => ({ id: img.id, orderIndex: img.orderIndex })));
             } else {
                 this.galleryImages.push(imageData);
             }
 
             // Update preview immediately to show new image
+            console.log('Updating preview for type:', type);
+            console.log('Current state before updatePreview:');
+            console.log('  posterImages:', this.posterImages.map(img => ({ id: img.id, orderIndex: img.orderIndex })));
+            console.log('  galleryImages:', this.galleryImages.map(img => ({ id: img.id, orderIndex: img.orderIndex })));
+            
             this.updatePreview(type);
             this.updateUploadButtons();
 
@@ -266,14 +299,63 @@ class ImageUploadManager {
 
     updatePreview(type) {
         const container = document.getElementById(type === 'poster' ? 'posterPreview' : 'galleryPreview');
+        if (!container) {
+            console.error(`Container not found for type: ${type}`);
+            return;
+        }
+        
         const images = type === 'poster' ? this.posterImages : this.galleryImages;
 
+        console.log(`=== updatePreview(${type}) CALLED ===`);
+        console.log(`Images array length: ${images.length}`);
+        console.log(`Images before sort:`, images.map((img, idx) => ({ 
+            index: idx, 
+            id: img.id, 
+            orderIndex: img.orderIndex, 
+            url: img.url || img.previewUrl,
+            previewUrl: img.previewUrl
+        })));
+
+        // Clear container first
         container.innerHTML = '';
 
-        images.forEach((imageData, index) => {
-            const previewItem = this.createPreviewItem(imageData, index, type);
-            container.appendChild(previewItem);
+        // Sort by orderIndex to ensure correct order (poster with orderIndex 0 should be first)
+        // Make a deep copy to avoid mutating the original array
+        const sortedImages = images.slice().sort((a, b) => {
+            const orderA = a.orderIndex || 0;
+            const orderB = b.orderIndex || 0;
+            return orderA - orderB;
         });
+        
+        console.log(`Sorted images:`, sortedImages.map((img, idx) => ({ 
+            index: idx, 
+            id: img.id, 
+            orderIndex: img.orderIndex,
+            url: img.url || img.previewUrl,
+            previewUrl: img.previewUrl
+        })));
+
+        // Render all images
+        sortedImages.forEach((imageData, index) => {
+            try {
+                const previewItem = this.createPreviewItem(imageData, index, type);
+                if (previewItem) {
+                    container.appendChild(previewItem);
+                    console.log(`✓ Added preview item for image ID: ${imageData.id}, orderIndex: ${imageData.orderIndex}, displayIndex: ${index}`);
+                } else {
+                    console.error(`Failed to create preview item for image ID: ${imageData.id}`);
+                }
+            } catch (error) {
+                console.error(`Error creating preview item for image ID: ${imageData.id}:`, error);
+            }
+        });
+        
+        console.log(`Preview updated. Container now has ${container.children.length} items (expected: ${sortedImages.length})`);
+        
+        // Verify all images are displayed
+        if (container.children.length !== sortedImages.length) {
+            console.warn(`⚠️ Mismatch: Expected ${sortedImages.length} items, but container has ${container.children.length} items`);
+        }
     }
 
     createPreviewItem(imageData, index, type) {
@@ -591,31 +673,63 @@ class ImageUploadManager {
             if (response.ok) {
                 const createdImage = await response.json();
                 console.log('Image created successfully:', createdImage);
+                console.log('Current posterImages before update:', this.posterImages.map(img => ({ id: img.id, orderIndex: img.orderIndex })));
 
-                // Find the image in the array by matching the previewUrl or file
+                // Find the image in the array by matching the temporary ID
                 const imageArray = type === 'poster' ? this.posterImages : this.galleryImages;
+                
+                console.log('Searching for image with temp ID:', imageData.id);
+                console.log('Available IDs in array:', imageArray.map(img => ({ id: img.id, type: typeof img.id })));
+                
                 const imageIndex = imageArray.findIndex(img => {
-                    // Match by temporary ID or by file reference
-                    return img.id === imageData.id || 
-                           (img.file === imageData.file && img.previewUrl === imageData.previewUrl);
+                    // Match by temporary ID (string comparison)
+                    const match = String(img.id) === String(imageData.id);
+                    return match;
                 });
+                
+                console.log('Found imageIndex:', imageIndex);
+                if (imageIndex !== -1) {
+                    console.log('Found matching image at index:', imageIndex, 'with temp ID:', imageArray[imageIndex].id);
+                }
                 
                 if (imageIndex !== -1) {
                     // Update the imageData with the database ID and URL
                     const updatedImage = imageArray[imageIndex];
+                    console.log('Updating image at index:', imageIndex, 'from temp ID:', updatedImage.id, 'to DB ID:', createdImage.id);
+                    console.log('Array length before update:', imageArray.length);
+                    
+                    // Store the orderIndex before update
+                    const savedOrderIndex = updatedImage.orderIndex;
+                    
                     updatedImage.id = createdImage.id;
                     updatedImage.url = createdImage.url;
+                    updatedImage.orderIndex = savedOrderIndex; // Preserve orderIndex
+                    
                     // Keep previewUrl if it's a blob URL, otherwise use database URL
                     if (updatedImage.previewUrl && updatedImage.previewUrl.startsWith('blob:')) {
                         // Keep blob URL for now, will use database URL on reload
+                        console.log('Keeping blob URL for preview:', updatedImage.previewUrl);
                     } else {
                         updatedImage.previewUrl = createdImage.url;
                     }
                     
                     console.log('Updated imageData:', updatedImage);
+                    console.log('Array length after update:', imageArray.length);
+                    console.log('Current array state:', imageArray.map(img => ({ 
+                        id: img.id, 
+                        orderIndex: img.orderIndex, 
+                        url: img.url || img.previewUrl 
+                    })));
                 } else {
-                    console.warn('Could not find image in array to update. Adding new entry.');
-                    // Fallback: create new entry if not found
+                    console.error('Could not find image in array to update!');
+                    console.error('Searched for temp ID:', imageData.id);
+                    console.error('Array length:', imageArray.length);
+                    console.error('Array contents:', imageArray.map(img => ({ 
+                        id: img.id, 
+                        tempId: imageData.id, 
+                        match: String(img.id) === String(imageData.id) 
+                    })));
+                    // Fallback: create new entry if not found (shouldn't happen, but just in case)
                     const newImageEntry = {
                         id: createdImage.id,
                         url: createdImage.url,
@@ -625,13 +739,22 @@ class ImageUploadManager {
                         mainPoster: type === 'poster'
                     };
                     if (type === 'poster') {
-                        this.posterImages.push(newImageEntry);
+                        this.posterImages.unshift(newImageEntry); // Add to beginning to match the order
                     } else {
                         this.galleryImages.push(newImageEntry);
                     }
+                    console.log('Added fallback entry. New array length:', imageArray.length);
                 }
                 
+                // Verify array integrity before updating preview
+                console.log('Before final updatePreview - Array state:');
+                console.log('  posterImages:', this.posterImages.length, 'items');
+                console.log('  galleryImages:', this.galleryImages.length, 'items');
+                console.log('  All poster IDs:', this.posterImages.map(img => img.id));
+                console.log('  All gallery IDs:', this.galleryImages.map(img => img.id));
+                
                 // Update preview to show updated images with correct IDs
+                console.log('Updating preview after DB save - Current array length:', imageArray.length);
                 this.updatePreview(type);
                 this.updateUploadButtons();
                 

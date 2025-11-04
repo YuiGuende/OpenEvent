@@ -87,6 +87,9 @@ public class HostController {
         List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
         model.addAttribute("listTypeEvent", listTypeEvent);
         model.addAttribute("events", eventResponses);
+        
+        // Add current time for status calculation
+        model.addAttribute("currentTime", java.time.LocalDateTime.now());
 
         return "fragments/events :: content";
     }

@@ -13,6 +13,8 @@ import com.group02.openevent.service.IImageService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.repository.IEventImageRepo;
+import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.impl.HostServiceImpl;
 import jakarta.servlet.http.HttpSession;
@@ -51,13 +53,20 @@ public class EventController {
     private  final TicketTypeService ticketTypeService;
 
     private  final HostServiceImpl hostService;
+    
+    private final IEventImageRepo eventImageRepo;
+    
+    private final IEventRepo eventRepo;
+    
     @Autowired
-    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService) {
+    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService, IEventImageRepo eventImageRepo, IEventRepo eventRepo) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
         this.ticketTypeService = ticketTypeService;
         this.hostService = hostService;
+        this.eventImageRepo = eventImageRepo;
+        this.eventRepo = eventRepo;
     }
 
     private Long getAccountIdFromSession(HttpSession session) {
@@ -240,6 +249,10 @@ public class EventController {
             }
 
             Event savedEvent = eventService.saveEvent(event);
+            
+            // Update event imageUrl from poster with mainPoster = true and orderIndex = 0
+            updateEventImageUrlFromPoster(eventId);
+            
             return ResponseEntity.ok(savedEvent);
 
         } catch (Exception e) {
@@ -276,5 +289,34 @@ public class EventController {
         }
     }
 
+    /**
+     * Update event imageUrl from the poster with mainPoster = true and orderIndex = 0
+     */
+    private void updateEventImageUrlFromPoster(Long eventId) {
+        log.info("Updating event imageUrl for eventId: {}", eventId);
+        
+        // Find all main posters for this event
+        List<EventImage> mainPosters = eventImageRepo.findByEventIdAndMainPoster(eventId, true);
+        
+        // Find the poster with mainPoster = true and orderIndex = 0
+        EventImage mainPoster = mainPosters.stream()
+                .filter(img -> img.isMainPoster() && img.getOrderIndex() == 0)
+                .findFirst()
+                .orElse(null);
+        
+        if (mainPoster != null) {
+            Optional<Event> eventOpt = eventRepo.findById(eventId);
+            if (eventOpt.isPresent()) {
+                Event event = eventOpt.get();
+                event.setImageUrl(mainPoster.getUrl());
+                eventRepo.save(event);
+                log.info("Updated event imageUrl to: {} for eventId: {}", mainPoster.getUrl(), eventId);
+            } else {
+                log.warn("Event not found with id: {}", eventId);
+            }
+        } else {
+            log.info("No main poster with orderIndex = 0 found for eventId: {}", eventId);
+        }
+    }
 
 }

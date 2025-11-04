@@ -58,6 +58,11 @@
                     <span>Sự kiện</span>
                 </li>
 
+                <li class="nav-item" id="nav-wallet">
+                    <i class="fas fa-wallet"></i>
+                    <span>Ví</span>
+                </li>
+
                 <li class="nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Cài đặt</span>
@@ -88,7 +93,17 @@
     <div th:replace="~{__${content}__}"></div>
 </main>
 
-
+<script>
+    function loadPage(url) {
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector(".main-content").innerHTML = html;
+                history.pushState(null, "", url);
+            })
+            .catch(err => console.error(err));
+    }
+</script>
 <script th:src="@{/js/host.js}"></script>
 <script th:src="@{/js/event.js}"></script>
 

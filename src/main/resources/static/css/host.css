@@ -977,3 +977,283 @@ body.sidebar-collapsed .sidebar-toggle-btn {
         transform: rotate(360deg);
     }
 }
+
+/* ============================================
+   WALLET PAGE STYLES
+   ============================================ */
+
+/* Wallet Section */
+.wallet-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-top: 20px;
+    border: 1px solid #e8e8e8;
+}
+
+.wallet-section:first-of-type {
+    margin-top: 0;
+}
+
+.section-header {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+}
+
+.section-description {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Withdrawal Form */
+.withdrawal-form {
+    max-width: 600px;
+}
+
+#withdrawal-form {
+    max-width: 600px;
+}
+
+#withdrawal-form .form-control,
+.withdrawal-form .form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+#withdrawal-form .form-control:focus,
+.withdrawal-form .form-control:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+#withdrawal-form select.form-control,
+.withdrawal-form select.form-control {
+    appearance: auto;
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+}
+
+.wallet-section .form-group {
+    margin-bottom: 20px;
+}
+
+.wallet-section .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.wallet-section .form-group label .required {
+    color: #e74c3c;
+}
+
+.wallet-section .form-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666;
+}
+
+.quick-amounts {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.btn-quick-amount {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.btn-quick-amount:hover {
+    border-color: #4a90e2;
+    color: #4a90e2;
+}
+
+.wallet-section .form-actions {
+    margin-top: 24px;
+}
+
+.wallet-section .btn-primary {
+    padding: 12px 24px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wallet-section .btn-primary:hover {
+    background: #357abd;
+}
+
+.wallet-section .btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Transaction History */
+.transaction-filter {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    color: #4a90e2;
+}
+
+.filter-btn.active {
+    color: #4a90e2;
+    border-bottom-color: #4a90e2;
+    font-weight: 500;
+}
+
+.transaction-list {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 200px;
+}
+
+.transaction-item {
+    background: white;
+    margin-bottom: 12px;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.transaction-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.transaction-item:last-child {
+    margin-bottom: 0;
+}
+
+.transaction-info {
+    flex: 1;
+}
+
+.transaction-type {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.transaction-desc {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.transaction-date {
+    font-size: 12px;
+    color: #999;
+}
+
+.transaction-amount {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.transaction-amount.income {
+    color: #27ae60;
+}
+
+.transaction-amount.payout {
+    color: #e74c3c;
+}
+
+.transaction-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.loading-state,
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.loading-state i {
+    font-size: 24px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* Metric icon green for wallet */
+.metric-icon.green {
+    background: #27ae60;
+}

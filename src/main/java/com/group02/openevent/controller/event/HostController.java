@@ -96,6 +96,17 @@ public class HostController {
         return "fragments/settings :: content";
     }
 
+    @GetMapping("/fragment/wallet")
+    public String wallet(Model model) {
+        return "fragments/wallet :: content";
+    }
+
+    @GetMapping("/wallet")
+    public String walletDirect(Model model) {
+        model.addAttribute("content", "fragments/wallet :: content");
+        return "host/host";
+    }
+
 
 //    @GetMapping("/event/manage/{id}")
 //    public String manageEvent(@PathVariable Long id, Model model) {

@@ -70,7 +70,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    document.getElementById('saveEventBtn').addEventListener('click', function() {
-        saveEvent();
-    });
+    
+    // Only add event listener if saveEventBtn exists
+    const saveEventBtn = document.getElementById('saveEventBtn');
+    if (saveEventBtn) {
+        saveEventBtn.addEventListener('click', function() {
+            if (typeof saveEvent === 'function') {
+                saveEvent();
+            }
+        });
+    }
 });

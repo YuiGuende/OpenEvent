@@ -95,4 +95,31 @@ public class HostWalletService implements IHostWalletService {
         //     transactionRepository.save(txn);
         // });
     }
+
+    // Cộng tiền vào ví Host khi có order thành công
+    @Override
+    @Transactional
+    public void addBalance(Long hostId, BigDecimal amount, String referenceId, String description) {
+        // 1. Lấy ví Host
+        HostWallet wallet = getWalletByHostId(hostId);
+        
+        // 2. Cộng tiền vào cả balance và availableBalance
+        wallet.setBalance(wallet.getBalance().add(amount));
+        wallet.setAvailableBalance(wallet.getAvailableBalance().add(amount));
+        wallet.setLastUpdated(LocalDateTime.now());
+        walletRepository.save(wallet);
+
+        // 3. Ghi log giao dịch INCOME với trạng thái COMPLETED
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setAmount(amount);
+        transaction.setTransactionType(TransactionType.INCOME);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setReferenceId(referenceId); // Order ID
+        transaction.setDescription(description);
+        transaction.setCreatedAt(LocalDateTime.now());
+        transactionRepository.save(transaction);
+        
+        logger.info("Added {} to host {} wallet from order {}", amount, hostId, referenceId);
+    }
 }

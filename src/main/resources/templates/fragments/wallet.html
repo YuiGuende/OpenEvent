@@ -1,0 +1,517 @@
+<div th:fragment="content">
+    <div class="page-header">
+        <div class="breadcrumbs">
+            <span>Quản lý</span>
+            <i class="fas fa-chevron-right"></i>
+            <span>Ví</span>
+        </div>
+        <div class="header-content">
+            <h1 class="page-title">Ví của tôi</h1>
+        </div>
+    </div>
+
+    <!-- Wallet Balance Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon green">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value" id="total-balance">0 ₫</div>
+                <div class="metric-label">Tổng số dư</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon blue">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value" id="available-balance">0 ₫</div>
+                <div class="metric-label">Số dư khả dụng</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Form Section -->
+    <div class="wallet-section">
+        <div class="section-header">
+            <h2 class="section-title">Rút tiền</h2>
+            <p class="section-description">Vui lòng nhập thông tin tài khoản ngân hàng để thực hiện rút tiền</p>
+        </div>
+
+        <form id="withdrawal-form" class="withdrawal-form">
+            <div class="form-group">
+                <label for="bank-name">Tên ngân hàng <span class="required">*</span></label>
+                <select id="bank-name" name="bankCode" class="form-control" required>
+                    <option value="">-- Chọn ngân hàng --</option>
+                    <option value="VCB">Vietcombank (VCB)</option>
+                    <option value="TCB">Techcombank (TCB)</option>
+                    <option value="ACB">ACB</option>
+                    <option value="BIDV">BIDV</option>
+                    <option value="VTB">VietinBank (VTB)</option>
+                    <option value="TPB">TPBank (TPB)</option>
+                    <option value="VPB">VPBank (VPB)</option>
+                    <option value="MBB">MBBank (MBB)</option>
+                    <option value="MSB">MSB</option>
+                    <option value="OCB">OCB</option>
+                    <option value="SHB">SHB</option>
+                    <option value="VAB">VietABank (VAB)</option>
+                    <option value="HDB">HDBank (HDB)</option>
+                    <option value="STB">Sacombank (STB)</option>
+                    <option value="SCB">SCB</option>
+                    <option value="EXIM">Eximbank (EXIM)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="bank-account">Số tài khoản ngân hàng <span class="required">*</span></label>
+                <input type="text" id="bank-account" name="bankAccountNumber" class="form-control"
+                       placeholder="Nhập số tài khoản" required pattern="[0-9]+"
+                       minlength="8" maxlength="20">
+                <small class="form-text">Vui lòng nhập đúng số tài khoản ngân hàng (8-20 số)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="withdrawal-amount">Số tiền muốn rút (₫) <span class="required">*</span></label>
+                <input type="number" id="withdrawal-amount" name="amount" class="form-control"
+                       placeholder="Nhập số tiền" required min="10000" step="1000">
+                <small class="form-text">Số tiền tối thiểu: 10,000 ₫</small>
+                <div class="quick-amounts">
+                    <button type="button" class="btn-quick-amount" onclick="setAmount(100000)">100K</button>
+                    <button type="button" class="btn-quick-amount" onclick="setAmount(500000)">500K</button>
+                    <button type="button" class="btn-quick-amount" onclick="setAmount(1000000)">1M</button>
+                    <button type="button" class="btn-quick-amount" onclick="setMaxAmount()">Tất cả</button>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" id="submit-withdrawal">
+                    <i class="fas fa-paper-plane"></i>
+                    Xác nhận rút tiền
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Transaction History Section -->
+    <div class="wallet-section">
+        <div class="section-header">
+            <h2 class="section-title">Lịch sử giao dịch</h2>
+        </div>
+
+        <div class="transaction-filter">
+            <button class="filter-btn active" data-filter="all">Tất cả</button>
+            <button class="filter-btn" data-filter="INCOME">Nạp tiền</button>
+            <button class="filter-btn" data-filter="PAYOUT">Rút tiền</button>
+        </div>
+
+        <div class="transaction-list" id="transaction-list">
+            <div class="loading-state" id="loading-transactions">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Đang tải...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('=== WALLET.HTML SCRIPT LOADED ===');
+        console.log('Script execution started at:', new Date().toISOString());
+
+        // Make variables and functions global so they can be called from host.js
+        window.currentHostId = null;
+        window.availableBalance = 0;
+        console.log('Global variables initialized');
+
+        // Global function to initialize wallet - can be called from host.js
+        window.initWallet = function () {
+            console.log('=== initWallet CALLED ===');
+            console.log('Current hostId:', window.currentHostId);
+            console.log('Available balance:', window.availableBalance);
+
+            // Setup withdrawal form
+            const form = document.getElementById('withdrawal-form');
+            if (form) {
+                // Remove existing listeners to prevent duplicates
+                const newForm = form.cloneNode(true);
+                form.parentNode.replaceChild(newForm, form);
+                newForm.addEventListener('submit', handleWithdrawal);
+            }
+
+            // Setup filter buttons
+            setupFilterButtons();
+
+            // Call global functions to load data
+            if (typeof window.loadWalletData === 'function') {
+                window.loadWalletData();
+            }
+            if (typeof window.loadTransactionHistory === 'function') {
+                window.loadTransactionHistory();
+            }
+        };
+
+        // Auto-initialize when script loads - only if elements exist
+        // This will be called after script executes
+        setTimeout(function () {
+            function tryInit() {
+                const totalBalanceEl = document.getElementById('total-balance');
+                if (totalBalanceEl && typeof window.initWallet === 'function') {
+                    console.log('Wallet elements found, initializing...');
+                    window.initWallet();
+                    return true;
+                }
+                return false;
+            }
+
+            // Try immediately
+            if (!tryInit()) {
+                // Retry after delay if not ready
+                let retries = 0;
+                const maxRetries = 10;
+                const retryInterval = setInterval(function () {
+                    if (tryInit() || retries >= maxRetries) {
+                        clearInterval(retryInterval);
+                    }
+                    retries++;
+                }, 100);
+            }
+        }, 200);
+
+        // Define formatCurrency before using it
+        function formatCurrency(amount) {
+            if (!amount || amount === 0 || isNaN(amount)) {
+                return '0 ₫';
+            }
+            // Convert to number if string
+            const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(numAmount);
+        }
+
+        // Make formatCurrency global
+        window.formatCurrency = formatCurrency;
+        console.log('formatCurrency function defined and made global');
+
+        // Make functions global
+        window.loadWalletData = async function () {
+            try {
+                console.log('=== loadWalletData CALLED ===');
+                console.log('Loading wallet data...');
+                const response = await fetch('/api/wallet/balance', {
+                    method: 'GET',
+                    credentials: 'include', // Include cookies for session
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Wallet API error:', response.status, errorText);
+                    throw new Error(`Network response was not ok: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Wallet data received:', data);
+
+                if (data.success) {
+                    window.currentHostId = data.hostId;
+                    // Handle both string and number formats
+                    const balance = typeof data.balance === 'string' ? parseFloat(data.balance) : (data.balance || 0);
+                    const availBalance = typeof data.availableBalance === 'string' ? parseFloat(data.availableBalance) : (data.availableBalance || 0);
+
+                    window.availableBalance = availBalance || 0;
+
+                    // Retry mechanism to find elements
+                    let retries = 0;
+                    const maxRetries = 10;
+                    const findAndUpdateElements = () => {
+                        const totalBalanceEl = document.getElementById('total-balance');
+                        const availBalanceEl = document.getElementById('available-balance');
+
+                        if (totalBalanceEl && availBalanceEl) {
+                            console.log('Found balance elements, updating with:', balance, availBalance);
+                            // Use formatCurrency function (defined above)
+                            const formatFunc = typeof formatCurrency === 'function' ? formatCurrency : window.formatCurrency;
+                            if (formatFunc) {
+                                totalBalanceEl.textContent = formatFunc(balance);
+                                availBalanceEl.textContent = formatFunc(availBalance);
+                                console.log('Balance updated successfully:', totalBalanceEl.textContent, availBalanceEl.textContent);
+                            } else {
+                                // Fallback to simple format
+                                totalBalanceEl.textContent = new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(balance);
+                                availBalanceEl.textContent = new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(availBalance);
+                                console.log('Balance updated with fallback format');
+                            }
+                            return true;
+                        } else {
+                            console.warn('Balance elements not found, retry:', retries);
+                            if (retries < maxRetries) {
+                                retries++;
+                                setTimeout(findAndUpdateElements, 100);
+                            } else {
+                                console.error('Failed to find balance elements after', maxRetries, 'retries');
+                            }
+                            return false;
+                        }
+                    };
+
+                    // Try immediately first
+                    if (!findAndUpdateElements()) {
+                        // Will retry via setTimeout
+                    }
+                } else {
+                    console.error('Wallet API returned error:', data.message);
+                    const errorMsg = data.message || 'Unknown error';
+                    if (errorMsg.includes('not logged in') || errorMsg.includes('Host not found')) {
+                        console.warn('User may need to refresh page or login again');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading wallet data:', error);
+                const totalBalanceEl = document.getElementById('total-balance');
+                const availBalanceEl = document.getElementById('available-balance');
+                if (totalBalanceEl) totalBalanceEl.textContent = 'Lỗi tải dữ liệu';
+                if (availBalanceEl) availBalanceEl.textContent = 'Lỗi tải dữ liệu';
+            }
+        };
+
+        window.loadTransactionHistory = async function (filter = 'all') {
+            const container = document.getElementById('transaction-list');
+            if (!container) {
+                console.error('Transaction list container not found');
+                return;
+            }
+
+            // Show loading state
+            container.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><p>Đang tải...</p></div>';
+
+            try {
+                console.log('Loading transactions with filter:', filter);
+                const response = await fetch(`/api/wallet/transactions?filter=${filter}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Transaction API error:', response.status, errorText);
+                    throw new Error(`Network response was not ok: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Transaction data received:', data);
+
+                if (data.success) {
+                    displayTransactions(data.transactions || []);
+                } else {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>' + (data.message || 'Không thể tải lịch sử giao dịch') + '</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Lỗi khi tải lịch sử giao dịch. Vui lòng thử lại sau.</p></div>';
+            }
+        };
+
+        function displayTransactions(transactions) {
+            const container = document.getElementById('transaction-list');
+
+            if (!transactions || transactions.length === 0) {
+                container.innerHTML =
+                    '<div class="empty-state"><i class="fas fa-inbox"></i><p>Chưa có giao dịch nào</p></div>';
+                return;
+            }
+
+            container.innerHTML = transactions.map(txn => `
+        <div class="transaction-item">
+            <div class="transaction-info">
+                <div class="transaction-type">
+                    ${txn.transactionType === 'INCOME' ? 'Nạp tiền' : 'Rút tiền'}
+                    <span class="transaction-status status-${txn.status.toLowerCase()}">${getStatusText(txn.status)}</span>
+                </div>
+                <div class="transaction-desc">${txn.description || 'Giao dịch'}</div>
+                <div class="transaction-date">${formatDate(txn.createdAt)}</div>
+            </div>
+            <div class="transaction-amount ${txn.transactionType === 'INCOME' ? 'income' : 'payout'}">
+                ${txn.transactionType === 'INCOME' ? '+' : '-'}${formatCurrency(txn.amount)}
+            </div>
+        </div>
+    `).join('');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'COMPLETED': 'Thành công',
+                'PENDING': 'Đang xử lý',
+                'FAILED': 'Thất bại'
+            };
+            return statusMap[status] || status;
+        }
+
+        // formatCurrency already defined above, no need to redefine
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        window.setAmount = function (amount) {
+            const amountInput = document.getElementById('withdrawal-amount');
+            if (amountInput) {
+                amountInput.value = amount;
+            }
+        };
+
+        window.setMaxAmount = function () {
+            const amountInput = document.getElementById('withdrawal-amount');
+            if (amountInput) {
+                amountInput.value = window.availableBalance || 0;
+            }
+        };
+
+        async function handleWithdrawal(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const amount = parseFloat(formData.get('amount'));
+
+            if (!window.currentHostId) {
+                alert('Không tìm thấy thông tin host. Vui lòng đăng nhập lại.');
+                return;
+            }
+
+            if (amount > window.availableBalance) {
+                alert('Số tiền rút vượt quá số dư khả dụng!');
+                return;
+            }
+
+            if (amount < 10000) {
+                alert('Số tiền rút tối thiểu là 10,000 ₫');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-withdrawal');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+            try {
+                const payload = {
+                    amount: amount,
+                    bankAccountNumber: formData.get('bankAccountNumber'),
+                    bankCode: formData.get('bankCode')
+                };
+
+                const response = await fetch(`/api/payout/${window.currentHostId}/request-withdraw`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                let data;
+                try {
+                    const responseText = await response.text();
+                    if (responseText) {
+                        data = JSON.parse(responseText);
+                    } else {
+                        data = {};
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing JSON response:', parseError);
+                    data = { message: response.ok ? 'Yêu cầu rút tiền đã được xử lý nhưng không nhận được phản hồi chi tiết.' : 'Lỗi khi xử lý phản hồi từ server.' };
+                }
+
+                if (response.ok && (data.id || data.payosOrderCode)) {
+                    // Success - reload data immediately
+                    console.log('Payout request successful:', data);
+                    alert('Yêu cầu rút tiền đã được gửi thành công!');
+                    form.reset();
+                    
+                    // Force reload wallet data and transaction history
+                    if (typeof window.loadWalletData === 'function') {
+                        await window.loadWalletData();
+                    }
+                    if (typeof window.loadTransactionHistory === 'function') {
+                        await window.loadTransactionHistory();
+                    }
+                    
+                    // Double check: reload again after a short delay to ensure data is updated
+                    setTimeout(() => {
+                        if (typeof window.loadWalletData === 'function') {
+                            window.loadWalletData();
+                        }
+                        if (typeof window.loadTransactionHistory === 'function') {
+                            window.loadTransactionHistory();
+                        }
+                    }, 1000);
+                } else {
+                    // Error
+                    const errorMsg = typeof data === 'string' ? data : (data.message || data.error || 'Không thể thực hiện rút tiền. Vui lòng thử lại.');
+                    alert('Lỗi: ' + errorMsg);
+                }
+            } catch (error) {
+                console.error('Error during payout request:', error);
+                alert('Có lỗi xảy ra khi gửi yêu cầu rút tiền: ' + error.message + '. Vui lòng thử lại sau.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Xác nhận rút tiền';
+            }
+        }
+
+        // Setup filter buttons - called after DOM is ready
+        function setupFilterButtons() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                // Remove existing listeners
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+
+                newBtn.addEventListener('click', function () {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const filter = this.getAttribute('data-filter');
+                    if (typeof window.loadTransactionHistory === 'function') {
+                        window.loadTransactionHistory(filter);
+                    }
+                });
+            });
+        }
+
+        // Call setup when script loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupFilterButtons);
+        } else {
+            setTimeout(setupFilterButtons, 200);
+        }
+
+        console.log('=== WALLET.HTML SCRIPT EXECUTION COMPLETE ===');
+        console.log('All functions defined:');
+        console.log('- window.initWallet:', typeof window.initWallet);
+        console.log('- window.loadWalletData:', typeof window.loadWalletData);
+        console.log('- window.loadTransactionHistory:', typeof window.loadTransactionHistory);
+        console.log('- window.formatCurrency:', typeof window.formatCurrency);
+        console.log('- window.setAmount:', typeof window.setAmount);
+        console.log('- window.setMaxAmount:', typeof window.setMaxAmount);
+    </script>
+

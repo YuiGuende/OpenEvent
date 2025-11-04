@@ -7,11 +7,12 @@ import com.group02.openevent.exception.WalletException;
 import com.group02.openevent.model.payment.PayoutRequest;
 import com.group02.openevent.model.payment.PayoutStatus;
 import com.group02.openevent.model.user.Host;
-import com.group02.openevent.model.user.HostWallet;
 import com.group02.openevent.repository.IHostRepo;
 import com.group02.openevent.repository.IPayoutRequestRepository;
+import com.group02.openevent.repository.IWalletTransactionRepository;
 import com.group02.openevent.service.IHostWalletService;
 import com.group02.openevent.service.IPayoutService;
+import com.group02.openevent.model.payment.TransactionStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -30,14 +31,16 @@ public class PayoutServiceImpl implements IPayoutService {
     private final IPayoutRequestRepository payoutRepository;
     private final IHostRepo userRepo;
     private final PayosPayoutClient payosPayoutClient; 
-    private final ObjectMapper objectMapper; 
+    private final ObjectMapper objectMapper;
+    private final IWalletTransactionRepository transactionRepository;
 
-    public PayoutServiceImpl(IHostWalletService walletService, IPayoutRequestRepository payoutRepository, IHostRepo userRepo, PayosPayoutClient payosPayoutClient, ObjectMapper objectMapper) {
+    public PayoutServiceImpl(IHostWalletService walletService, IPayoutRequestRepository payoutRepository, IHostRepo userRepo, PayosPayoutClient payosPayoutClient, ObjectMapper objectMapper, IWalletTransactionRepository transactionRepository) {
         this.walletService = walletService;
         this.payoutRepository = payoutRepository;
         this.userRepo = userRepo;
         this.payosPayoutClient = payosPayoutClient;
         this.objectMapper = objectMapper;
+        this.transactionRepository = transactionRepository;
     }
 
     @Override
@@ -69,27 +72,43 @@ public class PayoutServiceImpl implements IPayoutService {
         String payosPayoutId;
         try {
             System.out.println("0");
-            // 4. Gọi API Payout của PayOS (Client xử lý Checksum)
-            payosPayoutId = payosPayoutClient.sendPayout(payout);
-            System.out.println("1");
-
+            // 4. GIẢ VỜ gọi API Payout của PayOS (thực tế PayOS đang có vấn đề)
+            // Thay vì gọi thật, chúng ta giả lập thành công và trừ tiền ngay lập tức
+            logger.info("Simulating PayOS payout request for order: {}", payosOrderCode);
+            
+            // Giả lập PayOS transaction ID
+            payosPayoutId = "FAKE_PAYOS_" + System.currentTimeMillis();
+            
+            // Cập nhật trạng thái thành SUCCESS ngay lập tức (vì đã trừ tiền rồi)
+            payout.setStatus(PayoutStatus.SUCCESS);
             payout.setPayosTransactionId(payosPayoutId);
-            System.out.println("payosPayoutId"+payosPayoutId);
+            payout.setProcessedAt(LocalDateTime.now());
             payoutRepository.save(payout);
-
-            logger.info("Payout request sent to PayOS successfully. Payout ID: {}", payosPayoutId);
+            
+            // Cập nhật transaction status từ PENDING sang COMPLETED
+            try {
+                transactionRepository.findByReferenceId(payosOrderCode).ifPresent(txn -> {
+                    txn.setStatus(TransactionStatus.COMPLETED);
+                    transactionRepository.save(txn);
+                });
+            } catch (Exception e) {
+                logger.warn("Could not update transaction status: {}", e.getMessage());
+            }
+            
+            System.out.println("1");
+            logger.info("Payout processed successfully (fake PayOS). Payout ID: {}", payosPayoutId);
             return payout;
             
         } catch (Exception e) { 
-            // 5. Nếu gọi API PayOS thất bại ngay lập tức: Hoàn lại tiền & Cập nhật trạng thái
-            logger.error("Failed to send Payout to PayOS for order {}: {}", payout.getPayosOrderCode(), e.getMessage());
+            // 5. Nếu có lỗi xảy ra: Hoàn lại tiền & Cập nhật trạng thái
+            logger.error("Failed to process Payout for order {}: {}", payout.getPayosOrderCode(), e.getMessage());
             walletService.refundBalance(hostId, requestDto.getAmount()); 
             
             payout.setStatus(PayoutStatus.FAILURE);
             payoutRepository.save(payout);
             
             // Ném ra WalletException để rollback Transaction
-            throw new WalletException("Lỗi khi gửi yêu cầu rút tiền đến PayOS: " + e.getMessage());
+            throw new WalletException("Lỗi khi xử lý yêu cầu rút tiền: " + e.getMessage());
         }
     }
 

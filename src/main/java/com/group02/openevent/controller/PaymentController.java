@@ -6,6 +6,7 @@ import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.IHostWalletService;
 import com.group02.openevent.dto.payment.PaymentResult;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,11 +27,13 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final OrderService orderService;
     private final PayOS payOS;
+    private final IHostWalletService hostWalletService;
 
-    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS) {
+    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS, IHostWalletService hostWalletService) {
         this.paymentService = paymentService;
         this.orderService = orderService;
         this.payOS = payOS;
+        this.hostWalletService = hostWalletService;
     }
 
     /**
@@ -137,6 +140,31 @@ public class PaymentController {
                 orderService.save(order);
                 
                 System.out.println("Payment and Order updated to PAID");
+                
+                // Credit host wallet when order is paid successfully
+                // This will automatically create wallet if it doesn't exist
+                try {
+                    if (order.getEvent() != null && order.getEvent().getHost() != null && order.getEvent().getHost().getId() != null) {
+                        Long hostId = order.getEvent().getHost().getId();
+                        
+                        // Ensure wallet exists (getWalletByHostId will create if not exists)
+                        hostWalletService.getWalletByHostId(hostId);
+                        
+                        // Calculate amount to credit (total amount paid by customer, minus platform fee if any)
+                        // For now, credit full amount to host. You can adjust this with commission calculation if needed
+                        java.math.BigDecimal amountToCredit = order.getTotalAmount();
+                        String balancedescription = "Doanh thu từ đơn hàng #" + order.getOrderId();
+                        
+                        hostWalletService.addBalance(hostId, amountToCredit, String.valueOf(order.getOrderId()), balancedescription);
+                        System.out.println("Credited " + amountToCredit + " to host " + hostId + " wallet for order " + order.getOrderId());
+                    } else {
+                        System.out.println("Warning: Order " + order.getOrderId() + " has no associated host, skipping wallet credit");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error crediting host wallet: " + e.getMessage());
+                    e.printStackTrace();
+                    // Don't fail the webhook if wallet credit fails
+                }
             }
             
             PaymentResult result = PaymentResult.success("Payment processed successfully");

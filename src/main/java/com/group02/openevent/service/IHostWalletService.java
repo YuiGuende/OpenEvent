@@ -32,4 +32,13 @@ public interface IHostWalletService {
      * @param amount Số tiền cần hoàn lại
      */
     void refundBalance(Long hostId, BigDecimal amount);
+
+    /**
+     * Cộng tiền vào ví Host khi có order thành công (thanh toán thành công).
+     * @param hostId ID của Host
+     * @param amount Số tiền cần cộng
+     * @param referenceId Mã tham chiếu (Order ID)
+     * @param description Mô tả giao dịch
+     */
+    void addBalance(Long hostId, BigDecimal amount, String referenceId, String description);
 }

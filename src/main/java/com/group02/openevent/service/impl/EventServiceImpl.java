@@ -103,7 +103,7 @@ public class EventServiceImpl implements EventService {
         if (event.getSubEvents() != null) {
             event.getSubEvents().forEach(sub -> sub.setParentEvent(finalEvent));
         }
-        event.setHost(hostRepo.getHostById(Long.parseLong("2")));
+        event.setHost(hostRepo.getHostById(hostId));
         return eventMapper.toEventResponse(eventRepo.save(event));
     }
 

@@ -13,9 +13,11 @@ import com.group02.openevent.service.IImageService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.http.HttpStatus;
+import com.group02.openevent.repository.IEventImageRepo;
+import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.service.TicketTypeService;
+import com.group02.openevent.service.impl.HostServiceImpl;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -50,21 +52,30 @@ public class EventController {
 
     private  final TicketTypeService ticketTypeService;
 
+    private  final HostServiceImpl hostService;
+    
+    private final IEventImageRepo eventImageRepo;
+    
+    private final IEventRepo eventRepo;
+    
     @Autowired
-    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService) {
+    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService, IEventImageRepo eventImageRepo, IEventRepo eventRepo) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
         this.ticketTypeService = ticketTypeService;
+        this.hostService = hostService;
+        this.eventImageRepo = eventImageRepo;
+        this.eventRepo = eventRepo;
     }
-    private Long getHostAccountId(HttpSession session) {
+
+    private Long getAccountIdFromSession(HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             throw new RuntimeException("User not logged in");
         }
         return accountId;
     }
-
 
     // POST - create event
     @PostMapping("save/music")
@@ -92,11 +103,10 @@ public class EventController {
     }
 
     @PostMapping("/saveEvent")
-    public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, Model model, HttpSession session) {
+    public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, HttpSession session) {
+        Long hostId = hostService.findHostIdByAccountId(getAccountIdFromSession(session));
         log.info("startsAt = {}", request.getStartsAt());
         log.info("endsAt = {}", request.getEndsAt());
-        Long hostId = getHostAccountId(session);
-        log.info("Host ID : {}", hostId);
         EventResponse savedEvent =  eventService.saveEvent(request,hostId);
         log.info(String.valueOf(savedEvent.getEventType()));
         return "redirect:/manage/event/" + savedEvent.getId()+ "/getting-stared";
@@ -239,6 +249,10 @@ public class EventController {
             }
 
             Event savedEvent = eventService.saveEvent(event);
+            
+            // Update event imageUrl from poster with mainPoster = true and orderIndex = 0
+            updateEventImageUrlFromPoster(eventId);
+            
             return ResponseEntity.ok(savedEvent);
 
         } catch (Exception e) {
@@ -246,6 +260,9 @@ public class EventController {
                     .body(Map.of("error", "Internal server error", "message", e.getMessage()));
         }
     }
+
+
+
 
     // Delete a single ticket type by id (direct hard delete)
     @DeleteMapping("/ticket/{ticketTypeId}")
@@ -269,6 +286,36 @@ public class EventController {
             log.error("Error deleting ticket {}", ticketTypeId, e);
             ApiResponse<Void> err = ApiResponse.<Void>builder().message("Lỗi hệ thống khi xóa vé").build();
             return org.springframework.http.ResponseEntity.status(500).body(err);
+        }
+    }
+
+    /**
+     * Update event imageUrl from the poster with mainPoster = true and orderIndex = 0
+     */
+    private void updateEventImageUrlFromPoster(Long eventId) {
+        log.info("Updating event imageUrl for eventId: {}", eventId);
+        
+        // Find all main posters for this event
+        List<EventImage> mainPosters = eventImageRepo.findByEventIdAndMainPoster(eventId, true);
+        
+        // Find the poster with mainPoster = true and orderIndex = 0
+        EventImage mainPoster = mainPosters.stream()
+                .filter(img -> img.isMainPoster() && img.getOrderIndex() == 0)
+                .findFirst()
+                .orElse(null);
+        
+        if (mainPoster != null) {
+            Optional<Event> eventOpt = eventRepo.findById(eventId);
+            if (eventOpt.isPresent()) {
+                Event event = eventOpt.get();
+                event.setImageUrl(mainPoster.getUrl());
+                eventRepo.save(event);
+                log.info("Updated event imageUrl to: {} for eventId: {}", mainPoster.getUrl(), eventId);
+            } else {
+                log.warn("Event not found with id: {}", eventId);
+            }
+        } else {
+            log.info("No main poster with orderIndex = 0 found for eventId: {}", eventId);
         }
     }
 

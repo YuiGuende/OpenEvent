@@ -48,19 +48,49 @@
                 <p class="event-subtitle" th:text="${event.eventType}">Loại Sự Kiện</p>
 
                 <div class="event-info">
-                    <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
+                    <div class="date-time-group">
+                        <span class="date-label">Bắt đầu:</span>
+                        <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
+                        <span class="time"
+                              th:text="|${#temporals.format(event.startsAt, 'h:mm a')}|"></span>
+                    </div>
 
-                    <span class="time"
-                          th:text="|${#temporals.format(event.startsAt, 'h:mm a')}|"></span>
+                    <div class="date-time-group">
+                        <span class="date-label">Kết thúc:</span>
+                        <span class="date-box" th:text="${#temporals.format(event.endsAt, 'MMM dd')}"></span>
+                        <span class="time"
+                              th:text="|${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
+                    </div>
 
-                    <span class="date-box" th:text="${#temporals.format(event.endsAt, 'MMM dd')}"></span>
-
-                    <span class="time"
-                          th:text="|${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
-
-                    <span th:classappend="${event.status.name() == 'DRAFT' ? 'draft' : 'live'}"
-                          class="status-badge"
-                          th:text="${event.status.name() == 'DRAFT' ? 'DRAFT • SẮP TỚI' : 'LIVE • ĐANG DIỄN RA'}">DRAFT • SẮP TỚI</span>
+                    <!-- Status badge với logic đầy đủ -->
+                    <span th:if="${event.status.name() == 'DRAFT'}" 
+                          class="status-badge draft"
+                          th:text="'DRAFT • SẮP TỚI'">DRAFT • SẮP TỚI</span>
+                    
+                    <span th:if="${event.status.name() == 'CANCEL'}" 
+                          class="status-badge cancel"
+                          th:text="'ĐÃ HỦY'">ĐÃ HỦY</span>
+                    
+                    <span th:if="${event.status.name() == 'FINISH'}" 
+                          class="status-badge finished"
+                          th:text="'KẾT THÚC'">KẾT THÚC</span>
+                    
+                    <span th:if="${event.status.name() == 'ONGOING'}" 
+                          class="status-badge live"
+                          th:text="'LIVE • ĐANG DIỄN RA'">LIVE • ĐANG DIỄN RA</span>
+                    
+                    <!-- PUBLIC status: check thời gian -->
+                    <span th:if="${event.status.name() == 'PUBLIC' && event.startsAt != null && event.startsAt.isAfter(currentTime)}" 
+                          class="status-badge upcoming"
+                          th:text="'PUBLIC • SẮP TỚI'">PUBLIC • SẮP TỚI</span>
+                    
+                    <span th:if="${event.status.name() == 'PUBLIC' && event.endsAt != null && event.endsAt.isBefore(currentTime)}" 
+                          class="status-badge finished"
+                          th:text="'KẾT THÚC'">KẾT THÚC</span>
+                    
+                    <span th:if="${event.status.name() == 'PUBLIC' && !(event.startsAt != null && event.startsAt.isAfter(currentTime)) && !(event.endsAt != null && event.endsAt.isBefore(currentTime))}" 
+                          class="status-badge live"
+                          th:text="'LIVE • ĐANG DIỄN RA'">LIVE • ĐANG DIỄN RA</span>
                 </div>
 
                 <div class="event-sales">
@@ -146,62 +176,187 @@
 </div>
 
 <script>
-    // Modal functionality
-    document.addEventListener('DOMContentLoaded', function () {
+    // Function to initialize event form validation and modal
+    function initializeEventsPage() {
+        console.log('=== Initializing Events Page ===');
+        
         const modal = document.getElementById('createEventModal');
         const openBtn = document.querySelector('.btn-create-event');
         const closeBtn = document.querySelector('.close');
 
         // Open modal
         if (openBtn) {
-            openBtn.addEventListener('click', function () {
+            // Remove existing listener to avoid duplicates
+            openBtn.removeEventListener('click', handleOpenModal);
+            openBtn.addEventListener('click', handleOpenModal);
+        }
+
+        function handleOpenModal() {
+            console.log('Opening modal');
+            if (modal) {
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
-            });
+                // Setup form validation when modal opens
+                setupFormValidation();
+            }
         }
 
         // Close modal
         function closeModal() {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
         }
 
         if (closeBtn) {
+            closeBtn.removeEventListener('click', closeModal);
             closeBtn.addEventListener('click', closeModal);
         }
 
         // Close modal when clicking outside
-        window.addEventListener('click', function (event) {
-            if (event.target === modal) {
-                closeModal();
-            }
-        });
-
-        // Form validation
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function (e) {
-                const title = document.querySelector('input[th\\:field="*{title}"]');
-                const startsAt = document.querySelector('input[th\\:field="*{startsAt}"]');
-
-                if (!title.value.trim()) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập tên sự kiện');
-                    title.focus();
-                    return;
-                }
-
-                if (!startsAt.value) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn ngày và giờ bắt đầu');
-                    startsAt.focus();
-                    return;
+        if (modal) {
+            modal.removeEventListener('click', handleModalClick);
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModal();
                 }
             });
         }
 
-        // Dropdown menu functionality
+        // Setup form validation
+        function setupFormValidation() {
+            console.log('Setting up form validation...');
+            const form = document.querySelector('#createEventModal form');
+            
+            if (!form) {
+                console.warn('Form not found in modal');
+                return;
+            }
 
-    });
+            // Remove existing listener to avoid duplicates
+            form.removeEventListener('submit', handleFormSubmit);
+            form.addEventListener('submit', handleFormSubmit);
+        }
+
+        function handleFormSubmit(e) {
+            console.log('=== Form submit event triggered ===');
+            e.preventDefault();
+            
+            // Find inputs by name attribute (Thymeleaf converts th:field to name)
+            const form = e.target;
+            const title = form.querySelector('input[name="title"]');
+            const enrollDeadline = form.querySelector('input[name="enrollDeadline"]');
+            const startsAt = form.querySelector('input[name="startsAt"]');
+            const endsAt = form.querySelector('input[name="endsAt"]');
+
+            console.log('Found inputs:', {
+                title: !!title,
+                enrollDeadline: !!enrollDeadline,
+                startsAt: !!startsAt,
+                endsAt: !!endsAt,
+                titleValue: title?.value,
+                enrollDeadlineValue: enrollDeadline?.value,
+                startsAtValue: startsAt?.value,
+                endsAtValue: endsAt?.value
+            });
+
+            // Validate title
+            if (!title || !title.value.trim()) {
+                alert('Vui lòng nhập tên sự kiện');
+                if (title) title.focus();
+                return false;
+            }
+
+            // Validate startsAt (required)
+            if (!startsAt || !startsAt.value) {
+                alert('Vui lòng chọn ngày và giờ bắt đầu');
+                if (startsAt) startsAt.focus();
+                return false;
+            }
+
+            // Validate enrollDeadline < startsAt
+            if (enrollDeadline && enrollDeadline.value && startsAt && startsAt.value) {
+                const enrollDeadlineDate = new Date(enrollDeadline.value);
+                const startsAtDate = new Date(startsAt.value);
+                
+                console.log('Checking enrollDeadline < startsAt:', {
+                    enrollDeadline: enrollDeadline.value,
+                    startsAt: startsAt.value,
+                    enrollDeadlineDate: enrollDeadlineDate,
+                    startsAtDate: startsAtDate,
+                    isValid: enrollDeadlineDate < startsAtDate
+                });
+                
+                if (enrollDeadlineDate >= startsAtDate) {
+                    alert('Hạn đăng ký sự kiện phải nhỏ hơn ngày giờ bắt đầu');
+                    enrollDeadline.focus();
+                    return false;
+                }
+            }
+
+            // Validate startsAt < endsAt
+            if (endsAt && endsAt.value && startsAt && startsAt.value) {
+                const startsAtDate = new Date(startsAt.value);
+                const endsAtDate = new Date(endsAt.value);
+                
+                console.log('Checking startsAt < endsAt:', {
+                    startsAt: startsAt.value,
+                    endsAt: endsAt.value,
+                    startsAtDate: startsAtDate,
+                    endsAtDate: endsAtDate,
+                    isValid: startsAtDate < endsAtDate
+                });
+                
+                if (startsAtDate >= endsAtDate) {
+                    alert('Ngày giờ bắt đầu phải nhỏ hơn ngày giờ kết thúc');
+                    startsAt.focus();
+                    return false;
+                }
+            }
+
+            // Validate enrollDeadline < endsAt (if both are provided)
+            if (enrollDeadline && enrollDeadline.value && endsAt && endsAt.value) {
+                const enrollDeadlineDate = new Date(enrollDeadline.value);
+                const endsAtDate = new Date(endsAt.value);
+                
+                console.log('Checking enrollDeadline < endsAt:', {
+                    enrollDeadline: enrollDeadline.value,
+                    endsAt: endsAt.value,
+                    enrollDeadlineDate: enrollDeadlineDate,
+                    endsAtDate: endsAtDate,
+                    isValid: enrollDeadlineDate < endsAtDate
+                });
+                
+                if (enrollDeadlineDate >= endsAtDate) {
+                    alert('Hạn đăng ký sự kiện phải nhỏ hơn ngày giờ kết thúc');
+                    enrollDeadline.focus();
+                    return false;
+                }
+            }
+
+            console.log('✅ Form validation passed, submitting form...');
+            // If validation passes, submit the form
+            form.submit();
+            return true;
+        }
+
+        // Setup form validation immediately
+        setupFormValidation();
+    }
+
+    // Initialize when script runs (for SPA router)
+    initializeEventsPage();
+
+    // Also initialize when DOM is ready (fallback)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeEventsPage);
+    } else {
+        // DOM already loaded
+        initializeEventsPage();
+    }
+
+    // Expose globally for SPA router
+    window.initializeEventsPage = initializeEventsPage;
 </script>
 

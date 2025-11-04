@@ -24,6 +24,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException; // THÊM MỚI (hoặc khác tùy theo logic aspect)
 
@@ -51,7 +53,8 @@ public class RequestController {
     @GetMapping("/form")
     public String showRequestForm(
             @RequestParam Long eventId,
-            Model model) {
+            Model model,
+            HttpSession session) {
         RequestFormDTO formData = new RequestFormDTO();
         try{
             formData =requestService.getRequestFormData(eventId);
@@ -59,6 +62,23 @@ public class RequestController {
             logger.error(e.getMessage());
         }
         model.addAttribute("formData", formData);
+
+        // Load sent requests for the current user
+        try {
+            Long currentSenderId = (Long) session.getAttribute("ACCOUNT_ID");
+            if (currentSenderId != null) {
+                List<RequestDTO> sentRequests = requestService.getRequestsBySenderId(currentSenderId);
+                model.addAttribute("sentRequests", sentRequests);
+                logger.debug("Loaded {} sent requests for user {}", sentRequests.size(), currentSenderId);
+            } else {
+                logger.warn("No ACCOUNT_ID in session, cannot load sent requests");
+                model.addAttribute("sentRequests", new ArrayList<>());
+            }
+        } catch (Exception e) {
+            logger.error("Không thể tải danh sách request đã gửi: " + e.getMessage(), e);
+            model.addAttribute("sentRequests", new ArrayList<>()); // Trả về danh sách rỗng nếu lỗi
+        }
+
         return "fragments/request-form";
     }
 
@@ -75,7 +95,12 @@ public class RequestController {
             @RequestParam(value = "message", required = false) String message,
             @RequestParam(value = "targetUrl", required = false) String targetUrl,
             @RequestParam(value = "file", required = false) MultipartFile file) {
+        logger.info("=== createRequestWithFile METHOD CALLED ===");
+        logger.info("senderId: {}, receiverId: {}, eventId: {}, type: {}", senderId, receiverId, eventId, type);
         try {
+            logger.info("Creating request - senderId: {}, receiverId: {}, eventId: {}, type: {}", 
+                    senderId, receiverId, eventId, type);
+            
             CreateRequestDTO createRequestDTO = CreateRequestDTO.builder()
                     .senderId(senderId)
                     .receiverId(receiverId)
@@ -85,11 +110,21 @@ public class RequestController {
                     .message(message)
                     .targetUrl(targetUrl)
                     .build();
-            System.out.println("received request"+createRequestDTO);
+            
+            logger.debug("CreateRequestDTO: {}", createRequestDTO);
+            
             RequestDTO createdRequest = requestService.createRequestWithFile(createRequestDTO, file);
+            logger.info("Request created successfully with ID: {}", createdRequest.getRequestId());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
-        } catch (Exception e) {
+        } catch (AccessDeniedException e) {
+            logger.error("Access denied when creating request: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid argument when creating request: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            logger.error("Error creating request: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

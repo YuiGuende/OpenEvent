@@ -7,6 +7,7 @@ import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IDepartmentRepo;
+import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IRequestRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.RequestService;
@@ -36,6 +37,7 @@ public class RequestServiceImpl implements RequestService {
 
     private final IRequestRepo requestRepo;
     private final EventService eventService;
+    private final IEventRepo eventRepo;
     private final CloudinaryUtil cloudinaryUtil;
     private final IAccountRepo accountRepo;
     private final IDepartmentRepo departmentRepository;
@@ -123,9 +125,18 @@ public class RequestServiceImpl implements RequestService {
                 .build();
 
         if (createRequestDTO.getEventId() != null) {
-            Event event = eventService.getEventById(createRequestDTO.getEventId())
+            // Use findByIdWithHostAccount to eagerly fetch Host relationship
+            Event event = eventRepo.findByIdWithHostAccount(createRequestDTO.getEventId())
                     .orElseThrow(() -> new RuntimeException("Event not found"));
             request.setEvent(event);
+            
+            // Set host from event (required by database constraint)
+            if (event.getHost() == null) {
+                throw new RuntimeException("Event has no host assigned");
+            }
+            request.setHost(event.getHost());
+        } else {
+            throw new RuntimeException("Event ID is required for creating request");
         }
 
         Request savedRequest = requestRepo.save(request);
@@ -158,9 +169,18 @@ public class RequestServiceImpl implements RequestService {
                 .build();
 
         if (createRequestDTO.getEventId() != null) {
-            Event event = eventService.getEventById(createRequestDTO.getEventId())
+            // Use findByIdWithHostAccount to eagerly fetch Host relationship
+            Event event = eventRepo.findByIdWithHostAccount(createRequestDTO.getEventId())
                     .orElseThrow(() -> new RuntimeException("Event not found"));
             request.setEvent(event);
+            
+            // Set host from event (required by database constraint)
+            if (event.getHost() == null) {
+                throw new RuntimeException("Event has no host assigned");
+            }
+            request.setHost(event.getHost());
+        } else {
+            throw new RuntimeException("Event ID is required for creating request");
         }
 
         Request savedRequest = requestRepo.save(request);

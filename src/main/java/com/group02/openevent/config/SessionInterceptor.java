@@ -20,6 +20,19 @@ public class SessionInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // Skip session validation for certain paths
         String requestPath = request.getRequestURI();
+        String method = request.getMethod();
+        
+        // Log requests to /api/requests for debugging
+        if (requestPath.startsWith("/api/requests")) {
+            System.out.println("=== SessionInterceptor: " + method + " " + requestPath + " ===");
+            System.out.println("Is public path: " + isPublicPath(requestPath));
+            if (request.getSession(false) != null) {
+                System.out.println("Session exists, ACCOUNT_ID: " + request.getSession(false).getAttribute("ACCOUNT_ID"));
+            } else {
+                System.out.println("No session found");
+            }
+        }
+        
         if (isPublicPath(requestPath)) {
             return true;
         }

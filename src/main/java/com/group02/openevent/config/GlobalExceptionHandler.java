@@ -18,6 +18,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.error("=== GlobalExceptionHandler caught IllegalArgumentException ===");
+        log.error("Message: {}", e.getMessage());
+        log.error("Stack trace:", e);
+        
         Map<String, String> error = new HashMap<>();
         error.put("error", e.getMessage());
         return ResponseEntity
@@ -51,6 +55,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN) // Trả về 403
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
+        log.error("=== GlobalExceptionHandler caught AccessDeniedException ===");
+        log.error("Message: {}", ex.getMessage());
+        log.error("Stack trace:", ex);
+        
         // Bạn có thể dùng DTO lỗi của riêng mình ở đây
         Map<String, String> body = new HashMap<>();
         body.put("error", "Access Denied");

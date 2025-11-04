@@ -405,6 +405,77 @@
     // Pass ticket types data from Thymeleaf to JavaScript
     const initialTicketTypesData = /*[[${allTicketTypes}]]*/ [];
     console.log('Dữ liệu ticket types từ Thymeleaf (settings):', initialTicketTypesData);
+    
+    // Pass images data from Thymeleaf to JavaScript (for loading existing images)
+    const initialImagesData = /*[[${imagesData}]]*/ [];
+    console.log('Dữ liệu images từ Thymeleaf (update-event fragment):', initialImagesData);
+    
+    // Make it global so image-manager.js can access it
+    if (typeof window !== 'undefined') {
+        window.initialImagesData = initialImagesData;
+    }
+    
+    // Pass eventType from Thymeleaf to JavaScript to auto-show fields on page load
+    const currentEventType = /*[[${request.eventType}]]*/ null;
+    console.log('Current event type from Thymeleaf:', currentEventType);
+    
+    // Auto-show fields based on current event type when page loads
+    if (currentEventType) {
+        // Wait for DOM to be ready and then show the appropriate fields
+        function autoShowEventTypeFields() {
+            console.log('Auto-showing fields for event type:', currentEventType);
+            
+            // Hide all fields first
+            const fields = ['musicFields', 'festivalFields', 'competitionFields', 'workshopFields'];
+            fields.forEach(fieldId => {
+                const el = document.getElementById(fieldId);
+                if (el) {
+                    el.style.display = 'none';
+                }
+            });
+            
+            // Show the relevant field based on event type
+            let fieldToShow = null;
+            switch(currentEventType) {
+                case 'MUSIC':
+                    fieldToShow = 'musicFields';
+                    break;
+                case 'FESTIVAL':
+                    fieldToShow = 'festivalFields';
+                    break;
+                case 'COMPETITION':
+                    fieldToShow = 'competitionFields';
+                    break;
+                case 'WORKSHOP':
+                    fieldToShow = 'workshopFields';
+                    break;
+                case 'OTHER':
+                    // No specific fields for OTHER
+                    break;
+            }
+            
+            if (fieldToShow) {
+                const fieldEl = document.getElementById(fieldToShow);
+                if (fieldEl) {
+                    fieldEl.style.display = 'block';
+                    console.log('Showing field:', fieldToShow);
+                } else {
+                    console.warn('Field element not found:', fieldToShow);
+                }
+            }
+        }
+        
+        // Run when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', autoShowEventTypeFields);
+        } else {
+            // DOM already loaded, wait a bit for SPA to inject content
+            setTimeout(autoShowEventTypeFields, 100);
+        }
+        
+        // Also expose for SPA router to call
+        window.autoShowEventTypeFields = autoShowEventTypeFields;
+    }
     /*]]>*/
 </script>
 

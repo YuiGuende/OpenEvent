@@ -3,6 +3,7 @@ package com.group02.openevent.model.request;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.user.Host;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,6 +35,10 @@ public class Request {
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "host_id", nullable = false)
+    private Host host;
 
     @Column(name = "target_url", length = 255)
     private String targetUrl;

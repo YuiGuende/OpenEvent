@@ -52,6 +52,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         {
+            path: `/manage/event/${eventId}/request-form`,
+            fragment: `/api/requests/form?eventId=${eventId}`,
+            title: 'Yêu cầu',
+            initializer: function() {
+                console.log('[SPA Router] Initializing request form page...');
+                // Wait for HTML to be injected into DOM, then initialize
+                // Use requestAnimationFrame for better timing with DOM updates
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        if (typeof window.initializeRequestForm === 'function') {
+                            console.log('[SPA Router] Calling initializeRequestForm...');
+                            window.initializeRequestForm();
+                        } else {
+                            console.warn('[SPA Router] initializeRequestForm not found, waiting for script to load...');
+                            // Retry if script hasn't loaded yet (shouldn't happen if included in manager-event.html)
+                            setTimeout(() => {
+                                if (typeof window.initializeRequestForm === 'function') {
+                                    console.log('[SPA Router] Found initializeRequestForm on retry, calling it...');
+                                    window.initializeRequestForm();
+                                } else {
+                                    console.error('[SPA Router] initializeRequestForm still not found. Check if request-form.js is loaded.');
+                                }
+                            }, 200);
+                        }
+                    }, 50); // Small delay to ensure DOM is ready
+                });
+            }
+        },
+        {
             path: `/manage/event/${eventId}/orders`,
             fragment: `/fragments/orders?id=${eventId}`,
             title: `Đơn Hàng`,

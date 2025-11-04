@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface HostService {
     Optional<Host> findByCustomerId(Long customerId);
     Host save(Host host);
+    public Long findHostIdByAccountId(Long accountId);
 }

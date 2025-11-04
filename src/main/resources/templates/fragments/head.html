@@ -54,18 +54,7 @@
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
           as="style">
     <style>
-        .event-search {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1.5fr auto;
-            gap: 1rem;
-            align-items: end;
-        }
-
-        .es-submit {
-            min-width: 140px;
-            white-space: nowrap;
-            margin-left: 1rem;
-        }
+        /* Use global .event-search styles from main.css (no override here) */
 
         /* Search center position like Booking.com */
         .search-center-position {
@@ -79,6 +68,9 @@
         /* Your Events Section - Simple Style */
         .your-events-header {
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .section-title {
@@ -221,29 +213,33 @@
         }
 
         .view-more-btn {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: #f8fafc;
-            color: #6b7280;
+            gap: 0.35rem;
+            padding: 6px 10px;
+            background: #ffffff;
+            color: #334155;
             text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 12px;
+            line-height: 1;
+            transition: all 0.2s ease;
             border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 6px rgba(2,6,23,.06);
         }
 
         .view-more-btn:hover {
-            background: #FF6B35;
-            color: white;
+            background: #ff6b35;
+            color: #fff;
             text-decoration: none;
-            border-color: #FF6B35;
+            border-color: #ff6b35;
         }
 
         .view-more-btn svg {
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
+            width: 14px;
+            height: 14px;
         }
 
         .view-more-btn:hover svg {
@@ -300,6 +296,39 @@
             padding: 1rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         } */
+
+        /* Ensure the home search bar is vivid over the hero image */
+        .search-center-position {
+            position: relative;
+            z-index: 20; /* higher than hero overlays */
+        }
+
+        .search-center-position .event-search {
+            background: #ffffff !important;
+            border: 1px solid rgba(2,6,23,.12) !important;
+            box-shadow: 0 12px 32px rgba(2,6,23,.12) !important;
+            opacity: 1 !important;
+            filter: none !important;
+        }
+
+        /* Ensure texts are not washed out on top of the hero */
+        .search-center-position .es-label {
+            color: #0f172a !important;
+            opacity: 1 !important;
+        }
+
+        .search-center-position .es-input,
+        .search-center-position .es-select {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-color: rgba(2,6,23,.12) !important;
+            opacity: 1 !important;
+        }
+
+        /* Let main.css handle responsiveness */
+
+        /* No input overrides; keep native date icon */
+
         @media (max-width: 768px) {
             .event-search {
                 grid-template-columns: 1fr;

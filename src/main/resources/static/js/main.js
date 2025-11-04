@@ -157,6 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Use native date picker/icon; no JS injection here
+
     // Add hover effects to cards
     const cards = document.querySelectorAll('.card');
 

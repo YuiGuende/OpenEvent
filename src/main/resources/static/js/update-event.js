@@ -7,6 +7,47 @@ class ImageUploadManager {
         this.allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
         this.initEventListeners();
+        
+        // Load existing images from database if available
+        this.loadExistingImages();
+    }
+    
+    // Load existing images from database into manager
+    loadExistingImages() {
+        console.log('=== ImageUploadManager.loadExistingImages CALLED ===');
+        
+        // Try to get initialImagesData from window (set by Thymeleaf or fragment)
+        const existingImages = window.initialImagesData || [];
+        console.log('Found existing images:', existingImages.length);
+        
+        if (existingImages && existingImages.length > 0) {
+            existingImages.forEach(imageData => {
+                // Convert database image to ImageUploadManager format
+                const imageEntry = {
+                    id: imageData.id, // Database ID
+                    url: imageData.url,
+                    previewUrl: imageData.url, // Use URL as preview
+                    file: null, // No file since it's from database
+                    orderIndex: imageData.orderIndex || 0,
+                    mainPoster: imageData.mainPoster || false
+                };
+                
+                if (imageData.mainPoster) {
+                    this.posterImages.push(imageEntry);
+                    console.log('Added poster image:', imageEntry);
+                } else {
+                    this.galleryImages.push(imageEntry);
+                    console.log('Added gallery image:', imageEntry);
+                }
+            });
+            
+            // Update preview to show existing images
+            this.updatePreview('poster');
+            this.updatePreview('gallery');
+            this.updateUploadButtons();
+            
+            console.log('Loaded existing images - Posters:', this.posterImages.length, 'Gallery:', this.galleryImages.length);
+        }
     }
 
     initEventListeners() {
@@ -150,11 +191,14 @@ class ImageUploadManager {
             // Create preview
             const previewUrl = URL.createObjectURL(resizedFile);
 
+            // Create temporary ID that won't conflict with database IDs (use negative number or string)
+            const tempId = 'temp_' + Date.now() + '_' + Math.random();
+
             // Add to appropriate array
             const imageData = {
                 file: resizedFile,
                 previewUrl: previewUrl,
-                id: Date.now() + Math.random(),
+                id: tempId, // Temporary ID (will be replaced with database ID)
                 orderIndex: type === 'poster' ? this.posterImages.length : 0,
                 mainPoster: type === 'poster'
             };
@@ -165,15 +209,25 @@ class ImageUploadManager {
                 this.galleryImages.push(imageData);
             }
 
+            // Update preview immediately to show new image
             this.updatePreview(type);
             this.updateUploadButtons();
 
-            // Create image in database
+            // Create image in database (this will update the ID and URL)
             await this.createImageInDatabase(imageData, type);
 
         } catch (error) {
             console.error('Error processing file:', error);
             this.showError('Có lỗi xảy ra khi xử lý ảnh.');
+            
+            // Remove failed image from arrays
+            if (type === 'poster') {
+                this.posterImages = this.posterImages.filter(img => img.id !== imageData?.id);
+            } else {
+                this.galleryImages = this.galleryImages.filter(img => img.id !== imageData?.id);
+            }
+            this.updatePreview(type);
+            this.updateUploadButtons();
         }
     }
 
@@ -225,16 +279,26 @@ class ImageUploadManager {
     createPreviewItem(imageData, index, type) {
         const item = document.createElement('div');
         item.className = 'preview-item';
-        item.dataset.id = imageData.id;
+        // Store both original ID and a unique identifier for DOM element
+        item.dataset.id = String(imageData.id);
+        item.dataset.imageIndex = index; // Add index for easier tracking
 
         const img = document.createElement('img');
-        img.src = imageData.previewUrl;
+        // Use previewUrl if available (for new uploads), otherwise use url (for database images)
+        img.src = imageData.previewUrl || imageData.url;
         img.alt = 'Preview';
+        
+        // Ensure image loads correctly
+        img.onerror = () => {
+            console.warn('Failed to load image:', imageData.previewUrl || imageData.url);
+            img.src = '/img/placeholder.svg'; // Fallback image
+        };
 
         const removeBtn = document.createElement('button');
         removeBtn.type='button'
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
+        // Use closure to capture current imageData
         removeBtn.onclick = () => this.removeImage(imageData.id, type);
 
         item.appendChild(img);
@@ -258,21 +322,44 @@ class ImageUploadManager {
     }
 
     removeImage(id, type) {
+        console.log('=== removeImage CALLED ===');
+        console.log('id:', id, 'type:', type, 'typeof id:', typeof id);
+        
+        // Check if it's a temporary ID (starts with 'temp_') or a database ID (number)
+        const isTemporaryId = typeof id === 'string' && id.startsWith('temp_');
+        const isDatabaseId = typeof id === 'number' || (typeof id === 'string' && !isNaN(parseFloat(id)) && !id.startsWith('temp_'));
+        
+        console.log('isTemporaryId:', isTemporaryId, 'isDatabaseId:', isDatabaseId);
+        
         // If it's a database image (has numeric ID), delete from database
-        if (typeof id === 'number' || !isNaN(id)) {
-            this.removeImageFromDatabase(id, type);
+        if (isDatabaseId) {
+            const numericId = typeof id === 'string' ? parseFloat(id) : id;
+            this.removeImageFromDatabase(numericId, type);
         } else {
-            // If it's a temporary image (has string ID), just remove from arrays
+            console.log('Removing temporary image from arrays');
+            // If it's a temporary image (has string ID starting with 'temp_'), just remove from arrays
+            const imageArray = type === 'poster' ? this.posterImages : this.galleryImages;
+            const originalLength = imageArray.length;
+            
             if (type === 'poster') {
-                this.posterImages = this.posterImages.filter(img => img.id !== id);
+                this.posterImages = this.posterImages.filter(img => {
+                    const imgIdStr = String(img.id);
+                    const targetIdStr = String(id);
+                    return imgIdStr !== targetIdStr;
+                });
                 // Reorder remaining images
                 this.posterImages.forEach((img, index) => {
                     img.orderIndex = index;
                 });
             } else {
-                this.galleryImages = this.galleryImages.filter(img => img.id !== id);
+                this.galleryImages = this.galleryImages.filter(img => {
+                    const imgIdStr = String(img.id);
+                    const targetIdStr = String(id);
+                    return imgIdStr !== targetIdStr;
+                });
             }
-
+            
+            console.log(`Removed temporary image. Array length: ${originalLength} -> ${imageArray.length}`);
             this.updatePreview(type);
             this.updateUploadButtons();
         }
@@ -282,28 +369,46 @@ class ImageUploadManager {
     async removeImageFromDatabase(imageId, type) {
         if (confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
             try {
+                console.log('Deleting image from database:', imageId, 'type:', type);
+                
                 const response = await fetch(`/api/event-images/${imageId}`, {
                     method: 'DELETE'
                 });
 
+                console.log('Delete response status:', response.status);
+
                 if (response.ok) {
+                    // Remove from manager arrays
+                    if (type === 'poster') {
+                        this.posterImages = this.posterImages.filter(img => img.id !== imageId);
+                        // Reorder remaining images
+                        this.posterImages.forEach((img, index) => {
+                            img.orderIndex = index;
+                        });
+                    } else {
+                        this.galleryImages = this.galleryImages.filter(img => img.id !== imageId);
+                    }
+                    
                     // Remove from DOM
                     const item = document.querySelector(`[data-id="${imageId}"]`);
                     if (item) {
                         item.remove();
                     }
-
-                    // Nếu xóa poster (mainPoster = true), reload trang để cập nhật UI
-                    if (type === 'poster') {
-                        window.location.reload();
-                    } else {
-                        alert('Xóa ảnh thành công!');
-                    }
+                    
+                    // Update upload buttons
+                    this.updateUploadButtons();
+                    
+                    console.log('Image deleted successfully. Posters:', this.posterImages.length, 'Gallery:', this.galleryImages.length);
+                    alert('Xóa ảnh thành công!');
                 } else {
+                    const errorText = await response.text();
+                    console.error('Error deleting image - status:', response.status);
+                    console.error('Error response:', errorText);
                     alert('Lỗi khi xóa ảnh!');
                 }
             } catch (error) {
                 console.error('Error deleting image:', error);
+                console.error('Error stack:', error.stack);
                 alert('Lỗi mạng!');
             }
         }
@@ -444,20 +549,33 @@ class ImageUploadManager {
 
     // Method to create image in database
     async createImageInDatabase(imageData, type) {
+        console.log('=== createImageInDatabase CALLED ===');
+        console.log('imageData:', imageData);
+        console.log('type:', type);
+        
         try {
             const eventId = window.location.pathname.split('/')[3]; // Get eventId from URL
+            console.log('Extracted eventId from URL:', eventId);
+            
+            if (!eventId || isNaN(eventId)) {
+                console.error('Invalid eventId:', eventId);
+                this.showError('Không tìm thấy Event ID. Vui lòng reload trang.');
+                return;
+            }
 
+            console.log('Uploading image to Cloudinary...');
             // Upload image to Cloudinary first
             const imageUrl = await this.uploadImageToCloudinary(imageData.file);
+            console.log('Image uploaded to Cloudinary, URL:', imageUrl);
 
             const imageRequest = {
                 url: imageUrl,
-                orderIndex: imageData.orderIndex,
+                orderIndex: imageData.orderIndex || 0,
                 isMainPoster: type === 'poster', // true cho poster, false cho gallery
                 eventId: parseInt(eventId)
             };
 
-            console.log('Creating image in database:', imageRequest);
+            console.log('Creating image in database with request:', imageRequest);
 
             const response = await fetch('/api/event-images', {
                 method: 'POST',
@@ -467,43 +585,136 @@ class ImageUploadManager {
                 body: JSON.stringify(imageRequest)
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+
             if (response.ok) {
                 const createdImage = await response.json();
                 console.log('Image created successfully:', createdImage);
 
-                // Update the imageData with the database ID
-                imageData.id = createdImage.id;
-                imageData.url = createdImage.url;
+                // Find the image in the array by matching the previewUrl or file
+                const imageArray = type === 'poster' ? this.posterImages : this.galleryImages;
+                const imageIndex = imageArray.findIndex(img => {
+                    // Match by temporary ID or by file reference
+                    return img.id === imageData.id || 
+                           (img.file === imageData.file && img.previewUrl === imageData.previewUrl);
+                });
+                
+                if (imageIndex !== -1) {
+                    // Update the imageData with the database ID and URL
+                    const updatedImage = imageArray[imageIndex];
+                    updatedImage.id = createdImage.id;
+                    updatedImage.url = createdImage.url;
+                    // Keep previewUrl if it's a blob URL, otherwise use database URL
+                    if (updatedImage.previewUrl && updatedImage.previewUrl.startsWith('blob:')) {
+                        // Keep blob URL for now, will use database URL on reload
+                    } else {
+                        updatedImage.previewUrl = createdImage.url;
+                    }
+                    
+                    console.log('Updated imageData:', updatedImage);
+                } else {
+                    console.warn('Could not find image in array to update. Adding new entry.');
+                    // Fallback: create new entry if not found
+                    const newImageEntry = {
+                        id: createdImage.id,
+                        url: createdImage.url,
+                        previewUrl: createdImage.url,
+                        file: null,
+                        orderIndex: imageData.orderIndex || 0,
+                        mainPoster: type === 'poster'
+                    };
+                    if (type === 'poster') {
+                        this.posterImages.push(newImageEntry);
+                    } else {
+                        this.galleryImages.push(newImageEntry);
+                    }
+                }
+                
+                // Update preview to show updated images with correct IDs
+                this.updatePreview(type);
+                this.updateUploadButtons();
+                
+                console.log('Image added to manager:', type === 'poster' ? 
+                    `Posters: ${this.posterImages.length}` : `Gallery: ${this.galleryImages.length}`);
             } else {
-                const error = await response.json();
-                console.error('Error creating image:', error);
-                this.showError('Lỗi khi lưu ảnh vào cơ sở dữ liệu.');
+                const errorText = await response.text();
+                console.error('Error creating image - status:', response.status);
+                console.error('Error response:', errorText);
+                
+                let errorMessage = 'Lỗi khi lưu ảnh vào cơ sở dữ liệu.';
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    if (errorJson.error) {
+                        errorMessage = errorJson.error;
+                    }
+                } catch (e) {
+                    // Not JSON, use default message
+                }
+                this.showError(errorMessage);
+                
+                // Remove failed image from arrays
+                const imageArray = type === 'poster' ? this.posterImages : this.galleryImages;
+                const imageIndex = imageArray.findIndex(img => img.id === imageData.id);
+                if (imageIndex !== -1) {
+                    imageArray.splice(imageIndex, 1);
+                    this.updatePreview(type);
+                    this.updateUploadButtons();
+                }
             }
         } catch (error) {
             console.error('Error creating image in database:', error);
-            this.showError('Lỗi mạng khi lưu ảnh.');
+            console.error('Error stack:', error.stack);
+            this.showError('Lỗi mạng khi lưu ảnh: ' + error.message);
+            
+            // Remove failed image from arrays
+            const imageArray = type === 'poster' ? this.posterImages : this.galleryImages;
+            const imageIndex = imageArray.findIndex(img => img.id === imageData.id);
+            if (imageIndex !== -1) {
+                imageArray.splice(imageIndex, 1);
+                this.updatePreview(type);
+                this.updateUploadButtons();
+            }
         }
     }
 
     // Method to upload image to Cloudinary
     async uploadImageToCloudinary(file) {
+        console.log('=== uploadImageToCloudinary CALLED ===');
+        console.log('File:', file.name, 'Size:', file.size, 'Type:', file.type);
+        
         try {
             const formData = new FormData();
             formData.append('file', file);
 
+            console.log('Sending request to /api/speakers/upload/image');
             const response = await fetch('/api/speakers/upload/image', {
                 method: 'POST',
                 body: formData
             });
 
+            console.log('Cloudinary upload response status:', response.status);
+
             if (response.ok) {
                 const result = await response.json();
-                return result.imageUrl;
+                console.log('Cloudinary upload result:', result);
+                
+                const imageUrl = result.imageUrl;
+                if (!imageUrl) {
+                    console.error('No imageUrl in response:', result);
+                    throw new Error('Không nhận được URL ảnh từ server');
+                }
+                
+                return imageUrl;
             } else {
-                throw new Error('Failed to upload image to Cloudinary');
+                const errorText = await response.text();
+                console.error('Failed to upload image to Cloudinary - status:', response.status);
+                console.error('Error response:', errorText);
+                throw new Error('Không thể upload ảnh lên Cloudinary: ' + (errorText || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error uploading to Cloudinary:', error);
+            console.error('Error stack:', error.stack);
             throw error;
         }
     }
@@ -653,6 +864,13 @@ window.initializeEventFormListeners = function() {
         if (typeof window.initializeEventTypeTabs === 'function') {
             window.initializeEventTypeTabs();
         }
+        
+        // Auto-show event type fields if function exists (for when loading existing event data)
+        if (typeof window.autoShowEventTypeFields === 'function') {
+            console.log('Auto-showing event type fields...');
+            window.autoShowEventTypeFields();
+        }
+        
         initializeEventTitleClick();
 
         // Initialize save button

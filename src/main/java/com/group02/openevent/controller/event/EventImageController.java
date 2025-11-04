@@ -33,21 +33,58 @@ public class EventImageController {
     // Create new image
     @PostMapping
     public ResponseEntity<EventImage> createImage(@RequestBody Map<String, Object> imageData) {
+        log.info("=== EventImageController.createImage CALLED ===");
+        log.info("Received imageData: {}", imageData);
+        
         try {
             String url = (String) imageData.get("url");
             Integer orderIndex = (Integer) imageData.get("orderIndex");
             Boolean isMainPoster = (Boolean) imageData.get("isMainPoster");
-            Long eventId = Long.valueOf(imageData.get("eventId").toString());
+            Long eventId = null;
+            
+            // Handle eventId conversion safely
+            Object eventIdObj = imageData.get("eventId");
+            if (eventIdObj != null) {
+                if (eventIdObj instanceof Number) {
+                    eventId = ((Number) eventIdObj).longValue();
+                } else {
+                    eventId = Long.valueOf(eventIdObj.toString());
+                }
+            }
+
+            log.info("Parsed values - url: {}, orderIndex: {}, isMainPoster: {}, eventId: {}", 
+                    url, orderIndex, isMainPoster, eventId);
+
+            if (url == null || url.isEmpty()) {
+                log.error("URL is null or empty");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            if (eventId == null) {
+                log.error("EventId is null");
+                return ResponseEntity.badRequest().build();
+            }
 
             EventImage image = new EventImage();
             image.setUrl(url);
             image.setOrderIndex(orderIndex != null ? orderIndex : 0);
             image.setMainPoster(isMainPoster != null ? isMainPoster : false);
 
+            log.info("Creating EventImage: url={}, orderIndex={}, isMainPoster={}, eventId={}", 
+                    url, image.getOrderIndex(), image.isMainPoster(), eventId);
+
             EventImage createdImage = eventImageService.create(image, eventId);
+            
+            log.info("Image created successfully with ID: {}", createdImage.getId());
             return ResponseEntity.ok(createdImage);
+        } catch (NumberFormatException e) {
+            log.error("Error parsing eventId: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            log.error("Runtime error creating image: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            log.error("Error creating image: {}", e.getMessage());
+            log.error("Error creating image: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }

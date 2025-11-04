@@ -68,7 +68,7 @@ public class EventServiceImpl implements EventService {
     private EntityManager entityManager;
 
     @Override
-    public EventResponse saveEvent(EventCreationRequest request) {
+    public EventResponse saveEvent(EventCreationRequest request,Long hostId) {
         Event event;
         log.info("Saving event {}", request.getEventType());
         log.info("Saving event from DTO type: {}", request.getClass().getName());
@@ -103,7 +103,7 @@ public class EventServiceImpl implements EventService {
         if (event.getSubEvents() != null) {
             event.getSubEvents().forEach(sub -> sub.setParentEvent(finalEvent));
         }
-        event.setHost(hostRepo.getHostById(Long.parseLong("1")));
+        event.setHost(hostRepo.getHostById(hostId));
         return eventMapper.toEventResponse(eventRepo.save(event));
     }
 

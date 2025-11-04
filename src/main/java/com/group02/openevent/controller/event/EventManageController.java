@@ -1,16 +1,23 @@
 package com.group02.openevent.controller.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.group02.openevent.controller.request.RequestController;
 import com.group02.openevent.dto.department.OrderDTO;
+import com.group02.openevent.dto.event.RequestCreateDTO;
+import com.group02.openevent.dto.notification.RequestFormDTO;
 import com.group02.openevent.dto.request.update.EventUpdateRequest;
+import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.mapper.EventMapper;
+import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.request.RequestType;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.*;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.RequestService;
 import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.impl.CustomerServiceImpl;
 import jakarta.servlet.http.HttpSession;
@@ -18,16 +25,21 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.group02.openevent.service.PlaceService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -35,6 +47,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EventManageController {
+    @Autowired
+    RequestService requestService;
     @Autowired
     EventService eventService;
     @Autowired
@@ -52,6 +66,7 @@ public class EventManageController {
     @Autowired
     EventMapper eventMapper;
     CustomerServiceImpl customerService;
+    private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
     private Long getCustomerAccountId(HttpSession session) {
 //        (Long) session.getAttribute("ACCOUNT_ID");
         Long accountId = Long.parseLong("2");
@@ -149,10 +164,42 @@ public class EventManageController {
         
         return "fragments/update-ticket :: content";
     }
-//    @GetMapping("/fragments/dashboard")
-//    public String dashboard(Model model) {
-//        return "fragments/dashboard :: content";
-//    }
+    private Long getAccountIdFromSession(HttpSession session) {
+        Long hostId = (Long) session.getAttribute("ACCOUNT_ID");
+        if (hostId == null) {
+            throw new RuntimeException("User not logged in");
+        }
+        return hostId;
+    }
+    @GetMapping("/fragments/request-form")
+    public String request(@RequestParam Long eventId,
+                          Model model,HttpSession session) {
+        RequestFormDTO formData = new RequestFormDTO();
+        try{
+            formData =requestService.getRequestFormData(eventId);
+        }catch (Exception e){
+            logger.error(e.getMessage());
+        }
+        model.addAttribute("formData", formData);
+
+
+        try {
+            // Lấy ID người dùng đang đăng nhập (an toàn từ session)
+            Long currentSenderId = getAccountIdFromSession(session); // <-- Dùng hàm helper an toàn
+
+            // Dùng service của bạn để lấy danh sách
+            List<RequestDTO> sentRequests = requestService.getRequestsBySenderId(currentSenderId);
+
+            // Đưa danh sách ra view
+            model.addAttribute("sentRequests", sentRequests);
+
+        } catch (Exception e) {
+            logger.error("Không thể tải danh sách request đã gửi: " + e.getMessage());
+            model.addAttribute("sentRequests", new ArrayList<>()); // Trả về danh sách rỗng nếu lỗi
+        }
+
+        return "fragments/request-form :: content";
+    }
 //
 //    @GetMapping("/fragments/reports")
 //    public String reports(Model model) {

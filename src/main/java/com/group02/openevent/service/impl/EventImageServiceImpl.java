@@ -35,11 +35,18 @@ public class EventImageServiceImpl implements EventImageService {
     @Override
     @Transactional
     public EventImage create(EventImage image, Long eventId) {
+        log.info("=== EventImageServiceImpl.create CALLED ===");
+        log.info("Creating image: url={}, orderIndex={}, isMainPoster={}, eventId={}", 
+                image.getUrl(), image.getOrderIndex(), image.isMainPoster(), eventId);
+        
         // Load event from database
         Event event = eventRepo.findById(eventId).orElse(null);
         if (event == null) {
+            log.error("Event not found with id: {}", eventId);
             throw new RuntimeException("Event not found with id: " + eventId);
         }
+
+        log.info("Event found: id={}, title={}", event.getId(), event.getTitle());
 
         // Set the event
         image.setEvent(event);
@@ -47,7 +54,9 @@ public class EventImageServiceImpl implements EventImageService {
         // KHÔNG unset mainPoster khác - cho phép nhiều poster cùng có mainPoster = true
         // Tất cả ảnh từ nút "Thêm poster" đều có mainPoster = true
 
-        return eventImageRepo.save(image);
+        EventImage savedImage = eventImageRepo.save(image);
+        log.info("Image saved successfully with ID: {}", savedImage.getId());
+        return savedImage;
     }
 
     @Override

@@ -82,7 +82,7 @@ public class EventUpdateRequest {
     String skillLevel;
     String prerequisites;
 
-    // ❗ Dùng DTO thay vì entity
+
     List<Long> subEventIds;
     List<TicketTypeRequest> ticketTypes;
     List<EventImage> eventImages;

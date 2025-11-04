@@ -7,8 +7,10 @@ import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.service.DepartmentService;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
+import com.group02.openevent.service.impl.HostServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -35,14 +37,15 @@ public class HostController {
 
     private final EventService eventService;
     private final IImageService imageService;
-
+    private final HostServiceImpl hostService;
     @Autowired
-    public HostController(EventService eventService, IImageService imageService) {
+    public HostController(EventService eventService, IImageService imageService, HostServiceImpl hostService) {
         this.eventService = eventService;
         this.imageService = imageService;
+        this.hostService = hostService;
     }
 
-    private Long getHostAccountId(HttpSession session) {
+    private Long getAccountIdFromSession(HttpSession session) {
         Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
         if (accountId == null) {
             throw new RuntimeException("User not logged in");
@@ -67,18 +70,20 @@ public class HostController {
     @GetMapping("/fragment/dashboard")
     public String dashboard(Model model, HttpSession session) {
 //        getHostAccountId(session);
-        Long id = Long.parseLong("1");
-        List<Event> eventResponses = eventService.getEventByHostId(id);
+        Long hostId = hostService.findHostIdByAccountId(getAccountIdFromSession(session));
+        log.info("hostId={}", hostId);
+        List<Event> eventResponses = eventService.getEventByHostId(hostId);
         model.addAttribute("events", eventResponses);
         return "fragments/dashboard :: content";
     }
 
     @GetMapping("/fragment/events")
     public String events(Model model, HttpSession session) {
-        Long id = Long.parseLong("1");
+        Long hostId = hostService.findHostIdByAccountId(getAccountIdFromSession(session));
+        log.info("hostId={}", hostId);
         EventCreationRequest request = new EventCreationRequest();
         model.addAttribute("eventForm", request);
-        List<Event> eventResponses = eventService.getEventByHostId(id);
+        List<Event> eventResponses = eventService.getEventByHostId(hostId);
         List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
         model.addAttribute("listTypeEvent", listTypeEvent);
         model.addAttribute("events", eventResponses);

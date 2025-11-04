@@ -104,6 +104,16 @@
         <div class="container">
             <div class="latest-events-header">
                 <h2 class="section-title">Latest Events</h2>
+
+                <div class="chip-group">
+                    <button class="chip is-active" data-filter="all">All</button>
+                    <button class="chip" data-filter="Music">Music</button>
+                    <button class="chip" data-filter="Workshop">Workshop</button>
+                    <button class="chip" data-filter="Festival">Festival</button>
+                    <button class="chip" data-filter="Competition">Competition</button>
+                    <button class="chip" data-filter="Other">Other</button>
+                </div>
+
                 <div class="pagination-controls" th:if="${!#lists.isEmpty(latestEvents)}">
                     <button class="pagination-btn prev-btn" id="prevLatestBtn" disabled>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -125,36 +135,38 @@
                 </div>
             </div>
 
-            <div class="grid grid-3" th:if="${!#lists.isEmpty(latestEvents)}">
-                <article class="event-card-simple" th:each="ev : ${latestEvents}">
-                    <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
-                       style="text-decoration: none; color: inherit;">
-                        <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
-                        <div class="card-body">
-                            <h3 class="card-title" th:text="${ev.title}">Event title</h3>
-                            <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">
-                                City • Date • Duration</p>
-                            <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
+            <div class="latest-events-track" th:if="${!#lists.isEmpty(latestEvents)}">
+                <div class="latest-events-container">
+                    <article class="event-card-simple" th:each="ev : ${latestEvents}">
+                        <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
+                           style="text-decoration: none; color: inherit;">
+                            <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
+                            <div class="card-body">
+                                <h3 class="card-title" th:text="${ev.title}">Event title</h3>
+                                <p class="card-meta" th:text="${ev.city + ' • ' + ev.dateLabel + ' • ' + ev.durationLabel}">
+                                    City • Date • Duration</p>
+                                <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
-                            <div class="capacity">
-                                <div class="capacity-row">
-                                    <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini"
-                                          th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                <div class="capacity">
+                                    <div class="capacity-row">
+                                        <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                        <span class="capacity-mini"
+                                              th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                    </div>
+                                    <div class="bar">
+                                        <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
+                                    </div>
                                 </div>
-                                <div class="bar">
-                                    <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
+
+                                <div class="event-tags">
+                                    <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
+                                    <span class="badge badge-live" th:if="${ev.live}">Live</span>
+                                    <span class="tag" th:if="${ev.soldOut}">Sold Out</span>
                                 </div>
                             </div>
-
-                            <div class="event-tags">
-                                <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
-                                <span class="badge badge-live" th:if="${ev.live}">Live</span>
-                                <span class="tag" th:if="${ev.soldOut}">Sold Out</span>
-                            </div>
-                        </div>
-                    </a>
-                </article>
+                        </a>
+                    </article>
+                </div>
             </div>
 
             <!-- Empty state for latest events -->
@@ -172,42 +184,62 @@
                     <button class="chip is-active" data-filter="all">All</button>
                     <button class="chip" data-filter="Music">Music</button>
                     <button class="chip" data-filter="Workshop">Workshop</button>
-                    <button class="chip" data-filter="Conference">Conference</button>
                     <button class="chip" data-filter="Festival">Festival</button>
                     <button class="chip" data-filter="Competition">Competition</button>
                     <button class="chip" data-filter="Other">Other</button>
                 </div>
+                <div class="pagination-controls" th:if="${!#lists.isEmpty(liveEvents)}">
+                    <button class="pagination-btn prev-btn" id="prevLiveBtn" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15.0898 4.08L8.56984 10.6C7.79984 11.37 7.79984 12.63 8.56984 13.4L15.0898 19.92"
+                                  stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                        </svg>
+                        <span>Previous</span>
+                    </button>
+                    <span class="pagination-info" id="livePaginationInfo">1 of 1</span>
+                    <button class="pagination-btn next-btn" id="nextLiveBtn">
+                        <span>Next</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.91016 19.92L15.4302 13.4C16.2002 12.63 16.2002 11.37 15.4302 10.6L8.91016 4.08"
+                                  stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <div class="grid grid-3" th:if="${!#lists.isEmpty(liveEvents)}">
-                <article class="event-card" th:each="ev : ${liveEvents}" th:attr="data-tags=${ev.eventTypeTag}">
-                    <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
-                       style="text-decoration: none; color: inherit;">
-                        <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
-                        <div class="card-body">
-                            <h3 class="card-title" th:text="${ev.title}">Event title</h3>
-                            <p class="card-meta" th:text="${ev.city + ' • Today • ' + ev.durationLabel}">City • Today •
-                                Duration</p>
-                            <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
+            <div class="live-events-track" th:if="${!#lists.isEmpty(liveEvents)}">
+                <div class="live-events-container">
+                    <article class="event-card-simple" th:each="ev : ${liveEvents}" th:attr="data-tags=${ev.eventTypeTag}">
+                        <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
+                           style="text-decoration: none; color: inherit;">
+                            <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
+                            <div class="card-body">
+                                <h3 class="card-title" th:text="${ev.title}">Event title</h3>
+                                <p class="card-meta" th:text="${ev.city + ' • Today • ' + ev.durationLabel}">City • Today •
+                                    Duration</p>
+                                <p class="event-org" th:text="${'Organizer: ' + ev.organizer}">Organizer: ...</p>
 
-                            <div class="capacity">
-                                <div class="capacity-row">
-                                    <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
-                                    <span class="capacity-mini"
-                                          th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                <div class="capacity">
+                                    <div class="capacity-row">
+                                        <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
+                                        <span class="capacity-mini"
+                                              th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                    </div>
+                                    <div class="bar">
+                                        <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
+                                    </div>
                                 </div>
-                                <div class="bar">
-                                    <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
+
+                                <div class="event-tags">
+                                    <span class="tag" th:text="${'#' + ev.eventTypeTag}">Tag</span>
+                                    <span class="badge badge-live">Live</span>
                                 </div>
                             </div>
-
-                            <div class="event-tags">
-                                <span class="tag" th:text="${'#' + ev.eventTypeTag}">Tag</span>
-                                <span class="badge badge-live">Live</span>
-                            </div>
-                        </div>
-                    </a>
-                </article>
+                        </a>
+                    </article>
+                </div>
             </div>
 
             <div class="grid grid-3" th:if="${#lists.isEmpty(liveEvents)}">

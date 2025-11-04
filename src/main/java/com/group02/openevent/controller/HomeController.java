@@ -50,12 +50,12 @@ public class HomeController {
             List<EventCardDTO> posterEvents = eventService.getPosterEvents();
             model.addAttribute("posterEvents", posterEvents != null ? posterEvents : List.of());
 
-            // Get live events
-            List<EventCardDTO> liveEvents = eventService.getLiveEvents(6);
+            // Get live events (15 events, only ONGOING status)
+            List<EventCardDTO> liveEvents = eventService.getLiveEvents(15);
             model.addAttribute("liveEvents", liveEvents != null ? liveEvents : List.of());
 
-            // Get latest events (only 3 for homepage)
-            List<EventCardDTO> latestEvents = eventService.getRecentEvents(3).stream()
+            // Get latest events (15 events, sorted by newest first)
+            List<EventCardDTO> latestEvents = eventService.getRecentEvents(15).stream()
                     .map(eventService::convertToDTO)
                     .collect(Collectors.toList());
             model.addAttribute("latestEvents", latestEvents);

@@ -31,6 +31,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +118,25 @@ public class EventController {
     @ResponseBody
     public Optional<Event> getEvent(@PathVariable Long id) {
         return eventService.getEventById(id);
+    }
+
+    @GetMapping("/{id}/participants/count")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getParticipantsCount(@PathVariable Long id) {
+        try {
+            long count = eventService.countUniqueParticipantsByEventId(id);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("count", count);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error getting participants count for event {}: {}", id, e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("count", 0);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/update/{id}")

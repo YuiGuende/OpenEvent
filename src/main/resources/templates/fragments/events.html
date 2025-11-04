@@ -80,15 +80,15 @@
                           th:text="'LIVE • ĐANG DIỄN RA'">LIVE • ĐANG DIỄN RA</span>
                     
                     <!-- PUBLIC status: check thời gian -->
-                    <span th:if="${event.status.name() == 'PUBLIC' && event.startsAt != null && event.startsAt.isAfter(currentTime)}" 
+                    <span th:if="${event.status.name() == 'PUBLIC' && event.startsAt != null && event.startsAt.isAfter(T(java.time.LocalDateTime).now())}" 
                           class="status-badge upcoming"
                           th:text="'PUBLIC • SẮP TỚI'">PUBLIC • SẮP TỚI</span>
                     
-                    <span th:if="${event.status.name() == 'PUBLIC' && event.endsAt != null && event.endsAt.isBefore(currentTime)}" 
+                    <span th:if="${event.status.name() == 'PUBLIC' && event.endsAt != null && event.endsAt.isBefore(T(java.time.LocalDateTime).now())}" 
                           class="status-badge finished"
                           th:text="'KẾT THÚC'">KẾT THÚC</span>
                     
-                    <span th:if="${event.status.name() == 'PUBLIC' && !(event.startsAt != null && event.startsAt.isAfter(currentTime)) && !(event.endsAt != null && event.endsAt.isBefore(currentTime))}" 
+                    <span th:if="${event.status.name() == 'PUBLIC' && !(event.startsAt != null && event.startsAt.isAfter(T(java.time.LocalDateTime).now())) && !(event.endsAt != null && event.endsAt.isBefore(T(java.time.LocalDateTime).now()))}" 
                           class="status-badge live"
                           th:text="'LIVE • ĐANG DIỄN RA'">LIVE • ĐANG DIỄN RA</span>
                 </div>

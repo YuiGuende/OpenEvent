@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo - OpenEvent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+    <header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
+
+    <div class="page-header">
+        <div class="container">
+            <h2><i class="bi bi-bell"></i> Thông báo của tôi</h2>
+            <p class="mb-0 text-muted">Xem và quản lý thông báo từ các sự kiện</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Danh sách thông báo</h4>
+            <button id="markAllReadBtn" class="btn btn-secondary" style="display:none;">
+                <i class="bi bi-check-all"></i> Đánh dấu tất cả đã đọc
+            </button>
+        </div>
+
+        <div id="notificationsList" class="notifications-list">
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-hourglass-split" style="font-size: 3rem;"></i>
+                <p class="mt-2">Đang tải thông báo...</p>
+            </div>
+        </div>
+    </div>
+
+        <script>
+            async function loadNotifications() {
+                try {
+                    const response = await fetch('/api/notifications/my-notifications', {
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load notifications');
+                    }
+                    
+                    const data = await response.json();
+                    displayNotifications(data.notifications || []);
+                } catch (error) {
+                    console.error('Error loading notifications:', error);
+                    document.getElementById('notificationsList').innerHTML = 
+                        '<div class="text-center text-danger py-5"><p>Lỗi khi tải thông báo</p></div>';
+                }
+            }
+
+            function displayNotifications(notifications) {
+                const listDiv = document.getElementById('notificationsList');
+                const markAllBtn = document.getElementById('markAllReadBtn');
+                
+                if (!notifications || notifications.length === 0) {
+                    listDiv.innerHTML = 
+                        '<div class="text-center text-muted py-5">' +
+                        '<i class="bi bi-inbox" style="font-size: 3rem;"></i>' +
+                        '<p class="mt-2">Chưa có thông báo nào</p>' +
+                        '</div>';
+                    markAllBtn.style.display = 'none';
+                    return;
+                }
+
+                const hasUnread = notifications.some(n => !n.isRead);
+                markAllBtn.style.display = hasUnread ? 'block' : 'none';
+
+                listDiv.innerHTML = notifications.map(notif => {
+                    const date = new Date(notif.createdAt).toLocaleString('vi-VN');
+                    const isReadClass = notif.isRead ? 'read' : 'unread';
+                    const readBadge = notif.isRead ? '' : '<span class="unread-badge"></span>';
+                    
+                    return `
+                        <div class="notification-item ${isReadClass}" data-notification-id="${notif.notificationId}">
+                            <div class="notification-content">
+                                ${readBadge}
+                                <div class="notification-header">
+                                    <h4 class="notification-title">${notif.title || '(Không có tiêu đề)'}</h4>
+                                    <span class="notification-time">${date}</span>
+                                </div>
+                                <p class="notification-message">${notif.message}</p>
+                                <div class="notification-meta">
+                                    <span class="meta-item">
+                                        <i class="bi bi-calendar-event"></i>
+                                        <strong>Sự kiện:</strong> ${notif.eventTitle || 'N/A'}
+                                    </span>
+                                    <span class="meta-item">
+                                        <i class="bi bi-person"></i>
+                                        <strong>Host:</strong> ${notif.hostName || 'N/A'}
+                                    </span>
+                                    ${notif.fileURL ? `
+                                        <a href="${notif.fileURL}" target="_blank" class="file-link">
+                                            <i class="bi bi-paperclip"></i> Xem file đính kèm
+                                        </a>
+                                    ` : ''}
+                                </div>
+                                ${notif.eventId ? `
+                                    <a href="/event/${notif.eventId}" class="btn btn-sm btn-primary mt-2">
+                                        <i class="bi bi-eye"></i> Xem sự kiện
+                                    </a>
+                                ` : ''}
+                            </div>
+                            ${!notif.isRead ? `
+                                <button class="mark-read-btn" onclick="markAsRead(${notif.notificationId})">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async function markAsRead(notificationId) {
+                try {
+                    const response = await fetch(`/api/notifications/${notificationId}/mark-read`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        // Reload notifications
+                        loadNotifications();
+                        // Update header badge
+                        if (typeof loadNotificationCount === 'function') {
+                            loadNotificationCount();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error marking as read:', error);
+                    alert('Lỗi khi đánh dấu đã đọc');
+                }
+            }
+
+            document.getElementById('markAllReadBtn').addEventListener('click', async function() {
+                try {
+                    const unreadItems = document.querySelectorAll('.notification-item.unread');
+                    const promises = Array.from(unreadItems).map(item => {
+                        const notificationId = item.getAttribute('data-notification-id');
+                        return fetch(`/api/notifications/${notificationId}/mark-read`, {
+                            method: 'POST',
+                            credentials: 'include'
+                        });
+                    });
+                    
+                    await Promise.all(promises);
+                    loadNotifications();
+                    if (typeof loadNotificationCount === 'function') {
+                        loadNotificationCount();
+                    }
+                } catch (error) {
+                    console.error('Error marking all as read:', error);
+                    alert('Lỗi khi đánh dấu tất cả đã đọc');
+                }
+            });
+
+            // Load on page load
+            loadNotifications();
+        </script>
+
+        <style>
+            .page-header {
+                background-color: white;
+                color: #333;
+                padding: 30px 0;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .notifications-list {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .notification-item {
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 20px;
+                position: relative;
+                transition: all 0.2s;
+            }
+
+            .notification-item.unread {
+                background: #f0f9ff;
+                border-left: 4px solid #3b82f6;
+            }
+
+            .notification-item.read {
+                opacity: 0.8;
+            }
+
+            .notification-item:hover {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            .unread-badge {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                width: 12px;
+                height: 12px;
+                background: #ef4444;
+                border-radius: 50%;
+            }
+
+            .notification-content {
+                flex: 1;
+            }
+
+            .notification-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: start;
+                margin-bottom: 10px;
+            }
+
+            .notification-title {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+            .notification-time {
+                font-size: 12px;
+                color: #6b7280;
+            }
+
+            .notification-message {
+                margin: 10px 0;
+                color: #374151;
+                line-height: 1.6;
+            }
+
+            .notification-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 15px;
+                margin-top: 15px;
+                font-size: 14px;
+                color: #6b7280;
+            }
+
+            .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .meta-item i {
+                color: #9ca3af;
+            }
+
+            .file-link {
+                color: #3b82f6;
+                text-decoration: none;
+            }
+
+            .file-link:hover {
+                text-decoration: underline;
+            }
+
+            .mark-read-btn {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: #3b82f6;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .mark-read-btn:hover {
+                background: #2563eb;
+            }
+        </style>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+    <!-- WebSocket Libraries for Realtime Notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>
+

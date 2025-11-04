@@ -1,6 +1,7 @@
 package com.group02.openevent.model.notification;
 
 import com.group02.openevent.model.account.Account;
+import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.request.Request;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -45,6 +46,10 @@ public class Notification {
 
     @ManyToOne
     private Request relatedRequest;
+
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
 
     @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NotificationReceiver> receivers = new ArrayList<>();

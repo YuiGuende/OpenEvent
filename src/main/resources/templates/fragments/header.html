@@ -30,7 +30,7 @@
                 <button id="userBtn" class="btn btn-primary user-trigger user-button" type="button">
                     <span id="userAvatar" class="avatar user-avatar">U</span>
                     <span id="userName" class="user-name">User</span>
-                    <span class="dropdown-arrow user-arrow">▾</span>
+                    <span id="notificationDot" class="notification-dot" style="display:none;"></span>
                 </button>
                 <div id="userDropdown" class="dropdown"
                      style="display:none; position:absolute; right:0; top:50px; min-width:220px; background:#fff; border:1px solid #e5e7eb; box-shadow:0 8px 24px rgba(0,0,0,0.12); border-radius:12px; overflow:hidden; z-index:1000;">
@@ -41,6 +41,11 @@
                        style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My orders</a>
                     <a href="/user" class="dropdown-item"
                        style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My profile</a>
+                    <a href="/notifications" id="notificationMenuItem" class="dropdown-item notification-menu-item"
+                       style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; text-decoration:none; color:#111827;">
+                        <span>Notifications</span>
+                        <span id="notificationBadge" class="notification-badge" style="display:none;">0</span>
+                    </a>
                     <div style="border-top:1px solid #f1f5f9;"></div>
                     <a href="#" id="logoutAction" class="dropdown-item"
                        style="display:block; padding:10px 12px; text-decoration:none; color:#ef4444; font-weight:600;">Sign
@@ -105,6 +110,83 @@
                     return 'User #' + (accountId || '');
                 }
 
+                // Load notification count
+                function loadNotificationCount() {
+                    fetch('/api/notifications/unread-count', {credentials: 'include'})
+                        .then(function (r) {
+                            return r.ok ? r.json() : {count: 0};
+                        })
+                        .then(function (data) {
+                            var count = data.count || 0;
+                            var dot = document.getElementById('notificationDot');
+                            var badge = document.getElementById('notificationBadge');
+                            
+                            if (count > 0) {
+                                if (dot) dot.style.display = 'block';
+                                if (badge) {
+                                    badge.style.display = 'inline-flex';
+                                    badge.textContent = count > 99 ? '99+' : count;
+                                }
+                            } else {
+                                if (dot) dot.style.display = 'none';
+                                if (badge) badge.style.display = 'none';
+                            }
+                        })
+                        .catch(function () { /* ignore */ });
+                }
+
+                // Initialize WebSocket for realtime notifications
+                function initWebSocket() {
+                    try {
+                        // Check if SockJS is available
+                        if (typeof SockJS === 'undefined') {
+                            console.log('SockJS not loaded, skipping WebSocket initialization');
+                            return;
+                        }
+                        
+                        var accountId = null;
+                        fetch('/api/current-user', {credentials: 'include'})
+                            .then(function (r) { return r.ok ? r.json() : {authenticated: false}; })
+                            .then(function (data) {
+                                if (data && data.authenticated && data.accountId) {
+                                    accountId = data.accountId;
+                                    
+                                    var socket = new SockJS('/ws');
+                                    var stompClient = Stomp.over(socket);
+                                    
+                                    stompClient.connect({}, function() {
+                                        console.log('WebSocket connected for notifications');
+                                        
+                                        // Subscribe to user's notification queue
+                                        stompClient.subscribe('/queue/notifications/' + accountId, function(message) {
+                                            var notification = JSON.parse(message.body);
+                                            console.log('Received notification:', notification);
+                                            
+                                            // Update notification count
+                                            loadNotificationCount();
+                                            
+                                            // Show browser notification (optional)
+                                            if (Notification.permission === 'granted') {
+                                                new Notification(notification.title || 'New Notification', {
+                                                    body: notification.message,
+                                                    icon: '/img/logo1.png'
+                                                });
+                                            }
+                                        });
+                                    }, function(error) {
+                                        console.error('WebSocket connection error:', error);
+                                    });
+                                    
+                                    // Store client for cleanup
+                                    window.stompClient = stompClient;
+                                }
+                            })
+                            .catch(function() { /* ignore */ });
+                    } catch (e) {
+                        console.error('WebSocket initialization error:', e);
+                    }
+                }
+
                 // Fetch current user once
                 fetch('/api/current-user').then(function (r) {
                     return r.ok ? r.json() : {authenticated: false};
@@ -119,6 +201,13 @@
                                 var initial = data.email ? data.email.split('@')[0].charAt(0) : 'U';
                                 av.textContent = initial.toUpperCase();
                             }
+                            
+                            // Load notification count and init WebSocket
+                            loadNotificationCount();
+                            initWebSocket();
+                            
+                            // Refresh notification count every 30 seconds
+                            setInterval(loadNotificationCount, 30000);
                         } else {
                             if (login) login.style.display = '';
                             if (menu) menu.style.display = 'none';
@@ -236,6 +325,43 @@
                 .user-arrow {
                     display: none !important;
                 }
+            }
+
+            /* Notification dot on user button */
+            .notification-dot {
+                position: absolute;
+                top: 4px;
+                right: 4px;
+                width: 8px;
+                height: 8px;
+                background: #ef4444;
+                border-radius: 50%;
+                border: 2px solid #fff;
+                z-index: 10;
+            }
+
+            .user-button {
+                position: relative;
+            }
+
+            /* Notification badge in dropdown */
+            .notification-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 20px;
+                height: 20px;
+                padding: 0 6px;
+                background: #ef4444;
+                color: #ffffff;
+                border-radius: 10px;
+                font-size: 11px;
+                font-weight: 600;
+                line-height: 1;
+            }
+
+            .notification-menu-item:hover {
+                background: #f9fafb;
             }
         </style>
     </div>

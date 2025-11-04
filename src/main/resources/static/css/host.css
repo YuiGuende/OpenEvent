@@ -118,92 +118,32 @@ body.sidebar-collapsed .main-content {
     transform: rotate(180deg);
 }
 
-/* Sidebar Header */
-.sidebar-header {
-    padding: 1.5rem 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    color: inherit;
-}
-
-.logo-container:hover {
-    text-decoration: none;
-    color: inherit;
-}
-
-.logo-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 65px;
-    height: 65px;
-    flex-shrink: 0;
-}
-
-.logo-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-}
-
-.logo-text {
-    font-size: 1.5rem;
-    margin-left: -9px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    white-space: nowrap;
-    color: white; /* Fallback for browsers that don't support gradient text */
-}
-
-/* Sidebar Status */
-.sidebar-status {
-    padding: 1rem 1.25rem;
-}
-
-.status-badge {
-    background: rgba(255, 107, 53, 0.15);
-    border: 1px solid rgba(255, 107, 53, 0.3);
-    border-radius: 8px;
-    padding: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.status-badge i {
-    color: #ff6b35;
-}
-
-.status-badge span {
-    color: #ff6b35;
-}
-
-.status-badge small {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.75rem;
-    margin-left: auto;
-}
-
-/* Legacy logo styles (kept for backward compatibility) */
 .logo {
     display: flex;
     padding-left: 30px;
     align-items: center;
+    /* căn giữa theo chiều dọc */
     gap: 0.5rem;
+    /* khoảng cách giữa logo và text */
+}
+
+.logo-icon {
+    width: 131px;
+    padding-left: 42px;
+    /* chỉnh nhỏ lại */
+    height: 100px;
+    /* giữ vuông cho cân đối */
+    object-fit: contain;
+    /* tránh méo ảnh */
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    /* chỉnh chữ to vừa đẹp */
+    font-weight: bold;
+    color: white;
+    line-height: 1;
+    /* giúp chữ cân đối theo chiều dọc */
 }
 
 .header-left {
@@ -247,29 +187,6 @@ body.sidebar-collapsed .main-content {
 }
 
 /* Removed duplicate .header-right - already defined above */
-
-.btn-homepage {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.btn-homepage:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-    color: white;
-    text-decoration: none;
-}
 
 .btn-view-homepage {
     background: rgba(255, 255, 255, 0.15);
@@ -455,7 +372,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .btn-share {
-    background: #1EA86B;
+    background: #6f42c1;
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -470,7 +387,7 @@ body.sidebar-collapsed .main-content {
 }
 
 .btn-share:hover {
-    background: #1EA86B;
+    background: #5a32a3;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(111, 66, 193, 0.4);
 }
@@ -732,43 +649,24 @@ body.sidebar-collapsed .main-content {
 .event-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-bottom: 0.75rem;
     flex-wrap: wrap;
-}
-
-.date-time-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #f8f9fa;
-    padding: 0.4rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-
-.date-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #495057;
-    white-space: nowrap;
 }
 
 .date-box {
     background: #6f42c1;
     color: white;
     padding: 0.3rem 0.6rem;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 600;
-    white-space: nowrap;
 }
 
 .time {
-    font-size: 0.85rem;
-    color: #6c757d;
+    font-size: 0.9rem;
+    color: #666;
     font-weight: 500;
-    white-space: nowrap;
 }
 
 .status-badge {
@@ -781,26 +679,6 @@ body.sidebar-collapsed .main-content {
 .status-badge.draft {
     background: #fff3cd;
     color: #856404;
-}
-
-.status-badge.cancel {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-badge.finished {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-.status-badge.upcoming {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-badge.live {
-    background: #fff3e0;
-    color: #ff9800;
 }
 
 .event-sales {

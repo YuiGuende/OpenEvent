@@ -367,18 +367,6 @@ const HostDashboard = {
                     console.log('URL updated to:', newUrl);
                 }
 
-                // Initialize events page if it's the events fragment
-                if (fragmentUrl.includes('/fragment/events') || fragmentUrl.includes('/events')) {
-                    setTimeout(() => {
-                        if (typeof window.initializeEventsPage === 'function') {
-                            console.log('Calling initializeEventsPage after loading events fragment');
-                            window.initializeEventsPage();
-                        } else {
-                            console.warn('initializeEventsPage function not found');
-                        }
-                    }, 100);
-                }
-
             })
             .catch(err => {
                 console.error("Lỗi load fragment:", err);
@@ -402,12 +390,6 @@ const HostDashboard = {
             case "/events":
                 fragmentUrl = "/fragment/events";
                 activeId = "nav-events";
-                // Initialize events page after loading
-                setTimeout(() => {
-                    if (typeof window.initializeEventsPage === 'function') {
-                        window.initializeEventsPage();
-                    }
-                }, 100);
                 break;
             case "/wallet":
                 fragmentUrl = "/fragment/wallet";

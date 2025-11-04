@@ -1,25 +1,18 @@
 package com.group02.openevent.controller.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.group02.openevent.controller.request.RequestController;
 import com.group02.openevent.dto.department.OrderDTO;
 import com.group02.openevent.dto.form.EventFormDTO;
-import com.group02.openevent.dto.event.RequestCreateDTO;
-import com.group02.openevent.dto.notification.RequestFormDTO;
 import com.group02.openevent.dto.request.update.EventUpdateRequest;
-import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.mapper.EventMapper;
-import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.model.order.OrderStatus;
-import com.group02.openevent.model.request.RequestType;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.*;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.EventFormService;
 import com.group02.openevent.service.EventService;
-import com.group02.openevent.service.RequestService;
 import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.impl.CustomerServiceImpl;
 import jakarta.servlet.http.HttpSession;
@@ -27,21 +20,16 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.group02.openevent.service.PlaceService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -49,8 +37,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EventManageController {
-    @Autowired
-    RequestService requestService;
     @Autowired
     EventService eventService;
     @Autowired
@@ -71,7 +57,6 @@ public class EventManageController {
     @Autowired
     EventFormService eventFormService;
     CustomerServiceImpl customerService;
-    private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
 
     private Long getCustomerAccountId(HttpSession session) {
 //        (Long) session.getAttribute("ACCOUNT_ID");
@@ -120,25 +105,25 @@ public class EventManageController {
     @GetMapping("/fragments/update-event")
     public String updateEvent(@RequestParam Long id, Model model) throws JsonProcessingException {
         log.info("🔍 Loading update-event fragment for event ID: {}", id);
-        
+
         Event event = eventService.getEventResponseById(id);
         EventUpdateRequest request = eventMapper.toUpdateRequest(event);
         model.addAttribute("request", request);
-        
+
         // Load places
         List<Place> allPlaces = placeService.getAllByEventId(id);
         log.info("📋 Places loaded for event {}: {}", id, allPlaces);
         log.info("📋 Places count: {}", allPlaces.size());
         model.addAttribute("allPlaces", allPlaces);
-        
+
         // Load tickets
         List<TicketType> allTicketTypes = ticketTypeRepo.findByEventId(id);
         log.info("🎫 Tickets loaded for event {}: {}", id, allTicketTypes);
         log.info("🎫 Tickets count: {}", allTicketTypes.size());
         model.addAttribute("allTicketTypes", allTicketTypes);
-        
+
         model.addAttribute("eventTypes", event.getClass().getSimpleName());
-        
+
         // Add speakers, schedules, and images data for the fragment
         List<Speaker> speakersList = speakerRepo.findSpeakerByEventId(id);
         List<EventSchedule> schedulesList = scheduleRepo.findByEventId(id);
@@ -146,7 +131,7 @@ public class EventManageController {
         model.addAttribute("speakersData", speakersList);
         model.addAttribute("schedulesData", schedulesList);
         model.addAttribute("imagesData", imagesList);
-        
+
         log.info("✅ All data loaded for update-event fragment");
         return "fragments/update-event :: content";
     }
@@ -163,49 +148,18 @@ public class EventManageController {
     public String ticket(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
-        
+
         // Load tickets for the ticket fragment
         List<TicketType> allTicketTypes = ticketTypeRepo.findByEventId(id);
         model.addAttribute("allTicketTypes", allTicketTypes);
-        
+
         return "fragments/update-ticket :: content";
     }
-    private Long getAccountIdFromSession(HttpSession session) {
-        Long hostId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (hostId == null) {
-            throw new RuntimeException("User not logged in");
-        }
-        return hostId;
-    }
-    @GetMapping("/fragments/request-form")
-    public String request(@RequestParam Long eventId,
-                          Model model,HttpSession session) {
-        RequestFormDTO formData = new RequestFormDTO();
-        try{
-            formData =requestService.getRequestFormData(eventId);
-        }catch (Exception e){
-            logger.error(e.getMessage());
-        }
-        model.addAttribute("formData", formData);
 
-
-        try {
-            // Lấy ID người dùng đang đăng nhập (an toàn từ session)
-            Long currentSenderId = getAccountIdFromSession(session); // <-- Dùng hàm helper an toàn
-
-            // Dùng service của bạn để lấy danh sách
-            List<RequestDTO> sentRequests = requestService.getRequestsBySenderId(currentSenderId);
-
-            // Đưa danh sách ra view
-            model.addAttribute("sentRequests", sentRequests);
-
-        } catch (Exception e) {
-            logger.error("Không thể tải danh sách request đã gửi: " + e.getMessage());
-            model.addAttribute("sentRequests", new ArrayList<>()); // Trả về danh sách rỗng nếu lỗi
-        }
-
-        return "fragments/request-form :: content";
-    }
+    //    @GetMapping("/fragments/dashboard")
+//    public String dashboard(Model model) {
+//        return "fragments/dashboard :: content";
+//    }
 //
 //    @GetMapping("/fragments/reports")
 //    public String reports(Model model) {
@@ -219,10 +173,10 @@ public class EventManageController {
 //
     @GetMapping("/fragments/orders")
     public String orders(@RequestParam Long id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) OrderStatus status,
-            Model model) {
+                         @RequestParam(defaultValue = "0") int page,
+                         @RequestParam(defaultValue = "10") int size,
+                         @RequestParam(required = false) OrderStatus status,
+                         Model model) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
@@ -316,8 +270,17 @@ public class EventManageController {
         return "fragments/dashboard-event :: content";
     }
 
+    @GetMapping("/fragments/notification")
+    public String notification(@RequestParam Long id, Model model) {
+        log.info("Loading notification fragment for event ID: {}", id);
 
+        Event event = eventService.getEventResponseById(id);
+        model.addAttribute("event", event);
+        model.addAttribute("eventId", id);
 
+        log.info("Notification fragment loaded for event: {}", event.getTitle());
+        return "fragments/notification :: content";
+    }
 
 
 }

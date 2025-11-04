@@ -112,6 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
             initializer: function() {
                 console.log('Initializing QR codes page...');
             }
+        },
+        {
+            path: `/manage/event/${eventId}/notification`,
+            fragment: `/fragments/notification?id=${eventId}`,
+            title: 'Thông báo',
+            initializer: function() {
+                console.log('Initializing notification page...');
+                // Notification page scripts are already in the fragment
+            }
         }
     ];
 

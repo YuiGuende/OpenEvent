@@ -18,6 +18,11 @@
         <button class="sidebar-toggle-btn">
             <i class="fas fa-bars"></i>
         </button>
+        <div class="logo">
+            <img class="logo-icon" th:src="@{/images/logo.png}" alt="Logo">
+            <span class="logo-text">Open.events</span>
+        </div>
+
     </div>
     <div class="header-center">
         <div class="live-status">
@@ -26,10 +31,6 @@
         </div>
     </div>
     <div class="header-right">
-        <a th:href="@{/}" class="btn btn-homepage">
-            <i class="fas fa-home"></i>
-            Về trang chủ
-        </a>
         <button class="btn-view-homepage">
             <i class="fas fa-external-link-alt"></i>
             Xem trang chủ nhà tổ chức
@@ -38,23 +39,6 @@
     </div>
 </header>
 <aside class="sidebar">
-    <div class="sidebar-header">
-        <a th:href="@{/}" class="logo-container">
-            <div class="logo-icon">
-                <img src="/img/logo1.png" alt="Open.Event Logo">
-            </div>
-            <span class="logo-text">Open.Event</span>
-        </a>
-    </div>
-
-    <div class="sidebar-status">
-        <div class="status-badge">
-            <i class="fas fa-broadcast"></i>
-            <span>Trực tiếp</span>
-            <small>Nhập để gỡ bỏ</small>
-        </div>
-    </div>
-
     <nav class="nav-menu">
         <div class="nav-section">
             <h3 class="nav-title">OVERVIEW</h3>

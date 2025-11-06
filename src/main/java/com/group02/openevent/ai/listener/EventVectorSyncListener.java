@@ -3,8 +3,8 @@ package com.group02.openevent.ai.listener;
 import com.group02.openevent.ai.qdrant.service.QdrantService;
 import com.group02.openevent.ai.service.EmbeddingService;
 import com.group02.openevent.model.event.Event;
-import jakarta.persistence.PostPersist;
-import jakarta.persistence.PostUpdate;
+// import jakarta.persistence.PostPersist; // Commented out - not used
+// import jakarta.persistence.PostUpdate; // Commented out - not used
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,22 +27,33 @@ public class EventVectorSyncListener {
     }
 
     // Tự động chạy SAU KHI một sự kiện MỚI được lưu vào DB
-    @PostPersist
-    public void afterEventCreate(Event event) {
-        log.info("Event CREATED (ID: {}), starting sync to Qdrant...", event.getId());
-        upsertEventVector(event);
-    }
+    // @PostPersist - Commented out to prevent errors when embedding service is not available
+    // public void afterEventCreate(Event event) {
+    //     log.info("Event CREATED (ID: {}), starting sync to Qdrant...", event.getId());
+    //     upsertEventVector(event);
+    // }
 
     // Tự động chạy SAU KHI một sự kiện được CẬP NHẬT trong DB
-    @PostUpdate
-    public void afterEventUpdate(Event event) {
-        log.info("Event UPDATED (ID: {}), starting sync to Qdrant...", event.getId());
-        upsertEventVector(event);
-    }
+    // @PostUpdate - Commented out to prevent errors when embedding service is not available
+    // public void afterEventUpdate(Event event) {
+    //     log.info("Event UPDATED (ID: {}), starting sync to Qdrant...", event.getId());
+    //     upsertEventVector(event);
+    // }
 
     private void upsertEventVector(Event event) {
         try {
-            float[] vector = embeddingService.getEmbedding(event.getTitle());
+            float[] vector;
+            try {
+                vector = embeddingService.getEmbedding(event.getTitle());
+            } catch (IllegalStateException e) {
+                // Embedding service không khả dụng, bỏ qua sync
+                log.warn("Embedding service không khả dụng, bỏ qua sync event '{}' to Qdrant: {}", 
+                        event.getTitle(), e.getMessage());
+                return;
+            } catch (Exception e) {
+                log.error("❌ Lỗi khi tạo embedding cho event ID {}: {}", event.getId(), e.getMessage());
+                return;
+            }
 
             Map<String, Object> payload = new HashMap<>();
             payload.put("event_id", event.getId());

@@ -51,9 +51,15 @@ public class HostController {
             throw new RuntimeException("User not logged in");
         }
         Customer customer = customerService.getCustomerByAccountId(accountId);
+        if (customer == null) {
+            throw new RuntimeException("Customer not found for account ID: " + accountId);
+        }
+        if (customer.getHost() == null) {
+            throw new RuntimeException("Host not found for customer ID: " + customer.getCustomerId());
+        }
         Long hostId = customer.getHost().getId();
         if (hostId == null) {
-            throw new RuntimeException("Host not found");
+            throw new RuntimeException("Host ID is null for customer ID: " + customer.getCustomerId());
         }
         return hostId;
     }
@@ -74,21 +80,41 @@ public class HostController {
 
     @GetMapping("/fragment/dashboard")
     public String dashboard(Model model, HttpSession session) {
-        List<Event> eventResponses = eventService.getEventByHostId(getHostAccountId(session));
-        model.addAttribute("events", eventResponses);
-        log.info("Events: " + eventResponses);
-        return "fragments/dashboard :: content";
+        try {
+            Long hostId = getHostAccountId(session);
+            List<Event> eventResponses = eventService.getEventByHostId(hostId);
+            model.addAttribute("events", eventResponses);
+            log.info("Events: " + eventResponses);
+            return "fragments/dashboard :: content";
+        } catch (RuntimeException e) {
+            log.error("Error loading dashboard fragment: {}", e.getMessage(), e);
+            model.addAttribute("error", "Không thể tải nội dung: " + e.getMessage());
+            return "fragments/dashboard :: content";
+        }
     }
 
     @GetMapping("/fragment/events")
     public String events(Model model, HttpSession session) {
-        EventCreationRequest request = new EventCreationRequest();
-        model.addAttribute("eventForm", request);
-        List<Event> eventResponses = eventService.getEventByHostId(getHostAccountId(session));
-        List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
-        model.addAttribute("listTypeEvent", listTypeEvent);
-        model.addAttribute("events", eventResponses);
-        return "fragments/events :: content";
+        try {
+            EventCreationRequest request = new EventCreationRequest();
+            model.addAttribute("eventForm", request);
+            Long hostId = getHostAccountId(session);
+            List<Event> eventResponses = eventService.getEventByHostId(hostId);
+            List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
+            model.addAttribute("listTypeEvent", listTypeEvent);
+            model.addAttribute("events", eventResponses);
+            return "fragments/events :: content";
+        } catch (RuntimeException e) {
+            log.error("Error loading events fragment: {}", e.getMessage(), e);
+            model.addAttribute("error", "Không thể tải nội dung: " + e.getMessage());
+            // Vẫn trả về template để hiển thị lỗi
+            EventCreationRequest request = new EventCreationRequest();
+            model.addAttribute("eventForm", request);
+            List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
+            model.addAttribute("listTypeEvent", listTypeEvent);
+            model.addAttribute("events", List.of()); // Empty list
+            return "fragments/events :: content";
+        }
     }
 
     @GetMapping("/fragment/settings")

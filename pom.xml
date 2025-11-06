@@ -213,6 +213,11 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                    <fork>true</fork>
+                    <compilerArgs>
+                        <arg>-J-Xmx2048m</arg>
+                        <arg>-J-Xms1024m</arg>
+                    </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

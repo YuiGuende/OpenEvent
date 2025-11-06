@@ -3,11 +3,13 @@ package com.group02.openevent.service.impl;
 import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.dto.user.UserOrderDTO;
+import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
@@ -68,10 +70,17 @@ class OrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        Account account = new Account();
+        account.setAccountId(1L);
+        account.setEmail("test@example.com");
+        User user = new User();
+        user.setAccount(account);
+        user.setUserId(1L);
+        user.setEmail("test@example.com");
+        user.setName("Test Customer");
         customer = new Customer();
         customer.setCustomerId(CUSTOMER_ID);
-        customer.setEmail("test@example.com");
-        customer.setName("Test Customer");
+        customer.setUser(user);
 
         event = new Event();
         event.setId(EVENT_ID);

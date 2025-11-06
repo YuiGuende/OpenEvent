@@ -6,7 +6,6 @@ import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Place;
 import com.group02.openevent.model.event.Speaker;
-import com.group02.openevent.model.user.Host;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,8 +13,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import javax.swing.text.html.Option;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,13 +58,17 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     List<Event> getEventByHostId(Long hostId);
     List<Event> findBySpeakersContains(Speaker speaker);
 
-    Page<Event> findByDepartment_AccountIdAndEventTypeAndStatus(Long departmentId, EventType eventType, EventStatus status, Pageable pageable);
+    @Query("SELECT e FROM Event e WHERE e.department.user.account.accountId = :departmentId AND e.eventType = :eventType AND e.status = :status")
+    Page<Event> findByDepartment_AccountIdAndEventTypeAndStatus(@Param("departmentId") Long departmentId, @Param("eventType") EventType eventType, @Param("status") EventStatus status, Pageable pageable);
 
-    Page<Event> findByDepartment_AccountIdAndEventType(Long departmentId, EventType eventType, Pageable pageable);
+    @Query("SELECT e FROM Event e WHERE e.department.user.account.accountId = :departmentId AND e.eventType = :eventType")
+    Page<Event> findByDepartment_AccountIdAndEventType(@Param("departmentId") Long departmentId, @Param("eventType") EventType eventType, Pageable pageable);
 
-    Page<Event> findByDepartment_AccountId(Long departmentId, Pageable pageable);
+    @Query("SELECT e FROM Event e WHERE e.department.user.account.accountId = :departmentId")
+    Page<Event> findByDepartment_AccountId(@Param("departmentId") Long departmentId, Pageable pageable);
 
-    Page<Event> findByDepartment_AccountIdAndStatus(Long departmentId, EventStatus status, Pageable pageable);
+    @Query("SELECT e FROM Event e WHERE e.department.user.account.accountId = :departmentId AND e.status = :status")
+    Page<Event> findByDepartment_AccountIdAndStatus(@Param("departmentId") Long departmentId, @Param("status") EventStatus status, Pageable pageable);
 
     @Query("""
     SELECT e FROM Event e

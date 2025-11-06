@@ -60,34 +60,54 @@ public class VectorIntentClassifier {
         }
     }
 
-    @PostConstruct
-    public void initializeExampleVectors() {
-        log.info("Đang khởi tạo và tính toán trước các vector mẫu cho việc hỏi thông tin vé...");
-        String[] ticketInfoExamples = {
-                "giá vé sự kiện là bao nhiêu",
-                "vé thường có giá bao nhiêu",
-                "vé vip giá bao nhiêu tiền",
-                "có những loại vé nào",
-                "vé nào còn sẵn",
-                "thông tin vé sự kiện",
-                "chi tiết giá vé",
-                "coi lại vé thường",
-                "xem giá vé vip",
-                "bao nhiêu tiền một vé",
-                "giá cả các loại vé",
-                "vé còn lại bao nhiêu"
-        };
-
-        for (String example : ticketInfoExamples) {
-            try {
-                float[] vector = embeddingService.getEmbedding(example);
-                this.ticketInfoExampleVectors.put(example, vector);
-            } catch (Exception e) {
-                log.error("Lỗi khi tạo embedding cho câu mẫu: '{}'. Bỏ qua câu này.", example, e);
-            }
-        }
-        log.info("Hoàn tất khởi tạo {} vector mẫu.", this.ticketInfoExampleVectors.size());
-    }
+    // @PostConstruct - Commented out to prevent errors when embedding service is not available
+    // public void initializeExampleVectors() {
+    //     log.info("Đang khởi tạo và tính toán trước các vector mẫu cho việc hỏi thông tin vé...");
+    //     String[] ticketInfoExamples = {
+    //             "giá vé sự kiện là bao nhiêu",
+    //             "vé thường có giá bao nhiêu",
+    //             "vé vip giá bao nhiêu tiền",
+    //             "có những loại vé nào",
+    //             "vé nào còn sẵn",
+    //             "thông tin vé sự kiện",
+    //             "chi tiết giá vé",
+    //             "coi lại vé thường",
+    //             "xem giá vé vip",
+    //             "bao nhiêu tiền một vé",
+    //             "giá cả các loại vé",
+    //             "vé còn lại bao nhiêu"
+    //     };
+    //
+    //     int successCount = 0;
+    //     int failCount = 0;
+    //     
+    //     for (String example : ticketInfoExamples) {
+    //         try {
+    //             float[] vector = embeddingService.getEmbedding(example);
+    //             this.ticketInfoExampleVectors.put(example, vector);
+    //             successCount++;
+    //         } catch (IllegalStateException e) {
+    //             // API không được cấu hình hoặc authentication failed
+    //             log.warn("Embedding service không khả dụng: {}. Bỏ qua khởi tạo vector mẫu.", e.getMessage());
+    //             failCount++;
+    //             // Nếu là lỗi authentication, không cần thử tiếp
+    //             if (e.getMessage() != null && (e.getMessage().contains("disabled") || e.getMessage().contains("authentication"))) {
+    //                 log.warn("Dừng khởi tạo vector mẫu do embedding service không khả dụng.");
+    //                 break;
+    //             }
+    //         } catch (Exception e) {
+    //             log.error("Lỗi khi tạo embedding cho câu mẫu: '{}'. Bỏ qua câu này.", example, e);
+    //             failCount++;
+    //         }
+    //     }
+    //     
+    //     if (successCount > 0) {
+    //         log.info("Hoàn tất khởi tạo {} vector mẫu thành công. {} câu bị bỏ qua.", successCount, failCount);
+    //     } else {
+    //         log.warn("Không thể khởi tạo vector mẫu nào. Embedding service có thể không được cấu hình đúng. " +
+    //                 "Hãy kiểm tra biến môi trường HUGGINGFACE_TOKEN.");
+    //     }
+    // }
 
     public ActionType classifyIntent(String userInput, float[] userVector) {
         try {
@@ -95,9 +115,15 @@ public class VectorIntentClassifier {
                 return ActionType.UNKNOWN;
             }
 
-            // Kiểm tra câu hỏi về thông tin vé trước
+            // Kiểm tra câu hỏi về thông tin vé trước (có thể dùng keyword matching nếu userVector null)
             if (isTicketInfoQuery(userInput, userVector)) {
                 return ActionType.QUERY_TICKET_INFO;
+            }
+
+            // Nếu không có userVector, không thể dùng vector search, trả về UNKNOWN
+            if (userVector == null) {
+                log.warn("Không thể phân loại intent vì embedding service không khả dụng cho input: {}", userInput);
+                return ActionType.UNKNOWN;
             }
 
             List<Map<String, Object>> results = qdrantService.searchSimilarVectors(userVector, 3);
@@ -318,7 +344,14 @@ public class VectorIntentClassifier {
             System.out.println("🔍 DEBUG: Extracting event name with embedding for: '" + userInput + "'");
             
             // Tạo embedding cho user input
-            float[] userVector = embeddingService.getEmbedding(userInput);
+            float[] userVector;
+            try {
+                userVector = embeddingService.getEmbedding(userInput);
+            } catch (IllegalStateException e) {
+                // Embedding service không khả dụng, fallback về regex
+                log.warn("Embedding service không khả dụng, sử dụng regex extraction: {}", e.getMessage());
+                return extractEventNameWithRegex(userInput);
+            }
             
             // Tìm kiếm sự kiện trong Qdrant
             List<Map<String, Object>> results = qdrantService.searchSimilarVectors(userVector, 5);
@@ -382,6 +415,11 @@ public class VectorIntentClassifier {
         try {
             if (userInput == null || userInput.trim().isEmpty()) {
                 return ActionType.UNKNOWN;
+            }
+
+            // Nếu không có userVector, dùng pattern matching
+            if (userVector == null) {
+                return classifyConfirmIntentWithPatterns(userInput);
             }
 
             List<Map<String, Object>> results = qdrantService.searchSimilarVectors(userVector, 3);
@@ -485,11 +523,19 @@ public class VectorIntentClassifier {
             return false;
         }
         
+        // Nếu không có vector mẫu (embedding service không khả dụng), dùng keyword matching
+        if (this.ticketInfoExampleVectors.isEmpty()) {
+            return isTicketInfoQueryByKeyword(userInput);
+        }
+        
+        if (userVector == null) {
+            // Nếu không có userVector, dùng keyword matching
+            return isTicketInfoQueryByKeyword(userInput);
+        }
+        
         System.out.println("🔍 DEBUG: Checking ticket info query with embedding for: '" + userInput + "'");
         
         try {
-
-            
             // Tính similarity với từng câu mẫu
             double maxSimilarity = 0.0;
             String bestMatch = "";
@@ -522,26 +568,28 @@ public class VectorIntentClassifier {
         } catch (Exception e) {
             System.out.println("❌ DEBUG: Error in embedding similarity check: " + e.getMessage());
             System.out.println("🔄 DEBUG: Falling back to keyword matching...");
-            
-            // Fallback: sử dụng keyword matching
-            String lowerInput = userInput.toLowerCase().trim();
-            String[] ticketInfoKeywords = {
+            return isTicketInfoQueryByKeyword(userInput);
+        }
+    }
+    
+    private boolean isTicketInfoQueryByKeyword(String userInput) {
+        String lowerInput = userInput.toLowerCase().trim();
+        String[] ticketInfoKeywords = {
                 "giá vé", "giá tiền", "bao nhiêu tiền", "giá cả",
                 "vé thường", "vé vip", "vé early bird", "loại vé",
                 "có những loại vé nào", "vé nào có sẵn", "vé còn lại",
                 "coi lại vé", "xem vé", "thông tin vé", "chi tiết vé"
-            };
-            
-            for (String keyword : ticketInfoKeywords) {
-                if (lowerInput.contains(keyword)) {
-                    System.out.println("✅ DEBUG: Found ticket info keyword: '" + keyword + "'");
-                    return true;
-                }
+        };
+        
+        for (String keyword : ticketInfoKeywords) {
+            if (lowerInput.contains(keyword)) {
+                System.out.println("✅ DEBUG: Found ticket info keyword: '" + keyword + "'");
+                return true;
             }
-            
-            System.out.println("❌ DEBUG: No ticket info keywords found");
-            return false;
         }
+        
+        System.out.println("❌ DEBUG: No ticket info keywords found");
+        return false;
     }
     
     /**
@@ -565,4 +613,5 @@ public class VectorIntentClassifier {
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 }
+
 

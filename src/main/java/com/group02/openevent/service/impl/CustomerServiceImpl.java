@@ -1,20 +1,21 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.account.Account;
 import com.group02.openevent.dto.department.OrderDTO;
+import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
-import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.CustomerService;
+import com.group02.openevent.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,42 +29,44 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class CustomerServiceImpl implements CustomerService {
-    @Autowired
     private final IUserRepo userRepo;
-    @Autowired
     private final IAccountRepo accountRepo;
-    @Autowired
     private final ICustomerRepo customerRepo;
-    @Autowired
     private final IOrderRepo orderRepo;
+    private final UserService userService;
 
     
     @Override
     public Optional<Customer> findByUserId(Long userId) {
-        return userRepo.findByAccount_AccountId(userId);
+        return customerRepo.findByUser_UserId(userId);
     }
     
     @Override
     public Customer save(Customer customer) {
-        return userRepo.save(customer);
+        return customerRepo.save(customer);
     }
 
     @Override
-    public Customer getOrCreateByUserId(Long userId) {
-        return userRepo.findByAccount_AccountId(userId).orElseGet(() -> {
-            Account account = accountRepo.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy account với id=" + userId));
+    public Customer getOrCreateByUserId(Long accountId) {
+        return customerRepo.findByUser_Account_AccountId(accountId).orElseGet(() -> {
+            Account account = accountRepo.findById(accountId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy account với id=" + accountId));
+            
+            // Get or create User
+            User user = userService.getOrCreateUser(account);
+            
+            // Create Customer
             Customer customer = new Customer();
-            customer.setAccount(account);
+            customer.setUser(user);
             customer.setPoints(0);
-            return userRepo.save(customer);
+            return customerRepo.save(customer);
         });
     }
 
     @Override
-    public Customer getCustomerByAccountId(Long id) {
-        return customerRepo.findByAccount_AccountId(id)
-                .orElseThrow(() -> new RuntimeException("Department not found for account ID: " + id));
+    public Customer getCustomerByAccountId(Long accountId) {
+        return customerRepo.findByUser_Account_AccountId(accountId)
+                .orElseThrow(() -> new RuntimeException("Customer not found for account ID: " + accountId));
     }
 
     @Override
@@ -79,13 +82,21 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private OrderDTO convertToOrderDTO(Order order) {
+        Customer customer = order.getCustomer();
+        String customerName = customer != null && customer.getUser() != null 
+            ? customer.getUser().getName() 
+            : "Unknown";
+        String customerEmail = customer != null && customer.getUser() != null && customer.getUser().getAccount() != null
+            ? customer.getUser().getAccount().getEmail()
+            : "";
+            
         return OrderDTO.builder()
                 .orderId(order.getOrderId())
                 .eventId(order.getEvent().getId())
                 .eventTitle(order.getEvent().getTitle())
                 .eventImageUrl(order.getEvent().getImageUrl())
-                .customerName(order.getCustomer().getName())
-                .customerEmail(order.getCustomer().getEmail())
+                .customerName(customerName)
+                .customerEmail(customerEmail)
                 .participantName(order.getParticipantName())
                 .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())

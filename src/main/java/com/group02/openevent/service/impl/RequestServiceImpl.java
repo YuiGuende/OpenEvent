@@ -44,10 +44,16 @@ public class RequestServiceImpl implements RequestService {
         List<Department> departments = departmentRepository.findAll();
 
         List<RequestFormDTO.DepartmentDTO> departmentDTOs = departments.stream()
-                .map(dept -> RequestFormDTO.DepartmentDTO.builder()
-                        .id(dept.getAccountId())
-                        .name(dept.getDepartmentName())
-                        .build())
+                .map(dept -> {
+                    Long accountId = null;
+                    if (dept.getUser() != null && dept.getUser().getAccount() != null) {
+                        accountId = dept.getUser().getAccount().getAccountId();
+                    }
+                    return RequestFormDTO.DepartmentDTO.builder()
+                            .id(accountId)
+                            .name(dept.getDepartmentName())
+                            .build();
+                })
                 .collect(Collectors.toList());
         Optional<Event> event = eventService.getEventById(eventId);
         if (event.isEmpty()) {

@@ -5,7 +5,9 @@ import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
@@ -48,6 +50,7 @@ class HomeControllerIntegrationTest {
     @Mock private ICustomerRepo customerRepo;
     @Mock private IEventRepo eventRepo;
     @Mock private IOrderRepo orderRepo;
+    @Mock private IUserRepo userRepo;
     @Mock private EventService eventService;
     @Mock private OrderService orderService;
 
@@ -98,7 +101,7 @@ class HomeControllerIntegrationTest {
             session.setAttribute("ACCOUNT_ID", 1L);
 
             Customer customer = new Customer();
-            when(customerRepo.findByAccount_AccountId(1L)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(1L)).thenReturn(Optional.of(customer));
 
             UserOrderDTO o1 = new UserOrderDTO();
             o1.setEventId(10L);
@@ -136,7 +139,7 @@ class HomeControllerIntegrationTest {
             MockHttpSession session = new MockHttpSession();
             session.setAttribute("ACCOUNT_ID", 1L);
 
-            when(customerRepo.findByAccount_AccountId(1L)).thenReturn(Optional.empty());
+            when(customerRepo.findByUser_Account_AccountId(1L)).thenReturn(Optional.empty());
 
             when(eventService.getPosterEvents()).thenReturn(List.of());
             when(eventService.getLiveEvents(6)).thenReturn(List.of());
@@ -157,7 +160,7 @@ class HomeControllerIntegrationTest {
             session.setAttribute("ACCOUNT_ID", 1L);
 
             Customer customer = new Customer();
-            when(customerRepo.findByAccount_AccountId(1L)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(1L)).thenReturn(Optional.of(customer));
             when(orderService.getOrderDTOsByCustomer(eq(customer), isNull())).thenReturn(List.of());
 
             when(eventService.getPosterEvents()).thenReturn(List.of());
@@ -250,8 +253,17 @@ class HomeControllerIntegrationTest {
             Account acc = new Account();
             acc.setAccountId(2L);
             acc.setEmail("user@example.com");
-            acc.setRole(com.group02.openevent.model.enums.Role.CUSTOMER);
+            
+            User user = new User();
+            user.setUserId(1L);
+            user.setAccount(acc);
+            Customer customer = new Customer();
+            customer.setCustomerId(1L);
+            customer.setUser(user);
+            user.setCustomer(customer);
+            
             when(accountRepo.findById(2L)).thenReturn(Optional.of(acc));
+            when(userRepo.findByAccount_AccountId(2L)).thenReturn(Optional.of(user));
 
             mockMvc.perform(get("/api/current-user").session(session))
                     .andDo(print())

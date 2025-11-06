@@ -7,7 +7,7 @@ import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.PaymentService;
@@ -34,7 +34,7 @@ public class OrderAIService {
     private final TicketTypeService ticketTypeService;
     private final OrderService orderService;
     private final PaymentService paymentService;
-    private final IUserRepo userRepo;
+    private final ICustomerRepo customerRepo;
     private final AgentEventService  agentEventService;
 
     // Store pending orders by userId
@@ -195,7 +195,7 @@ public class OrderAIService {
         try {
             // Get customer
             log.info("🔍 DEBUG: Looking for customer with userId: {}", userId);
-            Optional<Customer> customerOpt = userRepo.findByAccount_AccountId(userId);
+            Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(userId);
             if (customerOpt.isEmpty()) {
                 log.error("❌ DEBUG: Customer not found for userId: {}", userId);
                 result.put("success", false);
@@ -204,8 +204,10 @@ public class OrderAIService {
             }
 
             Customer customer = customerOpt.get();
+            String email = customer.getUser() != null && customer.getUser().getAccount() != null 
+                ? customer.getUser().getAccount().getEmail() : "No email";
             log.info("🔍 DEBUG: Customer found - customerId: {}, email: {}",
-                    customer.getCustomerId(), customer.getAccount().getEmail());
+                    customer.getCustomerId(), email);
 
             // Create order request
             CreateOrderWithTicketTypeRequest request = new CreateOrderWithTicketTypeRequest();

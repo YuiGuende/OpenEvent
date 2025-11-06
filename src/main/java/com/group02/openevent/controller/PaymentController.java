@@ -318,7 +318,7 @@ public class PaymentController {
             }
 
             // Check if order belongs to current customer
-            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
+            if (!order.getCustomer().getUser().getAccount().getAccountId().equals(accountId)) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "Order does not belong to current user"

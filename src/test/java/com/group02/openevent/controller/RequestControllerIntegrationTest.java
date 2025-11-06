@@ -100,12 +100,14 @@ class RequestControllerIntegrationTest {
         Account accountA = new Account();
         accountA.setEmail("hostA@mail.com");
         accountA.setPasswordHash("mockpass");
-        accountA.setRole(Role.CUSTOMER);
         accountA = accountRepo.save(accountA);
 
+        User userA = new User();
+        userA.setAccount(accountA);
+        userA.setUserId(1L);
+        userA.setName("Host A");
         Customer customerA = new Customer();
-        customerA.setAccount(accountA);
-        customerA.setName("Host A");
+        customerA.setUser(userA);
         customerA = customerRepo.save(customerA);
 
         hostA = new Host();
@@ -116,12 +118,14 @@ class RequestControllerIntegrationTest {
         Account accountB = new Account();
         accountB.setEmail("hostB@mail.com");
         accountB.setPasswordHash("mockpass");
-        accountB.setRole(Role.CUSTOMER);
         accountB = accountRepo.save(accountB);
 
+        User userB = new User();
+        userB.setAccount(accountB);
+        userB.setUserId(2L);
+        userB.setName("Host B");
         Customer customerB = new Customer();
-        customerB.setAccount(accountB);
-        customerB.setName("Host B");
+        customerB.setUser(userB);
         customerB = customerRepo.save(customerB);
 
         hostB = new Host();
@@ -132,11 +136,13 @@ class RequestControllerIntegrationTest {
         Account deptAccountD1 = new Account();
         deptAccountD1.setEmail("deptD1@mail.com");
         deptAccountD1.setPasswordHash("mockpass");
-        deptAccountD1.setRole(Role.DEPARTMENT);
         deptAccountD1 = accountRepo.save(deptAccountD1);
 
+        User deptUserD1 = new User();
+        deptUserD1.setAccount(deptAccountD1);
+        deptUserD1.setUserId(3L);
         deptD1 = Department.builder()
-                .account(deptAccountD1)
+                .user(deptUserD1)
                 .departmentName("Department D1")
                 .build();
         deptD1 = departmentRepo.save(deptD1);
@@ -145,11 +151,13 @@ class RequestControllerIntegrationTest {
         Account deptAccountD2 = new Account();
         deptAccountD2.setEmail("deptD2@mail.com");
         deptAccountD2.setPasswordHash("mockpass");
-        deptAccountD2.setRole(Role.DEPARTMENT);
         deptAccountD2 = accountRepo.save(deptAccountD2);
 
+        User deptUserD2 = new User();
+        deptUserD2.setAccount(deptAccountD2);
+        deptUserD2.setUserId(4L);
         deptD2 = Department.builder()
-                .account(deptAccountD2)
+                .user(deptUserD2)
                 .departmentName("Department D2")
                 .build();
         deptD2 = departmentRepo.save(deptD2);
@@ -168,8 +176,8 @@ class RequestControllerIntegrationTest {
 
         // 6. THÊM REQUEST MẪU ĐỂ TEST CÁC ENDPOINT GET
         sampleRequest = Request.builder()
-                .sender(hostA.getCustomer().getAccount())
-                .receiver(deptD1.getAccount())
+                .sender(hostA.getCustomer().getUser().getAccount())
+                .receiver(deptD1.getUser().getAccount())
                 .event(eventE1)
                 .status(RequestStatus.PENDING)
                 .type(RequestType.EVENT_APPROVAL)
@@ -193,11 +201,11 @@ class RequestControllerIntegrationTest {
             MvcResult createResult = mockMvc.perform(
                             multipart("/api/requests")
                                     .file(file) // Gọi .file() trước
-                                    .with(user(hostA.getCustomer().getAccount().getEmail()).roles(Role.CUSTOMER.name())) // .with() sau
-                                    .param("receiverId", String.valueOf(deptD1.getAccountId()))
+                                    .with(user(hostA.getCustomer().getUser().getAccount().getEmail()).roles(Role.CUSTOMER.name())) // .with() sau
+                                    .param("receiverId", String.valueOf(deptD1.getUser().getAccount().getAccountId()))
                                     .param("type", RequestType.EVENT_APPROVAL.name())
                                     .param("eventId", String.valueOf(eventE1.getId()))
-                                    .sessionAttr("ACCOUNT_ID", hostA.getCustomer().getAccount().getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", hostA.getCustomer().getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.status").value("PENDING"))
@@ -211,10 +219,10 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             put("/api/requests/{requestId}/approve", newRequestId)
-                                    .with(user(deptD1.getAccount().getEmail()).roles(Role.DEPARTMENT.name()))
+                                    .with(user(deptD1.getUser().getAccount().getEmail()).roles(Role.DEPARTMENT.name()))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(approveDTO))
-                                    .sessionAttr("ACCOUNT_ID", deptD1.getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", deptD1.getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("APPROVED"));
@@ -233,11 +241,11 @@ class RequestControllerIntegrationTest {
             mockMvc.perform(
                             multipart("/api/requests")
                                     .file(file) // Gọi .file() trước
-                                    .with(user(hostB.getCustomer().getAccount().getEmail()).roles(Role.CUSTOMER.name())) // .with() sau
-                                    .param("receiverId", String.valueOf(deptD1.getAccountId()))
+                                    .with(user(hostB.getCustomer().getUser().getAccount().getEmail()).roles(Role.CUSTOMER.name())) // .with() sau
+                                    .param("receiverId", String.valueOf(deptD1.getUser().getAccount().getAccountId()))
                                     .param("type", RequestType.EVENT_APPROVAL.name())
                                     .param("eventId", String.valueOf(eventE1.getId()))
-                                    .sessionAttr("ACCOUNT_ID", hostB.getCustomer().getAccount().getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", hostB.getCustomer().getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isForbidden()); // Mong đợi 403 (Giả sử GlobalExceptionHandler đã được sửa)
         }
@@ -250,10 +258,10 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             put("/api/requests/{requestId}/approve", sampleRequest.getRequestId())
-                                    .with(user(hostA.getCustomer().getAccount().getEmail()).roles(Role.CUSTOMER.name()))
+                                    .with(user(hostA.getCustomer().getUser().getAccount().getEmail()).roles(Role.CUSTOMER.name()))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(approveDTO))
-                                    .sessionAttr("ACCOUNT_ID", hostA.getCustomer().getAccount().getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", hostA.getCustomer().getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isForbidden());
         }
@@ -265,10 +273,10 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             put("/api/requests/{requestId}/approve", sampleRequest.getRequestId())
-                                    .with(user(deptD2.getAccount().getEmail()).roles(Role.DEPARTMENT.name()))
+                                    .with(user(deptD2.getUser().getAccount().getEmail()).roles(Role.DEPARTMENT.name()))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(approveDTO))
-                                    .sessionAttr("ACCOUNT_ID", deptD2.getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", deptD2.getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isForbidden());
         }
@@ -284,10 +292,10 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             put("/api/requests/{requestId}/approve", sampleRequest.getRequestId())
-                                    .with(user(deptD1.getAccount().getEmail()).roles(Role.DEPARTMENT.name()))
+                                    .with(user(deptD1.getUser().getAccount().getEmail()).roles(Role.DEPARTMENT.name()))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(approveDTO))
-                                    .sessionAttr("ACCOUNT_ID", deptD1.getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", deptD1.getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isBadRequest());
         }
@@ -308,10 +316,10 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             put("/api/requests/{requestId}/reject", sampleRequest.getRequestId())
-                                    .with(user(deptD1.getAccount().getEmail()).roles(Role.DEPARTMENT.name())) // Login với receiver
+                                    .with(user(deptD1.getUser().getAccount().getEmail()).roles(Role.DEPARTMENT.name())) // Login với receiver
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(rejectDTO))
-                                    .sessionAttr("ACCOUNT_ID", deptD1.getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", deptD1.getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("REJECTED"));
@@ -327,10 +335,10 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             put("/api/requests/{requestId}/reject", sampleRequest.getRequestId())
-                                    .with(user(hostA.getCustomer().getAccount().getEmail()).roles(Role.CUSTOMER.name())) // Login với sender
+                                    .with(user(hostA.getCustomer().getUser().getAccount().getEmail()).roles(Role.CUSTOMER.name())) // Login với sender
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(rejectDTO))
-                                    .sessionAttr("ACCOUNT_ID", hostA.getCustomer().getAccount().getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", hostA.getCustomer().getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isForbidden());
         }
@@ -346,10 +354,10 @@ class RequestControllerIntegrationTest {
             // When & Then
             mockMvc.perform(
                             put("/api/requests/{requestId}/reject", sampleRequest.getRequestId())
-                                    .with(user(deptD1.getAccount().getEmail()).roles(Role.DEPARTMENT.name())) // Login với receiver
+                                    .with(user(deptD1.getUser().getAccount().getEmail()).roles(Role.DEPARTMENT.name())) // Login với receiver
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(rejectDTO))
-                                    .sessionAttr("ACCOUNT_ID", deptD1.getAccountId())
+                                    .sessionAttr("ACCOUNT_ID", deptD1.getUser().getAccount().getAccountId())
                     )
                     .andExpect(status().isBadRequest());
         }
@@ -359,8 +367,8 @@ class RequestControllerIntegrationTest {
         @DisplayName("COVERAGE (createRequestJson - Bad Request): Ném lỗi 400 khi Event ID là null (DB constraint)")
         void whenCreateRequestJsonWithNullEvent_thenBadRequest() throws Exception {
             CreateRequestDTO jsonDTO = CreateRequestDTO.builder()
-                    .senderId(hostA.getCustomer().getAccount().getAccountId())
-                    .receiverId(deptD1.getAccountId())
+                    .senderId(hostA.getCustomer().getUser().getAccount().getAccountId())
+                    .receiverId(deptD1.getUser().getAccount().getAccountId())
                     .type(RequestType.OTHER)
                     .eventId(null) // <-- Nguyên nhân lỗi
                     .message("Test JSON request")
@@ -368,7 +376,7 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             post("/api/requests") // Không có multipart
-                                    .with(user(hostA.getCustomer().getAccount().getEmail()).roles(Role.CUSTOMER.name()))
+                                    .with(user(hostA.getCustomer().getUser().getAccount().getEmail()).roles(Role.CUSTOMER.name()))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(jsonDTO))
                     )
@@ -381,8 +389,8 @@ class RequestControllerIntegrationTest {
         @DisplayName("COVERAGE (createRequestJson - Happy Path): Tạo request bằng JSON (với EventID) thành công")
         void whenCreateRequestJsonWithEvent_thenSucceeds() throws Exception {
             CreateRequestDTO jsonDTO = CreateRequestDTO.builder()
-                    .senderId(hostA.getCustomer().getAccount().getAccountId())
-                    .receiverId(deptD1.getAccountId())
+                    .senderId(hostA.getCustomer().getUser().getAccount().getAccountId())
+                    .receiverId(deptD1.getUser().getAccount().getAccountId())
                     .type(RequestType.EVENT_APPROVAL)
                     .eventId(eventE1.getId()) // <-- Cung cấp Event ID
                     .message("Test JSON request with Event")
@@ -390,7 +398,7 @@ class RequestControllerIntegrationTest {
 
             mockMvc.perform(
                             post("/api/requests")
-                                    .with(user(hostA.getCustomer().getAccount().getEmail()).roles(Role.CUSTOMER.name()))
+                                    .with(user(hostA.getCustomer().getUser().getAccount().getEmail()).roles(Role.CUSTOMER.name()))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(jsonDTO))
                     )
@@ -404,7 +412,7 @@ class RequestControllerIntegrationTest {
         void whenCreateRequestJsonFails_thenBadRequest() throws Exception {
             CreateRequestDTO badDTO = CreateRequestDTO.builder()
                     .senderId(999L) // Sender không tồn tại
-                    .receiverId(deptD1.getAccountId())
+                    .receiverId(deptD1.getUser().getAccount().getAccountId())
                     .eventId(eventE1.getId()) // Phải cung cấp eventId
                     .type(RequestType.OTHER)
                     .build();
@@ -503,22 +511,22 @@ class RequestControllerIntegrationTest {
         @DisplayName("COVERAGE (getRequestsBySender): Lấy request theo Sender")
         void whenGetRequestsBySender_thenSucceeds() throws Exception {
             mockMvc.perform(
-                            get("/api/requests/sender/{senderId}", hostA.getCustomer().getAccount().getAccountId())
+                            get("/api/requests/sender/{senderId}", hostA.getCustomer().getUser().getAccount().getAccountId())
                                     .with(user("anyUser").roles("CUSTOMER"))
                     )
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].senderId").value(hostA.getCustomer().getAccount().getAccountId()));
+                    .andExpect(jsonPath("$[0].senderId").value(hostA.getCustomer().getUser().getAccount().getAccountId()));
         }
 
         @Test
         @DisplayName("COVERAGE (getRequestsByReceiver): Lấy request theo Receiver")
         void whenGetRequestsByReceiver_thenSucceeds() throws Exception {
             mockMvc.perform(
-                            get("/api/requests/receiver/{receiverId}", deptD1.getAccountId())
+                            get("/api/requests/receiver/{receiverId}", deptD1.getUser().getAccount().getAccountId())
                                     .with(user("anyUser").roles("CUSTOMER"))
                     )
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].receiverId").value(deptD1.getAccountId()));
+                    .andExpect(jsonPath("$[0].receiverId").value(deptD1.getUser().getAccount().getAccountId()));
         }
 
         @Test

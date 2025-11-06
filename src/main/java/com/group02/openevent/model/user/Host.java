@@ -5,7 +5,6 @@ import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,13 +24,15 @@ public class Host {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organize_id",
-            foreignKey = @ForeignKey(name = "fk_host_organization"))
+    @JoinColumn(name = "organize_id")
     private Organization organization;
 
     @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_host_customer_jpa"))
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @OneToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = true)
     private Customer customer;
 
     @Column(name = "host_discount_percent", precision = 5, scale = 2)
@@ -47,10 +48,16 @@ public class Host {
     public Host() {
     }
 
-    // Method to get host name from customer or organization
+    // Method to get host name from user, customer or organization
     public String getHostName() {
-        if (customer != null && customer.getAccount() != null) {
-            return customer.getAccount().getEmail();
+        if (user != null && user.getName() != null) {
+            return user.getName();
+        }
+        if (user != null && user.getAccount() != null) {
+            return user.getAccount().getEmail();
+        }
+        if (customer != null && customer.getUser() != null && customer.getUser().getName() != null) {
+            return customer.getUser().getName();
         }
         if (organization != null && organization.getOrgName() != null) {
             return organization.getOrgName();

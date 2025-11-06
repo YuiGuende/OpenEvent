@@ -12,7 +12,7 @@
 </head>
 
 <body class="page-bg">
-<div th:replace="fragments/header :: siteHeader('search')"></div>
+<div th:replace="~{fragments/header :: siteHeader('search')}"></div>
 <style>
     /* Layout 3 cột như booking.com */
     .search-layout {
@@ -1649,7 +1649,7 @@
 </style>
 
 <main>
-    <div th:replace="fragments/searchbar :: searchBar"></div>
+    <div th:replace="~{fragments/searchbar :: searchBar}"></div>
 
     <!-- 🧭 Layout: Filter + Results -->
     <section class="section search-results">
@@ -1856,7 +1856,7 @@
     </section>
 </main>
 
-<div th:replace="fragments/footer :: siteFooter()"></div>
+<div th:replace="~{fragments/footer :: siteFooter()}"></div>
 <script th:src="@{/js/main.js}"></script>
 
 <script>

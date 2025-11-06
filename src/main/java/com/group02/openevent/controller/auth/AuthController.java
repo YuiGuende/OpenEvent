@@ -3,7 +3,6 @@ package com.group02.openevent.controller.auth;
 import com.group02.openevent.dto.response.AuthResponse;
 import com.group02.openevent.dto.request.LoginRequest;
 import com.group02.openevent.dto.request.RegisterRequest;
-import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

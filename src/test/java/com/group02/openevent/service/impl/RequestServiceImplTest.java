@@ -5,7 +5,8 @@ import com.group02.openevent.dto.requestApproveEvent.ApproveRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.CreateRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
 import com.group02.openevent.model.account.Account;
-import com.group02.openevent.model.department.Department; // THÊM IMPORT
+import com.group02.openevent.model.department.Department;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.request.Request;
@@ -494,8 +495,13 @@ class RequestServiceImplTest {
         @DisplayName("Happy Path: Lấy data cho form thành công")
         void whenGetRequestFormData_thenSucceed() throws Exception {
             // Given
+            Account account = new Account();
+            account.setAccountId(100L);
+            User user = new User();
+            user.setAccount(account);
+            user.setUserId(100L);
             Department dept1 = new Department();
-            dept1.setAccountId(100L);
+            dept1.setUser(user);
             dept1.setDepartmentName("Dept 1");
             when(departmentRepository.findAll()).thenReturn(List.of(dept1));
             when(eventService.getEventById(10L)).thenReturn(Optional.of(event));

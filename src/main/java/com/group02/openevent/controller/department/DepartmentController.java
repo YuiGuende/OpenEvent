@@ -55,12 +55,19 @@ public class DepartmentController {
         return accountId;
     }
 
+    private Long getDepartmentAccountId(Department department) {
+        if (department == null || department.getUser() == null || department.getUser().getAccount() == null) {
+            throw new RuntimeException("Department account not found");
+        }
+        return department.getUser().getAccount().getAccountId();
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        DepartmentStatsDTO stats = departmentService.getDepartmentStats(department.getAccountId());
+        DepartmentStatsDTO stats = departmentService.getDepartmentStats(getDepartmentAccountId(department));
 
         model.addAttribute("department", department);
         model.addAttribute("stats", stats);
@@ -91,7 +98,7 @@ public class DepartmentController {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Event> events = eventService.getEventsByDepartment(department.getAccountId(), eventType, status, pageable);
+        Page<Event> events = eventService.getEventsByDepartment(getDepartmentAccountId(department), eventType, status, pageable);
 
         model.addAttribute("events", events);
         model.addAttribute("eventTypes", EventType.values());
@@ -183,7 +190,7 @@ public class DepartmentController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<ArticleDTO> articles = articleService.getArticlesByDepartment(department.getAccountId(), status, pageable);
+        Page<ArticleDTO> articles = articleService.getArticlesByDepartment(getDepartmentAccountId(department), status, pageable);
 
         model.addAttribute("articles", articles);
         model.addAttribute("articleStatuses", ArticleStatus.values());
@@ -214,7 +221,7 @@ public class DepartmentController {
             Long accountId = getDepartmentAccountId(session);
             Department department = departmentService.getDepartmentByAccountId(accountId);
 
-            articleDTO.setDepartmentId(department.getAccountId());
+            articleDTO.setDepartmentId(getDepartmentAccountId(department));
 
             if (imageFile != null && !imageFile.isEmpty()) {
                 articleService.saveArticleWithImage(articleDTO, imageFile);
@@ -251,7 +258,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Map<String, Object> data = departmentService.getEventsByMonth(department.getAccountId());
+        Map<String, Object> data = departmentService.getEventsByMonth(getDepartmentAccountId(department));
         return ResponseEntity.ok(data);
     }
 
@@ -261,7 +268,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Map<String, Object> data = departmentService.getEventsByType(department.getAccountId());
+        Map<String, Object> data = departmentService.getEventsByType(getDepartmentAccountId(department));
         return ResponseEntity.ok(data);
     }
 
@@ -271,7 +278,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Map<String, Object> data = departmentService.getParticipantsTrend(department.getAccountId());
+        Map<String, Object> data = departmentService.getParticipantsTrend(getDepartmentAccountId(department));
         return ResponseEntity.ok(data);
     }
 
@@ -346,7 +353,7 @@ public class DepartmentController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<OrderDTO> orders = departmentService.getOrdersByDepartment(department.getAccountId(), status, pageable);
+        Page<OrderDTO> orders = departmentService.getOrdersByDepartment(getDepartmentAccountId(department), status, pageable);
 
         model.addAttribute("orders", orders);
         model.addAttribute("orderStatuses", OrderStatus.values());
@@ -361,7 +368,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Map<String, Object> data = departmentService.getRevenueTrendData(department.getAccountId());
+        Map<String, Object> data = departmentService.getRevenueTrendData(getDepartmentAccountId(department));
         return ResponseEntity.ok(data);
     }
 
@@ -371,7 +378,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        List<FeaturedEventDTO> featuredEvents = departmentService.getFeaturedEvents(department.getAccountId(), 5);
+        List<FeaturedEventDTO> featuredEvents = departmentService.getFeaturedEvents(getDepartmentAccountId(department), 5);
         return ResponseEntity.ok(featuredEvents);
     }
 
@@ -381,7 +388,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Double averageHours = departmentService.getAverageApprovalTime(department.getAccountId());
+        Double averageHours = departmentService.getAverageApprovalTime(getDepartmentAccountId(department));
         long averageMinutes = Math.round((averageHours % 1) * 60);
         long hours = averageHours.longValue();
 
@@ -399,7 +406,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Map<String, Object> data = departmentService.getApprovalTrendData(department.getAccountId());
+        Map<String, Object> data = departmentService.getApprovalTrendData(getDepartmentAccountId(department));
         return ResponseEntity.ok(data);
     }
 
@@ -409,7 +416,7 @@ public class DepartmentController {
         Long accountId = getDepartmentAccountId(session);
         Department department = departmentService.getDepartmentByAccountId(accountId);
 
-        Map<String, Object> data = departmentService.getOrderStatusDistribution(department.getAccountId());
+        Map<String, Object> data = departmentService.getOrderStatusDistribution(getDepartmentAccountId(department));
         return ResponseEntity.ok(data);
     }
 }

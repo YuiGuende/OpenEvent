@@ -8,6 +8,7 @@ import com.group02.openevent.model.account.Account;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.UserService;
 import com.group02.openevent.service.VoucherService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -29,12 +30,14 @@ public class OrderController {
     private final ICustomerRepo customerRepo;
     private final IAccountRepo accountRepo;
     private final VoucherService voucherService;
+    private final UserService userService;
 
-    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, VoucherService voucherService) {
+    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, VoucherService voucherService, UserService userService) {
         this.orderService = orderService;
         this.customerRepo = customerRepo;
         this.accountRepo = accountRepo;
         this.voucherService = voucherService;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -74,15 +77,17 @@ public class OrderController {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
             }
 
-            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+            Customer customer = customerRepo.findByUser_Account_AccountId(accountId).orElse(null);
             if (customer == null) {
                 // Tự động tạo Customer nếu chưa có
                 Account account = accountRepo.findById(accountId)
                         .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
                 
+                // Get or create User
+                com.group02.openevent.model.user.User user = userService.getOrCreateUser(account);
+                
                 customer = new Customer();
-                customer.setAccount(account);
-                customer.setEmail(account.getEmail());
+                customer.setUser(user);
                 customer.setPoints(0);
                 customer = customerRepo.save(customer);
             }
@@ -142,15 +147,17 @@ public class OrderController {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
 
-        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+        Customer customer = customerRepo.findByUser_Account_AccountId(accountId).orElse(null);
         if (customer == null) {
             // Tự động tạo Customer nếu chưa có
             Account account = accountRepo.findById(accountId)
                     .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
             
+            // Get or create User
+            com.group02.openevent.model.user.User user = userService.getOrCreateUser(account);
+            
             customer = new Customer();
-            customer.setAccount(account);
-            customer.setEmail(account.getEmail());
+            customer.setUser(user);
             customer.setPoints(0);
             customer = customerRepo.save(customer);
         }
@@ -171,15 +178,17 @@ public class OrderController {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
             }
 
-            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+            Customer customer = customerRepo.findByUser_Account_AccountId(accountId).orElse(null);
             if (customer == null) {
                 // Tự động tạo Customer nếu chưa có
                 Account account = accountRepo.findById(accountId)
                         .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
                 
+                // Get or create User
+                com.group02.openevent.model.user.User user = userService.getOrCreateUser(account);
+                
                 customer = new Customer();
-                customer.setAccount(account);
-                customer.setEmail(account.getEmail());
+                customer.setUser(user);
                 customer.setPoints(0);
                 customer = customerRepo.save(customer);
             }
@@ -252,7 +261,7 @@ public class OrderController {
             Order order = orderOpt.get();
 
             // Kiểm tra quyền sở hữu order
-            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
+            if (!order.getCustomer().getUser().getAccount().getAccountId().equals(accountId)) {
                 return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied"));
             }
 

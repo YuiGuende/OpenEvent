@@ -36,7 +36,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final IOrderRepo  orderRepo;
     @Override
     public Department getDepartmentByAccountId(Long accountId) {
-        return departmentRepo.findByAccountId(accountId)
+        return departmentRepo.findByUser_Account_AccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("Department not found for account ID: " + accountId));
     }
 
@@ -76,7 +76,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         // Calculate average order value
         BigDecimal avgOrderValue = totalParticipants > 0
-                ? totalRevenue.divide(BigDecimal.valueOf(totalParticipants), 2, BigDecimal.ROUND_HALF_UP)
+                ? totalRevenue.divide(BigDecimal.valueOf(totalParticipants), 2, java.math.RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         // Calculate cancellation rate
@@ -239,7 +239,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         return currentMonthRevenue.subtract(previousMonthRevenue)
-                .divide(previousMonthRevenue, 4, BigDecimal.ROUND_HALF_UP)
+                .divide(previousMonthRevenue, 4, java.math.RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .doubleValue();
     }
@@ -416,13 +416,24 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     private OrderDTO convertToOrderDTO(Order order) {
+        String customerName = "Unknown";
+        String customerEmail = "";
+        if (order.getCustomer() != null && order.getCustomer().getUser() != null) {
+            customerName = order.getCustomer().getUser().getName() != null 
+                ? order.getCustomer().getUser().getName() 
+                : "Unknown";
+            if (order.getCustomer().getUser().getAccount() != null) {
+                customerEmail = order.getCustomer().getUser().getAccount().getEmail();
+            }
+        }
+        
         return OrderDTO.builder()
                 .orderId(order.getOrderId())
                 .eventId(order.getEvent().getId())
                 .eventTitle(order.getEvent().getTitle())
                 .eventImageUrl(order.getEvent().getImageUrl())
-                .customerName(order.getCustomer().getName())
-                .customerEmail(order.getCustomer().getEmail())
+                .customerName(customerName)
+                .customerEmail(customerEmail)
                 .participantName(order.getParticipantName())
                 .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())

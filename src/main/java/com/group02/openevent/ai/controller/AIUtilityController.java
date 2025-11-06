@@ -54,7 +54,16 @@ public class AIUtilityController {
                         .body(Map.of("error", "❌ Text không được để trống"));
             }
 
-            float[] embedding = embeddingService.getEmbedding(text);
+            float[] embedding;
+            try {
+                embedding = embeddingService.getEmbedding(text);
+            } catch (IllegalStateException e) {
+                Map<String, Object> result = Map.of(
+                        "success", false,
+                        "error", "❌ Embedding service không khả dụng. Vui lòng cấu hình HUGGINGFACE_TOKEN trong biến môi trường."
+                );
+                return ResponseEntity.status(503).body(result); // Service Unavailable
+            }
 
             Map<String, Object> result = Map.of(
                     "success", true,
@@ -92,8 +101,15 @@ public class AIUtilityController {
                         .body(Map.of("error", "❌ Cả hai text không được để trống"));
             }
 
-            float[] embedding1 = embeddingService.getEmbedding(text1);
-            float[] embedding2 = embeddingService.getEmbedding(text2);
+            float[] embedding1;
+            float[] embedding2;
+            try {
+                embedding1 = embeddingService.getEmbedding(text1);
+                embedding2 = embeddingService.getEmbedding(text2);
+            } catch (IllegalStateException e) {
+                return ResponseEntity.status(503)
+                        .body(Map.of("error", "❌ Embedding service không khả dụng. Vui lòng cấu hình HUGGINGFACE_TOKEN."));
+            }
 
             double similarity = embeddingService.cosineSimilarity(embedding1, embedding2);
 

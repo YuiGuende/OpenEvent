@@ -117,7 +117,7 @@ public class RateLimitingService {
     /**
      * Rate limit types
      */
-    public enum RateLimitType {
+    public static enum RateLimitType {
         AI_CHAT,
         AI_TRANSLATION,
         GENERAL

@@ -5,10 +5,12 @@ import com.group02.openevent.dto.home.EventCardDTO;
 import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.OrderService;
 import jakarta.servlet.http.HttpSession;
@@ -30,16 +32,18 @@ public class HomeController {
     private final ICustomerRepo customerRepo;
     private final IEventRepo eventRepo;
     private final IOrderRepo orderRepo;
+    private final IUserRepo userRepo;
     @Autowired
     private EventService eventService;
     @Autowired
     private OrderService orderService;
 
-    public HomeController(IAccountRepo accountRepo, ICustomerRepo customerRepo, IEventRepo eventRepo, IOrderRepo orderRepo) {
+    public HomeController(IAccountRepo accountRepo, ICustomerRepo customerRepo, IEventRepo eventRepo, IOrderRepo orderRepo, IUserRepo userRepo) {
         this.accountRepo = accountRepo;
         this.customerRepo = customerRepo;
         this.eventRepo = eventRepo;
         this.orderRepo = orderRepo;
+        this.userRepo = userRepo;
     }
 
     @GetMapping("/")
@@ -67,7 +71,7 @@ public class HomeController {
                 System.out.println("DEBUG: Account ID from session: " + accountId);
                 
                 if (accountId != null) {
-                    Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+                    Customer customer = customerRepo.findByUser_Account_AccountId(accountId).orElse(null);
                     System.out.println("DEBUG: Customer found: " + (customer != null ? customer.getCustomerId() : "null"));
                     
                     if (customer != null) {
@@ -136,11 +140,17 @@ public class HomeController {
             return ResponseEntity.ok(Map.of("authenticated", false));
         }
 
+        // Lấy User để xác định Role
+        User user = userRepo.findByAccount_AccountId(accountId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.ok(Map.of("authenticated", false));
+        }
+
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("authenticated", true);
         userInfo.put("accountId", account.getAccountId());
         userInfo.put("email", account.getEmail());
-        userInfo.put("role", account.getRole().name());
+        userInfo.put("role", user.getRole().name());
 
         return ResponseEntity.ok(userInfo);
     }

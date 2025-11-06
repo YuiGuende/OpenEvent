@@ -182,7 +182,7 @@ public class DashboardServiceImpl implements DashboardService {
             if (stat.getSoldQuantity() > 0) {
                 BigDecimal revenue = revenueByTicketType.getOrDefault(stat.getTicketTypeId(), BigDecimal.ZERO);
                 double percentage = totalRevenue.compareTo(BigDecimal.ZERO) > 0 
-                        ? revenue.divide(totalRevenue, 4, BigDecimal.ROUND_HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue()
+                        ? revenue.divide(totalRevenue, 4, java.math.RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue()
                         : 0;
                 
                 revenueByType.add(DashboardStatsResponse.RevenueByType.builder()

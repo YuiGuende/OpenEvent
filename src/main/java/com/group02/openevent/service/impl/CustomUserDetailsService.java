@@ -3,7 +3,9 @@ package com.group02.openevent.service.impl;
 // Giả định đây là Repository
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.user.CustomUserDetails;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
+import com.group02.openevent.repository.IUserRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,11 +27,13 @@ import java.util.List;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final IAccountRepo accountRepository;
+    private final IUserRepo userRepo;
     Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
     @Autowired
-    public CustomUserDetailsService(IAccountRepo accountRepository) {
+    public CustomUserDetailsService(IAccountRepo accountRepository, IUserRepo userRepo) {
         logger.info("CustomUserDetailsService constructor");
         this.accountRepository = accountRepository;
+        this.userRepo = userRepo;
     }
 
     /**
@@ -46,18 +50,24 @@ public class CustomUserDetailsService implements UserDetailsService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Account not found with email: " + email));
 
-        // 2. Tạo danh sách quyền hạn (Authorities) từ Role của Account
-        // Giả định Entity Account có phương thức getRole() trả về ROLE_USER, ROLE_ADMIN,...
+        // 2. Lấy User từ Account để xác định Role
+        User user = userRepo.findByAccount_AccountId(account.getAccountId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found for account: " + email));
+        
+        // 3. Xác định Role từ User entity (customer/host/admin/department)
+        com.group02.openevent.model.enums.Role role = user.getRole();
+        
+        // 4. Tạo danh sách quyền hạn (Authorities) từ Role của User
         List<GrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority(account.getRole().toString()) // Ví dụ: "ROLE_CUSTOMER"
+                new SimpleGrantedAuthority(role.toString()) // Ví dụ: "CUSTOMER"
         );
 
-        // 3. Trả về đối tượng CustomUserDetails
+        // 5. Trả về đối tượng CustomUserDetails
         return new CustomUserDetails(
                 account.getAccountId(),         // accountId: Dùng để lưu vào Session (ACCOUNT_ID)
                 account.getEmail(),      // Username: Dùng để xác thực (tên đăng nhập)
                 account.getPasswordHash(),   // Password: Mật khẩu đã mã hóa (BCrypt)
-                account.getRole().toString(),       // Role: Dùng để lưu vào Session (ACCOUNT_ROLE)
+                role.toString(),       // Role: Dùng để lưu vào Session (ACCOUNT_ROLE)
                 authorities              // Quyền hạn: Dùng cho Authorization của Spring Security
         );
     }

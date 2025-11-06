@@ -2,124 +2,444 @@
 <div xmlns:th="http://www.thymeleaf.org"
      th:fragment="chatbot(userId)"
      th:attr="data-user-id=${userId}">
+<!-- FRAGMENT: Chatbot -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="chatbot(userId)">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        .chatbot-fragment-wrapper {
+            font-family: 'Inter', sans-serif;
+        }
 
-    <!-- Floating Action Button -->
-    <button class="chatbot-toggler" id="chatbotToggler" aria-label="Mở chat">
-        <span class="material-symbols-outlined chat-icon">smart_toy</span>
-        <span class="material-symbols-outlined close-icon">close</span>
-        <span class="notification-badge" id="notificationBadge" style="display: none;">1</span>
-    </button>
+        .chatbot-wrapper {
+            display: flex;
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            z-index: 999;
+        }
 
-    <!-- Chatbot Pop-up Container -->
-    <div id="chatbotContainer" class="chatbot-container" aria-live="polite">
+        /* Main Chat Container */
+        .chatbot-container {
+            /* Changed from pink gradient to soft orange gradient */
+            background: linear-gradient(180deg, #ffe8d6 0%, #fff0e6 100%);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            display: none;
+            flex-direction: column;
+            height: 600px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Show chatbot when active */
+        .chatbot-container.active {
+            display: flex;
+        }
+
+        /* Animation for chatbot */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Header */
+        .chatbot-header {
+            background: #fff;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f0e0cc;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            /* Changed avatar gradient from pink to orange */
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff9d6b 0%, #ffb48c 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .header-info h2 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .header-info p {
+            font-size: 12px;
+            color: #888;
+            margin: 2px 0 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Updated header button styles to match modern icon style */
+        .header-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+            width: 32px;
+            height: 32px;
+        }
+
+        .header-btn:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        /* Chat Body */
+        .chatbot-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .message-bubble {
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-text {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Action Buttons */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .action-btn {
+            /* Updated button border and hover colors from pink to orange */
+            background: #fff;
+            border: 1px solid #f0dcc8;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            background: #fff5ed;
+            border-color: #ff9d6b;
+            color: #ff9d6b;
+        }
+
+        /* Primary Action Button */
+        .primary-action {
+            /* Changed primary button color from pink-red to warm orange-red */
+            background: #ff8a5b;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 12px 0;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .primary-action:hover {
+            background: #ff7540;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 138, 91, 0.3);
+        }
+
+        /* Input Area */
+        .chatbot-input {
+            background: white;
+            padding: 16px 20px;
+            border-top: 1px solid #f0dcc8;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            border: 1px solid #e8d8cc;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            max-height: 100px;
+            transition: all 0.2s;
+        }
+
+        .message-input:focus {
+            outline: none;
+            /* Updated focus border color from pink to orange */
+            border-color: #ff9d6b;
+            box-shadow: 0 0 0 3px rgba(255, 157, 107, 0.1);
+        }
+
+        .message-input::placeholder {
+            color: #ccc;
+        }
+
+        .send-btn {
+            /* Updated send button color from pink to orange */
+            background: #ff9d6b;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #ff8a5b;
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        .chatbot-footer {
+            background: #fff5ed;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+            border-top: 1px solid #f0dcc8;
+        }
+
+        /* Right Sidebar Avatars - Floating Toggle Button */
+        .sidebar-avatars {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .sidebar-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 28px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            outline: none;
+        }
+
+        .sidebar-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-avatar:focus {
+            outline: 2px solid #ff9d6b;
+            outline-offset: 2px;
+        }
+
+        .sidebar-avatar:active {
+            transform: scale(0.95);
+        }
+
+        .avatar-blue {
+            background: linear-gradient(135deg, #4a9eff 0%, #2e7cd6 100%);
+            color: white;
+        }
+
+        .avatar-red {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+            color: white;
+        }
+
+        .avatar-white {
+            background: white;
+            color: #ff9d6b;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .chatbot-wrapper {
+                bottom: 80px;
+                right: 10px;
+                left: 10px;
+                max-width: calc(100% - 20px);
+            }
+
+            .sidebar-avatars {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .chatbot-container {
+                max-width: 100%;
+                height: 500px;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .chatbot-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chatbot-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chatbot-body::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 3px;
+        }
+
+        .chatbot-body::-webkit-scrollbar-thumb:hover {
+            background: #bbb;
+        }
+
+        /* Typing Animation */
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <div class="chatbot-wrapper">
+    <!-- Main Chatbot -->
+    <div class="chatbot-container">
+        <!-- Header -->
         <header class="chatbot-header">
             <div class="header-left">
-                <div class="avatar-container">
-                    <span class="material-symbols-outlined">smart_toy</span>
-                </div>
+                <div class="avatar">🤖</div>
                 <div class="header-info">
-                    <h2 class="chatbot-title">OpenEventAI</h2>
-                    <div class="status-indicator">
-                        <span class="status-dot"></span>
-                        <span class="status-text">Online</span>
-                    </div>
+                    <h2>Trợ lý AI - Eva ✨</h2>
+                    <p>Biết tuốt hỗ trợ bạn</p>
                 </div>
             </div>
-            <button class="close-btn" id="closeBtn" aria-label="Đóng">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+            <!-- Updated header action buttons to use SVG-like styled icons -->
+            <div class="header-actions">
+                <button class="header-btn" title="Làm mới">⟲</button>
+                <button class="header-btn" title="Phóng to">⛶</button>
+                <button class="header-btn" title="Chia sẻ">↗</button>
+            </div>
         </header>
 
+        <!-- Body -->
         <div class="chatbot-body">
-            <div class="messages-container" id="chatMessages">
-                <div class="message bot-message">
-                    <div class="message-avatar">
-                        <span class="material-symbols-outlined">smart_toy</span>
-                    </div>
-                    <div class="message-bubble bot-bubble">
-                        <div class="message-content">
-                            <p>Xin chào! 👋 Tôi là <strong>OpenEventAI</strong>, trợ lý thông minh của bạn.</p>
-                            <p>Tôi có thể giúp bạn:</p>
-                            <ul>
-                                <li>🎫 Tìm kiếm và đặt vé sự kiện</li>
-                                <li>📅 Xem lịch trình sự kiện</li>
-                                <li>🎪 Tạo và quản lý sự kiện</li>
-                                <li>💬 Hỗ trợ 24/7</li>
-                            </ul>
-                            <p>Bạn muốn làm gì hôm nay?</p>
-                        </div>
-                        <div class="meta">Vừa xong</div>
-                    </div>
-                </div>
+            <div class="subtitle">
+                <strong>Eva - Biết tuốt</strong> hỗ trợ bạn hỏi đáp sự kiện<br/>
+                và cùng bạn tạo nên sự kiện bùng nổ
             </div>
 
-            <!-- Typing Indicator -->
-            <div class="typing-indicator" id="typingIndicator">
-                <div class="message bot-message">
-                    <div class="message-avatar">
-                        <span class="material-symbols-outlined">smart_toy</span>
-                    </div>
-                    <div class="message-bubble bot-bubble typing-bubble">
-                        <div class="typing-dots">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                </div>
+            <div class="message-bubble">
+                <p class="message-text">
+                    Chào bạn, mình là trợ lý AI của OpenEvent!<br/><br/>
+                    Bạn cần hỗ trợ gì hoặc có thể chọn một trong các chủ đề dưới đây nhé<br/><br/>
+                    Trong quá trình tư vấn, nếu chưa hài lòng với câu trả lời của Eva, bạn vui lòng chat <strong>Tôi muốn gặp tư vấn viên để được hỗ trợ</strong>.
+                </p>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="quick-actions">
+                <button class="action-btn">Tạo sự kiện</button>
+                <button class="action-btn">Các sự kiện nổi bật gần đây</button>
+                <button class="action-btn">Mua vé sự kiện</button>
             </div>
         </div>
 
+        <!-- Input Area -->
         <div class="chatbot-input">
             <div class="input-container">
-                <textarea
-                    id="chatInput"
-                    class="message-input"
-                    placeholder="Nhập tin nhắn của bạn..."
-                    maxlength="1000"
-                    rows="1"
-                    aria-label="Tin nhắn"
-                ></textarea>
-                <button id="chatSendBtn" class="send-button" type="button" aria-label="Gửi tin nhắn">
-                    <span class="material-symbols-outlined">send</span>
-                </button>
+                <textarea class="message-input" placeholder="Bạn cần hỗ trợ gì?" rows="1"></textarea>
+                <button class="send-btn">↑</button>
             </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="chatbot-footer">
+            Thông tin được AI hỗ trợ chỉ mang tính chất tham khảo
         </div>
     </div>
 
-    <!-- Session Management Popup -->
-    <div id="sessionPopup" class="session-popup" style="display: none;">
-        <div class="session-popup-content">
-            <div class="session-popup-header">
-                <h3>Quản lý phiên làm việc</h3>
-                <button class="session-popup-close" id="sessionPopupClose">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            <div class="session-popup-body">
-                <div class="session-list">
-                    <div class="session-item active" data-session-id="current">
-                        <div class="session-info">
-                            <span class="session-title">Phiên hiện tại</span>
-                            <span class="session-time">Vừa xong</span>
-                        </div>
-                        <div class="session-actions">
-                            <button class="session-action-btn" title="Sử dụng phiên này">
-                                <span class="material-symbols-outlined">play_arrow</span>
-                            </button>
-                            <button class="session-delete-btn" title="Xóa phiên này">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="session-actions">
-                    <button id="oeNewSessionBtn" class="new-session-btn">
-                        <span class="material-symbols-outlined">add</span>
-                        <span>Tạo phiên mới</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- Right Sidebar Avatars - Toggle Button -->
+    <div class="sidebar-avatars">
+        <button id="chatbot-toggle-btn" class="sidebar-avatar avatar-white" type="button" title="Mở chatbot">🤖</button>
     </div>
+    </div>
+</th:block>>
 </div>

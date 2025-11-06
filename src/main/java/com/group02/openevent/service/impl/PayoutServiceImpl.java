@@ -12,6 +12,7 @@ import com.group02.openevent.repository.IHostRepo;
 import com.group02.openevent.repository.IPayoutRequestRepository;
 import com.group02.openevent.service.IHostWalletService;
 import com.group02.openevent.service.IPayoutService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @Transactional
+@ConditionalOnProperty(name = "payos.payout-client-id", matchIfMissing = false)
 public class PayoutServiceImpl implements IPayoutService {
 
     private static final Logger logger = LoggerFactory.getLogger(PayoutServiceImpl.class);

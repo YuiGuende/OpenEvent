@@ -112,7 +112,7 @@ public class ChatSessionService {
     private String generateAIResponse(String userMessage, Long userId, String sessionId) {
         try {
             // Get or create AI agent for the session
-            EventAIAgent agent = SessionManager.getOrCreate("default");
+            EventAIAgent agent = SessionManager.getOrCreate(sessionId);
             
             // Generate response using the AI agent
             String response = agent.reply(userMessage, userId, sessionId);

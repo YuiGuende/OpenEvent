@@ -3,6 +3,7 @@ package com.group02.openevent.service.impl;
 import com.group02.openevent.model.payment.PayoutRequest;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import vn.payos.PayOS;
 import vn.payos.model.v1.payouts.Payout;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
+@ConditionalOnProperty(name = "payos.payout-client-id", matchIfMissing = false)
 public class PayosPayoutClient {
 
     private static final Logger logger = LoggerFactory.getLogger(PayosPayoutClient.class);

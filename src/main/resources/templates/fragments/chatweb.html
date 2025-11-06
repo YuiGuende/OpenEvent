@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot - Trợ lý thông minh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-orange: #FFB366;
+            --light-orange: #FFF0E6;
+            --dark-orange: #FF9933;
+            --accent-orange: #FF8C42;
+            --white: #FFFFFF;
+            --dark-text: #2C2C2C;
+            --light-text: #666666;
+            --border-light: #FFE5CC;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, var(--light-orange) 0%, #FFF5EB 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px rgba(255, 140, 66, 0.08);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .brand-text {
+            font-weight: 600;
+            color: var(--dark-text);
+            font-size: 1rem;
+        }
+
+        .brand-subtitle {
+            font-size: 0.7rem;
+            color: var(--light-text);
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--dark-text);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--light-orange);
+        }
+
+        /* Main Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Avatar Section */
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-orange), var(--accent-orange));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 24px rgba(255, 140, 66, 0.2);
+        }
+
+        .chatbot-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .chatbot-description {
+            font-size: 0.95rem;
+            color: var(--light-text);
+            line-height: 1.5;
+        }
+
+        /* Chat Messages */
+        .messages-section {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .message-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+            background: var(--white);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(255, 140, 66, 0.08);
+            border: 1px solid var(--border-light);
+        }
+
+        .message-text {
+            color: var(--dark-text);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Quick Action Buttons */
+        .quick-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: var(--white);
+            border: 1px solid var(--border-light);
+            padding: 0.75rem 1.25rem;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            color: var(--dark-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--light-orange);
+            border-color: var(--primary-orange);
+        }
+
+        /* Action Badge */
+        .action-badge {
+            background: var(--accent-orange);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+
+        /* Input Area */
+        .input-area {
+            width: 100%;
+            background: var(--white);
+            padding: 1.5rem;
+            box-shadow: 0 -4px 16px rgba(255, 140, 66, 0.08);
+            margin-top: auto;
+        }
+
+        .input-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .input-box {
+            width: 100%;
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            color: var(--dark-text);
+            transition: all 0.3s ease;
+        }
+
+        .input-box::placeholder {
+            color: #CCCCCC;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(255, 179, 102, 0.1);
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--primary-orange);
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Footer */
+        .footer-text {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--light-text);
+            margin-top: 0.75rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            .chat-container {
+                padding: 1rem;
+            }
+
+            .avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+
+            .chatbot-name {
+                font-size: 1.5rem;
+            }
+
+            .quick-actions {
+                gap: 0.5rem;
+            }
+
+            .action-btn {
+                font-size: 0.8rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header>
+    <div class="header-left">
+        <div class="logo">🤖</div>
+        <div>
+            <div class="brand-text">Try Iy AI - Cam</div>
+            <div class="brand-subtitle">Trợ lý thông minh</div>
+        </div>
+    </div>
+    <div class="header-icons">
+        <button class="icon-btn">⟲</button>
+        <button class="icon-btn">⤡</button>
+        <button class="icon-btn">⇲</button>
+    </div>
+</header>
+
+<!-- Main Chat Area -->
+<div class="chat-container">
+    <!-- Avatar and Introduction -->
+    <div class="avatar-section">
+        <div class="avatar">🤖</div>
+        <h1 class="chatbot-name">Cam AI</h1>
+        <p class="chatbot-description">Trợ lý AI thông minh giúp bạn trả lời mọi câu hỏi<br>và tạo đơn hàng dễ dàng</p>
+    </div>
+
+    <!-- Messages Section -->
+    <div class="messages-section">
+        <div class="message-group">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+                <div class="message-text">
+                    Chào bạn, mình là trợ lý AI của Cam Shop!<br><br>
+                    Bạn cần hỗ trợ gì hoặc có thể chọn một trong các chủ đề dưới đây nhé.
+                    Trong quá trình tư vấn, nếu chưa hài lòng với câu trả lời của mình, bạn vui lòng chat Tôi muốn gặp tư vấn viên để được hỗ trợ.
+                </div>
+                <div class="quick-actions">
+                    <button class="action-btn">Sản phẩm giá rẻ</button>
+                    <button class="action-btn">Laptop học sinh</button>
+                    <button class="action-btn">Chính sách bảo hành</button>
+                    <button class="action-btn">Chính sách đổi trả</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Input Area -->
+<div class="input-area">
+    <div class="input-wrapper">
+        <input
+                type="text"
+                class="input-box"
+                placeholder="Bạn cần hỗ trợ gì?"
+        >
+        <button class="send-btn">↑</button>
+    </div>
+    <div class="footer-text">Thông tin được AI hỗ trợ chỉ mang tính chất tham khảo</div>
+</div>
+</body>
+</html>

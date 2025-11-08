@@ -99,7 +99,8 @@ public class Order {
     public void calculateTotalAmount() {
         if (ticketType != null) {
             if (ticketType.isSalePeriodActive()) {
-                this.originalPrice = ticketType.getPrice().subtract(ticketType.getSale());
+                // NOTE: sale field stores PERCENTAGE, use getFinalPrice() which handles conversion
+                this.originalPrice = ticketType.getFinalPrice();
             } else {
                 this.originalPrice = ticketType.getPrice();
             }

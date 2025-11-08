@@ -41,10 +41,11 @@ public class TicketTypeDTO {
     }
 
     public String getFormattedSale() {
+        // NOTE: sale field stores PERCENTAGE (0-100)
         if (sale != null && sale.compareTo(BigDecimal.ZERO) > 0) {
-            return String.format("%,.0f", sale);
+            return String.format("%.0f%%", sale.doubleValue());
         }
-        return "0";
+        return "0%";
     }
 
     public String getSaleEndDate() {
@@ -56,14 +57,26 @@ public class TicketTypeDTO {
     }
 
     public boolean hasSale() {
-        return sale != null && sale.compareTo(BigDecimal.ZERO) > 0;
+        // Sale exists if sale amount > 0 and price > 0
+        // Note: Sale period check (isSaleActive) is handled separately for display logic
+        // If sale > 0, we show it regardless of sale period status
+        return sale != null 
+                && sale.compareTo(BigDecimal.ZERO) > 0 
+                && price != null 
+                && price.compareTo(BigDecimal.ZERO) > 0;
     }
 
     public int getSalePercentage() {
-        if (hasSale() && price.compareTo(BigDecimal.ZERO) > 0) {
-            return sale.multiply(BigDecimal.valueOf(100))
-                    .divide(price, 0, BigDecimal.ROUND_HALF_UP)
-                    .intValue();
+        // NOTE: 'sale' field in DB stores PERCENTAGE (0-100), not absolute amount
+        // So we can directly return it as integer after rounding
+        if (sale != null && sale.compareTo(BigDecimal.ZERO) > 0) {
+            try {
+                // Sale is already a percentage, just round to nearest integer
+                return sale.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
+            } catch (Exception e) {
+                // Fallback: if calculation fails, return 0
+                return 0;
+            }
         }
         return 0;
     }

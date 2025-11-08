@@ -63,11 +63,22 @@ public class TicketType {
     }
 
     // Helper method to get final price after discount
+    // NOTE: 'sale' field in DB stores PERCENTAGE (0-100), not absolute amount
     public BigDecimal getFinalPrice() {
-        if (sale == null) {
+        if (sale == null || sale.compareTo(BigDecimal.ZERO) <= 0 || price == null) {
             return price;
         }
-        return price.subtract(sale);
+        // Convert percentage to absolute discount amount
+        BigDecimal discountAmount = price.multiply(sale).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+        return price.subtract(discountAmount);
+    }
+    
+    // Get absolute discount amount from percentage
+    public BigDecimal getDiscountAmount() {
+        if (sale == null || sale.compareTo(BigDecimal.ZERO) <= 0 || price == null) {
+            return BigDecimal.ZERO;
+        }
+        return price.multiply(sale).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
     }
     // Business Logic Methods
     public Integer getAvailableQuantity() {

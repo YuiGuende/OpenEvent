@@ -23,4 +23,5 @@ public interface ICustomerRepo extends JpaRepository<Customer, Long> {
             "WHERE name IS NOT NULL AND name != '' AND name != 'Chưa có dữ liệu' " +
             "ORDER BY points DESC", nativeQuery = true)
     List<Object[]> findTopStudentsByPointsNative();
-} 
+}
+

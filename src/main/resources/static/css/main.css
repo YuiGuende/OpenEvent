@@ -1297,6 +1297,7 @@ body {
     justify-items: center;
     max-width: 900px;
     margin: 0 auto;
+    position: relative;
 }
 
 .podium-slot {
@@ -1326,11 +1327,12 @@ body {
 .slot-number {
     font-size: clamp(32px, 4vw, 48px);
     font-weight: 800;
-    color: #000;
-    margin-bottom: 10px;
-    z-index: 10;
+    margin-bottom: 12px;
+    z-index: 1;
     position: relative;
-    margin-top: -20px;
+    line-height: 1;
+    opacity: 0.3;
+    pointer-events: none;
 }
 
 /* Empty placeholder slots - Cùng kích thước */
@@ -1368,17 +1370,20 @@ body {
     opacity: 0.3;
 }
 
-/* Podium effect bằng cách điều chỉnh vị trí */
+/* Podium effect bằng cách điều chỉnh vị trí - giảm overlap */
 .slot-first {
     transform: translateY(0);
+    z-index: 3;
 }
 
 .slot-second {
-    transform: translateY(30px);
+    transform: translateY(20px);
+    z-index: 2;
 }
 
 .slot-third {
-    transform: translateY(60px);
+    transform: translateY(40px);
+    z-index: 1;
 }
 
 /* Featured student card - Gaming/Futuristic design */
@@ -1388,7 +1393,7 @@ body {
     background: linear-gradient(145deg, #8B0000, #A52A2A);
     border-radius: 16px;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
     border: 3px solid #FFD700;
     box-shadow: 0 0 25px rgba(255, 215, 0, 0.6),
     inset 0 0 20px rgba(255, 255, 255, 0.1),
@@ -1629,7 +1634,7 @@ body {
     margin-top: 2px;
 }
 
-/* Decorative elements */
+/* Decorative elements - ẩn để tránh lỗi hiển thị */
 .decorative-elements {
     position: absolute;
     top: 0;
@@ -1638,6 +1643,7 @@ body {
     bottom: 0;
     pointer-events: none;
     z-index: 1;
+    display: none; /* Ẩn decorative elements để tránh hiển thị không mong muốn */
 }
 
 .deco-icon {
@@ -1645,7 +1651,7 @@ body {
     color: #FFD700;
     font-size: 12px;
     font-weight: bold;
-    opacity: 0.6;
+    opacity: 0.3;
 }
 
 .deco-icon:nth-child(1) {
@@ -1714,11 +1720,13 @@ body {
     /* Reset podium transforms on mobile */
     .slot-first, .slot-second, .slot-third {
         transform: translateY(0);
+        z-index: 1;
     }
 
     .slot-number {
         font-size: 28px;
-        margin-top: -15px;
+        margin-bottom: 10px;
+        opacity: 0.2;
     }
 
     .rank-badge {

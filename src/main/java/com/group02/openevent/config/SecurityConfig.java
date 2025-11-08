@@ -1,6 +1,7 @@
 package com.group02.openevent.config;
 
 import com.group02.openevent.service.impl.CustomUserDetailsService;
+import com.group02.openevent.service.impl.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +9,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,6 +19,8 @@ public class SecurityConfig {
     private CustomAuthenticationSuccessHandler successHandler;
     @Autowired
     private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private CustomOAuth2UserService oauth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -56,12 +58,16 @@ public class SecurityConfig {
 
                 // 2. Cấu hình Authorization
                 .authorizeHttpRequests(auth -> auth
-                        // Loại bỏ /perform_login khỏi permitAll() để Spring Security xử lý
-                        .requestMatchers("/login", "/api/auth/register", "/css/**", "/js/**", "/img/**", "/images/**", "/", "/api/payments/webhook", "/api/payments/webhook/test", "/api/payments/webhook/test-data").permitAll()
+                        // Cho phép truy cập các endpoint công khai
+                        .requestMatchers("/login", "/login/**", "/oauth2/**", 
+                                       "/api/auth/register", "/css/**", "/js/**", 
+                                       "/img/**", "/images/**", "/", 
+                                       "/api/payments/webhook", "/api/payments/webhook/test", 
+                                       "/api/payments/webhook/test-data").permitAll()
                         .anyRequest().authenticated()
                 )
 
-                // 3. Cấu hình Form Login (Quan trọng)
+                // 3. Cấu hình Form Login
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/perform_login")
@@ -70,7 +76,17 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
-                // 4. Cấu hình Logout
+                // 4. Cấu hình OAuth2 Login
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oauth2UserService)
+                        )
+                        .successHandler(successHandler)
+                        .failureUrl("/login?error=oauth")
+                )
+
+                // 5. Cấu hình Logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")

@@ -17,8 +17,14 @@ public class Account {
     private String email;
 
     @JsonIgnore
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = true, length = 255)
     private String passwordHash;
+
+    @Column(name = "oauth_provider", length = 50)
+    private String oauthProvider;  // "GOOGLE", "FACEBOOK", etc.
+
+    @Column(name = "oauth_provider_id", length = 255)
+    private String oauthProviderId;  // Google user ID
 
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"account", "customer", "host", "admin", "department"})
@@ -65,12 +71,30 @@ public class Account {
         this.user = user;
     }
 
+    public String getOauthProvider() {
+        return oauthProvider;
+    }
+
+    public void setOauthProvider(String oauthProvider) {
+        this.oauthProvider = oauthProvider;
+    }
+
+    public String getOauthProviderId() {
+        return oauthProviderId;
+    }
+
+    public void setOauthProviderId(String oauthProviderId) {
+        this.oauthProviderId = oauthProviderId;
+    }
+
     @Override
     public String toString() {
         return "Account{" +
                 "accountId=" + accountId +
                 ", email='" + email + '\'' +
                 ", passwordHash='" + passwordHash + '\'' +
+                ", oauthProvider='" + oauthProvider + '\'' +
+                ", oauthProviderId='" + oauthProviderId + '\'' +
                 '}';
     }
 }

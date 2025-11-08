@@ -41,8 +41,9 @@
             <button type="submit" class="btn" id="loginBtn">Đăng nhập</button>
             <p>or login with social platforms</p>
             <div class="social-icons">
-                <a href="#"><i class='bx bxl-google'></i></a>
-                <a href="#"><i class='bx bxl-facebook'></i></a>
+                <a th:href="@{/oauth2/authorization/google}" title="Đăng nhập bằng Google"><i class='bx bxl-google'></i></a>
+                <!-- Facebook có thể thêm sau khi cấu hình -->
+                <!-- <a th:href="@{/oauth2/authorization/facebook}" title="Đăng nhập bằng Facebook"><i class='bx bxl-facebook'></i></a> -->
             </div>
             <div id="notice" class="notice"></div>
             <div id="loginResult" style="color: red; margin-top: 10px;"></div>
@@ -143,6 +144,14 @@
             const notice = document.getElementById('notice');
             notice.textContent = 'Registration successful! Please login.';
             notice.style.color = 'green';
+            notice.style.display = 'block';
+        }
+        
+        // Show OAuth error if present
+        if (getQueryParam('error') === 'oauth') {
+            const notice = document.getElementById('notice');
+            notice.textContent = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.';
+            notice.style.color = 'red';
             notice.style.display = 'block';
         }
     })();

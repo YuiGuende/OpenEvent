@@ -7,6 +7,7 @@ import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.IHostWalletService;
+import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.dto.payment.PaymentResult;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,12 +29,14 @@ public class PaymentController {
     private final OrderService orderService;
     private final PayOS payOS;
     private final IHostWalletService hostWalletService;
+    private final EventAttendanceService attendanceService;
 
-    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS, IHostWalletService hostWalletService) {
+    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS, IHostWalletService hostWalletService, EventAttendanceService attendanceService) {
         this.paymentService = paymentService;
         this.orderService = orderService;
         this.payOS = payOS;
         this.hostWalletService = hostWalletService;
+        this.attendanceService = attendanceService;
     }
 
     /**
@@ -140,6 +143,16 @@ public class PaymentController {
                 orderService.save(order);
                 
                 System.out.println("Payment and Order updated to PAID");
+                
+                // Create EventAttendance when order is paid
+                try {
+                    attendanceService.createAttendanceFromOrder(order);
+                    System.out.println("EventAttendance created successfully for order: " + order.getOrderId());
+                } catch (Exception e) {
+                    System.out.println("Error creating EventAttendance for order " + order.getOrderId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                    // Don't fail the webhook if attendance creation fails
+                }
                 
                 // Credit host wallet when order is paid successfully
                 // This will automatically create wallet if it doesn't exist

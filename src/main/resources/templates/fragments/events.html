@@ -224,24 +224,29 @@
             });
         }
 
-        // Setup form validation
+        // Setup form validation using event delegation
         function setupFormValidation() {
             console.log('Setting up form validation...');
-            const form = document.querySelector('#createEventModal form');
             
-            if (!form) {
-                console.warn('Form not found in modal');
-                return;
-            }
+            // Use event delegation on document to catch form submit anywhere
+            // Remove existing listener first to avoid duplicates
+            document.removeEventListener('submit', handleFormSubmitDelegate, true);
+            document.addEventListener('submit', handleFormSubmitDelegate, true);
+        }
 
-            // Remove existing listener to avoid duplicates
-            form.removeEventListener('submit', handleFormSubmit);
-            form.addEventListener('submit', handleFormSubmit);
+        function handleFormSubmitDelegate(e) {
+            // Only handle form submit from createEventModal
+            const form = e.target;
+            if (!form || form.closest('#createEventModal') === null) {
+                return; // Not our form, let it submit normally
+            }
+            
+            console.log('Form submit from createEventModal detected');
+            handleFormSubmit(e);
         }
 
         function handleFormSubmit(e) {
             console.log('=== Form submit event triggered ===');
-            e.preventDefault();
             
             // Find inputs by name attribute (Thymeleaf converts th:field to name)
             const form = e.target;
@@ -263,6 +268,8 @@
 
             // Validate title
             if (!title || !title.value.trim()) {
+                e.preventDefault();
+                e.stopPropagation();
                 alert('Vui lòng nhập tên sự kiện');
                 if (title) title.focus();
                 return false;
@@ -270,6 +277,8 @@
 
             // Validate startsAt (required)
             if (!startsAt || !startsAt.value) {
+                e.preventDefault();
+                e.stopPropagation();
                 alert('Vui lòng chọn ngày và giờ bắt đầu');
                 if (startsAt) startsAt.focus();
                 return false;
@@ -289,6 +298,8 @@
                 });
                 
                 if (enrollDeadlineDate >= startsAtDate) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     alert('Hạn đăng ký sự kiện phải nhỏ hơn ngày giờ bắt đầu');
                     enrollDeadline.focus();
                     return false;
@@ -309,6 +320,8 @@
                 });
                 
                 if (startsAtDate >= endsAtDate) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     alert('Ngày giờ bắt đầu phải nhỏ hơn ngày giờ kết thúc');
                     startsAt.focus();
                     return false;
@@ -329,15 +342,16 @@
                 });
                 
                 if (enrollDeadlineDate >= endsAtDate) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     alert('Hạn đăng ký sự kiện phải nhỏ hơn ngày giờ kết thúc');
                     enrollDeadline.focus();
                     return false;
                 }
             }
 
-            console.log('✅ Form validation passed, submitting form...');
-            // If validation passes, submit the form
-            form.submit();
+            console.log('✅ Form validation passed, allowing form to submit...');
+            // If validation passes, allow form to submit normally
             return true;
         }
 

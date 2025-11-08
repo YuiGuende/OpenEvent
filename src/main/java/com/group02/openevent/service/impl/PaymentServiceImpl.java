@@ -8,6 +8,7 @@ import com.group02.openevent.repository.IPaymentRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
 import com.group02.openevent.dto.payment.PaymentResult;
 import org.slf4j.Logger;
@@ -35,12 +36,14 @@ public class PaymentServiceImpl implements PaymentService {
     private final IOrderRepo orderRepo;
     private final OrderService orderService;
     private final PayOS payOS;
+    private final EventAttendanceService attendanceService;
 
-    public PaymentServiceImpl(IPaymentRepo paymentRepo, IOrderRepo orderRepo, OrderService orderService, PayOS payOS) {
+    public PaymentServiceImpl(IPaymentRepo paymentRepo, IOrderRepo orderRepo, OrderService orderService, PayOS payOS, EventAttendanceService attendanceService) {
         this.paymentRepo = paymentRepo;
         this.orderRepo = orderRepo;
         this.orderService = orderService;
         this.payOS = payOS;
+        this.attendanceService = attendanceService;
     }
 
     @Override
@@ -173,6 +176,15 @@ public class PaymentServiceImpl implements PaymentService {
             order.setUpdatedAt(LocalDateTime.now());
             orderRepo.save(order);
             logger.info("Order status updated to PAID");
+
+            // Create EventAttendance when order is paid
+            try {
+                attendanceService.createAttendanceFromOrder(order);
+                logger.info("EventAttendance created successfully for order: {}", order.getOrderId());
+            } catch (Exception e) {
+                logger.error("Error creating EventAttendance for order {}: {}", order.getOrderId(), e.getMessage(), e);
+                // Don't fail the webhook if attendance creation fails - log and continue
+            }
 
             logger.info("Payment webhook processed successfully for order: {}", order.getOrderId());
             return PaymentResult.success("Payment processed successfully");

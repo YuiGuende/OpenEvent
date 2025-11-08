@@ -19,8 +19,8 @@ public class Order {
     @Column(name = "order_id")
     private Long orderId;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false,
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_order_customer"))
     @JsonIgnoreProperties({"orders", "passwordHash", "account"})
     private Customer customer;

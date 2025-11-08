@@ -1,0 +1,242 @@
+<div class="event-attendees-fragment" th:fragment="content" th:attr="data-event-id=${event.id}">
+    <style>
+        /* Fix z-index for modals - prevent backdrop from covering modal */
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+        .modal {
+            z-index: 1055 !important;
+        }
+        .modal.show {
+            z-index: 1055 !important;
+        }
+    </style>
+    <!-- Header with search and filters -->
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="attendees-header mb-4 p-4 rounded-3">
+            <h2 class="mb-4 fw-bold text-white">
+                <i class="bi bi-people-fill me-2"></i>Quản lý Người Tham Dự
+            </h2>
+
+            <!-- Search Bar -->
+            <form id="searchForm" onsubmit="event.preventDefault(); performSearch();" class="mb-3">
+                <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                    <input
+                            type="text"
+                            id="searchInput"
+                            name="search"
+                            th:value="${search}"
+                            placeholder="Tìm theo tên, email hoặc SĐT..."
+                            class="form-control border-0 fs-6"
+                    />
+                    <button type="submit" class="btn btn-light fw-bold">
+                        <i class="bi bi-search me-1"></i>Tìm Kiếm
+                    </button>
+                    <button type="button" onclick="resetSearch()" class="btn btn-outline-light fw-bold">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                    </button>
+                </div>
+            </form>
+
+            <!-- Filters -->
+            <form id="filterForm" onsubmit="event.preventDefault(); performFilter();" class="row g-2">
+                <div class="col-md-3">
+                    <select id="ticketTypeFilter" name="ticketTypeFilter" class="form-select form-select-sm">
+                        <option value="">📋 Tất cả loại vé</option>
+                        <option th:each="ticket : ${ticketTypes}" 
+                                th:value="${ticket.ticketTypeId}"
+                                th:selected="${ticketTypeFilter != null and ticketTypeFilter == ticket.ticketTypeId}"
+                                th:text="${ticket.name}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select id="paymentStatusFilter" name="paymentStatusFilter"
+                            class="form-select form-select-sm">
+                        <option value="">💳 Tất cả trạng thái TT</option>
+                        <option value="PAID" th:selected="${paymentStatusFilter == 'PAID'}">✓ Đã thanh toán</option>
+                        <option value="PENDING" th:selected="${paymentStatusFilter == 'PENDING'}">⏳ Chưa thanh toán</option>
+                        <option value="CANCELLED" th:selected="${paymentStatusFilter == 'CANCELLED'}">✗ Đã hủy</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select id="checkinStatusFilter" name="checkinStatusFilter"
+                            class="form-select form-select-sm">
+                        <option value="">📍 Tất cả trạng thái check-in</option>
+                        <option value="CHECKED_IN" th:selected="${checkinStatusFilter == 'CHECKED_IN'}">✓ Đã check-in</option>
+                        <option value="NOT_CHECKED_IN" th:selected="${checkinStatusFilter == 'NOT_CHECKED_IN'}">✗ Chưa check-in</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-light w-100 fw-bold">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons d-flex gap-2 mb-4 flex-wrap">
+            <button
+                    id="addAttendeeBtn"
+                    type="button"
+                    class="btn btn-success btn-lg fw-bold"
+                    onclick="openAddModal()"
+            >
+                <i class="bi bi-plus-lg me-2"></i>Thêm Người Tham Dự
+            </button>
+
+            <a th:href="@{/event/{eventId}/attendees/export/excel(eventId=${event.id}, ticketTypeFilter=${ticketTypeFilter}, paymentStatusFilter=${paymentStatusFilter}, checkinStatusFilter=${checkinStatusFilter})}"
+               class="btn btn-warning btn-lg fw-bold text-dark"
+            >
+                <i class="bi bi-download me-2"></i>Xuất Excel
+            </a>
+        </div>
+
+        <!-- Attendees Table -->
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light border-bottom-2">
+                        <tr>
+                            <th class="fw-bold">STT</th>
+                            <th class="fw-bold">Tên</th>
+                            <th class="fw-bold">Email</th>
+                            <th class="fw-bold">SĐT</th>
+                            <th class="fw-bold">Loại Vé</th>
+                            <th class="fw-bold">Trạng Thái TT</th>
+                            <th class="fw-bold">Check-in</th>
+                            <th class="fw-bold text-center">Hành Động</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="attendee, stat : ${attendees.content}" class="attendee-row">
+                            <td th:text="${currentPage * pageSize + stat.count}"></td>
+                            <td class="fw-bold text-dark" th:text="${attendee.order != null ? attendee.order.participantName : attendee.fullName}"></td>
+                            <td class="text-muted" th:text="${attendee.order != null ? attendee.order.participantEmail : attendee.email}"></td>
+                            <td th:text="${attendee.order != null ? attendee.order.participantPhone : attendee.phone}"></td>
+                            <td><span class="badge bg-info" th:text="${attendee.order != null and attendee.order.ticketType != null ? attendee.order.ticketType.name : 'N/A'}"></span></td>
+                            <td>
+                                        <span th:if="${attendee.order != null and attendee.order.status.toString() == 'PAID'}"
+                                              class="badge bg-success">
+                                            ✓ Đã Thanh Toán
+                                        </span>
+                                <span th:if="${attendee.order != null and attendee.order.status.toString() == 'PENDING'}"
+                                      class="badge bg-warning text-dark">
+                                            ⏳ Chưa TT
+                                        </span>
+                                <span th:if="${attendee.order != null and attendee.order.status.toString() == 'CANCELLED'}"
+                                      class="badge bg-danger">
+                                            ✗ Đã Hủy
+                                        </span>
+                                <span th:if="${attendee.order == null}"
+                                      class="badge bg-secondary">
+                                            - Không có Order
+                                        </span>
+                            </td>
+                            <td>
+                                        <span th:if="${attendee.checkInTime != null}" class="badge bg-success">
+                                            ✓ <span
+                                                th:text="${#temporals.format(attendee.checkInTime, 'HH:mm')}"></span>
+                                        </span>
+                                <span th:if="${attendee.checkInTime == null}" class="badge bg-danger">
+                                            ✗ Chưa Check-in
+                                        </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button
+                                            th:if="${attendee.checkInTime == null}"
+                                            type="button"
+                                            th:onclick="|checkIn(${attendee.attendanceId})|"
+                                            class="btn btn-sm btn-outline-success"
+                                            title="Check-in"
+                                    >
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+
+                                    <button
+                                            th:if="${attendee.checkInTime != null && attendee.checkOutTime == null}"
+                                            type="button"
+                                            th:onclick="|checkOut(${attendee.attendanceId})|"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="Check-out"
+                                    >
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </button>
+
+                                    <button
+                                            type="button"
+                                            th:onclick="|openEditModal(this, ${attendee.attendanceId})|"
+                                            th:data-name="${attendee.order != null ? attendee.order.participantName : attendee.fullName}"
+                                            th:data-email="${attendee.order != null ? attendee.order.participantEmail : attendee.email}"
+                                            th:data-phone="${attendee.order != null ? attendee.order.participantPhone : attendee.phone}"
+                                            th:data-organization="${attendee.order != null ? (attendee.order.participantOrganization != null ? attendee.order.participantOrganization : '') : (attendee.organization != null ? attendee.organization : '')}"
+                                            class="btn btn-sm btn-outline-primary"
+                                            title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+
+                                    <button
+                                            type="button"
+                                            th:onclick="|deleteAttendee(${attendee.attendanceId})|"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="Xóa"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${attendees.totalPages > 1}" class="mt-4" aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" 
+                       th:onclick="${currentPage > 0} ? |loadPage(${currentPage - 1})| : ''"
+                       th:if="${currentPage > 0}"
+                       href="javascript:void(0)">
+                        <i class="bi bi-chevron-left"></i> Trước
+                    </a>
+                    <span class="page-link" th:if="${currentPage == 0}">
+                            <i class="bi bi-chevron-left"></i> Trước
+                        </span>
+                </li>
+
+                <li th:each="i : ${#numbers.sequence(0, attendees.totalPages - 1)}"
+                    class="page-item"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" 
+                       th:onclick="|loadPage(${i})|"
+                       th:text="${i + 1}"
+                       href="javascript:void(0)"></a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage >= attendees.totalPages - 1} ? 'disabled'">
+                    <a class="page-link"
+                       th:onclick="${currentPage < attendees.totalPages - 1} ? |loadPage(${currentPage + 1})| : ''"
+                       th:if="${currentPage < attendees.totalPages - 1}"
+                       href="javascript:void(0)">
+                        Sau <i class="bi bi-chevron-right"></i>
+                    </a>
+                    <span class="page-link" th:if="${currentPage >= attendees.totalPages - 1}">
+                            Sau <i class="bi bi-chevron-right"></i>
+                        </span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>

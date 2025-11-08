@@ -11,6 +11,7 @@ import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
 import com.group02.openevent.dto.response.EventResponse;
 import com.group02.openevent.mapper.EventMapper;
 import com.group02.openevent.model.account.Account;
+import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.event.*;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.request.RequestType;
@@ -22,6 +23,8 @@ import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.RequestService;
 import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.impl.CustomerServiceImpl;
+import com.group02.openevent.service.impl.EventAttendanceServiceImpl;
+import com.group02.openevent.service.impl.TicketTypeServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.group02.openevent.service.PlaceService;
@@ -43,6 +47,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -62,14 +67,16 @@ public class EventManageController {
     @Autowired
     IEventImageRepo imageRepo;
     @Autowired
-    IPlaceRepo placeRepo;
-    @Autowired
     ITicketTypeRepo ticketTypeRepo;
     @Autowired
     EventMapper eventMapper;
-
+    @Autowired
+    EventAttendanceServiceImpl eventAttendance;
+@Autowired
+    TicketTypeServiceImpl  ticketTypeService;
     @Autowired
     EventFormService eventFormService;
+
     CustomerServiceImpl customerService;
     private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
 
@@ -212,10 +219,41 @@ public class EventManageController {
 //        return "fragments/reports :: content";
 //    }
 //
-//    @GetMapping("/fragments/attendees")
-//    public String attendees(Model model) {
-//        return "fragments/attendees :: content";
-//    }
+    @GetMapping("/fragments/attendees")
+    public String attendees(@RequestParam Long id,
+                            @RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "10") int size,
+                            @RequestParam(required = false) String search,
+                            @RequestParam(required = false) Long ticketTypeFilter,
+                            @RequestParam(required = false) String paymentStatusFilter,
+                            @RequestParam(required = false) String checkinStatusFilter
+                            ,
+                            Model model) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EventAttendance> attendees;
+        Event event = eventService.getEventById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sự kiện với ID: " + id));
+        if (search != null && !search.isEmpty()) {
+            attendees = eventAttendance.searchAttendees(id, search, pageable);
+        } else if (ticketTypeFilter != null || paymentStatusFilter != null || checkinStatusFilter != null) {
+            attendees = eventAttendance.filterAttendees(
+                    id, ticketTypeFilter, paymentStatusFilter, checkinStatusFilter, pageable);
+        } else {
+            attendees = eventAttendance.getAttendeesByEvent(id, pageable);
+        }
+
+        model.addAttribute("event", event);
+        model.addAttribute("attendees", attendees);
+        model.addAttribute("search", search);
+        model.addAttribute("ticketTypeFilter", ticketTypeFilter);
+        model.addAttribute("paymentStatusFilter", paymentStatusFilter);
+        model.addAttribute("checkinStatusFilter", checkinStatusFilter);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("ticketTypes", ticketTypeService.getTicketTypesByEventId(id));
+        return "fragments/event-attendees :: content";
+    }
 //
     @GetMapping("/fragments/orders")
     public String orders(@RequestParam Long id,

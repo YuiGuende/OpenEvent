@@ -1,6 +1,8 @@
 package com.group02.openevent.repository;
 
 import com.group02.openevent.model.attendance.EventAttendance;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +28,11 @@ public interface IEventAttendanceRepo extends JpaRepository<EventAttendance, Lon
      * Find attendance by order and customer
      */
     Optional<EventAttendance> findByOrderOrderIdAndCustomerCustomerId(Long orderId, Long customerId);
+    
+    /**
+     * Find attendance by order ID
+     */
+    Optional<EventAttendance> findByOrder_OrderId(Long orderId);
     
     /**
      * Count attendances by event and status
@@ -62,5 +69,53 @@ public interface IEventAttendanceRepo extends JpaRepository<EventAttendance, Lon
      * Count total attendances for an event
      */
     long countByEventId(Long eventId);
+
+    Page<EventAttendance>findByEvent_Id(Long eventId, Pageable pageable);
+
+    @Query("SELECT ea FROM EventAttendance ea " +
+            "WHERE ea.order.event.id = :eventId " +
+            "AND (ea.order.participantName LIKE %:search% " +
+            "OR ea.order.participantEmail LIKE %:search% " +
+            "OR ea.order.participantPhone LIKE %:search%)")
+    Page<EventAttendance> searchAttendees(@Param("eventId") Long eventId,
+                                          @Param("search") String search,
+                                          Pageable pageable);
+    // Câu query chính cho Pageable
+    @Query(value = "SELECT ea FROM EventAttendance ea " +
+            "LEFT JOIN FETCH ea.order o " +
+            "LEFT JOIN FETCH o.ticketType tt " +
+            "WHERE ea.event.id = :eventId " +
+            "AND (:ticketTypeId IS NULL OR tt.ticketTypeId = :ticketTypeId) " +
+            "AND (:paymentStatus IS NULL OR CAST(o.status AS STRING) = :paymentStatus) " +
+            "AND (:checkinStatus IS NULL OR " +
+            "  (:checkinStatus = 'CHECKED_IN' AND ea.checkInTime IS NOT NULL) OR " +
+            "  (:checkinStatus = 'NOT_CHECKED_IN' AND ea.checkInTime IS NULL))",
+            countQuery = "SELECT COUNT(ea) FROM EventAttendance ea " + // Câu query COUNT riêng
+                    "WHERE ea.event.id = :eventId " +
+                    "AND (:ticketTypeId IS NULL OR ea.order.ticketType.ticketTypeId = :ticketTypeId) " +
+                    "AND (:paymentStatus IS NULL OR CAST(ea.order.status AS STRING) = :paymentStatus) " +
+                    "AND (:checkinStatus IS NULL OR " +
+                    "  (:checkinStatus = 'CHECKED_IN' AND ea.checkInTime IS NOT NULL) OR " +
+                    "  (:checkinStatus = 'NOT_CHECKED_IN' AND ea.checkInTime IS NULL))")
+    Page<EventAttendance> filterAttendees(@Param("eventId") Long eventId,
+                                          @Param("ticketTypeId") Long ticketTypeId,
+                                          @Param("paymentStatus") String paymentStatus,
+                                          @Param("checkinStatus") String checkinStatus,
+                                          Pageable pageable);
+    @Query("SELECT DISTINCT ea FROM EventAttendance ea " +
+            "LEFT JOIN FETCH ea.order o " +
+            "LEFT JOIN FETCH o.ticketType tt " +
+            "WHERE ea.event.id = :eventId " +
+            "AND (:ticketTypeId IS NULL OR tt.ticketTypeId = :ticketTypeId) " +
+            "AND (:paymentStatus IS NULL OR CAST(o.status AS STRING) = :paymentStatus) " +
+            "AND (:checkinStatus IS NULL OR " +
+            "  (:checkinStatus = 'CHECKED_IN' AND ea.checkInTime IS NOT NULL) OR " +
+            "  (:checkinStatus = 'NOT_CHECKED_IN' AND ea.checkInTime IS NULL))")
+    List<EventAttendance> filterAttendees(
+            @Param("eventId") Long eventId,
+            @Param("ticketTypeId") Long ticketTypeId,
+            @Param("paymentStatus") String paymentStatus,
+            @Param("checkinStatus") String checkinStatus);
+    Optional<EventAttendance> findByEvent_IdAndAttendanceId(Long eventId, Long attendanceId);
 }
 

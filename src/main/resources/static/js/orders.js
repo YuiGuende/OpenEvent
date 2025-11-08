@@ -79,6 +79,8 @@ function buildOrdersFromDom() {
         
         const orderId = parseInt(cells[0]?.querySelector('.fw-semibold')?.textContent?.replace('#', '') || '0');
         const eventTitle = cells[1]?.querySelector('.fw-medium')?.textContent?.trim() || '';
+        // CRITICAL: Get eventImageUrl from img tag
+        const eventImageUrl = cells[1]?.querySelector('img')?.getAttribute('src') || '/images/Logo.png';
         const ticketTypeName = cells[2]?.textContent?.trim() || '';
         const participantName = cells[3]?.textContent?.trim() || '';
         const statusText = cells[4]?.querySelector('.status-badge')?.textContent?.trim() || '';
@@ -88,6 +90,7 @@ function buildOrdersFromDom() {
         return {
             orderId,
             eventTitle,
+            eventImageUrl, // Include eventImageUrl
             ticketTypeName,
             participantName,
             status: statusText,
@@ -218,7 +221,7 @@ function renderOrders(list) {
             <td><span class="fw-semibold text-secondary">#${order.orderId}</span></td>
             <td>
                 <div class="d-flex align-items-center gap-3">
-                    <img src="${order.eventImageUrl || '/images/default-event.jpg'}" alt="Event" class="rounded" style="width: 50px; height: 50px; object-fit: cover;"/>
+                    <img src="${order.eventImageUrl || '/images/Logo.png'}" alt="Event" class="rounded" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='/images/Logo.png'"/>
                     <span class="fw-medium text-truncate" style="max-width: 200px;">${order.eventTitle || ''}</span>
                 </div>
             </td>

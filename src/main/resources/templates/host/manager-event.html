@@ -110,9 +110,9 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/request-form'}" class="nav-link" data-link>
                                 <i class="bi bi-speedometer2"></i>
-                                <span>Công suất</span>
+                                <span>Yêu cầu duyệt</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -199,15 +199,15 @@
                 </div>
 
                 <div class="header-right">
-                    <button class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-up-right"></i>
-                        Xem trước trang sự kiện
-                    </button>
+                    <a th:href="@{/}" class="btn btn-homepage">
+                        <i class="fas fa-home"></i>
+                        Về trang chủ
+                    </a>
 
-                    <button class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-share"></i>
-                        Chia sẻ sự kiện
-                    </button>
+                    <a th:href="@{/organizer}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        Quay lại trang Host
+                    </a>
 
                     <div class="dropdown">
                         <button class="btn btn-icon" data-bs-toggle="dropdown">
@@ -252,6 +252,7 @@
         console.log('Dữ liệu ticket types từ Thymeleaf:', initialTicketTypesData);
         /*]]>*/
     </script>
+    <script src="/js/request-form.js"></script>
     <script src="/js/orders.js"></script>
     <script src="/js/dashboard-event.js"></script>
     <script src="/js/getting-started.js"></script>

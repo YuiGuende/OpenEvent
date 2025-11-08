@@ -80,6 +80,7 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
             "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID " +
             "AND o.customer.customerId = :customerId")
     boolean existsPaidByEventIdAndCustomerId(@Param("eventId") Long eventId, @Param("customerId") Long customerId);
+
 }
 
 

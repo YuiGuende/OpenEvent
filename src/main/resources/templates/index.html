@@ -328,24 +328,26 @@
 
                 <div class="podium-layout">
                     <!-- Slot 2 - Rank 2 (Left, Medium height) -->
-                    <div class="podium-slot slot-second">
-                        <div class="slot-number">2</div>
+                    <div class="podium-slot slot-second" th:if="${topStudents != null and !topStudents.isEmpty() and topStudents.size() >= 2}">
+                        <div class="slot-number" th:text="${topStudents[1]?.rank ?: 2}">2</div>
                         <div class="featured-card rank-2">
-                            <div class="rank-badge">🥈 No.2</div>
+                            <div class="rank-badge">🥈 No.<span th:text="${topStudents[1]?.rank ?: 2}">2</span></div>
 
                             <div class="card-header">
                                 <span class="card-title-small">OUTSTANDING</span>
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{/img/sinhvien3.jpg}" alt="Trần Lê Gia Khang" class="student-image"/>
+                                <img th:src="@{${topStudents[1]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
+                                     th:alt="${topStudents[1]?.name ?: 'Student'}" 
+                                     class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
 
                             <div class="card-footer">
-                                <div class="student-title">Brother</div>
-                                <div class="student-name">TRẦN LÊ GIA KHANG</div>
-                                <div class="event-stats">15 Events</div>
+                                <div class="student-title" th:text="${topStudents[1]?.organization ?: 'Student'}">Organization</div>
+                                <div class="student-name" th:text="${topStudents[1]?.name ?: 'Chưa có dữ liệu'}">STUDENT NAME</div>
+                                <div class="event-stats" th:text="${(topStudents[1]?.points ?: 0) + ' Points'}">0 Points</div>
                             </div>
 
                             <div class="decorative-elements">
@@ -358,24 +360,26 @@
                     </div>
 
                     <!-- Slot 1 - Rank 1 (Center, Highest) -->
-                    <div class="podium-slot slot-first">
-                        <div class="slot-number">1</div>
+                    <div class="podium-slot slot-first" th:if="${topStudents != null and !topStudents.isEmpty()}">
+                        <div class="slot-number" th:text="${topStudents[0]?.rank ?: 1}">1</div>
                         <div class="featured-card rank-1">
-                            <div class="rank-badge">🥇 No.1</div>
+                            <div class="rank-badge">🥇 No.<span th:text="${topStudents[0]?.rank ?: 1}">1</span></div>
 
                             <div class="card-header">
                                 <span class="card-title-small">OUTSTANDING</span>
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{/img/sinhvien2.jpg}" alt="Trần Lê Gia Khang" class="student-image"/>
+                                <img th:src="@{${topStudents[0]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
+                                     th:alt="${topStudents[0]?.name ?: 'Student'}" 
+                                     class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
 
                             <div class="card-footer">
-                                <div class="student-title">Brother</div>
-                                <div class="student-name">TRẦN LÊ GIA KHANG</div>
-                                <div class="event-stats">15 Events</div>
+                                <div class="student-title" th:text="${topStudents[0]?.organization ?: 'Student'}">Organization</div>
+                                <div class="student-name" th:text="${topStudents[0]?.name ?: 'Chưa có dữ liệu'}">STUDENT NAME</div>
+                                <div class="event-stats" th:text="${(topStudents[0]?.points ?: 0) + ' Points'}">0 Points</div>
                             </div>
 
                             <div class="decorative-elements">
@@ -388,24 +392,26 @@
                     </div>
 
                     <!-- Slot 3 - Rank 3 (Right, Lowest) -->
-                    <div class="podium-slot slot-third">
-                        <div class="slot-number">3</div>
+                    <div class="podium-slot slot-third" th:if="${topStudents != null and !topStudents.isEmpty() and topStudents.size() >= 3}">
+                        <div class="slot-number" th:text="${topStudents[2]?.rank ?: 3}">3</div>
                         <div class="featured-card rank-3">
-                            <div class="rank-badge">🥉 No.3</div>
+                            <div class="rank-badge">🥉 No.<span th:text="${topStudents[2]?.rank ?: 3}">3</span></div>
 
                             <div class="card-header">
                                 <span class="card-title-small">OUTSTANDING</span>
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{/img/sinhvien2.jpg}" alt="Trần Lê Gia Khang" class="student-image"/>
+                                <img th:src="@{${topStudents[2]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
+                                     th:alt="${topStudents[2]?.name ?: 'Student'}" 
+                                     class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
 
                             <div class="card-footer">
-                                <div class="student-title">Brother</div>
-                                <div class="student-name">TRẦN LÊ GIA KHANG</div>
-                                <div class="event-stats">15 Events</div>
+                                <div class="student-title" th:text="${topStudents[2]?.organization ?: 'Student'}">Organization</div>
+                                <div class="student-name" th:text="${topStudents[2]?.name ?: 'Chưa có dữ liệu'}">STUDENT NAME</div>
+                                <div class="event-stats" th:text="${(topStudents[2]?.points ?: 0) + ' Points'}">0 Points</div>
                             </div>
 
                             <div class="decorative-elements">

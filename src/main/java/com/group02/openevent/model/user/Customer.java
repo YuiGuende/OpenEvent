@@ -37,6 +37,9 @@ public class Customer {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "points", nullable = false)
     private Integer points = 0;
 
@@ -47,6 +50,30 @@ public class Customer {
     private String memberID;
 
     public Customer() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getMemberID() {
+        return memberID;
+    }
+
+    public void setMemberID(String memberID) {
+        this.memberID = memberID;
     }
 
     public Long getCustomerId() {

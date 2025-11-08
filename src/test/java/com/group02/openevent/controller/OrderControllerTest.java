@@ -11,6 +11,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.OrderService;
@@ -89,9 +90,12 @@ class OrderControllerTest {
     void setUp() throws Exception {
         Account account = new Account();
         account.setAccountId(VALID_CUSTOMER_ACCOUNT_ID);
+        User user = new User();
+        user.setAccount(account);
+        user.setUserId(1L);
         sampleCustomer = new Customer();
         sampleCustomer.setCustomerId(CUSTOMER_ID);
-        sampleCustomer.setAccount(account);
+        sampleCustomer.setUser(user);
 
         sampleCreatedOrder = new Order();
         sampleCreatedOrder.setOrderId(NEW_ORDER_ID);
@@ -143,7 +147,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("AUTH-002: Khi không tìm thấy Customer, trả về 404")
         void test_AUTH_002_createOrder_whenCustomerNotFound_shouldReturn404() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.empty());
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.empty());
             String jsonRequest = objectMapper.writeValueAsString(validRequestDTO);
 
             mockMvc.perform(post(API_URL)
@@ -166,7 +170,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("BIZ-001 (Happy Path): Tạo đơn thành công, trả về 200")
         void test_BIZ_001_createOrder_happyPath_shouldReturn200AndOrder() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.empty());
             when(orderService.createOrderWithTicketTypes(any(CreateOrderWithTicketTypeRequest.class), eq(sampleCustomer)))
@@ -189,7 +193,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("BIZ-002: Khi đã đăng ký event (PAID), trả về 400")
         void test_BIZ_002_createOrder_whenAlreadyRegistered_shouldReturn400() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(true);
 
             String jsonRequest = objectMapper.writeValueAsString(validRequestDTO);
@@ -211,7 +215,7 @@ class OrderControllerTest {
             Order oldPendingOrder = new Order();
             oldPendingOrder.setOrderId(OLD_ORDER_ID);
 
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.of(oldPendingOrder));
 
@@ -295,7 +299,7 @@ class OrderControllerTest {
             Order oldPendingOrder = new Order();
             oldPendingOrder.setOrderId(OLD_ORDER_ID);
 
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.of(oldPendingOrder));
 
@@ -317,7 +321,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("EDGE-003: Khi orderId trả về là null (NPE), trả về 400")
         void test_EDGE_003_createOrder_whenCreatedOrderIdIsNull_shouldReturn400() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.empty());
 
@@ -337,7 +341,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("EDGE-004: Khi orderStatus trả về là null (NPE), trả về 400")
         void test_EDGE_004_createOrder_whenCreatedOrderStatusIsNull_shouldReturn400() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.empty());
 
@@ -357,7 +361,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("EDGE-005: Khi Exception message là null, trả về 400 với tên class")
         void test_EDGE_005_createOrder_whenExceptionMessageIsNull_shouldReturn400() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.empty());
 
@@ -386,7 +390,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("CON-001 (Simulate): Lỗi vi phạm DB, trả về 400")
         void test_CON_001_createOrder_whenDbConstraintFails_shouldReturn400() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.empty());
 
@@ -409,7 +413,7 @@ class OrderControllerTest {
             Order oldPendingOrder = new Order();
             oldPendingOrder.setOrderId(OLD_ORDER_ID);
 
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.of(oldPendingOrder));
 
@@ -431,7 +435,7 @@ class OrderControllerTest {
         @Test
         @DisplayName("CON-003 (TOCTOU): Hết vé (sau khi check), trả về 400")
         void test_CON_003_createOrder_whenTicketsBecomeUnavailable_shouldReturn400() throws Exception {
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(sampleCustomer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(false);
             when(orderService.getPendingOrderForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(Optional.empty());
 
@@ -480,7 +484,7 @@ class OrderControllerTest {
             Customer customer = new Customer();
             customer.setCustomerId(CUSTOMER_ID);
 
-            when(customerRepo.findByAccount_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(VALID_CUSTOMER_ACCOUNT_ID)).thenReturn(Optional.of(customer));
             when(orderService.hasCustomerRegisteredForEvent(CUSTOMER_ID, EVENT_ID)).thenReturn(true);
 
             //When
@@ -500,7 +504,7 @@ class OrderControllerTest {
             Long eventId = 5L;
             Long accountId = 10L;
 
-            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.empty());
+            when(customerRepo.findByUser_Account_AccountId(accountId)).thenReturn(Optional.empty());
 
             // When / Then
             mockMvc.perform(MockMvcRequestBuilders
@@ -524,7 +528,7 @@ class OrderControllerTest {
             Customer customer = new Customer();
             customer.setCustomerId(customerId);
 
-            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(accountId)).thenReturn(Optional.of(customer));
             when(orderService.hasCustomerRegisteredForEvent(customerId, eventId)).thenReturn(true);
 
             // When / Then
@@ -549,7 +553,7 @@ class OrderControllerTest {
             Customer customer = new Customer();
             customer.setCustomerId(customerId);
 
-            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(accountId)).thenReturn(Optional.of(customer));
             when(orderService.hasCustomerRegisteredForEvent(customerId, eventId)).thenReturn(false);
 
             // When / Then
@@ -602,7 +606,7 @@ class OrderControllerTest {
             Customer customer = new Customer();
             customer.setCustomerId(customerId);
 
-            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(accountId)).thenReturn(Optional.of(customer));
             when(orderService.hasCustomerRegisteredForEvent(customerId, eventId))
                     .thenThrow(new RuntimeException("DB error"));
 
@@ -625,7 +629,7 @@ class OrderControllerTest {
             Customer customer = new Customer();
             customer.setCustomerId(customerId);
 
-            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(accountId)).thenReturn(Optional.of(customer));
             when(orderService.hasCustomerRegisteredForEvent(customerId, eventId)).thenReturn(true);
 
             // When / Then (gọi 2 lần để test consistency)
@@ -649,8 +653,8 @@ class OrderControllerTest {
             Customer c1 = new Customer(); c1.setCustomerId(100L);
             Customer c2 = new Customer(); c2.setCustomerId(200L);
 
-            when(customerRepo.findByAccount_AccountId(10L)).thenReturn(Optional.of(c1));
-            when(customerRepo.findByAccount_AccountId(20L)).thenReturn(Optional.of(c2));
+            when(customerRepo.findByUser_Account_AccountId(10L)).thenReturn(Optional.of(c1));
+            when(customerRepo.findByUser_Account_AccountId(20L)).thenReturn(Optional.of(c2));
 
             when(orderService.hasCustomerRegisteredForEvent(100L, eventId)).thenReturn(true);
             when(orderService.hasCustomerRegisteredForEvent(200L, eventId)).thenReturn(false);
@@ -687,7 +691,7 @@ class OrderControllerTest {
             Customer customer = new Customer();
             customer.setCustomerId(customerId);
 
-            when(customerRepo.findByAccount_AccountId(10L)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(10L)).thenReturn(Optional.of(customer));
             when(orderService.hasCustomerRegisteredForEvent(customerId, eventId)).thenReturn(true);
 
             // When / Then (Không cần .requestAttr() nữa vì Interceptor đã làm)

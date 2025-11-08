@@ -38,15 +38,15 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
             "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
     List<Event> findConfirmedEventsByCustomerId(@Param("customerId") Long customerId);
 
-    @Query("SELECT o FROM Order o WHERE o.event.department.accountId = :departmentId")
+    @Query("SELECT o FROM Order o WHERE o.event.department.user.account.accountId = :departmentId")
     List<Order> findByDepartmentId(@Param("departmentId") Long departmentId);
 
-    @Query("SELECT o FROM Order o WHERE o.event.department.accountId = :departmentId AND o.status = :status")
+    @Query("SELECT o FROM Order o WHERE o.event.department.user.account.accountId = :departmentId AND o.status = :status")
     Page<Order> findByDepartmentIdAndStatus(@Param("departmentId") Long departmentId,
                                             @Param("status") OrderStatus status,
                                             Pageable pageable);
 
-    @Query("SELECT o FROM Order o WHERE o.event.department.accountId = :departmentId")
+    @Query("SELECT o FROM Order o WHERE o.event.department.user.account.accountId = :departmentId")
     Page<Order> findByDepartmentId(@Param("departmentId") Long departmentId, Pageable pageable);
 
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId AND o.status = :status")
@@ -57,7 +57,7 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
     Page<Order> findByEventId(@Param("eventId") Long eventId, Pageable pageable);
 
-    @Query("SELECT DISTINCT o.customer.account.accountId FROM Order o " +
+    @Query("SELECT DISTINCT o.customer.user.account.accountId FROM Order o " +
             "WHERE o.event.id = :eventId AND o.status = 'PAID'")
     List<Long> findDistinctCustomerAccountIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
 

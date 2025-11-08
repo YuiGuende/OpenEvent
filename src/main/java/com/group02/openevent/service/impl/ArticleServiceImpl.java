@@ -29,7 +29,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public ArticleDTO createArticle(ArticleDTO articleDTO, Long departmentAccountId, MultipartFile imageFile) {
-        Department department = departmentRepo.findByAccountId(departmentAccountId)
+        Department department = departmentRepo.findByUser_Account_AccountId(departmentAccountId)
                 .orElseThrow(() -> new RuntimeException("Department not found"));
 
         String imageUrl = null;
@@ -59,7 +59,9 @@ public class ArticleServiceImpl implements ArticleService {
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
         // Verify that the article belongs to this department
-        if (!article.getDepartment().getAccountId().equals(departmentAccountId)) {
+        Department dept = article.getDepartment();
+        if (dept == null || dept.getUser() == null || dept.getUser().getAccount() == null 
+            || !dept.getUser().getAccount().getAccountId().equals(departmentAccountId)) {
             throw new RuntimeException("Unauthorized: Article does not belong to this department");
         }
 
@@ -95,7 +97,9 @@ public class ArticleServiceImpl implements ArticleService {
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
         // Verify that the article belongs to this department
-        if (!article.getDepartment().getAccountId().equals(departmentAccountId)) {
+        Department dept = article.getDepartment();
+        if (dept == null || dept.getUser() == null || dept.getUser().getAccount() == null 
+            || !dept.getUser().getAccount().getAccountId().equals(departmentAccountId)) {
             throw new RuntimeException("Unauthorized: Article does not belong to this department");
         }
 
@@ -235,7 +239,9 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = articleRepo.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        if (!article.getDepartment().getAccountId().equals(departmentAccountId)) {
+        Department dept = article.getDepartment();
+        if (dept == null || dept.getUser() == null || dept.getUser().getAccount() == null 
+            || !dept.getUser().getAccount().getAccountId().equals(departmentAccountId)) {
             throw new RuntimeException("Unauthorized: Article does not belong to this department");
         }
 
@@ -251,7 +257,9 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = articleRepo.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        if (!article.getDepartment().getAccountId().equals(departmentAccountId)) {
+        Department dept = article.getDepartment();
+        if (dept == null || dept.getUser() == null || dept.getUser().getAccount() == null 
+            || !dept.getUser().getAccount().getAccountId().equals(departmentAccountId)) {
             throw new RuntimeException("Unauthorized: Article does not belong to this department");
         }
 
@@ -271,7 +279,10 @@ public class ArticleServiceImpl implements ArticleService {
                 .status(article.getStatus())
                 .publishedAt(article.getPublishedAt())
                 .departmentName(article.getDepartment().getDepartmentName())
-                .departmentId(article.getDepartment().getAccountId())
+                .departmentId(article.getDepartment() != null && article.getDepartment().getUser() != null 
+                    && article.getDepartment().getUser().getAccount() != null 
+                    ? article.getDepartment().getUser().getAccount().getAccountId() 
+                    : null)
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
                 .build();

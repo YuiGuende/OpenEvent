@@ -2,7 +2,6 @@ package com.group02.openevent.ai.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group02.openevent.ai.util.ConfigLoader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.net.URI;
@@ -28,16 +27,27 @@ public class EmbeddingService {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
+    private boolean isEnabled = true;
+
     // 1. Dùng Constructor để Inject các giá trị cấu hình từ application.properties/dotenv
-    public EmbeddingService(@Value("${api.token}") String apiToken) {
+    public EmbeddingService(@Value("${api.token:}") String apiToken) {
         // Gán các giá trị được inject (đã được dotenv-java phân giải)
         this.apiToken = apiToken;
         // Các giá trị cố định có thể đặt trực tiếp ở đây
         this.apiUrl = "https://router.huggingface.co/nebius/v1/embeddings";
         this.modelId = "Qwen/Qwen3-Embedding-8B";
+        
+        // Kiểm tra API token
+        if (apiToken == null || apiToken.trim().isEmpty()) {
+            this.isEnabled = false;
+            System.out.println("⚠️ WARNING: HUGGINGFACE_TOKEN not configured. Embedding service will be disabled.");
+        }
     }
 
     public float[] getEmbedding(String input) throws Exception {
+        if (!isEnabled) {
+            throw new IllegalStateException("Embedding service is disabled. Please configure HUGGINGFACE_TOKEN in environment variables.");
+        }
         if (input == null || input.isBlank()) {
             throw new IllegalArgumentException("Input text cannot be null or empty.");
         }
@@ -50,6 +60,9 @@ public class EmbeddingService {
     }
 
     public List<float[]> getEmbeddings(List<String> texts) throws Exception {
+        if (!isEnabled) {
+            throw new IllegalStateException("Embedding service is disabled. Please configure HUGGINGFACE_TOKEN in environment variables.");
+        }
         if (texts == null || texts.isEmpty()) {
             return Collections.emptyList();
         }
@@ -71,6 +84,14 @@ public class EmbeddingService {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
+        if (response.statusCode() == 401 || response.statusCode() == 403) {
+            String errorMsg = "Embedding API authentication failed. Please check your HUGGINGFACE_TOKEN. Status: " + response.statusCode();
+            if (response.body() != null && !response.body().isEmpty()) {
+                errorMsg += " Response: " + response.body();
+            }
+            throw new IllegalStateException(errorMsg);
+        }
+        
         if (response.statusCode() != 200) {
             throw new RuntimeException("Embedding API request failed with status " + response.statusCode() + ": " + response.body());
         }

@@ -1,6 +1,8 @@
 package com.group02.openevent.controller;
 
 import com.group02.openevent.model.session.Session;
+import com.group02.openevent.model.user.User;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -20,9 +22,11 @@ import java.util.stream.Collectors;
 public class SessionController {
     
     private final SessionService sessionService;
+    private final IUserRepo userRepo;
     
-    public SessionController(SessionService sessionService) {
+    public SessionController(SessionService sessionService, IUserRepo userRepo) {
         this.sessionService = sessionService;
+        this.userRepo = userRepo;
     }
     
     /**
@@ -44,12 +48,16 @@ public class SessionController {
         }
         
         Session session = sessionOpt.get();
+        // Lấy User để xác định Role
+        User user = userRepo.findByAccount_AccountId(session.getAccount().getAccountId())
+                .orElse(null);
+        
         Map<String, Object> sessionInfo = new HashMap<>();
         sessionInfo.put("authenticated", true);
         sessionInfo.put("sessionId", session.getSessionId());
         sessionInfo.put("accountId", session.getAccount().getAccountId());
         sessionInfo.put("email", session.getAccount().getEmail());
-        sessionInfo.put("role", session.getAccount().getRole().name());
+        sessionInfo.put("role", user != null ? user.getRole().name() : "CUSTOMER");
         sessionInfo.put("createdAt", session.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         sessionInfo.put("lastAccessedAt", session.getLastAccessedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         sessionInfo.put("expiresAt", session.getExpiresAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));

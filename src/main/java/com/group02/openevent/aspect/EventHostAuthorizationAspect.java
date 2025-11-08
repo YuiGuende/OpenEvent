@@ -107,12 +107,12 @@ public class EventHostAuthorizationAspect {
                 throw new IllegalArgumentException("Event host has no customer assigned");
             }
             
-            if (eventEntity.getHost().getCustomer().getAccount() == null) {
+            if (eventEntity.getHost().getUser()== null) {
                 log.error("Event {} host customer has no account assigned", eventId);
                 throw new IllegalArgumentException("Event host customer has no account assigned");
             }
             
-            eventHostId = eventEntity.getHost().getCustomer().getAccount().getAccountId();
+            eventHostId = eventEntity.getHost().getUser().getUserId();
             
             if (eventHostId == null) {
                 log.error("Event {} host account ID is null", eventId);

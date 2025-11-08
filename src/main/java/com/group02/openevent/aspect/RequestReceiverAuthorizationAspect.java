@@ -54,7 +54,7 @@ public class RequestReceiverAuthorizationAspect {
             throw new IllegalStateException("Request không có người nhận.");
         }
 
-        if (!request.getReceiver().getAccountId().equals(currentUserId)) {
+        if (!request.getReceiver().getUserId().equals(currentUserId)) {
             log.warn("Người dùng {} đã cố gắng xử lý Request {} nhưng không phải là người nhận.", currentUserId, requestId);
             throw new AccessDeniedException("Bạn không có quyền thực hiện hành động này.");
         }

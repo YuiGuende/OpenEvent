@@ -62,7 +62,7 @@ public class TicketTypeDTO {
     public int getSalePercentage() {
         if (hasSale() && price.compareTo(BigDecimal.ZERO) > 0) {
             return sale.multiply(BigDecimal.valueOf(100))
-                    .divide(price, 0, BigDecimal.ROUND_HALF_UP)
+                    .divide(price, 0, java.math.RoundingMode.HALF_UP)
                     .intValue();
         }
         return 0;

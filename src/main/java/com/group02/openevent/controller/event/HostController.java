@@ -7,6 +7,7 @@ import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.Host;
 import com.group02.openevent.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.experimental.FieldDefaults;
@@ -36,26 +37,15 @@ public class HostController {
     private final IImageService imageService;
     private final HostService hostService;
     private final CustomerService customerService;
+    private final UserService userService;
 
     @Autowired
-    public HostController(EventService eventService, IImageService imageService, HostService hostService, CustomerService customerService) {
+    public HostController(EventService eventService, IImageService imageService, HostService hostService, CustomerService customerService, UserService userService) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.hostService = hostService;
         this.customerService = customerService;
-    }
-
-    private Long getHostAccountId(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
-            throw new RuntimeException("User not logged in");
-        }
-        Customer customer = customerService.getCustomerByAccountId(accountId);
-        Long hostId = customer.getHost().getId();
-        if (hostId == null) {
-            throw new RuntimeException("Host not found");
-        }
-        return hostId;
+        this.userService = userService;
     }
 
     @GetMapping("/organizer")
@@ -74,21 +64,41 @@ public class HostController {
 
     @GetMapping("/fragment/dashboard")
     public String dashboard(Model model, HttpSession session) {
-        List<Event> eventResponses = eventService.getEventByHostId(getHostAccountId(session));
-        model.addAttribute("events", eventResponses);
-        log.info("Events: " + eventResponses);
-        return "fragments/dashboard :: content";
+        try {
+            Long hostId = hostService.getHostFromSession(session).getId();
+            List<Event> eventResponses = eventService.getEventByHostId(hostId);
+            model.addAttribute("events", eventResponses);
+            log.info("Events: " + eventResponses);
+            return "fragments/dashboard :: content";
+        } catch (RuntimeException e) {
+            log.error("Error loading dashboard fragment: {}", e.getMessage(), e);
+            model.addAttribute("error", "Không thể tải nội dung: " + e.getMessage());
+            return "fragments/dashboard :: content";
+        }
     }
 
     @GetMapping("/fragment/events")
     public String events(Model model, HttpSession session) {
-        EventCreationRequest request = new EventCreationRequest();
-        model.addAttribute("eventForm", request);
-        List<Event> eventResponses = eventService.getEventByHostId(getHostAccountId(session));
-        List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
-        model.addAttribute("listTypeEvent", listTypeEvent);
-        model.addAttribute("events", eventResponses);
-        return "fragments/events :: content";
+        try {
+            EventCreationRequest request = new EventCreationRequest();
+            model.addAttribute("eventForm", request);
+            Long hostId = hostService.getHostFromSession(session).getId();
+            List<Event> eventResponses = eventService.getEventByHostId(hostId);
+            List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
+            model.addAttribute("listTypeEvent", listTypeEvent);
+            model.addAttribute("events", eventResponses);
+            return "fragments/events :: content";
+        } catch (RuntimeException e) {
+            log.error("Error loading events fragment: {}", e.getMessage(), e);
+            model.addAttribute("error", "Không thể tải nội dung: " + e.getMessage());
+            // Vẫn trả về template để hiển thị lỗi
+            EventCreationRequest request = new EventCreationRequest();
+            model.addAttribute("eventForm", request);
+            List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
+            model.addAttribute("listTypeEvent", listTypeEvent);
+            model.addAttribute("events", List.of()); // Empty list
+            return "fragments/events :: content";
+        }
     }
 
     @GetMapping("/fragment/settings")

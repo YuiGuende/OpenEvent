@@ -1,10 +1,12 @@
 package com.group02.openevent.controller.notification;
 
-import com.group02.openevent.model.account.Account;
+
 import com.group02.openevent.model.notification.Notification;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.INotificationRepo;
 import com.group02.openevent.service.AccountService;
 import com.group02.openevent.service.INotificationService;
+import com.group02.openevent.service.UserService;
 import com.group02.openevent.util.CloudinaryUtil;
 import com.group02.openevent.util.WebSocketUtil;
 import jakarta.servlet.http.HttpSession;
@@ -27,9 +29,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/notifications")
 public class NotificationController {
     private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
-    
-    @Autowired
-    private AccountService accountService;
 
     @Autowired
     private INotificationService notificationService;
@@ -48,17 +47,19 @@ public class NotificationController {
 
     @Autowired
     private com.group02.openevent.repository.ICustomerRepo customerRepo;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/unread-count")
     public ResponseEntity<?> getUnreadCount(HttpSession session) {
         try {
-            Account account = accountService.getCurrentAccount(session);
+            User account = userService.getCurrentUser(session);
             if (account == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("success", false, "message", "Not authenticated"));
             }
 
-            long count = notificationReceiverRepo.countUnreadByReceiverAccountId(account.getAccountId());
+            long count = notificationReceiverRepo.countUnreadByReceiverUserId(account.getUserId());
             return ResponseEntity.ok(Map.of("success", true, "count", count));
         } catch (Exception e) {
             logger.error("Error getting unread count: {}", e.getMessage());
@@ -70,14 +71,14 @@ public class NotificationController {
     @GetMapping("/my-notifications")
     public ResponseEntity<?> getMyNotifications(HttpSession session) {
         try {
-            Account account = accountService.getCurrentAccount(session);
-            if (account == null) {
+            User user = userService.getCurrentUser(session);
+            if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("success", false, "message", "Not authenticated"));
             }
 
             List<com.group02.openevent.model.notification.NotificationReceiver> receivers = 
-                    notificationReceiverRepo.findByReceiverAccountIdOrderByCreatedAtDesc(account.getAccountId());
+                    notificationReceiverRepo.findByReceiverUserIdOrderByCreatedAtDesc(user.getUserId());
 
             List<Map<String, Object>> notificationDTOs = receivers.stream()
                     .map(nr -> {
@@ -104,14 +105,14 @@ public class NotificationController {
                         String hostName = "Unknown Host";
                         if (n.getSender() != null) {
                             com.group02.openevent.model.user.Customer senderCustomer = 
-                                    customerRepo.findByAccount_AccountId(n.getSender().getAccountId()).orElse(null);
+                                    customerRepo.findById(n.getSender().getUserId()).orElse(null);
                             
                             if (senderCustomer != null && senderCustomer.getHost() != null) {
                                 com.group02.openevent.model.user.Host host = senderCustomer.getHost();
                                 hostName = host.getHostName();
                             } else {
                                 // Fallback: use sender email
-                                hostName = n.getSender().getEmail();
+                                hostName = n.getSender().getAccount().getEmail();
                             }
                         }
                         
@@ -134,15 +135,16 @@ public class NotificationController {
     @PostMapping("/{notificationId}/mark-read")
     public ResponseEntity<?> markAsRead(@PathVariable Long notificationId, HttpSession session) {
         try {
-            Account account = accountService.getCurrentAccount(session);
-            if (account == null) {
+            User user = userService.getCurrentUser(session);
+
+            if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("success", false, "message", "Not authenticated"));
             }
 
             Optional<com.group02.openevent.model.notification.NotificationReceiver> receiverOpt = 
-                    notificationReceiverRepo.findByReceiver_AccountIdAndNotification_NotificationId(
-                            account.getAccountId(), notificationId);
+                    notificationReceiverRepo.findByReceiver_UserIdAndNotification_NotificationId(
+                            user.getUserId(), notificationId);
 
             if (receiverOpt.isPresent()) {
                 com.group02.openevent.model.notification.NotificationReceiver receiver = receiverOpt.get();
@@ -175,7 +177,7 @@ public class NotificationController {
                     eventId, title, message.length(), file != null && !file.isEmpty());
 
             // Lấy thông tin người gửi (Host/Admin)
-            Account sender = accountService.getCurrentAccount(session);
+            User sender = userService.getCurrentUser(session);
             if (sender == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Người dùng chưa đăng nhập");

@@ -1,6 +1,12 @@
 <!-- Main Content -->
 <div class="container" th:fragment="content">
-    <div class="row">
+    <!-- Error when missing event ID -->
+    <div th:if="${error != null and error == 'Missing event ID'}" class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>Lỗi:</strong> Thiếu thông tin event ID. Vui lòng truy cập từ trang quản lý sự kiện.
+    </div>
+    
+    <div class="row" th:if="${error == null or error != 'Missing event ID'}">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body">
@@ -8,8 +14,11 @@
                         <h2 class="card-title mb-2">
                             <i class="bi bi-file-earmark-plus"></i> Tạo Form cho Sự kiện
                         </h2>
-                        <p class="text-muted">
+                        <p class="text-muted" th:if="${event != null}">
                             Sự kiện: <strong th:text="${event.title}">Event Name</strong>
+                        </p>
+                        <p class="text-muted" th:if="${event == null and error != null}">
+                            <strong th:text="${error}">Error</strong>
                         </p>
                     </div>
 

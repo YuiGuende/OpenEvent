@@ -38,21 +38,21 @@ public class WebSocketUtil {
         payload.put("type", notification.getType().name());
         payload.put("fileURL", notification.getFileURL());
         payload.put("createdAt", notification.getCreatedAt().toString());
-        payload.put("senderEmail", notification.getSender() != null ? notification.getSender().getEmail() : null);
+        payload.put("senderEmail", notification.getSender() != null ? notification.getSender().getAccount().getEmail() : null);
 
         // Gửi đến từng receiver qua WebSocket
         int sentCount = 0;
         for (NotificationReceiver receiver : notification.getReceivers()) {
-            if (receiver.getReceiver() != null && receiver.getReceiver().getAccountId() != null) {
-                Long accountId = receiver.getReceiver().getAccountId();
+            if (receiver.getReceiver() != null && receiver.getReceiver().getUserId() != null) {
+                Long userId = receiver.getReceiver().getUserId();
                 try {
-                    // Gửi đến queue riêng của từng user: /queue/notifications/{accountId}
-                    String destination = "/queue/notifications/" + accountId;
+                    // Gửi đến queue riêng của từng user: /queue/notifications/{userId}
+                    String destination = "/queue/notifications/" + userId;
                     messagingTemplate.convertAndSend(destination, payload);
                     sentCount++;
-                    logger.info("Sent notification {} to user {}", notification.getNotificationId(), accountId);
+                    logger.info("Sent notification {} to user {}", notification.getNotificationId(), userId);
                 } catch (Exception e) {
-                    logger.error("Error sending notification to user {}: {}", accountId, e.getMessage());
+                    logger.error("Error sending notification to user {}: {}", userId, e.getMessage());
                 }
             }
         }

@@ -1,7 +1,8 @@
 package com.group02.openevent.model.account;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.group02.openevent.model.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.group02.openevent.model.user.User;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,16 +15,20 @@ public class Account {
 
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
-    @Column(name = "phone_number", length = 20)
-    private String phoneNumber;
 
     @JsonIgnore
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = true, length = 255)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 20)
-    private Role role;
+    @Column(name = "oauth_provider", length = 50)
+    private String oauthProvider;  // "GOOGLE", "FACEBOOK", etc.
+
+    @Column(name = "oauth_provider_id", length = 255)
+    private String oauthProviderId;  // Google user ID
+
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"account", "customer", "host", "admin", "department"})
+    private User user;
 
     public Account() {
     }
@@ -32,14 +37,6 @@ public class Account {
         this.accountId = accountId;
         this.email = email;
         this.passwordHash = passwordHash;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
     }
 
     public Long getAccountId() {
@@ -66,12 +63,28 @@ public class Account {
         this.passwordHash = passwordHash;
     }
 
-    public Role getRole() {
-        return role;
+    public User getUser() {
+        return user;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getOauthProvider() {
+        return oauthProvider;
+    }
+
+    public void setOauthProvider(String oauthProvider) {
+        this.oauthProvider = oauthProvider;
+    }
+
+    public String getOauthProviderId() {
+        return oauthProviderId;
+    }
+
+    public void setOauthProviderId(String oauthProviderId) {
+        this.oauthProviderId = oauthProviderId;
     }
 
     @Override
@@ -79,9 +92,9 @@ public class Account {
         return "Account{" +
                 "accountId=" + accountId +
                 ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", passwordHash='" + passwordHash + '\'' +
-                ", role=" + role +
+                ", oauthProvider='" + oauthProvider + '\'' +
+                ", oauthProviderId='" + oauthProviderId + '\'' +
                 '}';
     }
 }

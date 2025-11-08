@@ -65,13 +65,13 @@ public class RequestController {
 
         // Load sent requests for the current user
         try {
-            Long currentSenderId = (Long) session.getAttribute("ACCOUNT_ID");
+            Long currentSenderId = (Long) session.getAttribute("USER_ID");
             if (currentSenderId != null) {
                 List<RequestDTO> sentRequests = requestService.getRequestsBySenderId(currentSenderId);
                 model.addAttribute("sentRequests", sentRequests);
                 logger.debug("Loaded {} sent requests for user {}", sentRequests.size(), currentSenderId);
             } else {
-                logger.warn("No ACCOUNT_ID in session, cannot load sent requests");
+                logger.warn("No USER_ID in session, cannot load sent requests");
                 model.addAttribute("sentRequests", new ArrayList<>());
             }
         } catch (Exception e) {
@@ -86,7 +86,7 @@ public class RequestController {
     @ResponseBody
     @RequireEventHost(eventIdParamName = "eventId", userIdParamName = "senderId")
     public ResponseEntity<RequestDTO> createRequestWithFile(
-            @SessionAttribute("ACCOUNT_ID") Long senderId,
+            @SessionAttribute("USER_ID") Long senderId,
             // @RequestParam("senderId") Long senderId,
             @RequestParam("receiverId") Long receiverId,
             @RequestParam("type") RequestType type,
@@ -137,7 +137,7 @@ public class RequestController {
     public ResponseEntity<RequestDTO> approveRequest(
             @PathVariable Long requestId,
             @RequestBody ApproveRequestDTO approveRequestDTO,
-            @SessionAttribute("ACCOUNT_ID") Long currentUserId) { // <-- THÊM MỚI
+            @SessionAttribute("USER_ID") Long currentUserId) { // <-- THÊM MỚI
         try {
             RequestDTO approvedRequest = requestService.approveRequest(requestId, approveRequestDTO);
             return ResponseEntity.ok(approvedRequest);
@@ -157,7 +157,7 @@ public class RequestController {
     public ResponseEntity<RequestDTO> rejectRequest(
             @PathVariable Long requestId,
             @RequestBody ApproveRequestDTO approveRequestDTO,
-            @SessionAttribute("ACCOUNT_ID") Long currentUserId) { // <-- THÊM MỚI
+            @SessionAttribute("USER_ID") Long currentUserId) { // <-- THÊM MỚI
         try {
             RequestDTO rejectedRequest = requestService.rejectRequest(requestId, approveRequestDTO);
             return ResponseEntity.ok(rejectedRequest);

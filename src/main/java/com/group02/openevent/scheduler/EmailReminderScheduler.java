@@ -4,7 +4,7 @@ import com.group02.openevent.model.email.EmailReminder;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.IEmailReminderRepo;
-import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class EmailReminderScheduler {
     
     private final IEmailReminderRepo emailReminderRepo;
     private final EmailService emailService;
-    private final IUserRepo userRepo;
+    private final ICustomerRepo customerRepo;
 
     /**
      * Check and send pending email reminders every 5 minutes
@@ -72,16 +72,17 @@ public class EmailReminderScheduler {
                     // Check if it's time to send reminder (within 5 minute window)
                     if (now.isAfter(reminderTime) || now.isEqual(reminderTime)) {
                         // Get user email
-                        Optional<Customer> customerOpt = userRepo.findByAccount_AccountId(reminder.getUserId());
+                        Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(reminder.getUserId());
                         
-                        if (customerOpt.isEmpty() || customerOpt.get().getAccount() == null) {
+                        if (customerOpt.isEmpty() || customerOpt.get().getUser() == null 
+                            || customerOpt.get().getUser().getAccount() == null) {
                             log.warn("User not found for reminder ID: {}, marking as sent", reminder.getId());
                             reminder.setSent(true);
                             emailReminderRepo.save(reminder);
                             continue;
                         }
                         
-                        String userEmail = customerOpt.get().getAccount().getEmail();
+                        String userEmail = customerOpt.get().getUser().getAccount().getEmail();
                         
                         // Send email
                         emailService.sendEventReminderEmail(userEmail, event, reminder.getRemindMinutes());

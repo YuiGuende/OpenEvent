@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface IHostRepo extends JpaRepository<Host, Long> {
     Optional<Host> findByCustomer_CustomerId(Long customerId);
     Host getHostById(Long id);
-    @Query("SELECT h FROM Host h JOIN h.customer c JOIN c.account a WHERE a.accountId = :accountId")
-    Optional<Host> findByAccountId(@Param("accountId") Long accountId);
+
+    Optional<Host> findByUser_UserId(Long userId);
 }

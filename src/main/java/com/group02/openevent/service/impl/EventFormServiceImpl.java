@@ -317,8 +317,18 @@ public class EventFormServiceImpl implements EventFormService {
         // Customer might be a lazy proxy - access it within transaction
         if (response.getCustomer() != null) {
             dto.setCustomerId(response.getCustomer().getCustomerId());
-            dto.setCustomerName(response.getCustomer().getName() != null ? response.getCustomer().getName() : "");
-            dto.setCustomerEmail(response.getCustomer().getEmail() != null ? response.getCustomer().getEmail() : "");
+            String customerName = "";
+            String customerEmail = "";
+            if (response.getCustomer().getUser() != null) {
+                customerName = response.getCustomer().getUser().getName() != null 
+                    ? response.getCustomer().getUser().getName() : "";
+                if (response.getCustomer().getUser().getAccount() != null) {
+                    customerEmail = response.getCustomer().getUser().getAccount().getEmail() != null 
+                        ? response.getCustomer().getUser().getAccount().getEmail() : "";
+                }
+            }
+            dto.setCustomerName(customerName);
+            dto.setCustomerEmail(customerEmail);
         }
         
         // Form type

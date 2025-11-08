@@ -70,13 +70,7 @@ public class EventController {
         this.eventRepo = eventRepo;
     }
 
-    private Long getAccountIdFromSession(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
-            throw new RuntimeException("User not logged in");
-        }
-        return accountId;
-    }
+
 
     // POST - create event
     @PostMapping("save/music")
@@ -105,7 +99,7 @@ public class EventController {
 
     @PostMapping("/saveEvent")
     public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, HttpSession session) {
-        Long hostId = hostService.findHostIdByAccountId(getAccountIdFromSession(session));
+        Long hostId = hostService.getHostFromSession(session).getId();
         log.info("startsAt = {}", request.getStartsAt());
         log.info("endsAt = {}", request.getEndsAt());
         EventResponse savedEvent =  eventService.saveEvent(request,hostId);

@@ -5,11 +5,13 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.notification.Notification;
 import com.group02.openevent.model.notification.NotificationReceiver;
 import com.group02.openevent.model.notification.NotificationType;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.INotificationRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.INotificationService;
+import com.group02.openevent.service.UserService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,20 +23,19 @@ import java.util.stream.Collectors;
 
 @Service
 public class INotificationServiceImpl implements INotificationService {
+    private final UserService userService;
     private Logger logger = LoggerFactory.getLogger(INotificationServiceImpl.class);
     private IOrderRepo orderRepo;
-
-    private IAccountRepo accountRepo;
 
     private INotificationRepo iNotificationRepo;
 
     private IEventRepo eventRepo;
 
-    public INotificationServiceImpl(IOrderRepo orderRepo, IAccountRepo accountRepo, INotificationRepo iNotificationRepo, IEventRepo eventRepo) {
+    public INotificationServiceImpl(IOrderRepo orderRepo, INotificationRepo iNotificationRepo, IEventRepo eventRepo, UserService userService) {
         this.orderRepo = orderRepo;
-        this.accountRepo = accountRepo;
         this.iNotificationRepo = iNotificationRepo;
         this.eventRepo = eventRepo;
+        this.userService = userService;
     }
 
     @Override
@@ -55,7 +56,7 @@ public class INotificationServiceImpl implements INotificationService {
         }
 
         // 3. Lấy đối tượng Account dựa trên IDs
-        List<Account> receivers = accountRepo.findAllById(receiverAccountIds);
+        List<User> receivers = userService.findAllById(receiverAccountIds);
 
         // 4. Tạo các NotificationReceiver cho từng người nhận
         List<NotificationReceiver> notificationReceivers = receivers.stream()

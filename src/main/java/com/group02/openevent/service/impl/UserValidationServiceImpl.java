@@ -3,7 +3,7 @@ package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.CustomerDto;
 import com.group02.openevent.repository.IAccountRepo;
-import com.group02.openevent.repository.ICustomerRepo;
+import com.group02.openevent.repository.IUserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public class UserValidationServiceImpl {
     private IAccountRepo accountRepo;
 
     @Autowired
-    private ICustomerRepo customerRepo;
+    private IUserRepo userRepo;
 
     private static final Pattern GMAIL_PATTERN = Pattern.compile(".*@gmail\\.com$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{10,11}$");
@@ -75,7 +75,7 @@ public class UserValidationServiceImpl {
         }
 
         // Check if phone exists in database
-        if (customerRepo.existsByPhoneNumber(phoneNumber)) {
+        if (userRepo.existsByPhoneNumber(phoneNumber)) {
             errors.add("Số điện thoại đã tồn tại trong hệ thống");
         }
     }

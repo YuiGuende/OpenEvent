@@ -6,6 +6,7 @@ import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -184,10 +185,13 @@ class PaymentControllerTest {
             Order order = new Order();
             order.setOrderId(orderId);
             order.setStatus(OrderStatus.valueOf("PENDING"));
-            Customer c = new Customer();
             Account a = new Account();
             a.setAccountId(accountId);
-            c.setAccount(a);
+            User user = new User();
+            user.setAccount(a);
+            user.setUserId(1L);
+            Customer c = new Customer();
+            c.setUser(user);
             order.setCustomer(c);
             return order;
         }

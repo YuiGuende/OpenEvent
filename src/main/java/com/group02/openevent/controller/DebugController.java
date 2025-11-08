@@ -5,7 +5,7 @@ import com.group02.openevent.model.email.EmailReminder;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.IEmailReminderRepo;
-import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.scheduler.EmailReminderScheduler;
 import com.group02.openevent.service.EmailService;
 import com.group02.openevent.service.EventService;
@@ -35,7 +35,7 @@ public class DebugController {
     private EventService eventService;
     
     @Autowired
-    private IUserRepo userRepo;
+    private ICustomerRepo customerRepo;
 
     @GetMapping("/trigger-scheduler")
     public String triggerScheduler() {
@@ -102,10 +102,11 @@ public class DebugController {
     public String testFindUser() {
         try {
             // Test tìm user với account ID 3
-            Optional<Customer> customerOpt = userRepo.findByAccount_AccountId(3L);
+            Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(3L);
             if (customerOpt.isPresent()) {
                 Customer customer = customerOpt.get();
-                String email = customer.getAccount() != null ? customer.getAccount().getEmail() : "No email";
+                String email = customer.getUser() != null && customer.getUser().getAccount() != null 
+                    ? customer.getUser().getAccount().getEmail() : "No email";
                 return "✅ Found user: " + email;
             } else {
                 return "❌ User with account ID 3 not found";

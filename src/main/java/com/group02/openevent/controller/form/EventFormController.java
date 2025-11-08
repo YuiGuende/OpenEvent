@@ -8,6 +8,7 @@ import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IAccountRepo;
+import com.group02.openevent.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class EventFormController {
     private final EventAttendanceService attendanceService;
     private final ICustomerRepo customerRepo;
     private final IAccountRepo accountRepo;
+    private final UserService userService;
 
     // Host: Create form for event
     @GetMapping("/create/{eventId}")
@@ -180,15 +182,17 @@ public class EventFormController {
             final Long finalAccountId = accountId;
             
             // Tìm Customer từ accountId
-            Customer customer = customerRepo.findByAccount_AccountId(finalAccountId).orElse(null);
+            Customer customer = customerRepo.findByUser_Account_AccountId(finalAccountId).orElse(null);
             if (customer == null) {
                 // Tự động tạo Customer nếu chưa có (giống như OrderController)
                 Account account = accountRepo.findById(finalAccountId)
                         .orElseThrow(() -> new RuntimeException("Account not found for ID: " + finalAccountId));
                 
+                // Get or create User
+                com.group02.openevent.model.user.User user = userService.getOrCreateUser(account);
+                
                 customer = new Customer();
-                customer.setAccount(account);
-                customer.setEmail(account.getEmail());
+                customer.setUser(user);
                 customer.setPoints(0);
                 customer = customerRepo.save(customer);
             }

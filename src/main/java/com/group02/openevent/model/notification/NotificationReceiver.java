@@ -1,10 +1,14 @@
 package com.group02.openevent.model.notification;
 
 import com.group02.openevent.model.account.Account;
+import com.group02.openevent.model.user.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "notification_receiver")
 public class NotificationReceiver {
@@ -18,7 +22,7 @@ public class NotificationReceiver {
 
     @ManyToOne
     @JoinColumn(name = "receiver_account_id", nullable = false)
-    private Account receiver;
+    private User receiver;
 
     @Column(name = "is_read")
     private boolean read = false;
@@ -28,43 +32,5 @@ public class NotificationReceiver {
     public NotificationReceiver() {
     }
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Notification getNotification() {
-        return notification;
-    }
-
-    public void setNotification(Notification notification) {
-        this.notification = notification;
-    }
-
-    public Account getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(Account receiver) {
-        this.receiver = receiver;
-    }
-
-    public boolean isRead() {
-        return read;
-    }
-
-    public void setRead(boolean read) {
-        this.read = read;
-    }
-
-    public LocalDateTime getReadAt() {
-        return readAt;
-    }
-
-    public void setReadAt(LocalDateTime readAt) {
-        this.readAt = readAt;
-    }
 }

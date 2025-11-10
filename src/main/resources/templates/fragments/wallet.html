@@ -10,18 +10,8 @@
         </div>
     </div>
 
-    <!-- Wallet Balance Cards -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-icon green">
-                <i class="fas fa-wallet"></i>
-            </div>
-            <div class="metric-content">
-                <div class="metric-value" id="total-balance">0 ₫</div>
-                <div class="metric-label">Tổng số dư</div>
-            </div>
-        </div>
-
+    <!-- Wallet Balance Cards (chỉ hiển thị khi đã có ví) -->
+    <div class="metrics-grid" id="wallet-balance-cards" style="display: none;">
         <div class="metric-card">
             <div class="metric-icon blue">
                 <i class="fas fa-check-circle"></i>
@@ -33,17 +23,23 @@
         </div>
     </div>
 
-    <!-- Withdrawal Form Section -->
-    <div class="wallet-section">
+    <!-- Create Wallet Form Section (hiển thị khi chưa có ví) -->
+    <div class="wallet-section" id="create-wallet-section" style="display: none;">
         <div class="section-header">
-            <h2 class="section-title">Rút tiền</h2>
-            <p class="section-description">Vui lòng nhập thông tin tài khoản ngân hàng để thực hiện rút tiền</p>
+            <h2 class="section-title">Tạo ví</h2>
+            <p class="section-description">Vui lòng làm KYC và nhập thông tin tài khoản ngân hàng để tạo ví</p>
         </div>
 
-        <form id="withdrawal-form" class="withdrawal-form">
+        <form id="create-wallet-form" class="withdrawal-form">
             <div class="form-group">
-                <label for="bank-name">Tên ngân hàng <span class="required">*</span></label>
-                <select id="bank-name" name="bankCode" class="form-control" required>
+                <label for="kyc-name">Tên từ KYC <span class="required">*</span></label>
+                <input type="text" id="kyc-name" class="form-control" readonly>
+                <small class="form-text">Tên được lấy từ kết quả KYC của bạn</small>
+            </div>
+
+            <div class="form-group">
+                <label for="create-bank-name">Tên ngân hàng <span class="required">*</span></label>
+                <select id="create-bank-name" name="bankCode" class="form-control" required>
                     <option value="">-- Chọn ngân hàng --</option>
                     <option value="VCB">Vietcombank (VCB)</option>
                     <option value="TCB">Techcombank (TCB)</option>
@@ -52,6 +48,7 @@
                     <option value="VTB">VietinBank (VTB)</option>
                     <option value="TPB">TPBank (TPB)</option>
                     <option value="VPB">VPBank (VPB)</option>
+                    <option value="MB">MB Bank (MB)</option>
                     <option value="MBB">MBBank (MBB)</option>
                     <option value="MSB">MSB</option>
                     <option value="OCB">OCB</option>
@@ -65,13 +62,43 @@
             </div>
 
             <div class="form-group">
-                <label for="bank-account">Số tài khoản ngân hàng <span class="required">*</span></label>
-                <input type="text" id="bank-account" name="bankAccountNumber" class="form-control"
+                <label for="create-bank-account">Số tài khoản ngân hàng <span class="required">*</span></label>
+                <input type="text" id="create-bank-account" name="bankAccountNumber" class="form-control"
                        placeholder="Nhập số tài khoản" required pattern="[0-9]+"
-                       minlength="8" maxlength="20">
-                <small class="form-text">Vui lòng nhập đúng số tài khoản ngân hàng (8-20 số)</small>
+                       minlength="3" maxlength="20">
+                <small class="form-text">Vui lòng nhập đúng số tài khoản ngân hàng</small>
+                <small class="form-text text-muted">Mock: STK 123 + MB -> NGUYEN TRAN THANH DUY, STK 321 + MB -> LE HUYNH DUC</small>
             </div>
 
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" id="submit-create-wallet">
+                    <i class="fas fa-check"></i>
+                    Xác nhận tạo ví
+                </button>
+                <a href="/kyc-verification" class="btn-secondary" style="margin-left: 10px;">
+                    <i class="fas fa-id-card"></i>
+                    Làm KYC
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Withdrawal Form Section (hiển thị khi đã có ví) -->
+    <div class="wallet-section" id="withdrawal-section" style="display: none;">
+        <div class="section-header">
+            <h2 class="section-title">Rút tiền</h2>
+            <p class="section-description">Thông tin ngân hàng đã được lưu trong ví của bạn</p>
+        </div>
+
+        <!-- Bank Info Display -->
+        <div class="bank-info-display" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin-bottom: 10px;">Thông tin ngân hàng</h4>
+            <p><strong>Ngân hàng:</strong> <span id="display-bank-code"></span></p>
+            <p><strong>Số tài khoản:</strong> <span id="display-bank-account"></span></p>
+            <p><strong>Chủ tài khoản:</strong> <span id="display-account-holder"></span></p>
+        </div>
+
+        <form id="withdrawal-form" class="withdrawal-form">
             <div class="form-group">
                 <label for="withdrawal-amount">Số tiền muốn rút (₫) <span class="required">*</span></label>
                 <input type="number" id="withdrawal-amount" name="amount" class="form-control"
@@ -121,6 +148,7 @@
         // Make variables and functions global so they can be called from host.js
         window.currentHostId = null;
         window.availableBalance = 0;
+        window.walletExists = false;
         console.log('Global variables initialized');
 
         // Global function to initialize wallet - can be called from host.js
@@ -129,53 +157,175 @@
             console.log('Current hostId:', window.currentHostId);
             console.log('Available balance:', window.availableBalance);
 
-            // Setup withdrawal form
-            const form = document.getElementById('withdrawal-form');
-            if (form) {
-                // Remove existing listeners to prevent duplicates
-                const newForm = form.cloneNode(true);
-                form.parentNode.replaceChild(newForm, form);
-                newForm.addEventListener('submit', handleWithdrawal);
-            }
+            // Setup forms
+            setupForms();
 
             // Setup filter buttons
             setupFilterButtons();
 
-            // Call global functions to load data
-            if (typeof window.loadWalletData === 'function') {
-                window.loadWalletData();
+            // Load wallet info first to determine which form to show
+            loadWalletInfo();
+        };
+
+        // Load wallet info to check if wallet exists
+        async function loadWalletInfo() {
+            try {
+                console.log('Loading wallet info...');
+                const response = await fetch('/api/wallet/info', {
+                    method: 'GET',
+                    credentials: 'include', // Include cookies for session
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    // Try to parse error response
+                    let errorData;
+                    try {
+                        const errorText = await response.text();
+                        console.error('Error response text:', errorText);
+                        errorData = JSON.parse(errorText);
+                    } catch (e) {
+                        errorData = { message: 'Unknown error' };
+                    }
+                    
+                    if (response.status === 401 || response.status === 403) {
+                        console.error('Authentication error:', errorData);
+                        // Show error message and suggest login
+                        document.getElementById('create-wallet-section').style.display = 'block';
+                        document.getElementById('withdrawal-section').style.display = 'none';
+                        document.getElementById('wallet-balance-cards').style.display = 'none';
+                        
+                        const kycNameInput = document.getElementById('kyc-name');
+                        if (kycNameInput) {
+                            kycNameInput.value = 'Vui lòng đăng nhập lại';
+                            kycNameInput.style.color = '#dc3545';
+                        }
+                        
+                        // Show error message
+                        const errorMsg = errorData.message || errorData.error || 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+                        alert('Lỗi: ' + errorMsg);
+                        return;
+                    }
+                    
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
+                console.log('Wallet info received:', data);
+
+                if (data.success) {
+                    window.currentHostId = data.hostId;
+                    window.walletExists = data.exists === true;
+
+                    if (data.exists) {
+                        // Wallet exists - show withdrawal form
+                        showWithdrawalForm(data);
+                    } else {
+                        // Wallet does not exist - show create wallet form
+                        showCreateWalletForm(data);
+                    }
+                } else {
+                    console.error('Failed to load wallet info:', data.message);
+                    // Show create wallet form with error message
+                    showCreateWalletForm(data);
+                    if (data.message) {
+                        alert('Lỗi: ' + data.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading wallet info:', error);
+                // Show create wallet form with error state
+                document.getElementById('create-wallet-section').style.display = 'block';
+                document.getElementById('withdrawal-section').style.display = 'none';
+                document.getElementById('wallet-balance-cards').style.display = 'none';
+                
+                const kycNameInput = document.getElementById('kyc-name');
+                if (kycNameInput) {
+                    kycNameInput.value = 'Lỗi khi tải thông tin';
+                    kycNameInput.style.color = '#dc3545';
+                }
+                
+                alert('Lỗi khi tải thông tin ví: ' + error.message + '. Vui lòng thử lại sau hoặc đăng nhập lại.');
             }
+        }
+
+        // Show withdrawal form (when wallet exists)
+        function showWithdrawalForm(walletData) {
+            document.getElementById('create-wallet-section').style.display = 'none';
+            document.getElementById('withdrawal-section').style.display = 'block';
+            document.getElementById('wallet-balance-cards').style.display = 'block';
+
+            // Update balance
+            const availBalance = parseFloat(walletData.availableBalance || 0);
+            window.availableBalance = availBalance;
+            document.getElementById('available-balance').textContent = formatCurrency(availBalance);
+
+            // Update bank info display
+            document.getElementById('display-bank-code').textContent = walletData.bankCode || 'N/A';
+            document.getElementById('display-bank-account').textContent = walletData.bankAccountNumber || 'N/A';
+            document.getElementById('display-account-holder').textContent = walletData.accountHolderName || 'N/A';
+
+            // Show transaction history section
+            const transactionSections = document.querySelectorAll('.wallet-section');
+            if (transactionSections.length > 0) {
+                const lastSection = transactionSections[transactionSections.length - 1];
+                if (lastSection && lastSection.id !== 'create-wallet-section' && lastSection.id !== 'withdrawal-section') {
+                    lastSection.style.display = 'block';
+                }
+            }
+
+            // Load transaction history
             if (typeof window.loadTransactionHistory === 'function') {
                 window.loadTransactionHistory();
             }
-        };
+        }
 
-        // Auto-initialize when script loads - only if elements exist
-        // This will be called after script executes
-        setTimeout(function () {
-            function tryInit() {
-                const totalBalanceEl = document.getElementById('total-balance');
-                if (totalBalanceEl && typeof window.initWallet === 'function') {
-                    console.log('Wallet elements found, initializing...');
-                    window.initWallet();
-                    return true;
+        // Show create wallet form (when wallet does not exist)
+        function showCreateWalletForm(walletData) {
+            document.getElementById('create-wallet-section').style.display = 'block';
+            document.getElementById('withdrawal-section').style.display = 'none';
+            document.getElementById('wallet-balance-cards').style.display = 'none';
+
+            // Set KYC name if available
+            const kycNameInput = document.getElementById('kyc-name');
+            if (kycNameInput && walletData.kycName) {
+                kycNameInput.value = walletData.kycName;
+                kycNameInput.style.color = '#000';
+            } else if (kycNameInput && !walletData.kycName) {
+                kycNameInput.value = 'Chưa có KYC';
+                kycNameInput.style.color = '#dc3545';
+            }
+
+            // Hide transaction history section if wallet doesn't exist
+            const transactionSections = document.querySelectorAll('.wallet-section');
+            if (transactionSections.length > 0) {
+                const lastSection = transactionSections[transactionSections.length - 1];
+                if (lastSection && lastSection.id !== 'create-wallet-section' && lastSection.id !== 'withdrawal-section') {
+                    lastSection.style.display = 'none';
                 }
-                return false;
+            }
+        }
+
+        // Setup forms
+        function setupForms() {
+            // Setup create wallet form
+            const createWalletForm = document.getElementById('create-wallet-form');
+            if (createWalletForm) {
+                createWalletForm.addEventListener('submit', handleCreateWallet);
             }
 
-            // Try immediately
-            if (!tryInit()) {
-                // Retry after delay if not ready
-                let retries = 0;
-                const maxRetries = 10;
-                const retryInterval = setInterval(function () {
-                    if (tryInit() || retries >= maxRetries) {
-                        clearInterval(retryInterval);
-                    }
-                    retries++;
-                }, 100);
+            // Setup withdrawal form
+            const withdrawalForm = document.getElementById('withdrawal-form');
+            if (withdrawalForm) {
+                withdrawalForm.addEventListener('submit', handleWithdrawal);
             }
-        }, 200);
+        }
 
         // Define formatCurrency before using it
         function formatCurrency(amount) {
@@ -196,95 +346,68 @@
         window.formatCurrency = formatCurrency;
         console.log('formatCurrency function defined and made global');
 
-        // Make functions global
-        window.loadWalletData = async function () {
+        // Handle create wallet form submission
+        async function handleCreateWallet(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const bankAccountNumber = formData.get('bankAccountNumber');
+            const bankCode = formData.get('bankCode');
+
+            if (!bankAccountNumber || !bankCode) {
+                alert('Vui lòng điền đầy đủ thông tin ngân hàng');
+                return;
+            }
+
+            const kycName = document.getElementById('kyc-name').value;
+            if (!kycName || kycName === 'Chưa có KYC') {
+                alert('Vui lòng làm KYC trước khi tạo ví');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-create-wallet');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
             try {
-                console.log('=== loadWalletData CALLED ===');
-                console.log('Loading wallet data...');
-                const response = await fetch('/api/wallet/balance', {
-                    method: 'GET',
-                    credentials: 'include', // Include cookies for session
+                const payload = {
+                    bankAccountNumber: bankAccountNumber,
+                    bankCode: bankCode
+                };
+
+                const response = await fetch('/api/wallet/create', {
+                    method: 'POST',
+                    credentials: 'include',
                     headers: {
-                        'Accept': 'application/json'
-                    }
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Wallet API error:', response.status, errorText);
-                    throw new Error(`Network response was not ok: ${response.status}`);
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    data = { success: false, message: responseText || 'Lỗi không xác định' };
                 }
 
-                const data = await response.json();
-                console.log('Wallet data received:', data);
-
-                if (data.success) {
-                    window.currentHostId = data.hostId;
-                    // Handle both string and number formats
-                    const balance = typeof data.balance === 'string' ? parseFloat(data.balance) : (data.balance || 0);
-                    const availBalance = typeof data.availableBalance === 'string' ? parseFloat(data.availableBalance) : (data.availableBalance || 0);
-
-                    window.availableBalance = availBalance || 0;
-
-                    // Retry mechanism to find elements
-                    let retries = 0;
-                    const maxRetries = 10;
-                    const findAndUpdateElements = () => {
-                        const totalBalanceEl = document.getElementById('total-balance');
-                        const availBalanceEl = document.getElementById('available-balance');
-
-                        if (totalBalanceEl && availBalanceEl) {
-                            console.log('Found balance elements, updating with:', balance, availBalance);
-                            // Use formatCurrency function (defined above)
-                            const formatFunc = typeof formatCurrency === 'function' ? formatCurrency : window.formatCurrency;
-                            if (formatFunc) {
-                                totalBalanceEl.textContent = formatFunc(balance);
-                                availBalanceEl.textContent = formatFunc(availBalance);
-                                console.log('Balance updated successfully:', totalBalanceEl.textContent, availBalanceEl.textContent);
-                            } else {
-                                // Fallback to simple format
-                                totalBalanceEl.textContent = new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND'
-                                }).format(balance);
-                                availBalanceEl.textContent = new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND'
-                                }).format(availBalance);
-                                console.log('Balance updated with fallback format');
-                            }
-                            return true;
-                        } else {
-                            console.warn('Balance elements not found, retry:', retries);
-                            if (retries < maxRetries) {
-                                retries++;
-                                setTimeout(findAndUpdateElements, 100);
-                            } else {
-                                console.error('Failed to find balance elements after', maxRetries, 'retries');
-                            }
-                            return false;
-                        }
-                    };
-
-                    // Try immediately first
-                    if (!findAndUpdateElements()) {
-                        // Will retry via setTimeout
-                    }
+                if (response.ok && data.success) {
+                    alert('Tạo ví thành công!');
+                    // Reload wallet info to show withdrawal form
+                    await loadWalletInfo();
                 } else {
-                    console.error('Wallet API returned error:', data.message);
-                    const errorMsg = data.message || 'Unknown error';
-                    if (errorMsg.includes('not logged in') || errorMsg.includes('Host not found')) {
-                        console.warn('User may need to refresh page or login again');
-                    }
+                    alert('Lỗi: ' + (data.message || 'Không thể tạo ví. Vui lòng thử lại.'));
                 }
             } catch (error) {
-                console.error('Error loading wallet data:', error);
-                const totalBalanceEl = document.getElementById('total-balance');
-                const availBalanceEl = document.getElementById('available-balance');
-                if (totalBalanceEl) totalBalanceEl.textContent = 'Lỗi tải dữ liệu';
-                if (availBalanceEl) availBalanceEl.textContent = 'Lỗi tải dữ liệu';
+                console.error('Error creating wallet:', error);
+                alert('Có lỗi xảy ra khi tạo ví: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Xác nhận tạo ví';
             }
-        };
+        }
 
         window.loadTransactionHistory = async function (filter = 'all') {
             const container = document.getElementById('transaction-list');
@@ -415,14 +538,14 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 
             try {
+                // Only send amount, bank info is retrieved from wallet
                 const payload = {
-                    amount: amount,
-                    bankAccountNumber: formData.get('bankAccountNumber'),
-                    bankCode: formData.get('bankCode')
+                    amount: amount
                 };
 
                 const response = await fetch(`/api/payout/${window.currentHostId}/request-withdraw`, {
                     method: 'POST',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -448,23 +571,8 @@
                     alert('Yêu cầu rút tiền đã được gửi thành công!');
                     form.reset();
                     
-                    // Force reload wallet data and transaction history
-                    if (typeof window.loadWalletData === 'function') {
-                        await window.loadWalletData();
-                    }
-                    if (typeof window.loadTransactionHistory === 'function') {
-                        await window.loadTransactionHistory();
-                    }
-                    
-                    // Double check: reload again after a short delay to ensure data is updated
-                    setTimeout(() => {
-                        if (typeof window.loadWalletData === 'function') {
-                            window.loadWalletData();
-                        }
-                        if (typeof window.loadTransactionHistory === 'function') {
-                            window.loadTransactionHistory();
-                        }
-                    }, 1000);
+                    // Reload wallet info to update balance
+                    await loadWalletInfo();
                 } else {
                     // Error
                     const errorMsg = typeof data === 'string' ? data : (data.message || data.error || 'Không thể thực hiện rút tiền. Vui lòng thử lại.');
@@ -498,17 +606,34 @@
             });
         }
 
-        // Call setup when script loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupFilterButtons);
-        } else {
-            setTimeout(setupFilterButtons, 200);
-        }
+        // Auto-initialize when script loads
+        setTimeout(function () {
+            function tryInit() {
+                if (typeof window.initWallet === 'function') {
+                    console.log('Wallet elements found, initializing...');
+                    window.initWallet();
+                    return true;
+                }
+                return false;
+            }
+
+            // Try immediately
+            if (!tryInit()) {
+                // Retry after delay if not ready
+                let retries = 0;
+                const maxRetries = 10;
+                const retryInterval = setInterval(function () {
+                    if (tryInit() || retries >= maxRetries) {
+                        clearInterval(retryInterval);
+                    }
+                    retries++;
+                }, 100);
+            }
+        }, 200);
 
         console.log('=== WALLET.HTML SCRIPT EXECUTION COMPLETE ===');
         console.log('All functions defined:');
         console.log('- window.initWallet:', typeof window.initWallet);
-        console.log('- window.loadWalletData:', typeof window.loadWalletData);
         console.log('- window.loadTransactionHistory:', typeof window.loadTransactionHistory);
         console.log('- window.formatCurrency:', typeof window.formatCurrency);
         console.log('- window.setAmount:', typeof window.setAmount);

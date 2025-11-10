@@ -59,11 +59,15 @@ public class SecurityConfig {
                 // 2. Cấu hình Authorization
                 .authorizeHttpRequests(auth -> auth
                         // Cho phép truy cập các endpoint công khai
-                        .requestMatchers("/login", "/login/**", "/oauth2/**", 
-                                       "/api/auth/register", "/css/**", "/js/**", 
-                                       "/img/**", "/images/**", "/", 
-                                       "/api/payments/webhook", "/api/payments/webhook/test", 
-                                       "/api/payments/webhook/test-data").permitAll()
+                        .requestMatchers(
+                                "/api/ekyc/**",
+                                "/web-sdk-version-3.2.0.0.js",
+                                "/login", "/login/**", "/oauth2/**",
+                                "/api/auth/register", "/css/**", "/js/**",
+                                "/img/**", "/images/**", "/",
+                                "/api/payments/webhook", "/api/payments/webhook/test",
+                                "/api/payments/webhook/test-data",
+                                "/api/ekyc/file-service/v1/addFile").permitAll()
                         .anyRequest().authenticated()
                 )
 

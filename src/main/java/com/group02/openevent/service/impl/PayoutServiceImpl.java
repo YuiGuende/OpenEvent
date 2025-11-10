@@ -51,19 +51,34 @@ public class PayoutServiceImpl implements IPayoutService {
         if (host.isEmpty()) {
             throw new WalletException("Host not found");
         }
+        
+        // 2. Lấy thông tin ví và kiểm tra ví đã tồn tại chưa
+        com.group02.openevent.model.user.HostWallet wallet = walletService.getWalletByHostId(hostId);
+        if (wallet == null) {
+            throw new WalletException("Ví không tồn tại. Vui lòng tạo ví trước khi rút tiền.");
+        }
+        
+        // 3. Kiểm tra thông tin ngân hàng
+        if (wallet.getBankAccountNumber() == null || wallet.getBankAccountNumber().trim().isEmpty()) {
+            throw new WalletException("Ví chưa có thông tin ngân hàng. Vui lòng cập nhật thông tin ngân hàng trước khi rút tiền.");
+        }
+        
+        if (wallet.getBankCode() == null || wallet.getBankCode().trim().isEmpty()) {
+            throw new WalletException("Ví chưa có mã ngân hàng. Vui lòng cập nhật thông tin ngân hàng trước khi rút tiền.");
+        }
+        
         String payosOrderCode = "P" + UUID.randomUUID().toString().replace("-", "").substring(0, 20).toUpperCase();
         
-        // 2. Trừ tiền Host (Tạm thời trừ số dư khả dụng)
+        // 4. Trừ tiền Host (Tạm thời trừ số dư khả dụng)
         String description = "Yeu cau rut tien #" + payosOrderCode;
-        System.out.println("4");
         walletService.deductBalance(hostId, requestDto.getAmount(), payosOrderCode, description);
         
-        // 3. Ghi log Yêu cầu Payout vào DB
+        // 5. Ghi log Yêu cầu Payout vào DB (lấy thông tin ngân hàng từ ví)
         PayoutRequest payout = new PayoutRequest();
         payout.setHost(host.get());
         payout.setAmount(requestDto.getAmount());
-        payout.setBankAccountNumber(requestDto.getBankAccountNumber());
-        payout.setBankCode(requestDto.getBankCode());
+        payout.setBankAccountNumber(wallet.getBankAccountNumber()); // Lấy từ ví
+        payout.setBankCode(wallet.getBankCode()); // Lấy từ ví
         payout.setPayosOrderCode(payosOrderCode);
         payout.setStatus(PayoutStatus.PENDING);
         payout.setRequestedAt(LocalDateTime.now());

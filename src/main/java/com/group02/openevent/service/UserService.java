@@ -33,6 +33,7 @@ public interface UserService {
 
     User getUserById(Long id);
 
+    User getUserByHostId(Long hostId);
 
     List<User> findAllById(List<Long> receiverAccountIds);
 }

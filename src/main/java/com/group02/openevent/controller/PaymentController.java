@@ -4,12 +4,15 @@ import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.IHostWalletService;
 import com.group02.openevent.dto.payment.PaymentResult;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
+import com.group02.openevent.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +31,14 @@ public class PaymentController {
     private final OrderService orderService;
     private final PayOS payOS;
     private final IHostWalletService hostWalletService;
+    private final UserService userService;
 
-    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS, IHostWalletService hostWalletService) {
+    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS, IHostWalletService hostWalletService, UserService userService) {
         this.paymentService = paymentService;
         this.orderService = orderService;
         this.payOS = payOS;
         this.hostWalletService = hostWalletService;
+        this.userService = userService;
     }
 
     /**
@@ -234,17 +239,11 @@ public class PaymentController {
      */
     @GetMapping("/history")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> getPaymentHistory(HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> getPaymentHistory(HttpServletRequest request,HttpSession httpSession) {
         try {
-            Long accountId = (Long) request.getAttribute("currentUserId");
-            if (accountId == null) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "User not logged in"
-                ));
-            }
+            Customer customer = userService.getCurrentUser(httpSession).getCustomer();
 
-            var payments = paymentService.getPaymentsByCustomerId(accountId);
+            var payments = paymentService.getPaymentsByCustomerId(customer.getCustomerId());
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -326,17 +325,11 @@ public class PaymentController {
      */
     @PostMapping("/create-for-order/{orderId}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> createPaymentForOrder(@PathVariable Long orderId, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> createPaymentForOrder(@PathVariable Long orderId, HttpServletRequest request, HttpSession httpSession) {
         try {
-            Long accountId = (Long) request.getAttribute("currentUserId");
-            if (accountId == null) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "User not logged in"
-                ));
-            }
 
-            // Get order
+            Customer customer = userService.getCurrentUser(httpSession).getCustomer();
+
             Order order = orderService.getById(orderId).orElse(null);
             if (order == null) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -346,7 +339,7 @@ public class PaymentController {
             }
 
             // Check if order belongs to current customer
-            if (!order.getCustomer().getUser().getAccount().getAccountId().equals(accountId)) {
+            if (!order.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "Order does not belong to current user"

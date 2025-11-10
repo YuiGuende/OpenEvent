@@ -77,6 +77,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUserByHostId(Long hostId) {
+        return userRepo.findByHost_Id(hostId);
+    }
+
+    @Override
     public List<User> findAllById(List<Long> receiverAccountIds) {
         return userRepo.findAllById(receiverAccountIds);
     }

@@ -41,4 +41,31 @@ public interface IHostWalletService {
      * @param description Mô tả giao dịch
      */
     void addBalance(Long hostId, BigDecimal amount, String referenceId, String description);
+
+    /**
+     * Cập nhật KYC name vào ví (nếu ví đã tồn tại)
+     * @param hostId ID của Host
+     * @param kycName Tên từ KYC
+     */
+    void updateKycName(Long hostId, String kycName);
+
+    /**
+     * Tạo ví với thông tin ngân hàng và KYC
+     * @param hostId ID của Host
+     * @param bankAccountNumber Số tài khoản ngân hàng
+     * @param bankCode Mã ngân hàng
+     * @param accountHolderName Tên chủ tài khoản
+     * @param kycName Tên từ KYC
+     * @return HostWallet đã tạo
+     * @throws WalletException Nếu có lỗi xảy ra
+     */
+    HostWallet createWalletWithBankInfo(Long hostId, String bankAccountNumber, String bankCode, 
+                                        String accountHolderName, String kycName) throws WalletException;
+
+    /**
+     * Kiểm tra ví đã tồn tại chưa
+     * @param hostId ID của Host
+     * @return true nếu ví đã tồn tại, false nếu chưa
+     */
+    boolean walletExists(Long hostId);
 }

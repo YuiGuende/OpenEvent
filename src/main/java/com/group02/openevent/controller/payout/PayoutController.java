@@ -27,14 +27,15 @@ public class PayoutController {
 
     /**
      * Endpoint cho Host yêu cầu rút tiền
-     * POST /api/hosts/{hostId}/payouts
+     * POST /api/payout/{hostId}/request-withdraw
+     * Lưu ý: Thông tin ngân hàng sẽ được lấy từ ví của host, không cần gửi trong request
      */
     @PostMapping(path = "/{hostId}/request-withdraw")
     public ResponseEntity<?> requestPayout(
             @PathVariable Long hostId,
             @RequestBody PayoutRequestDto requestDto) {
 
-        if (requestDto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (requestDto.getAmount() == null || requestDto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return ResponseEntity.badRequest().body("Số tiền rút phải lớn hơn 0.");
         }
 

@@ -41,7 +41,7 @@ public class EkycServiceImpl implements EkycService {
             headers.set("Token-Id", tokenId);
             headers.set("Token-Key", tokenKey);
             headers.set("Authorization", "Bearer " + accessToken);
-            headers.set("Mac-Address", "WEB-001");
+//            headers.set("Mac-Address", "WEB-001");
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("file", new ByteArrayResource(file.getBytes()) {
@@ -54,7 +54,7 @@ public class EkycServiceImpl implements EkycService {
             // VNPT yêu cầu metadata: title, description, type... (tùy doc)
             body.add("title", "ID_CARD_FRONT");
             body.add("description", "Ảnh mặt trước CCCD");
-            body.add("type", "4");
+//            body.add("type", "4");
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 

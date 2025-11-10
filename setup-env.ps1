@@ -36,3 +36,6 @@ Write-Host "3. Chạy migration SQL: mysql -u root -p openevent < add_oauth_supp
 Write-Host "4. Khởi động ứng dụng: mvn spring-boot:run"
 Write-Host ""
 
+
+
+

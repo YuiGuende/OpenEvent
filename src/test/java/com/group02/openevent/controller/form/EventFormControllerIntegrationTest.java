@@ -30,7 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = EventFormController.class,
         excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @DisplayName("EventFormController Integration Tests")
-class EventFormControllerIntegrationTest {
+class
+EventFormControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

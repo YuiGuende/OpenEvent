@@ -37,7 +37,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,7 +75,6 @@ class OrderServiceImplTest {
         User user = new User();
         user.setAccount(account);
         user.setUserId(1L);
-        user.setEmail("test@example.com");
         user.setName("Test Customer");
         customer = new Customer();
         customer.setCustomerId(CUSTOMER_ID);

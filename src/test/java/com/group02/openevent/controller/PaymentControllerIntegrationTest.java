@@ -18,10 +18,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import jakarta.servlet.http.HttpServletRequest;
 import vn.payos.PayOS;
 
 import java.math.BigDecimal;
@@ -45,13 +45,13 @@ class PaymentControllerIntegrationTest {
 
     @MockitoBean
     private AISecurityService aiSecurityService;
-    @MockBean
+    @MockitoBean
     private SessionInterceptor sessionInterceptor;
-    @MockBean
+    @MockitoBean
     private PaymentService paymentService;
-    @MockBean
+    @MockitoBean
     private OrderService orderService;
-    @MockBean
+    @MockitoBean
     private PayOS payOS;
 
     private Order order;
@@ -73,7 +73,8 @@ class PaymentControllerIntegrationTest {
         User user = new User();
         user.setAccount(account);
         user.setUserId(1L);
-        user.setEmail("test@example.com");
+        user.setName("Test Customer");
+
         customer = new Customer();
         customer.setCustomerId(CUSTOMER_ID);
         customer.setUser(user);
@@ -93,7 +94,21 @@ class PaymentControllerIntegrationTest {
         payment.setQrCode("QR_CODE_123");
 
         // Mock SessionInterceptor để cho phép tất cả request đi qua
-        when(sessionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        // The interceptor should set currentUserId from request attributes or session
+        when(sessionInterceptor.preHandle(any(), any(), any())).thenAnswer(invocation -> {
+            HttpServletRequest request = invocation.getArgument(0);
+            // If currentUserId is not set, try to set it from session or request attribute
+            if (request.getAttribute("currentUserId") == null) {
+                // Check session first
+                if (request.getSession(false) != null) {
+                    Object accountId = request.getSession(false).getAttribute("ACCOUNT_ID");
+                    if (accountId != null) {
+                        request.setAttribute("currentUserId", accountId);
+                    }
+                }
+            }
+            return true;
+        });
     }
 
     @Nested
@@ -110,6 +125,7 @@ class PaymentControllerIntegrationTest {
 
             // Act & Assert
             mockMvc.perform(post("/api/payments/create-for-order/{orderId}", ORDER_ID)
+                            .sessionAttr("ACCOUNT_ID", ACCOUNT_ID)
                             .requestAttr("currentUserId", ACCOUNT_ID))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -128,6 +144,7 @@ class PaymentControllerIntegrationTest {
 
             // Act & Assert
             mockMvc.perform(post("/api/payments/create-for-order/{orderId}", ORDER_ID)
+                            .sessionAttr("ACCOUNT_ID", ACCOUNT_ID)
                             .requestAttr("currentUserId", ACCOUNT_ID))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -154,6 +171,7 @@ class PaymentControllerIntegrationTest {
 
             // Act & Assert
             mockMvc.perform(post("/api/payments/create-for-order/{orderId}", ORDER_ID)
+                            .sessionAttr("ACCOUNT_ID", ACCOUNT_ID)
                             .requestAttr("currentUserId", ACCOUNT_ID))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value(false))
@@ -177,6 +195,7 @@ class PaymentControllerIntegrationTest {
 
             // Act & Assert
             mockMvc.perform(post("/api/payments/create-for-order/{orderId}", ORDER_ID)
+                            .sessionAttr("ACCOUNT_ID", ACCOUNT_ID)
                             .requestAttr("currentUserId", ACCOUNT_ID))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value(false))
@@ -195,6 +214,7 @@ class PaymentControllerIntegrationTest {
 
             // Act & Assert
             mockMvc.perform(get("/api/payments/history")
+                            .sessionAttr("ACCOUNT_ID", ACCOUNT_ID)
                             .requestAttr("currentUserId", ACCOUNT_ID))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))

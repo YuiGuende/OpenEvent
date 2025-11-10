@@ -107,8 +107,8 @@ public class NotificationController {
                             com.group02.openevent.model.user.Customer senderCustomer = 
                                     customerRepo.findById(n.getSender().getUserId()).orElse(null);
                             
-                            if (senderCustomer != null && senderCustomer.getHost() != null) {
-                                com.group02.openevent.model.user.Host host = senderCustomer.getHost();
+                            if (senderCustomer != null && senderCustomer.getUser().getHost() != null) {
+                                com.group02.openevent.model.user.Host host = senderCustomer.getUser().getHost();
                                 hostName = host.getHostName();
                             } else {
                                 // Fallback: use sender email

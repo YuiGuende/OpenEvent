@@ -260,6 +260,7 @@ public class EventServiceImpl implements EventService {
         return eventRepo.getEventByHostId(id);
     }
 
+
     @Override
     public Event getEventResponseById(Long id) {
         return eventRepo.findById(id)

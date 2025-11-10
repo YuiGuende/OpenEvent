@@ -31,8 +31,8 @@ public class Customer {
     @Column(name = "points", nullable = false)
     private Integer points = 0;
 
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Host host;
+//    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Host host;
 
     @Column(unique = true, length = 100)
     private String memberID;
@@ -48,13 +48,6 @@ public class Customer {
         this.customerId = customerId;
     }
 
-    public Host getHost() {
-        return host;
-    }
-
-    public void setHost(Host host) {
-        this.host = host;
-    }
 
     public User getUser() {
         return user;

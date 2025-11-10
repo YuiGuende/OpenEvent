@@ -16,6 +16,7 @@ import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.repository.IEventImageRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.service.TicketTypeService;
+import com.group02.openevent.service.UserService;
 import com.group02.openevent.service.impl.HostServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -58,9 +59,10 @@ public class EventController {
     private final IEventImageRepo eventImageRepo;
     
     private final IEventRepo eventRepo;
-    
+    private final UserService userService;
+
     @Autowired
-    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService, IEventImageRepo eventImageRepo, IEventRepo eventRepo) {
+    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService, IEventImageRepo eventImageRepo, IEventRepo eventRepo, UserService userService) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
@@ -68,6 +70,7 @@ public class EventController {
         this.hostService = hostService;
         this.eventImageRepo = eventImageRepo;
         this.eventRepo = eventRepo;
+        this.userService = userService;
     }
 
 
@@ -330,6 +333,60 @@ public class EventController {
             }
         } else {
             log.info("No main poster with orderIndex = 0 found for eventId: {}", eventId);
+        }
+    }
+
+    /**
+     * DELETE - Delete event by id (only if it belongs to the current host)
+     */
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable("id") Long id, HttpSession session) {
+        try {
+            Long hostId = userService.getCurrentUser(session).getHost().getId();
+            
+            // Verify event exists and belongs to this host
+            Optional<Event> eventOpt = eventService.getEventById(id);
+            if (eventOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Không tìm thấy sự kiện")
+                                .build());
+            }
+            
+            Event event = eventOpt.get();
+            if (event.getHost() == null || !event.getHost().getId().equals(hostId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Bạn không có quyền xóa sự kiện này")
+                                .build());
+            }
+            
+            // Delete the event
+            boolean deleted = eventService.removeEvent(id);
+            if (deleted) {
+                log.info("Event {} deleted successfully by host {}", id, hostId);
+                return ResponseEntity.ok(ApiResponse.<Void>builder()
+                        .message("Đã xóa sự kiện thành công")
+                        .build());
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Không thể xóa sự kiện")
+                                .build());
+            }
+        } catch (RuntimeException e) {
+            log.error("Error deleting event {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<Void>builder()
+                            .message("Người dùng chưa đăng nhập")
+                            .build());
+        } catch (Exception e) {
+            log.error("Error deleting event {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.<Void>builder()
+                            .message("Lỗi hệ thống khi xóa sự kiện: " + e.getMessage())
+                            .build());
         }
     }
 

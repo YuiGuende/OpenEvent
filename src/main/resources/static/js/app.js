@@ -98,6 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         {
+            path: `/manage/event/${eventId}/attendees`,
+            fragment: `/fragments/attendees?id=${eventId}`,
+            title: `Người tham dự`,
+            initializer: function () {
+                // Modals are now in layout (global), just initialize and setup search
+                if (typeof window.initializeModals === 'function') {
+                    window.initializeModals();
+                }
+                if (typeof window.setupAutoSearch === 'function') {
+                    setTimeout(() => window.setupAutoSearch(), 300);
+                }
+            }
+        },
+        {
             path: `/manage/event/${eventId}/create-forms`,
             fragment: `/fragments/create-forms?id=${eventId}`,
             title: 'Tạo Form',

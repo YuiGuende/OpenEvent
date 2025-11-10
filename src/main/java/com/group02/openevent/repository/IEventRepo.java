@@ -88,11 +88,14 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     @Query("""
         SELECT e FROM Event e
         LEFT JOIN FETCH e.host h
-        LEFT JOIN FETCH h.customer c
-        LEFT JOIN FETCH c.user.account a
         WHERE e.id = :eventId
     """)
     Optional<Event> findByIdWithHostAccount(@Param("eventId") Long eventId);
+
+    /**
+     * Filter events by host ID with search, status, and time filters
+     */
+
 
 
 

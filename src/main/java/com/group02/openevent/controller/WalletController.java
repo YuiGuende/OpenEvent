@@ -45,61 +45,6 @@ public class WalletController {
         this.userService = userService;
     }
 
-    private Long getHostIdFromSession(HttpSession session) {
-        try {
-            // Session stores USER_ID (not ACCOUNT_ID) according to CustomAuthenticationSuccessHandler
-            Long userId = (Long) session.getAttribute("USER_ID");
-            
-            log.debug("Getting host from session - USER_ID: {}", userId);
-            
-            if (userId == null) {
-                log.warn("No USER_ID found in session. Session attributes: {}", 
-                    session.getAttributeNames() != null ? 
-                    java.util.Collections.list(session.getAttributeNames()).toString() : "null");
-                return null;
-            }
-            
-            // Get User from userId
-            User user;
-            try {
-                user = userService.getUserById(userId);
-                log.debug("Found user with userId: {}", userId);
-            } catch (RuntimeException e) {
-                log.warn("User not found for userId: {}", userId);
-                return null;
-            }
-            
-            // Check if user has a Host directly
-            if (user.getHost() != null && user.getHost().getId() != null) {
-                log.debug("Found host directly from user: {}", user.getHost().getId());
-                return user.getHost().getId();
-            }
-            
-            // Fallback: Try to find host through accountId (for backward compatibility)
-            // This should not be necessary if data is consistent, but kept as fallback
-            try {
-                Long accountId = user.getAccount() != null ? user.getAccount().getAccountId() : null;
-                if (accountId != null) {
-                    // Note: findHostByAccountId actually searches by userId in current implementation
-                    // But we already checked user.getHost() above, so this is just a fallback
-                    com.group02.openevent.model.user.Host host = hostService.findHostByAccountId(userId);
-                    if (host != null && host.getId() != null) {
-                        log.debug("Found host through hostService (fallback): {}", host.getId());
-                        return host.getId();
-                    }
-                }
-            } catch (RuntimeException e) {
-                log.debug("Host not found through hostService for userId {}: {}", userId, e.getMessage());
-            }
-            
-            log.warn("No host found for userId: {}", userId);
-            return null;
-        } catch (Exception e) {
-            log.error("Unexpected error getting host from session: {}", e.getMessage(), e);
-            return null;
-        }
-    }
-
     /**
      * GET /api/wallet/debug - Debug endpoint to check session
      */
@@ -142,7 +87,7 @@ public class WalletController {
             log.info("getWalletInfo - session ID: {}, USER_ID: {}", 
                     session.getId(), userId);
             
-            Long hostId = getHostIdFromSession(session);
+            Long hostId = userService.getCurrentUser(session).getHost().getId();
             log.info("getWalletInfo - hostId: {}", hostId);
             
             if (hostId == null) {
@@ -203,7 +148,7 @@ public class WalletController {
         // Biến hostId để dùng trong log lỗi
         Long hostId = null;
         try {
-            hostId = getHostIdFromSession(session); // Lấy hostId sớm
+            hostId = userService.getCurrentUser(session).getHost().getId();
             if (hostId == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                         "success", false,
@@ -319,7 +264,7 @@ public class WalletController {
     @GetMapping("/balance")
     public ResponseEntity<Map<String, Object>> getBalance(HttpSession session) {
         try {
-            Long hostId = getHostIdFromSession(session);
+            Long hostId = userService.getCurrentUser(session).getHost().getId();
             if (hostId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -357,7 +302,7 @@ public class WalletController {
             @RequestParam(defaultValue = "all") String filter,
             HttpSession session) {
         try {
-            Long hostId = getHostIdFromSession(session);
+            Long hostId = userService.getCurrentUser(session).getHost().getId();
             if (hostId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,

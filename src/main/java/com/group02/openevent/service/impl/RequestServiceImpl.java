@@ -327,4 +327,11 @@ public class RequestServiceImpl implements RequestService {
                 .updatedAt(request.getUpdatedAt())
                 .build();
     }
+    
+    @Override
+    public List<RequestDTO> getRequestsByHostId(Long hostId) {
+        return requestRepo.findByHost_Id(hostId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 }

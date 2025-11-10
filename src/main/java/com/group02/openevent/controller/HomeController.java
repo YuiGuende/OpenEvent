@@ -135,28 +135,12 @@ public class HomeController {
     //use for dropdown user in header
     @GetMapping("/api/current-user")
     public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession session) {
-        Long accountId = userService.getCurrentUser(session).getUserId();
-        if (accountId == null) {
-            return ResponseEntity.ok(Map.of("authenticated", false));
-        }
-
-        Account account = accountRepo.findById(accountId).orElse(null);
-        if (account == null) {
-            return ResponseEntity.ok(Map.of("authenticated", false));
-        }
-
-        // Lấy User để xác định Role
-        User user = userRepo.findByAccount_AccountId(accountId).orElse(null);
-        if (user == null) {
-            return ResponseEntity.ok(Map.of("authenticated", false));
-        }
-
+        log.info("API: Getting current user");
+        User user = userService.getCurrentUser(session);
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("authenticated", true);
-        userInfo.put("accountId", account.getAccountId());
-        userInfo.put("email", account.getEmail());
-        userInfo.put("role", user.getRole().name());
-
+        userInfo.put("accountId", user.getAccount().getAccountId());
+        userInfo.put("email", user.getAccount().getEmail());
         return ResponseEntity.ok(userInfo);
     }
 

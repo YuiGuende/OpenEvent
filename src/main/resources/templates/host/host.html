@@ -18,27 +18,44 @@
         <button class="sidebar-toggle-btn">
             <i class="fas fa-bars"></i>
         </button>
-        <div class="logo">
-            <img class="logo-icon" th:src="@{/images/logo.png}" alt="Logo">
-            <span class="logo-text">Open.events</span>
-        </div>
-
     </div>
     <div class="header-center">
         <div class="live-status">
-            <i class="fas fa-eye"></i>
-            <span>• Trực tiếp - Nhấp để gỡ bỏ</span>
+            <i class="fas fa-broadcast"></i>
+            <span>Trực tiếp - Nhấp để gỡ bỏ</span>
         </div>
     </div>
     <div class="header-right">
+        <a th:href="@{/}" class="btn btn-homepage">
+            <i class="fas fa-home"></i>
+            <span>Về trang chủ</span>
+        </a>
         <button class="btn-view-homepage">
             <i class="fas fa-external-link-alt"></i>
-            Xem trang chủ nhà tổ chức
+            <span>Xem trang chủ nhà tổ chức</span>
         </button>
-        <div class="customer-avatar">DL</div>
+        <div class="customer-avatar" id="userAvatar">DL</div>
+        <span class="user-name d-none d-md-inline" id="userName" style="margin-left: 8px; color: white; font-weight: 500;"></span>
     </div>
 </header>
 <aside class="sidebar">
+    <div class="sidebar-header">
+        <a th:href="@{/}" class="logo-container">
+            <div class="logo-icon">
+                <img src="/img/logo1.png" alt="Open.Event Logo">
+            </div>
+            <span class="logo-text">Open.Event</span>
+        </a>
+    </div>
+
+    <div class="sidebar-status">
+        <div class="status-badge">
+            <i class="fas fa-broadcast"></i>
+            <span>Trực tiếp</span>
+            <small>Nhập để gỡ bỏ</small>
+        </div>
+    </div>
+
     <nav class="nav-menu">
         <div class="nav-section">
             <h3 class="nav-title">OVERVIEW</h3>
@@ -56,6 +73,10 @@
                 <li class="nav-item" id="nav-events" >
                     <i class="fas fa-calendar"></i>
                     <span>Sự kiện</span>
+                </li>
+                <li class="nav-item" id="nav-request">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Yêu cầu duyệt</span>
                 </li>
 
                 <li class="nav-item" id="nav-wallet">
@@ -103,9 +124,43 @@
             })
             .catch(err => console.error(err));
     }
+    
+    // Load and display user name
+    function loadUserName() {
+        fetch('/api/current-user')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.authenticated && data.name) {
+                    const userNameEl = document.getElementById('userName');
+                    const userAvatarEl = document.getElementById('userAvatar');
+                    
+                    if (userNameEl) {
+                        userNameEl.textContent = data.name;
+                        userNameEl.classList.remove('d-none');
+                    }
+                    
+                    if (userAvatarEl) {
+                        // Get first letter of name for avatar
+                        const initial = data.name.charAt(0).toUpperCase();
+                        userAvatarEl.textContent = initial;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading user name:', error);
+            });
+    }
+    
+    // Load user name when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadUserName);
+    } else {
+        loadUserName();
+    }
 </script>
 <script th:src="@{/js/host.js}"></script>
 <script th:src="@{/js/event.js}"></script>
+<script th:src="@{/js/events-manager.js}"></script>
 
 </body>
 </html>

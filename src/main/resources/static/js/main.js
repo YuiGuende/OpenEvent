@@ -137,12 +137,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add loading states to buttons
-    const buttons = document.querySelectorAll('.btn');
+    // Add loading states to buttons (only for anchor tags with href)
+    const buttons = document.querySelectorAll('a.btn');
 
     buttons.forEach(button => {
         button.addEventListener('click', function() {
-            if (this.href === '#' || !this.href.includes('http')) {
+            // Only process if it's an anchor tag with href
+            if (this.href && (this.href === '#' || !this.href.includes('http'))) {
                 // Add loading state for internal buttons
                 const originalText = this.textContent;
                 this.textContent = 'Loading...';

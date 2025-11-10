@@ -93,6 +93,11 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     """)
     Optional<Event> findByIdWithHostAccount(@Param("eventId") Long eventId);
 
+    /**
+     * Filter events by host ID with search, status, and time filters
+     */
+
+
 
 
 

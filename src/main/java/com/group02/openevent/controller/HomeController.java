@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -141,6 +142,37 @@ public class HomeController {
         userInfo.put("accountId", account.getAccountId());
         userInfo.put("email", account.getEmail());
         userInfo.put("role", account.getRole().name());
+        
+        // Get user name from Customer if exists
+        String userName = null;
+        try {
+            Optional<Customer> customerOpt = customerRepo.findByAccount_AccountId(accountId);
+            if (customerOpt.isPresent()) {
+                Customer customer = customerOpt.get();
+                userName = customer.getName();
+                // If name is null or empty, use email username as fallback
+                if (userName == null || userName.trim().isEmpty()) {
+                    String email = account.getEmail();
+                    if (email != null && email.contains("@")) {
+                        userName = email.split("@")[0];
+                    }
+                }
+            } else {
+                // Fallback: use email username if customer not found
+                String email = account.getEmail();
+                if (email != null && email.contains("@")) {
+                    userName = email.split("@")[0];
+                }
+            }
+        } catch (Exception e) {
+            // Fallback: use email username on error
+            String email = account.getEmail();
+            if (email != null && email.contains("@")) {
+                userName = email.split("@")[0];
+            }
+        }
+        
+        userInfo.put("name", userName != null ? userName : account.getEmail());
 
         return ResponseEntity.ok(userInfo);
     }

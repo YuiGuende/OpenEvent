@@ -6,6 +6,7 @@ import com.group02.openevent.service.OrganizationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,5 +27,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public Organization save(Organization organization) {
         return organizationRepo.save(organization);
+    }
+
+    @Override
+    public List<Organization> findAll() {
+        return organizationRepo.findAll();
     }
 }

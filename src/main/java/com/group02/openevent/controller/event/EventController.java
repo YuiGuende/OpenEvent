@@ -319,4 +319,59 @@ public class EventController {
         }
     }
 
+    /**
+     * DELETE - Delete event by id (only if it belongs to the current host)
+     */
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable("id") Long id, HttpSession session) {
+        try {
+            Long accountId = getAccountIdFromSession(session);
+            Long hostId = hostService.findHostIdByAccountId(accountId);
+            
+            // Verify event exists and belongs to this host
+            Optional<Event> eventOpt = eventService.getEventById(id);
+            if (eventOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Không tìm thấy sự kiện")
+                                .build());
+            }
+            
+            Event event = eventOpt.get();
+            if (event.getHost() == null || !event.getHost().getId().equals(hostId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Bạn không có quyền xóa sự kiện này")
+                                .build());
+            }
+            
+            // Delete the event
+            boolean deleted = eventService.removeEvent(id);
+            if (deleted) {
+                log.info("Event {} deleted successfully by host {}", id, hostId);
+                return ResponseEntity.ok(ApiResponse.<Void>builder()
+                        .message("Đã xóa sự kiện thành công")
+                        .build());
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Không thể xóa sự kiện")
+                                .build());
+            }
+        } catch (RuntimeException e) {
+            log.error("Error deleting event {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<Void>builder()
+                            .message("Người dùng chưa đăng nhập")
+                            .build());
+        } catch (Exception e) {
+            log.error("Error deleting event {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.<Void>builder()
+                            .message("Lỗi hệ thống khi xóa sự kiện: " + e.getMessage())
+                            .build());
+        }
+    }
+
 }

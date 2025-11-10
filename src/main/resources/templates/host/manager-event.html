@@ -113,7 +113,7 @@
 
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/request-form'}" class="nav-link" data-link>
-                                <i class="bi bi-speedometer2"></i>
+                                <i class="fas fa-paper-plane"></i>
                                 <span>Yêu cầu duyệt</span>
                             </a>
                         </li>
@@ -203,11 +203,13 @@
                     </button>
 
                     <div class="dropdown">
-                        <button class="btn btn-icon" data-bs-toggle="dropdown">
-                            <i class="bi bi-globe"></i>
-                            <span class="d-none d-md-inline">DL</span>
+                        <button class="btn btn-icon" data-bs-toggle="dropdown" id="userDropdownBtn">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="d-none d-md-inline" id="userDisplayName">DL</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header" id="userNameHeader">User</h6></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#">Tiếng Việt</a></li>
                             <li><a class="dropdown-item" href="#">English</a></li>
                         </ul>
@@ -261,6 +263,40 @@
     <script src="/js/update-ticket.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="/js/event-attendees.js"></script>
+
+    <script>
+        // Load and display user name in header
+        function loadUserName() {
+            fetch('/api/current-user')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.authenticated && data.name) {
+                        const userDisplayNameEl = document.getElementById('userDisplayName');
+                        const userNameHeaderEl = document.getElementById('userNameHeader');
+                        
+                        if (userDisplayNameEl) {
+                            // Display name, limit to 15 characters for display
+                            const displayName = data.name.length > 15 ? data.name.substring(0, 15) + '...' : data.name;
+                            userDisplayNameEl.textContent = displayName;
+                        }
+                        
+                        if (userNameHeaderEl) {
+                            userNameHeaderEl.textContent = data.name;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user name:', error);
+                });
+        }
+        
+        // Load user name when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadUserName);
+        } else {
+            loadUserName();
+        }
+    </script>
 
     <!-- Event Attendees Modals (Global - outside fragment to prevent recreation on reload) -->
     <!-- Add Attendee Modal -->

@@ -79,7 +79,36 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
             "WHERE o.event.id = :eventId " +
             "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID " +
             "AND o.customer.customerId = :customerId")
-    boolean existsPaidByEventIdAndCustomerId(@Param("eventId") Long eventId, @Param("customerId") Long customerId);
+        boolean existsPaidByEventIdAndCustomerId(@Param("eventId") Long eventId, @Param("customerId") Long customerId);
+
+    /**
+     * Find all PAID orders for events belonging to a specific host
+     */
+    @Query("SELECT o FROM Order o WHERE o.event.host.id = :hostId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
+    List<Order> findByHostIdAndStatusPaid(@Param("hostId") Long hostId);
+    
+    /**
+     * Find all PAID orders for events belonging to a specific host with pagination
+     */
+    @Query("SELECT o FROM Order o WHERE o.event.host.id = :hostId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> findByHostIdAndStatusPaid(@Param("hostId") Long hostId, Pageable pageable);
+    
+    /**
+     * Find all orders for events belonging to a specific host (all statuses)
+     */
+    @Query("SELECT o FROM Order o WHERE o.event.host.id = :hostId " +
+            "ORDER BY o.createdAt DESC")
+    List<Order> findByHostId(@Param("hostId") Long hostId);
+    
+    /**
+     * Find all orders for events belonging to a specific host with pagination
+     */
+    @Query("SELECT o FROM Order o WHERE o.event.host.id = :hostId " +
+            "ORDER BY o.createdAt DESC")
+    Page<Order> findByHostId(@Param("hostId") Long hostId, Pageable pageable);
 }
 
 

@@ -171,6 +171,10 @@ const HostDashboard = {
                 url = "/events";
                 fragmentUrl = "/fragment/events";
                 break;
+            case "nav-request":
+                url = "/requests";
+                fragmentUrl = "/fragment/sent-requests";
+                break;
             case "nav-wallet":
                 url = "/wallet";
                 fragmentUrl = "/fragment/wallet";
@@ -186,6 +190,9 @@ const HostDashboard = {
                 if (navText.includes("ví") || navText.includes("wallet")) {
                     url = "/wallet";
                     fragmentUrl = "/fragment/wallet";
+                } else if (navText.includes("yêu cầu") || navText.includes("request")) {
+                    url = "/requests";
+                    fragmentUrl = "/fragment/sent-requests";
                 }
                 break;
         }
@@ -238,6 +245,20 @@ const HostDashboard = {
             .then(html => {
                 console.log('Raw HTML received, length:', html.length);
                 console.log('HTML preview (first 500 chars):', html.substring(0, 500));
+                console.log('HTML preview (last 500 chars):', html.substring(Math.max(0, html.length - 500)));
+                
+                // Check if HTML contains script tags as string
+                const hasScriptTag = html.includes('<script') || html.includes('&lt;script');
+                console.log('HTML contains script tag (string check):', hasScriptTag);
+                if (hasScriptTag) {
+                    console.log('Script tag found in HTML! Searching for exact location...');
+                    const scriptIndex = html.indexOf('<script');
+                    if (scriptIndex >= 0) {
+                        console.log('Script tag starts at index:', scriptIndex);
+                        console.log('Script tag preview:', html.substring(scriptIndex, Math.min(scriptIndex + 200, html.length)));
+                    }
+                }
+                
                 if (this.mainContent) {
                     // Use a temporary container to extract scripts
                     const tempDiv = document.createElement('div');
@@ -246,91 +267,96 @@ const HostDashboard = {
                     // Get all scripts from the fragment
                     const scripts = tempDiv.querySelectorAll('script');
                     const scriptsArray = Array.from(scripts);
-                    console.log('Found', scriptsArray.length, 'scripts in fragment');
+                    console.log('Found', scriptsArray.length, 'scripts in fragment (querySelector)');
                     
-                    // Also check for script tags in raw HTML
-                    const scriptTagMatches = html.match(/<script[^>]*>[\s\S]*?<\/script>/gi);
+                    // Also check for script tags in raw HTML with improved regex
+                    // Match script tags including multiline content - try multiple patterns
+                    let scriptTagMatches = html.match(/<script[^>]*>[\s\S]*?<\/script>/gi);
+                    if (!scriptTagMatches) {
+                        // Try with th:inline="none"
+                        scriptTagMatches = html.match(/<script\s+th:inline="none"[^>]*>[\s\S]*?<\/script>/gi);
+                    }
+                    if (!scriptTagMatches) {
+                        // Try with any attributes
+                        scriptTagMatches = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi);
+                    }
                     console.log('Script tags found in raw HTML (regex):', scriptTagMatches ? scriptTagMatches.length : 0);
+                    if (scriptTagMatches) {
+                        console.log('Script tags details:', scriptTagMatches.map((s, i) => `Script ${i + 1}: ${s.substring(0, 100)}...`));
+                    }
                     
-                    let scriptsExecuted = false;
-                    // If querySelector didn't find scripts but regex did, extract from regex
-                    if (scriptsArray.length === 0 && scriptTagMatches && scriptTagMatches.length > 0) {
-                        console.log('Scripts not found by querySelector, but found by regex. Extracting from regex...');
+                    // STEP 1: Extract script contents from HTML (before removing)
+                    const scriptContents = [];
+                    if (scriptTagMatches && scriptTagMatches.length > 0) {
+                        console.log('STEP 1: Extracting script contents from HTML...');
                         scriptTagMatches.forEach((scriptTag, index) => {
-                            // Extract script content using regex
                             const contentMatch = scriptTag.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
                             if (contentMatch && contentMatch[1]) {
-                                const scriptContent = contentMatch[1];
-                                console.log(`Executing script ${index + 1} extracted from regex, length:`, scriptContent.length);
-                                try {
-                                    (function() {
-                                        eval(scriptContent);
-                                    })();
-                                    console.log(`Script ${index + 1} executed successfully from regex extraction`);
-                                    scriptsExecuted = true;
-                                } catch (e) {
-                                    console.error(`Error executing script ${index + 1} from regex:`, e);
+                                const scriptContent = contentMatch[1].trim();
+                                if (scriptContent.length > 0) {
+                                    scriptContents.push(scriptContent);
+                                    console.log(`  Extracted script ${index + 1}, length: ${scriptContent.length} chars`);
                                 }
                             }
                         });
                     }
                     
-                    // Remove scripts from HTML
-                    scriptsArray.forEach(script => script.remove());
-                    
-                    // Insert HTML without scripts first (remove script tags if not already removed)
-                    if (scriptsExecuted) {
-                        // Scripts were executed from regex, so remove them from HTML
-                        this.mainContent.innerHTML = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
-                    } else {
-                        // Scripts will be executed below, so just use tempDiv HTML
-                        this.mainContent.innerHTML = tempDiv.innerHTML;
-                    }
-                    console.log('HTML inserted, now executing scripts...');
-                    
-                    // Execute scripts after HTML is inserted (only if not already executed from regex)
-                    if (!scriptsExecuted && scriptsArray.length > 0) {
+                    // Also try querySelector as backup
+                    if (scriptsArray.length > 0 && scriptContents.length === 0) {
+                        console.log('STEP 1 (backup): Extracting from querySelector...');
                         scriptsArray.forEach((oldScript, index) => {
-                            console.log(`Executing script ${index + 1}/${scriptsArray.length}`);
-                            const newScript = document.createElement('script');
-                            // Copy script attributes (except type if it's text/javascript)
-                            Array.from(oldScript.attributes).forEach(attr => {
-                                if (attr.name !== 'src' && attr.name !== 'type') {
-                                    newScript.setAttribute(attr.name, attr.value);
-                                }
-                            });
-                            // Copy script content using textContent for better execution
-                            if (oldScript.src) {
-                                newScript.src = oldScript.src;
-                                newScript.async = false;
-                            } else if (oldScript.innerHTML || oldScript.textContent) {
-                                // Use textContent to ensure script executes
-                                const scriptContent = oldScript.innerHTML || oldScript.textContent;
-                                console.log('Script content length:', scriptContent.length);
-                                // Create a function wrapper and execute immediately
-                                try {
-                                    // Execute script content directly using eval
-                                    // This ensures the script runs in the current scope
-                                    (function() {
-                                        const scriptCode = scriptContent;
-                                        eval(scriptCode);
-                                    })();
-                                    console.log(`Script ${index + 1} executed successfully`);
-                                } catch (e) {
-                                    console.error(`Error executing script ${index + 1}:`, e);
-                                    console.error('Script content preview:', scriptContent.substring(0, 200));
-                                    // Fallback: try appending script element
-                                    newScript.textContent = scriptContent;
-                                    document.head.appendChild(newScript);
-                                }
-                                return; // Skip appending since we already executed
-                            }
-                            // Only append if it's an external script
-                            if (newScript.src) {
-                                document.head.appendChild(newScript);
+                            const scriptContent = (oldScript.innerHTML || oldScript.textContent || '').trim();
+                            if (scriptContent.length > 0) {
+                                scriptContents.push(scriptContent);
+                                console.log(`  Extracted script from querySelector ${index + 1}, length: ${scriptContent.length} chars`);
                             }
                         });
-                    } // Close if (!scriptsExecuted && scriptsArray.length > 0)
+                    }
+                    
+                    // STEP 2: Insert HTML WITHOUT scripts first (DOM must be ready)
+                    console.log('STEP 2: Inserting HTML without scripts...');
+                    let htmlWithoutScripts = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+                    htmlWithoutScripts = htmlWithoutScripts.replace(/<script\s+th:inline="none"[^>]*>[\s\S]*?<\/script>/gi, '');
+                    this.mainContent.innerHTML = htmlWithoutScripts;
+                    console.log(`  HTML inserted. Length: ${htmlWithoutScripts.length} chars. Scripts to execute: ${scriptContents.length}`);
+                    
+                    // STEP 3: Execute scripts AFTER DOM is ready (use DOM append - most reliable)
+                    let scriptsExecuted = false;
+                    if (scriptContents.length > 0) {
+                        console.log('STEP 3: Executing scripts by appending to DOM...');
+                        scriptContents.forEach((scriptContent, index) => {
+                            try {
+                                const scriptEl = document.createElement('script');
+                                scriptEl.textContent = scriptContent;
+                                scriptEl.setAttribute('data-fragment-script', 'true');
+                                scriptEl.setAttribute('data-script-index', index);
+                                // Append to body - browser will execute automatically in global scope
+                                document.body.appendChild(scriptEl);
+                                console.log(`  ✓ Script ${index + 1}/${scriptContents.length} appended to DOM`);
+                                scriptsExecuted = true;
+                                // Cleanup after execution
+                                setTimeout(() => {
+                                    if (scriptEl.parentNode) {
+                                        scriptEl.remove();
+                                    }
+                                }, 2000);
+                            } catch (e) {
+                                console.error(`  ✗ Error appending script ${index + 1}:`, e);
+                                // Fallback
+                                try {
+                                    (new Function(scriptContent))();
+                                    console.log(`  ✓ Script ${index + 1} executed via Function constructor`);
+                                    scriptsExecuted = true;
+                                } catch (e2) {
+                                    console.error(`  ✗ Function constructor failed:`, e2);
+                                }
+                            }
+                        });
+                    } else {
+                        console.warn('STEP 3: No scripts found to execute!');
+                    }
+                    
+                    console.log(`Script execution completed: ${scriptsExecuted ? 'SUCCESS' : 'FAILED'} (${scriptContents.length} scripts)`);
                     
                     // Trigger wallet initialization if wallet page is loaded
                     if (fragmentUrl.includes('/wallet')) {
@@ -359,6 +385,17 @@ const HostDashboard = {
                             }
                         }, 500); // Increased timeout to ensure scripts are executed
                     }
+                    
+                    // Trigger event dropdowns initialization if events page is loaded
+                    if (fragmentUrl.includes('/events') || fragmentUrl.includes('/fragment/events')) {
+                        setTimeout(() => {
+                            console.log('Events fragment detected, initializing dropdowns...');
+                            if (typeof window.initEventDropdowns === 'function') {
+                                console.log('Calling window.initEventDropdowns()');
+                                window.initEventDropdowns();
+                            }
+                        }, 100); // Small delay to ensure DOM is ready
+                    }
                 }
                 this.attachDynamicEvents();
                 // Update URL in browser
@@ -368,15 +405,29 @@ const HostDashboard = {
                 }
 
                 // Initialize events page if it's the events fragment
+                // Note: events-manager.js is loaded in host.html, so functions should be available
                 if (fragmentUrl.includes('/fragment/events') || fragmentUrl.includes('/events')) {
+                    console.log('Events fragment loaded, initializing events page...');
+                    console.log('window.initializeEventsPage type:', typeof window.initializeEventsPage);
+                    console.log('window.setupEventSearch type:', typeof window.setupEventSearch);
+                    console.log('window.loadEventsFragment type:', typeof window.loadEventsFragment);
+                    
+                    // Use a short delay to ensure DOM is ready, then initialize
                     setTimeout(() => {
                         if (typeof window.initializeEventsPage === 'function') {
                             console.log('Calling initializeEventsPage after loading events fragment');
-                            window.initializeEventsPage();
+                            try {
+                                window.initializeEventsPage();
+                                console.log('✅ initializeEventsPage called successfully');
+                            } catch (e) {
+                                console.error('❌ Error calling initializeEventsPage:', e);
+                            }
                         } else {
-                            console.warn('initializeEventsPage function not found');
+                            console.warn('⚠️ initializeEventsPage function not found!');
+                            console.warn('Available window functions with "event":', Object.keys(window).filter(k => k.toLowerCase().includes('event')));
+                            console.warn('Make sure events-manager.js is loaded in host.html');
                         }
-                    }, 100);
+                    }, 150); // Short delay to ensure DOM is ready
                 }
 
             })
@@ -402,12 +453,11 @@ const HostDashboard = {
             case "/events":
                 fragmentUrl = "/fragment/events";
                 activeId = "nav-events";
-                // Initialize events page after loading
-                setTimeout(() => {
-                    if (typeof window.initializeEventsPage === 'function') {
-                        window.initializeEventsPage();
-                    }
-                }, 100);
+                // Initialization will be handled by loadFragment() which checks for events fragment
+                break;
+            case "/requests":
+                fragmentUrl = "/fragment/sent-requests";
+                activeId = "nav-request";
                 break;
             case "/wallet":
                 fragmentUrl = "/fragment/wallet";
@@ -446,6 +496,7 @@ const HostDashboard = {
         const titles = {
             'Bảng điều khiển nhà tổ chức': 'duc le - Bảng điều khiển',
             'Sự kiện': 'duc le - Quản lý sự kiện',
+            'Yêu cầu duyệt': 'duc le - Yêu cầu duyệt',
             'Cài đặt': 'duc le - Cài đặt',
             'Thiết kế trang sự kiện': 'duc le - Thiết kế trang sự kiện'
         };

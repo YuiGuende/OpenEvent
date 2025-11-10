@@ -7,6 +7,8 @@ import com.group02.openevent.model.request.RequestType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -41,4 +43,16 @@ public interface IRequestRepo extends JpaRepository<Request, Long> {
     long countByReceiver_AccountIdAndStatus(Long receiverId, RequestStatus status);
 
     List<Request> findByReceiver_AccountIdAndStatusOrderByUpdatedAtDesc(Long receiverId, RequestStatus status);
+    
+    /**
+     * Find all requests by host ID (sent by this host), ordered by createdAt descending (newest first)
+     */
+    @Query("SELECT r FROM Request r WHERE r.host.id = :hostId ORDER BY r.createdAt DESC")
+    List<Request> findByHost_Id(@Param("hostId") Long hostId);
+    
+    /**
+     * Find all requests by host ID with pagination, ordered by createdAt descending (newest first)
+     */
+    @Query("SELECT r FROM Request r WHERE r.host.id = :hostId ORDER BY r.createdAt DESC")
+    Page<Request> findByHost_Id(@Param("hostId") Long hostId, Pageable pageable);
 }

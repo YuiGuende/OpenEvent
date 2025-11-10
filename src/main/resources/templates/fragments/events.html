@@ -16,26 +16,37 @@
     </div>
 
     <div class="event-search-bar">
-        <input type="text" class="event-search-input" placeholder="Tìm kiếm theo tên sự kiện"/>
-        <select class="event-search-select">
-            <option>Tất cả</option>
-            <option>Đang diễn ra</option>
-            <option>Sắp diễn ra</option>
-            <option>Đã kết thúc</option>
-            <option>Oldest first</option>
+        <input type="text" id="eventSearchInput" class="event-search-input" 
+               placeholder="Tìm kiếm theo tên sự kiện"
+               th:value="${searchValue}"/>
+        <select id="eventSortFilter" class="event-search-select">
+            <option value="">Tất cả</option>
+            <option value="ONGOING" th:selected="${sortFilterValue == 'ONGOING'}">Đang diễn ra</option>
+            <option value="UPCOMING" th:selected="${sortFilterValue == 'UPCOMING'}">Sắp diễn ra</option>
+            <option value="FINISHED" th:selected="${sortFilterValue == 'FINISHED'}">Đã kết thúc</option>
+            <option value="OLDEST_FIRST" th:selected="${sortFilterValue == 'OLDEST_FIRST'}">Oldest first</option>
         </select>
         <button class="btn-create-event">
             <i class="fas fa-calendar-plus"></i> Tạo sự kiện
         </button>
     </div>
 
-    <div class="event-tabs">
-        <button class="event-tab active">Sắp tới</button>
-        <button class="event-tab">Kết thúc</button>
-        <button class="event-tab">Lưu trữ</button>
-    </div>
-
     <div class="events-list">
+        <!-- Empty state when no events -->
+        <div th:if="${events == null || events.isEmpty()}" 
+             class="events-empty" 
+             style="text-align: center; padding: 60px 20px; color: #999;">
+            <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+            <p style="font-size: 18px; margin: 0;">
+                <span th:if="${(searchValue != null && !searchValue.isEmpty()) || (sortFilterValue != null && !sortFilterValue.isEmpty() && sortFilterValue != '')}">
+                    Không tìm thấy sự kiện phù hợp với bộ lọc của bạn
+                </span>
+                <span th:unless="${(searchValue != null && !searchValue.isEmpty()) || (sortFilterValue != null && !sortFilterValue.isEmpty() && sortFilterValue != '')}">
+                    Bạn chưa có sự kiện nào. Hãy tạo sự kiện đầu tiên!
+                </span>
+            </p>
+        </div>
+        
         <div class="event-card" th:each="event : ${events}">
             <div class="event-image">
                 <img alt="Event Image"
@@ -62,11 +73,8 @@
                               th:text="|${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
                     </div>
 
-                    <!-- Status badge với logic đầy đủ -->
-                    <span th:if="${event.status.name() == 'DRAFT'}" 
-                          class="status-badge draft"
-                          th:text="'DRAFT • SẮP TỚI'">DRAFT • SẮP TỚI</span>
-                    
+                    <!-- Status badge: So sánh với thời gian thực (currentTime), không chỉ status trong DB -->
+                    <!-- CANCEL và FINISH: Luôn hiển thị trạng thái từ DB (không phụ thuộc thời gian) -->
                     <span th:if="${event.status.name() == 'CANCEL'}" 
                           class="status-badge cancel"
                           th:text="'ĐÃ HỦY'">ĐÃ HỦY</span>
@@ -75,22 +83,38 @@
                           class="status-badge finished"
                           th:text="'KẾT THÚC'">KẾT THÚC</span>
                     
-                    <span th:if="${event.status.name() == 'ONGOING'}" 
-                          class="status-badge live"
-                          th:text="'LIVE • ĐANG DIỄN RA'">LIVE • ĐANG DIỄN RA</span>
-                    
-                    <!-- PUBLIC status: check thời gian -->
-                    <span th:if="${event.status.name() == 'PUBLIC' && event.startsAt != null && event.startsAt.isAfter(currentTime)}" 
-                          class="status-badge upcoming"
-                          th:text="'PUBLIC • SẮP TỚI'">PUBLIC • SẮP TỚI</span>
-                    
-                    <span th:if="${event.status.name() == 'PUBLIC' && event.endsAt != null && event.endsAt.isBefore(currentTime)}" 
-                          class="status-badge finished"
-                          th:text="'KẾT THÚC'">KẾT THÚC</span>
-                    
-                    <span th:if="${event.status.name() == 'PUBLIC' && !(event.startsAt != null && event.startsAt.isAfter(currentTime)) && !(event.endsAt != null && event.endsAt.isBefore(currentTime))}" 
-                          class="status-badge live"
-                          th:text="'LIVE • ĐANG DIỄN RA'">LIVE • ĐANG DIỄN RA</span>
+                    <!-- Với các status khác (DRAFT, PUBLIC, ONGOING): So sánh với thời gian thực -->
+                    <th:block th:if="${event.status.name() != 'CANCEL' && event.status.name() != 'FINISH'}">
+                        <!-- Nếu có đầy đủ thông tin thời gian: So sánh với currentTime -->
+                        <th:block th:if="${event.startsAt != null && event.endsAt != null}">
+                            <!-- Event đã kết thúc: endsAt < currentTime -->
+                            <span th:if="${event.endsAt.isBefore(currentTime)}" 
+                                  class="status-badge finished"
+                                  th:text="'KẾT THÚC'">KẾT THÚC</span>
+                            
+                            <!-- Event sắp diễn ra: startsAt > currentTime -->
+                            <span th:if="${(event.endsAt.isAfter(currentTime) || event.endsAt.isEqual(currentTime)) and event.startsAt.isAfter(currentTime)}" 
+                                  class="status-badge upcoming"
+                                  th:text="${event.status.name() == 'PUBLIC' 
+                                             ? 'PUBLIC • SẮP TỚI' 
+                                             : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                            
+                            <!-- Event đang diễn ra: startsAt <= currentTime <= endsAt -->
+                            <span th:if="${(event.endsAt.isAfter(currentTime) || event.endsAt.isEqual(currentTime)) 
+                                           and (event.startsAt.isBefore(currentTime) || event.startsAt.isEqual(currentTime))}" 
+                                  class="status-badge live"
+                                  th:text="${event.status.name() == 'PUBLIC' || event.status.name() == 'ONGOING' 
+                                             ? 'LIVE • ĐANG DIỄN RA' 
+                                             : 'DRAFT • ĐANG DIỄN RA'}">ĐANG DIỄN RA</span>
+                        </th:block>
+                        
+                        <!-- Fallback: Nếu thiếu thông tin thời gian, hiển thị dựa vào status từ DB -->
+                        <span th:if="${event.startsAt == null || event.endsAt == null}" 
+                              class="status-badge draft"
+                              th:text="${event.status.name() == 'PUBLIC' 
+                                         ? 'PUBLIC • SẮP TỚI' 
+                                         : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                    </th:block>
                 </div>
 
                 <div class="event-sales">
@@ -106,7 +130,12 @@
                 <div class="dropdown-menu" style="display: none;">
                     <ul>
                         <li>
-                            <a th:href="@{'/event/' + ${event.id}}">
+                            <!-- Dynamic URL based on event type -->
+                            <a th:href="${event.eventType.name() == 'WORKSHOP' ? '/workshop/' + event.id : 
+                                         event.eventType.name() == 'MUSIC' ? '/music/' + event.id : 
+                                         event.eventType.name() == 'COMPETITION' ? '/competition/' + event.id : 
+                                         event.eventType.name() == 'FESTIVAL' ? '/festival/' + event.id : 
+                                         '/event/' + event.id}">
                                 <i class="far fa-eye"></i> Xem trang sự kiện
                             </a>
                         </li>
@@ -121,8 +150,9 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="delete-action">
-                                <i class="fas fa-trash-alt"></i> Lưu trữ sự kiện
+                            <a href="#" class="delete-event-action" 
+                               th:attr="data-event-id=${event.id}, data-event-title=${event.title}">
+                                <i class="fas fa-trash-alt"></i> Xóa sự kiện
                             </a>
                         </li>
                     </ul>
@@ -160,7 +190,7 @@
                 <div class="date-time">
                     <div>
                         <label>Ngày & giờ bắt đầu *</label>
-                        <input th:field="*{startsAt}" type="datetime-local">
+                        <input name="" th:field="*{startsAt}" type="datetime-local">
                     </div>
                     <div>
                         <label>Ngày & giờ kết thúc</label>
@@ -173,204 +203,143 @@
         </div>
     </div>
 
+    <script th:inline="none">
+        (function() {
+            'use strict';
+            
+            // Handle delete event action (dropdown is handled by event.js)
+            function initializeDeleteEvent() {
+                // Use event delegation to handle dynamically added delete links
+                document.addEventListener('click', function(event) {
+                    const deleteLink = event.target.closest('.delete-event-action');
+                    if (!deleteLink) return;
+                    
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                    
+                    const eventId = deleteLink.getAttribute('data-event-id');
+                    const eventTitle = deleteLink.getAttribute('data-event-title') || 'sự kiện này';
+                    
+                    // Close dropdown
+                    const dropdownMenu = deleteLink.closest('.dropdown-menu');
+                    if (dropdownMenu) {
+                        dropdownMenu.style.display = 'none';
+                    }
+                    
+                    // Show confirmation dialog
+                    if (confirm('Bạn có chắc chắn muốn xóa sự kiện "' + eventTitle + '" không?\n\nHành động này không thể hoàn tác!')) {
+                        deleteEvent(eventId, deleteLink);
+                    }
+                });
+            }
+            
+            // Delete event via API
+            function deleteEvent(eventId, deleteLink) {
+                // Find the event card
+                const eventCard = deleteLink ? deleteLink.closest('.event-card') : null;
+                
+                if (!deleteLink) {
+                    console.error('Delete link not found for event:', eventId);
+                    return;
+                }
+                
+                // Show loading state
+                const originalHTML = deleteLink.innerHTML;
+                deleteLink.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xóa...';
+                deleteLink.style.pointerEvents = 'none';
+                deleteLink.style.opacity = '0.6';
+                
+                fetch('/api/events/' + eventId, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Không thể xóa sự kiện');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Show success message
+                    alert('Đã xóa sự kiện thành công!');
+                    
+                    // Remove event card from DOM with animation
+                    if (eventCard) {
+                        eventCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        eventCard.style.opacity = '0';
+                        eventCard.style.transform = 'translateX(-20px)';
+                        
+                        setTimeout(() => {
+                            eventCard.remove();
+                            
+                            // Check if there are no more events
+                            const eventsList = document.querySelector('.events-list');
+                            if (eventsList) {
+                                const remainingEvents = eventsList.querySelectorAll('.event-card');
+                                if (remainingEvents.length === 0) {
+                                    // Show empty state
+                                    const emptyState = eventsList.querySelector('.events-empty');
+                                    if (!emptyState) {
+                                        eventsList.innerHTML = `
+                                            <div class="events-empty" style="text-align: center; padding: 60px 20px; color: #999;">
+                                                <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                                                <p style="font-size: 18px; margin: 0;">
+                                                    Bạn chưa có sự kiện nào. Hãy tạo sự kiện đầu tiên!
+                                                </p>
+                                            </div>
+                                        `;
+                                    } else {
+                                        emptyState.style.display = 'block';
+                                    }
+                                }
+                            }
+                            
+                            // Reload the page to refresh the events list and update server state
+                            window.location.reload();
+                        }, 300);
+                    } else {
+                        // If event card not found, just reload
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting event:', error);
+                    alert('Lỗi: ' + error.message);
+                    
+                    // Restore original button state
+                    deleteLink.innerHTML = originalHTML;
+                    deleteLink.style.pointerEvents = 'auto';
+                    deleteLink.style.opacity = '1';
+                });
+            }
+            
+            // Initialize delete event handler (dropdown is handled by event.js)
+            // Use a flag to prevent multiple initializations
+            if (!window.deleteEventInitialized) {
+                window.deleteEventInitialized = true;
+                
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initializeDeleteEvent);
+                } else {
+                    initializeDeleteEvent();
+                }
+            }
+            
+            // Re-initialize dropdowns after fragment loads (event.js will handle it)
+            if (typeof window.initEventDropdowns === 'function') {
+                // Small delay to ensure DOM is ready
+                setTimeout(function() {
+                    window.initEventDropdowns();
+                }, 50);
+            }
+        })();
+    </script>
+
 </div>
 
-<script>
-    // Function to initialize event form validation and modal
-    function initializeEventsPage() {
-        console.log('=== Initializing Events Page ===');
-        
-        const modal = document.getElementById('createEventModal');
-        const openBtn = document.querySelector('.btn-create-event');
-        const closeBtn = document.querySelector('.close');
-
-        // Open modal
-        if (openBtn) {
-            // Remove existing listener to avoid duplicates
-            openBtn.removeEventListener('click', handleOpenModal);
-            openBtn.addEventListener('click', handleOpenModal);
-        }
-
-        function handleOpenModal() {
-            console.log('Opening modal');
-            if (modal) {
-                modal.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                // Setup form validation when modal opens
-                setupFormValidation();
-            }
-        }
-
-        // Close modal
-        function closeModal() {
-            if (modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        }
-
-        if (closeBtn) {
-            closeBtn.removeEventListener('click', closeModal);
-            closeBtn.addEventListener('click', closeModal);
-        }
-
-        // Close modal when clicking outside
-        if (modal) {
-            modal.removeEventListener('click', handleModalClick);
-            modal.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    closeModal();
-                }
-            });
-        }
-
-        // Setup form validation using event delegation
-        function setupFormValidation() {
-            console.log('Setting up form validation...');
-            
-            // Use event delegation on document to catch form submit anywhere
-            // Remove existing listener first to avoid duplicates
-            document.removeEventListener('submit', handleFormSubmitDelegate, true);
-            document.addEventListener('submit', handleFormSubmitDelegate, true);
-        }
-
-        function handleFormSubmitDelegate(e) {
-            // Only handle form submit from createEventModal
-            const form = e.target;
-            if (!form || form.closest('#createEventModal') === null) {
-                return; // Not our form, let it submit normally
-            }
-            
-            console.log('Form submit from createEventModal detected');
-            handleFormSubmit(e);
-        }
-
-        function handleFormSubmit(e) {
-            console.log('=== Form submit event triggered ===');
-            
-            // Find inputs by name attribute (Thymeleaf converts th:field to name)
-            const form = e.target;
-            const title = form.querySelector('input[name="title"]');
-            const enrollDeadline = form.querySelector('input[name="enrollDeadline"]');
-            const startsAt = form.querySelector('input[name="startsAt"]');
-            const endsAt = form.querySelector('input[name="endsAt"]');
-
-            console.log('Found inputs:', {
-                title: !!title,
-                enrollDeadline: !!enrollDeadline,
-                startsAt: !!startsAt,
-                endsAt: !!endsAt,
-                titleValue: title?.value,
-                enrollDeadlineValue: enrollDeadline?.value,
-                startsAtValue: startsAt?.value,
-                endsAtValue: endsAt?.value
-            });
-
-            // Validate title
-            if (!title || !title.value.trim()) {
-                e.preventDefault();
-                e.stopPropagation();
-                alert('Vui lòng nhập tên sự kiện');
-                if (title) title.focus();
-                return false;
-            }
-
-            // Validate startsAt (required)
-            if (!startsAt || !startsAt.value) {
-                e.preventDefault();
-                e.stopPropagation();
-                alert('Vui lòng chọn ngày và giờ bắt đầu');
-                if (startsAt) startsAt.focus();
-                return false;
-            }
-
-            // Validate enrollDeadline < startsAt
-            if (enrollDeadline && enrollDeadline.value && startsAt && startsAt.value) {
-                const enrollDeadlineDate = new Date(enrollDeadline.value);
-                const startsAtDate = new Date(startsAt.value);
-                
-                console.log('Checking enrollDeadline < startsAt:', {
-                    enrollDeadline: enrollDeadline.value,
-                    startsAt: startsAt.value,
-                    enrollDeadlineDate: enrollDeadlineDate,
-                    startsAtDate: startsAtDate,
-                    isValid: enrollDeadlineDate < startsAtDate
-                });
-                
-                if (enrollDeadlineDate >= startsAtDate) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    alert('Hạn đăng ký sự kiện phải nhỏ hơn ngày giờ bắt đầu');
-                    enrollDeadline.focus();
-                    return false;
-                }
-            }
-
-            // Validate startsAt < endsAt
-            if (endsAt && endsAt.value && startsAt && startsAt.value) {
-                const startsAtDate = new Date(startsAt.value);
-                const endsAtDate = new Date(endsAt.value);
-                
-                console.log('Checking startsAt < endsAt:', {
-                    startsAt: startsAt.value,
-                    endsAt: endsAt.value,
-                    startsAtDate: startsAtDate,
-                    endsAtDate: endsAtDate,
-                    isValid: startsAtDate < endsAtDate
-                });
-                
-                if (startsAtDate >= endsAtDate) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    alert('Ngày giờ bắt đầu phải nhỏ hơn ngày giờ kết thúc');
-                    startsAt.focus();
-                    return false;
-                }
-            }
-
-            // Validate enrollDeadline < endsAt (if both are provided)
-            if (enrollDeadline && enrollDeadline.value && endsAt && endsAt.value) {
-                const enrollDeadlineDate = new Date(enrollDeadline.value);
-                const endsAtDate = new Date(endsAt.value);
-                
-                console.log('Checking enrollDeadline < endsAt:', {
-                    enrollDeadline: enrollDeadline.value,
-                    endsAt: endsAt.value,
-                    enrollDeadlineDate: enrollDeadlineDate,
-                    endsAtDate: endsAtDate,
-                    isValid: enrollDeadlineDate < endsAtDate
-                });
-                
-                if (enrollDeadlineDate >= endsAtDate) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    alert('Hạn đăng ký sự kiện phải nhỏ hơn ngày giờ kết thúc');
-                    enrollDeadline.focus();
-                    return false;
-                }
-            }
-
-            console.log('✅ Form validation passed, allowing form to submit...');
-            // If validation passes, allow form to submit normally
-            return true;
-        }
-
-        // Setup form validation immediately
-        setupFormValidation();
-    }
-
-    // Initialize when script runs (for SPA router)
-    initializeEventsPage();
-
-    // Also initialize when DOM is ready (fallback)
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeEventsPage);
-    } else {
-        // DOM already loaded
-        initializeEventsPage();
-    }
-
-    // Expose globally for SPA router
-    window.initializeEventsPage = initializeEventsPage;
-</script>
 

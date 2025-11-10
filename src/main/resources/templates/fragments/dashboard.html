@@ -10,7 +10,7 @@
             <span>Tạo sự kiện</span>
         </div>
         <div class="header-content">
-            <h1 class="page-title">duc le - Bảng điều khiển</h1>
+            <h1 class="page-title" id="userName" > Bảng điều khiển</h1>
             <button class="btn-share">
                 <i class="fas fa-share"></i>
                 Chia sẻ trang nhà tổ chức
@@ -25,7 +25,7 @@
                 <i class="fas fa-video"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value">$0.00</div>
+                <div class="metric-value" id="metric-total-sales">$0.00</div>
                 <div class="metric-label">Tổng doanh số</div>
             </div>
         </div>
@@ -35,7 +35,7 @@
                 <i class="fas fa-shopping-bag"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value">0</div>
+                <div class="metric-value" id="metric-products-sold">0</div>
                 <div class="metric-label">Sản phẩm đã bán</div>
             </div>
         </div>
@@ -45,7 +45,7 @@
                 <i class="fas fa-users"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value">0</div>
+                <div class="metric-value" id="metric-attendees">0</div>
                 <div class="metric-label">Người tham dự</div>
             </div>
         </div>
@@ -55,7 +55,7 @@
                 <i class="fas fa-store"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value">0</div>
+                <div class="metric-value" id="metric-total-orders">0</div>
                 <div class="metric-label">Tổng số đơn hàng</div>
             </div>
         </div>
@@ -65,7 +65,7 @@
                 <i class="fas fa-file-invoice"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value">$0.00</div>
+                <div class="metric-value" id="metric-total-tax">$0.00</div>
                 <div class="metric-label">Tổng thuế</div>
             </div>
         </div>
@@ -75,7 +75,7 @@
                 <i class="fas fa-dollar-sign"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value">$0.00</div>
+                <div class="metric-value" id="metric-total-fees">$0.00</div>
                 <div class="metric-label">Tổng phí</div>
             </div>
         </div>
@@ -86,12 +86,13 @@
         <!-- Recent Orders -->
         <div class="section">
             <h2 class="section-title">Đơn hàng gần đây</h2>
-            <div class="orders-card">
-                <div class="empty-state">
+            <div class="orders-card" id="orders-container">
+                <div class="empty-state" id="orders-empty-state">
                     <i class="fas fa-shopping-cart"></i>
                     <h3>Chưa có đơn hàng nào</h3>
                     <p>Khi khách hàng mua vé, đơn hàng sẽ hiển thị tại đây</p>
                 </div>
+                <div id="orders-list" style="display: none;"></div>
             </div>
         </div>
 
@@ -111,9 +112,49 @@
                         <div class="event-info">
                             <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
                             <span class="time" th:text="|${#temporals.format(event.startsAt, 'h:mm a')} - ${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
-                            <span th:classappend="${event.status.name() == 'DRAFT' ? 'draft' : 'live'}"
-                                  class="status-badge draft"
-                                  th:text="${event.status.name() == 'DRAFT' ? 'DRAFT • SẮP TỚI' : 'LIVE • ĐANG DIỄN RA'}">DRAFT • SẮP TỚI</span>
+                            
+                            <!-- Status badge: So sánh với thời gian thực (currentTime), không chỉ status trong DB -->
+                            <!-- CANCEL và FINISH: Luôn hiển thị trạng thái từ DB (không phụ thuộc thời gian) -->
+                            <span th:if="${event.status.name() == 'CANCEL'}" 
+                                  class="status-badge cancel"
+                                  th:text="'ĐÃ HỦY'">ĐÃ HỦY</span>
+                            
+                            <span th:if="${event.status.name() == 'FINISH'}" 
+                                  class="status-badge finished"
+                                  th:text="'KẾT THÚC'">KẾT THÚC</span>
+                            
+                            <!-- Với các status khác (DRAFT, PUBLIC, ONGOING): So sánh với thời gian thực -->
+                            <th:block th:if="${event.status.name() != 'CANCEL' && event.status.name() != 'FINISH'}">
+                                <!-- Nếu có đầy đủ thông tin thời gian: So sánh với currentTime -->
+                                <th:block th:if="${event.startsAt != null && event.endsAt != null}">
+                                    <!-- Event đã kết thúc: endsAt < currentTime -->
+                                    <span th:if="${event.endsAt.isBefore(currentTime)}" 
+                                          class="status-badge finished"
+                                          th:text="'KẾT THÚC'">KẾT THÚC</span>
+                                    
+                                    <!-- Event sắp diễn ra: startsAt > currentTime -->
+                                    <span th:if="${(event.endsAt.isAfter(currentTime) or event.endsAt.isEqual(currentTime)) and event.startsAt.isAfter(currentTime)}" 
+                                          class="status-badge upcoming"
+                                          th:text="${event.status.name() == 'PUBLIC' 
+                                                     ? 'PUBLIC • SẮP TỚI' 
+                                                     : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                                    
+                                    <!-- Event đang diễn ra: startsAt <= currentTime <= endsAt -->
+                                    <span th:if="${(event.endsAt.isAfter(currentTime) or event.endsAt.isEqual(currentTime)) 
+                                                   and (event.startsAt.isBefore(currentTime) or event.startsAt.isEqual(currentTime))}" 
+                                          class="status-badge live"
+                                          th:text="${event.status.name() == 'PUBLIC' || event.status.name() == 'ONGOING' 
+                                                     ? 'LIVE • ĐANG DIỄN RA' 
+                                                     : 'DRAFT • ĐANG DIỄN RA'}">ĐANG DIỄN RA</span>
+                                </th:block>
+                                
+                                <!-- Fallback: Nếu thiếu thông tin thời gian, hiển thị dựa vào status từ DB -->
+                                <span th:if="${event.startsAt == null or event.endsAt == null}" 
+                                      class="status-badge draft"
+                                      th:text="${event.status.name() == 'PUBLIC' 
+                                                 ? 'PUBLIC • SẮP TỚI' 
+                                                 : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                            </th:block>
                         </div>
                         <div class="event-sales">
                             <i class="fas fa-users"></i>
@@ -127,4 +168,250 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        (function() {
+            // Load dashboard data when fragment is loaded
+            function loadDashboardData() {
+                // Load metrics
+                fetch('/api/dashboard/host/stats')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to load dashboard stats');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        updateMetrics(data);
+                    })
+                    .catch(error => {
+                        console.error('Error loading dashboard stats:', error);
+                    });
+                
+                // Load orders
+                loadOrders();
+            }
+            
+            function updateMetrics(stats) {
+                // Format currency
+                function formatCurrency(amount) {
+                    if (amount == null) return '$0.00';
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(amount);
+                }
+                
+                // Update metric values
+                const totalSalesEl = document.getElementById('metric-total-sales');
+                const productsSoldEl = document.getElementById('metric-products-sold');
+                const attendeesEl = document.getElementById('metric-attendees');
+                const totalOrdersEl = document.getElementById('metric-total-orders');
+                const totalTaxEl = document.getElementById('metric-total-tax');
+                const totalFeesEl = document.getElementById('metric-total-fees');
+                
+                if (totalSalesEl) totalSalesEl.textContent = formatCurrency(stats.totalSales);
+                if (productsSoldEl) productsSoldEl.textContent = stats.productsSold != null ? stats.productsSold : 0;
+                if (attendeesEl) attendeesEl.textContent = stats.attendees != null ? stats.attendees : 0;
+                if (totalOrdersEl) totalOrdersEl.textContent = stats.totalOrders != null ? stats.totalOrders : 0;
+                if (totalTaxEl) totalTaxEl.textContent = formatCurrency(stats.totalTax);
+                if (totalFeesEl) totalFeesEl.textContent = formatCurrency(stats.totalFees);
+            }
+            
+            function loadOrders(page = 0, size = 10) {
+                fetch(`/api/dashboard/host/orders?page=${page}&size=${size}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(`Failed to load orders: ${response.status} - ${text}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Orders data received:', data);
+                        renderOrders(data);
+                    })
+                    .catch(error => {
+                        console.error('Error loading orders:', error);
+                        // Show error message to user
+                        const ordersContainer = document.getElementById('orders-container');
+                        const emptyState = document.getElementById('orders-empty-state');
+                        const ordersList = document.getElementById('orders-list');
+                        if (ordersContainer && emptyState && ordersList) {
+                            emptyState.style.display = 'block';
+                            emptyState.innerHTML = `
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h3>Lỗi tải đơn hàng</h3>
+                                <p>Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.</p>
+                            `;
+                            ordersList.style.display = 'none';
+                        }
+                    });
+            }
+            
+            function renderOrders(data) {
+                const ordersContainer = document.getElementById('orders-container');
+                const emptyState = document.getElementById('orders-empty-state');
+                const ordersList = document.getElementById('orders-list');
+                
+                if (!ordersContainer || !emptyState || !ordersList) {
+                    console.error('Required DOM elements not found for orders display');
+                    return;
+                }
+                
+                if (!data || !data.orders || data.orders.length === 0) {
+                    emptyState.style.display = 'block';
+                    ordersList.style.display = 'none';
+                    return;
+                }
+                
+                emptyState.style.display = 'none';
+                ordersList.style.display = 'block';
+                
+                // Format currency
+                function formatCurrency(amount) {
+                    if (amount == null) return '$0.00';
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(amount);
+                }
+                
+                // Format date - handles various date formats from Java LocalDateTime
+                function formatDate(dateValue) {
+                    if (!dateValue) return 'N/A';
+                    
+                    try {
+                        let date;
+                        
+                        // Handle different date formats
+                        if (typeof dateValue === 'string') {
+                            // String format: "2024-01-15T10:30:00" or "2024-01-15T10:30:00.123"
+                            // If no timezone, treat as local time
+                            let dateStr = dateValue.trim();
+                            if (dateStr.includes('T') && !dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+                                // LocalDateTime without timezone - parse as local
+                                date = new Date(dateStr);
+                            } else {
+                                date = new Date(dateStr);
+                            }
+                        } else if (Array.isArray(dateValue)) {
+                            // Array format: [2024, 1, 15, 10, 30, 0] (year, month, day, hour, minute, second)
+                            // Note: month is 0-indexed in JavaScript Date
+                            if (dateValue.length >= 3) {
+                                date = new Date(dateValue[0], (dateValue[1] || 1) - 1, dateValue[2] || 1, 
+                                               dateValue[3] || 0, dateValue[4] || 0, dateValue[5] || 0);
+                            } else {
+                                console.warn('Invalid date array format:', dateValue);
+                                return 'N/A';
+                            }
+                        } else if (typeof dateValue === 'object' && dateValue.year !== undefined) {
+                            // Object format: {year: 2024, month: 1, day: 15, hour: 10, minute: 30, second: 0}
+                            date = new Date(dateValue.year, (dateValue.month || 1) - 1, dateValue.day || 1,
+                                           dateValue.hour || 0, dateValue.minute || 0, dateValue.second || 0);
+                        } else if (typeof dateValue === 'number') {
+                            // Timestamp
+                            date = new Date(dateValue);
+                        } else {
+                            // Try to convert to Date directly
+                            date = new Date(dateValue);
+                        }
+                        
+                        // Check if date is valid
+                        if (!date || isNaN(date.getTime())) {
+                            console.warn('Invalid date value:', dateValue, typeof dateValue);
+                            return 'N/A';
+                        }
+                        
+                        return new Intl.DateTimeFormat('vi-VN', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }).format(date);
+                    } catch (error) {
+                        console.error('Error formatting date:', dateValue, error);
+                        return 'N/A';
+                    }
+                }
+                
+                // Get status badge class
+                function getStatusBadgeClass(status) {
+                    switch (status) {
+                        case 'PAID': return 'bg-success';
+                        case 'PENDING': return 'bg-warning';
+                        case 'CANCELLED': return 'bg-danger';
+                        case 'EXPIRED': return 'bg-secondary';
+                        case 'REFUNDED': return 'bg-dark';
+                        default: return 'bg-secondary';
+                    }
+                }
+                
+                // Get status text
+                function getStatusText(status) {
+                    switch (status) {
+                        case 'PAID': return 'Đã thanh toán';
+                        case 'PENDING': return 'Chờ thanh toán';
+                        case 'CANCELLED': return 'Đã hủy';
+                        case 'EXPIRED': return 'Hết hạn';
+                        case 'REFUNDED': return 'Đã hoàn tiền';
+                        default: return status;
+                    }
+                }
+                
+                // Build orders HTML
+                let ordersHTML = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+                data.orders.forEach((order, index) => {
+                    try {
+                        // Safely get status string (handle enum objects)
+                        const statusStr = order.status && (typeof order.status === 'string' ? order.status : order.status.name || order.status.toString());
+                        
+                        ordersHTML += `
+                            <div style="display: flex; align-items: center; padding: 16px; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb; gap: 16px;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; color: #111827; margin-bottom: 4px;">
+                                        ${order.eventTitle || 'N/A'}
+                                    </div>
+                                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">
+                                        ${order.participantName || order.customerName || 'Khách hàng'} • ${order.ticketTypeName || 'N/A'}
+                                    </div>
+                                    <div style="font-size: 12px; color: #9ca3af;">
+                                        ${formatDate(order.createdAt)}
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <div style="text-align: right;">
+                                        <div style="font-weight: 600; color: #111827; margin-bottom: 4px;">
+                                            ${formatCurrency(order.totalAmount)}
+                                        </div>
+                                        <span class="${getStatusBadgeClass(statusStr)}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white;">
+                                            ${getStatusText(statusStr)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } catch (error) {
+                        console.error(`Error rendering order at index ${index}:`, error, order);
+                    }
+                });
+                ordersHTML += '</div>';
+                
+                ordersList.innerHTML = ordersHTML;
+            }
+            
+            // Load data when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', loadDashboardData);
+            } else {
+                loadDashboardData();
+            }
+        })();
+    </script>
 </div>

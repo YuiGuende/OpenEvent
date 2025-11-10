@@ -34,7 +34,8 @@
             <i class="fas fa-external-link-alt"></i>
             <span>Xem trang chủ nhà tổ chức</span>
         </button>
-        <div class="customer-avatar">DL</div>
+        <div class="customer-avatar" id="userAvatar">DL</div>
+        <span class="user-name d-none d-md-inline" id="userName" style="margin-left: 8px; color: white; font-weight: 500;"></span>
     </div>
 </header>
 <aside class="sidebar">
@@ -72,6 +73,10 @@
                 <li class="nav-item" id="nav-events" >
                     <i class="fas fa-calendar"></i>
                     <span>Sự kiện</span>
+                </li>
+                <li class="nav-item" id="nav-request">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Yêu cầu duyệt</span>
                 </li>
 
                 <li class="nav-item" id="nav-wallet">
@@ -119,9 +124,43 @@
             })
             .catch(err => console.error(err));
     }
+    
+    // Load and display user name
+    function loadUserName() {
+        fetch('/api/current-user')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.authenticated && data.name) {
+                    const userNameEl = document.getElementById('userName');
+                    const userAvatarEl = document.getElementById('userAvatar');
+                    
+                    if (userNameEl) {
+                        userNameEl.textContent = data.name;
+                        userNameEl.classList.remove('d-none');
+                    }
+                    
+                    if (userAvatarEl) {
+                        // Get first letter of name for avatar
+                        const initial = data.name.charAt(0).toUpperCase();
+                        userAvatarEl.textContent = initial;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading user name:', error);
+            });
+    }
+    
+    // Load user name when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadUserName);
+    } else {
+        loadUserName();
+    }
 </script>
 <script th:src="@{/js/host.js}"></script>
 <script th:src="@{/js/event.js}"></script>
+<script th:src="@{/js/events-manager.js}"></script>
 
 </body>
 </html>

@@ -24,7 +24,7 @@
         </nav>
         <!-- Actions -->
         <div class="customer-actions" style="display:flex; align-items:center; gap:12px;">
-            <a class="btn btn-ghost" href="create-event.html" th:href="@{/events?create=true}">Create Event</a>
+            <button id="createEventBtn" class="btn btn-ghost" type="button" style="cursor: pointer;">Create Event</button>
             <a id="loginLink" class="btn btn-primary" href="login.html" th:href="@{/login}">Log in</a>
             <div id="userMenu" class="user-menu" style="display:none; position: relative;">
                 <button id="userBtn" class="btn btn-primary user-trigger user-button" type="button">
@@ -127,6 +127,254 @@
                     .catch(function () { /* ignore */
                     });
             });
+
+            // Host registration modal functionality
+            (function() {
+                // Wait for DOM to be fully ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initHostRegistration);
+                } else {
+                    initHostRegistration();
+                }
+                
+                function initHostRegistration() {
+                    var createEventBtn = document.getElementById('createEventBtn');
+                    var hostRegistrationModal = document.getElementById('hostRegistrationModal');
+                    var closeModalBtn = document.getElementById('closeHostModal');
+                    var hostRegistrationForm = document.getElementById('hostRegistrationForm');
+                    var organizationSelect = document.getElementById('organizationId');
+                    var errorMessage = document.getElementById('hostRegistrationError');
+                    var successMessage = document.getElementById('hostRegistrationSuccess');
+                
+                    if (!createEventBtn) {
+                        console.warn('Create Event button not found');
+                        return;
+                    }
+
+                    // Load organizations into dropdown
+                    function loadOrganizations() {
+                        if (!organizationSelect) return;
+                        fetch('/api/host/organizations')
+                            .then(function(response) {
+                                if (!response.ok) {
+                                    throw new Error('Failed to load organizations');
+                                }
+                                return response.json();
+                            })
+                            .then(function(organizations) {
+                                if (!Array.isArray(organizations)) {
+                                    console.warn('Invalid organizations data:', organizations);
+                                    return;
+                                }
+                                // Clear existing options except the first one
+                                while (organizationSelect.options.length > 1) {
+                                    organizationSelect.remove(1);
+                                }
+                                // Add organizations
+                                organizations.forEach(function(org) {
+                                    if (org && org.id && org.name) {
+                                        var option = document.createElement('option');
+                                        option.value = org.id;
+                                        option.textContent = org.name;
+                                        organizationSelect.appendChild(option);
+                                    }
+                                });
+                            })
+                            .catch(function(error) {
+                                console.error('Error loading organizations:', error);
+                            });
+                    }
+
+                    // Check host status and handle Create Event button click
+                    // Add event listener with capture phase to ensure it runs first
+                    createEventBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation(); // Prevent other event listeners from running
+                        e.stopImmediatePropagation(); // Stop all other listeners on this element
+                        
+                        console.log('Create Event button clicked');
+                        
+                        // Check if user is authenticated
+                        fetch('/api/current-user')
+                            .then(function(response) {
+                                if (!response.ok) {
+                                    throw new Error('Failed to check authentication');
+                                }
+                                return response.json();
+                            })
+                            .then(function(userData) {
+                                if (!userData || !userData.authenticated) {
+                                    // Not logged in, redirect to login
+                                    console.log('User not authenticated, redirecting to login');
+                                    window.location.href = '/login';
+                                    return;
+                                }
+                                // Check if user is already a host
+                                return fetch('/api/host/check')
+                                    .then(function(response) {
+                                        if (!response.ok) {
+                                            throw new Error('Failed to check host status');
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(function(hostData) {
+                                        console.log('Host status:', hostData);
+                                        if (hostData && hostData.isHost) {
+                                            // Already a host, redirect to create event page
+                                            console.log('User is already a host, redirecting to create event');
+                                            window.location.href = '/events?create=true';
+                                        } else {
+                                            // Not a host, show registration modal
+                                            console.log('User is not a host, showing registration modal');
+                                            if (hostRegistrationModal) {
+                                                loadOrganizations();
+                                                hostRegistrationModal.style.display = 'block';
+                                                // Clear previous messages
+                                                if (errorMessage) errorMessage.style.display = 'none';
+                                                if (successMessage) successMessage.style.display = 'none';
+                                                // Reset form
+                                                if (hostRegistrationForm) hostRegistrationForm.reset();
+                                            } else {
+                                                console.error('Host registration modal not found');
+                                            }
+                                        }
+                                    });
+                            })
+                            .catch(function(error) {
+                                console.error('Error checking host status:', error);
+                                // On error, try to redirect to login
+                                window.location.href = '/login';
+                            });
+                    }, true); // Use capture phase
+
+                    // Close modal
+                    function closeHostModal() {
+                        if (hostRegistrationModal) {
+                            hostRegistrationModal.style.display = 'none';
+                        }
+                        // Remove body scroll lock
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                    }
+
+                    if (closeModalBtn) {
+                        closeModalBtn.addEventListener('click', closeHostModal);
+                    }
+
+                    // Close modal when clicking outside
+                    if (hostRegistrationModal) {
+                        hostRegistrationModal.addEventListener('click', function(e) {
+                            if (e.target === hostRegistrationModal) {
+                                closeHostModal();
+                            }
+                        });
+                    }
+
+                    // Close modal on Escape key
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape' && hostRegistrationModal && hostRegistrationModal.style.display === 'block') {
+                            closeHostModal();
+                        }
+                    });
+
+                    // Handle form submission
+                    if (hostRegistrationForm) {
+                        hostRegistrationForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            
+                            // Hide previous messages
+                            if (errorMessage) errorMessage.style.display = 'none';
+                            if (successMessage) successMessage.style.display = 'none';
+
+                            // Get form data
+                            var hostNameInput = document.getElementById('hostName');
+                            var formData = {
+                                hostName: hostNameInput && hostNameInput.value ? hostNameInput.value.trim() : null,
+                                organizationId: organizationSelect && organizationSelect.value ? parseInt(organizationSelect.value) : null,
+                                hostDiscountPercent: document.getElementById('hostDiscountPercent') && document.getElementById('hostDiscountPercent').value ? parseFloat(document.getElementById('hostDiscountPercent').value) : null,
+                                description: document.getElementById('description') ? (document.getElementById('description').value || null) : null
+                            };
+                            
+                            // Validate hostName
+                            if (!formData.hostName || formData.hostName.trim() === '') {
+                                if (errorMessage) {
+                                    errorMessage.textContent = 'Vui lòng nhập tên host';
+                                    errorMessage.style.display = 'block';
+                                }
+                                return;
+                            }
+
+                            // Submit registration
+                            fetch('/api/host/register', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(formData)
+                            })
+                            .then(function(response) {
+                                if (!response.ok) {
+                                    return response.json().then(function(err) {
+                                        throw new Error(err.error || 'Registration failed');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(function(data) {
+                                if (data.success) {
+                                    // Show success message
+                                    if (successMessage) {
+                                        successMessage.textContent = data.message || 'Đăng ký host thành công!';
+                                        successMessage.style.display = 'block';
+                                    }
+                                    // Close modal and redirect to create event page after a short delay
+                                    setTimeout(function() {
+                                        closeHostModal();
+                                        // Redirect to create event page (user is now a host)
+                                        window.location.href = '/events?create=true';
+                                    }, 1500);
+                                } else {
+                                    // Show error message
+                                    if (errorMessage) {
+                                        errorMessage.textContent = data.error || 'Đã xảy ra lỗi. Vui lòng thử lại.';
+                                        errorMessage.style.display = 'block';
+                                    }
+                                }
+                            })
+                            .catch(function(error) {
+                                console.error('Error registering host:', error);
+                                if (errorMessage) {
+                                    errorMessage.textContent = error.message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
+                                    errorMessage.style.display = 'block';
+                                }
+                            });
+                        });
+                    }
+
+                    // Lock body scroll when modal is open
+                    if (hostRegistrationModal) {
+                        var observer = new MutationObserver(function(mutations) {
+                            mutations.forEach(function(mutation) {
+                                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                                    var modal = mutation.target;
+                                    if (modal.style.display === 'block') {
+                                        document.body.classList.add('modal-open');
+                                        document.body.style.overflow = 'hidden';
+                                    } else {
+                                        document.body.classList.remove('modal-open');
+                                        document.body.style.overflow = '';
+                                    }
+                                }
+                            });
+                        });
+
+                        observer.observe(hostRegistrationModal, {
+                            attributes: true,
+                            attributeFilter: ['style']
+                        });
+                    }
+                }
+            })();
         </script>
 
         <style>
@@ -238,5 +486,47 @@
                 }
             }
         </style>
+
+        <!-- Host Registration Modal -->
+        <div id="hostRegistrationModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" id="closeHostModal">&times;</span>
+                <h2>Đăng ký làm Host</h2>
+                <p class="subtitle">Vui lòng điền thông tin để đăng ký làm host và bắt đầu tạo sự kiện</p>
+                
+                <div id="hostRegistrationError" style="display: none; padding: 12px; background-color: #f8d7da; color: #721c24; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #f5c6cb;"></div>
+                <div id="hostRegistrationSuccess" style="display: none; padding: 12px; background-color: #d4edda; color: #155724; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #c3e6cb;"></div>
+                
+                <form id="hostRegistrationForm">
+                    <div style="margin-bottom: 1rem;">
+                        <label for="hostName">Tên Host <span style="color: red;">*</span></label>
+                        <input type="text" id="hostName" name="hostName" 
+                               required placeholder="Nhập tên host của bạn" 
+                               style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label for="organizationId">Tổ chức (Tùy chọn)</label>
+                        <select id="organizationId" name="organizationId">
+                            <option value="">-- Chọn tổ chức (không bắt buộc) --</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label for="hostDiscountPercent">Phần trăm giảm giá host (%) (Tùy chọn)</label>
+                        <input type="number" id="hostDiscountPercent" name="hostDiscountPercent" 
+                               min="0" max="100" step="0.01" placeholder="0.00">
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label for="description">Mô tả (Tùy chọn)</label>
+                        <textarea id="description" name="description" rows="4" 
+                                  placeholder="Nhập mô tả về bạn hoặc tổ chức của bạn..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Đăng ký làm Host</button>
+                </form>
+            </div>
+        </div>
     </div>
 </header>

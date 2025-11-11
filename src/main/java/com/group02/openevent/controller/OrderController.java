@@ -79,7 +79,7 @@ public class OrderController {
                 // Tự động tạo Customer nếu chưa có
                 Account account = accountRepo.findById(accountId)
                         .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
-                
+
                 customer = new Customer();
                 customer.setAccount(account);
                 customer.setEmail(account.getEmail());
@@ -137,26 +137,27 @@ public class OrderController {
      */
     @GetMapping("/my-orders")
     public ResponseEntity<?> getMyOrders(HttpServletRequest httpRequest) {
+
         Long accountId = (Long) httpRequest.getAttribute("currentUserId");
         if (accountId == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
+            return ResponseEntity.status(401)
+                    .body(Map.of("success", false, "message", "User not logged in"));
         }
 
-        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+        Customer customer = customerRepo.findByAccount_AccountId(accountId)
+                .orElse(null);
+
         if (customer == null) {
-            // Tự động tạo Customer nếu chưa có
-            Account account = accountRepo.findById(accountId)
-                    .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
-            
-            customer = new Customer();
-            customer.setAccount(account);
-            customer.setEmail(account.getEmail());
-            customer.setPoints(0);
-            customer = customerRepo.save(customer);
+            return ResponseEntity.status(404)
+                    .body(Map.of("success", false, "message", "Customer not found"));
         }
 
         List<Order> orders = orderService.getOrdersByCustomer(customer);
-        return ResponseEntity.ok(Map.of("success", true, "orders", orders));
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "orders", orders
+        ));
     }
 
 
@@ -165,37 +166,27 @@ public class OrderController {
      */
     @GetMapping("/check-registration/{eventId}")
     public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest) {
-        try {
-            Long accountId = (Long) httpRequest.getAttribute("currentUserId");
-            if (accountId == null) {
-                return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
-            }
 
-            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
-            if (customer == null) {
-                // Tự động tạo Customer nếu chưa có
-                Account account = accountRepo.findById(accountId)
-                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
-                
-                customer = new Customer();
-                customer.setAccount(account);
-                customer.setEmail(account.getEmail());
-                customer.setPoints(0);
-                customer = customerRepo.save(customer);
-            }
-
-            boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "isRegistered", isRegistered
-            ));
-        } catch (Exception e) { // <-- THÊM CATCH Ở ĐÂY
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", e.getMessage() // Sẽ trả về "DB error" như test mong đợi
-            ));
+        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
         }
+
+        // ✅ KHÔNG auto create — trả 404 luôn
+        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+        if (customer == null) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("success", false, "message", "Customer not found"));
+        }
+
+        boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "isRegistered", isRegistered
+        ));
     }
+
 
     /**
      * Hủy order

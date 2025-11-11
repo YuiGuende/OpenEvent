@@ -159,3 +159,17 @@
         cleanupAndReinitialize();
     };
 })();
+function initCreateEventButton() {
+    const btn = document.querySelector('.btn-create-event');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+        document.getElementById('createEventModal').style.display = 'flex';
+    });
+}
+
+// Gọi khi DOM ready
+document.addEventListener("DOMContentLoaded", initCreateEventButton);
+
+// SPA fragment reload
+window.initCreateEventModal = initCreateEventButton;

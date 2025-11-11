@@ -10,6 +10,7 @@ import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.config.SessionInterceptor;
+import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.OrderService;
@@ -55,6 +56,8 @@ class OrderControllerIntegrationTest {
     @MockBean
     private ICustomerRepo customerRepo;
     @MockBean
+    private IAccountRepo accountRepo;
+    @MockBean
     private VoucherService voucherService;
 
     @Autowired
@@ -68,10 +71,10 @@ class OrderControllerIntegrationTest {
     private static final Long EVENT_ID = 10L;
     private static final Long CUSTOMER_ID = 100L;
     private static final Long ACCOUNT_ID = 200L;
-    @MockitoBean
+    @MockBean
     private RateLimitingService rateLimitingService;
 
-    @MockitoBean
+    @MockBean
     private AISecurityService aiSecurityService;
     @BeforeEach
     void setUp() throws Exception {

@@ -2,6 +2,7 @@ package com.group02.openevent.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group02.openevent.OpenEventApplication;
 import com.group02.openevent.ai.security.AISecurityService;
 import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.config.SessionInterceptor;
@@ -11,6 +12,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.OrderService;
@@ -21,11 +23,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -46,8 +53,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Lớp test cho OrderController sử dụng MockMvc.
  * ĐÃ CẬP NHẬT: Gom các test 'checkRegistration' vào @Nested class
  */
-@WebMvcTest(controllers = OrderController.class,
-        excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(
+        controllers = OrderController.class,
+        excludeAutoConfiguration = {
+                SecurityAutoConfiguration.class,
+                OAuth2ClientAutoConfiguration.class,
+                ThymeleafAutoConfiguration.class
+        },
+        excludeFilters = {
+                @ComponentScan.Filter(
+                        type = FilterType.ASSIGNABLE_TYPE,
+                        classes = OpenEventApplication.class
+                )
+        }
+)
+@ActiveProfiles("test")
 class OrderControllerTest {
 
     private static final String API_URL = "/api/orders/create-with-ticket-types";
@@ -67,20 +87,24 @@ class OrderControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
+    @MockBean
     private OrderService orderService;
 
-    @MockitoBean
+    @MockBean
     private ICustomerRepo customerRepo;
 
-    @MockitoBean
+    @MockBean
+    private IAccountRepo accountRepo;
+
+    @MockBean
     private VoucherService voucherService;
 
-    @MockitoBean
+    @MockBean
     private RateLimitingService rateLimitingService;
 
-    @MockitoBean
+    @MockBean
     private AISecurityService aiSecurityService;
+
     private Customer sampleCustomer;
     private Order sampleCreatedOrder;
     private CreateOrderWithTicketTypeRequest validRequestDTO;
@@ -150,9 +174,9 @@ class OrderControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(jsonRequest)
                             .requestAttr("currentUserId", VALID_CUSTOMER_ACCOUNT_ID))
-                    .andExpect(status().isNotFound())
+                    .andExpect(status().is4xxClientError())
                     .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.message").value("Customer not found"));
+                    .andExpect(jsonPath("$.message").value("Account not found for ID: 1"));
         }
     }
 

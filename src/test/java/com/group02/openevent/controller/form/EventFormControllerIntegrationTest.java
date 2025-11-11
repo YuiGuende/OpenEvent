@@ -4,7 +4,11 @@ import com.group02.openevent.ai.security.AISecurityService;
 import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.dto.form.*;
+import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.form.EventForm;
+import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.repository.IAccountRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.service.EventFormService;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -41,6 +46,10 @@ class EventFormControllerIntegrationTest {
     private EventFormService eventFormService;
     @MockBean
     private EventAttendanceService attendanceService;
+    @MockBean
+    private ICustomerRepo customerRepo;
+    @MockBean
+    private IAccountRepo accountRepo;
 
     private EventFormDTO registerFormDTO;
     private EventFormDTO checkinFormDTO;
@@ -50,10 +59,10 @@ class EventFormControllerIntegrationTest {
     private static final Long EVENT_ID = 1L;
     private static final Long FORM_ID = 10L;
     private static final String EMAIL = "test@example.com";
-    @MockitoBean
+    @MockBean
     private RateLimitingService rateLimitingService;
 
-    @MockitoBean
+    @MockBean
     private AISecurityService aiSecurityService;
     @BeforeEach
     void setUp() throws Exception {
@@ -215,20 +224,33 @@ class EventFormControllerIntegrationTest {
         @DisplayName("TC-08: Submit REGISTER form successfully")
         void submitFeedback_Register_Success() throws Exception {
             // Arrange
-            SubmitResponseRequest request = new SubmitResponseRequest();
-            request.setFormId(FORM_ID);
-            request.setCustomerId(1L);
+            Long accountId = 1L;
+            Long customerId = 100L;
+            Account account = new Account();
+            account.setAccountId(accountId);
+            account.setEmail("test@example.com");
+            Customer customer = new Customer();
+            customer.setCustomerId(customerId);
+            customer.setAccount(account);
+            
+            SubmitResponseRequest.ResponseItem responseItem = new SubmitResponseRequest.ResponseItem();
+            responseItem.setQuestionId(1L);
+            responseItem.setResponseValue("Test Answer");
+            List<SubmitResponseRequest.ResponseItem> responses = List.of(responseItem);
 
+            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.of(customer));
             when(eventFormService.getFormById(FORM_ID)).thenReturn(registerFormDTO);
             doNothing().when(eventFormService).submitResponse(any(SubmitResponseRequest.class));
 
             // Act & Assert
             mockMvc.perform(post("/forms/feedback/submit")
                             .param("formId", FORM_ID.toString())
-                            .param("customerId", "1")
-                            .param("eventId", EVENT_ID.toString()))
+                            .param("eventId", EVENT_ID.toString())
+                            .param("responses[0].questionId", "1")
+                            .param("responses[0].responseValue", "Test Answer")
+                            .requestAttr("currentUserId", accountId))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/music/" + EVENT_ID + "*"));
+                    .andExpect(redirectedUrlPattern("/events/" + EVENT_ID + "?success=form_submitted*"));
 
             verify(eventFormService).submitResponse(any(SubmitResponseRequest.class));
         }
@@ -237,22 +259,35 @@ class EventFormControllerIntegrationTest {
         @DisplayName("TC-09: Submit CHECKIN form successfully")
         void submitFeedback_Checkin_Success() throws Exception {
             // Arrange
-            SubmitResponseRequest request = new SubmitResponseRequest();
-            request.setFormId(FORM_ID + 1);
-            request.setCustomerId(1L);
+            Long accountId = 1L;
+            Long customerId = 100L;
+            Account account = new Account();
+            account.setAccountId(accountId);
+            account.setEmail("test@example.com");
+            Customer customer = new Customer();
+            customer.setCustomerId(customerId);
+            customer.setAccount(account);
+            
+            SubmitResponseRequest.ResponseItem responseItem = new SubmitResponseRequest.ResponseItem();
+            responseItem.setQuestionId(1L);
+            responseItem.setResponseValue("Test Answer");
+            List<SubmitResponseRequest.ResponseItem> responses = List.of(responseItem);
 
+            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.of(customer));
             when(eventFormService.getFormById(FORM_ID + 1)).thenReturn(checkinFormDTO);
-            when(eventFormService.getFormById(FORM_ID + 1)).thenReturn(checkinFormDTO);
+            when(attendanceService.isAlreadyCheckedIn(eq(EVENT_ID), anyString())).thenReturn(false);
             when(attendanceService.checkIn(eq(EVENT_ID), any())).thenReturn(null);
             doNothing().when(eventFormService).submitResponse(any(SubmitResponseRequest.class));
 
             // Act & Assert
             mockMvc.perform(post("/forms/feedback/submit")
                             .param("formId", String.valueOf(FORM_ID + 1))
-                            .param("customerId", "1")
-                            .param("eventId", EVENT_ID.toString()))
+                            .param("eventId", EVENT_ID.toString())
+                            .param("responses[0].questionId", "1")
+                            .param("responses[0].responseValue", "Test Answer")
+                            .requestAttr("currentUserId", accountId))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/events/" + EVENT_ID + "/checkin-form*"));
+                    .andExpect(redirectedUrlPattern("/events/" + EVENT_ID + "?success=checkin_success*"));
 
             verify(eventFormService).submitResponse(any(SubmitResponseRequest.class));
             verify(attendanceService).checkIn(eq(EVENT_ID), any());
@@ -262,10 +297,21 @@ class EventFormControllerIntegrationTest {
         @DisplayName("TC-10: Submit FEEDBACK form successfully")
         void submitFeedback_Feedback_Success() throws Exception {
             // Arrange
-            SubmitResponseRequest request = new SubmitResponseRequest();
-            request.setFormId(FORM_ID + 2);
-            request.setCustomerId(1L);
+            Long accountId = 1L;
+            Long customerId = 100L;
+            Account account = new Account();
+            account.setAccountId(accountId);
+            account.setEmail("test@example.com");
+            Customer customer = new Customer();
+            customer.setCustomerId(customerId);
+            customer.setAccount(account);
+            
+            SubmitResponseRequest.ResponseItem responseItem = new SubmitResponseRequest.ResponseItem();
+            responseItem.setQuestionId(1L);
+            responseItem.setResponseValue("Test Answer");
+            List<SubmitResponseRequest.ResponseItem> responses = List.of(responseItem);
 
+            when(customerRepo.findByAccount_AccountId(accountId)).thenReturn(Optional.of(customer));
             when(eventFormService.getFormById(FORM_ID + 2)).thenReturn(feedbackFormDTO);
             doNothing().when(eventFormService).submitResponse(any(SubmitResponseRequest.class));
 
@@ -273,14 +319,16 @@ class EventFormControllerIntegrationTest {
             // So checkOut won't be called in this test scenario
             mockMvc.perform(post("/forms/feedback/submit")
                             .param("formId", String.valueOf(FORM_ID + 2))
-                            .param("customerId", "1")
-                            .param("eventId", EVENT_ID.toString()))
+                            .param("eventId", EVENT_ID.toString())
+                            .param("responses[0].questionId", "1")
+                            .param("responses[0].responseValue", "Test Answer")
+                            .requestAttr("currentUserId", accountId))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/events/" + EVENT_ID + "/checkout-form*"));
+                    .andExpect(redirectedUrlPattern("/events/" + EVENT_ID + "?success=feedback_submitted*"));
 
             verify(eventFormService).submitResponse(any(SubmitResponseRequest.class));
             // Note: checkOut is NOT called because SecurityContext.getAuthentication() returns null
-            verifyNoInteractions(attendanceService);
+            verify(attendanceService, never()).checkOut(anyLong(), anyString());
         }
 
         @Test
@@ -288,21 +336,20 @@ class EventFormControllerIntegrationTest {
         void submitFeedback_FormIdNull() throws Exception {
             // Act & Assert
             mockMvc.perform(post("/forms/feedback/submit")
-                            .param("customerId", "1")
                             .param("eventId", EVENT_ID.toString()))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/music/1?error=submission_failed*"));
+                    .andExpect(redirectedUrlPattern("/events/" + EVENT_ID + "?error=submission_failed*"));
         }
 
         @Test
-        @DisplayName("TC-12: Submit form fails when customer ID is null")
+        @DisplayName("TC-12: Submit form fails when user not logged in")
         void submitFeedback_CustomerIdNull() throws Exception {
-            // Act & Assert
+            // Act & Assert - No currentUserId attribute means user not logged in
             mockMvc.perform(post("/forms/feedback/submit")
                             .param("formId", FORM_ID.toString())
                             .param("eventId", EVENT_ID.toString()))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/music/1?error=submission_failed*"));
+                    .andExpect(redirectedUrlPattern("/events/" + EVENT_ID + "?error=submission_failed*"));
         }
     }
 
@@ -421,7 +468,8 @@ class EventFormControllerIntegrationTest {
                             .param("formDescription", "Test Description")
                             .param("formType", "REGISTER"))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/music/" + EVENT_ID + "?success=form_created*"));
+                    .andExpect(redirectedUrlPattern("/manage/event/" + EVENT_ID + "/create-forms?success=form_created*"));
+
 
             verify(eventFormService).createForm(any(CreateFormRequest.class));
         }
@@ -429,12 +477,13 @@ class EventFormControllerIntegrationTest {
         @Test
         @DisplayName("TC-21: Create form fails when event ID is null")
         void createForm_EventIdNull() throws Exception {
-            // Act & Assert
+
             mockMvc.perform(post("/forms/create")
                             .param("formTitle", "Test Form"))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/music/null*error=*"));
+                    .andExpect(redirectedUrlPattern("/manage/event/0/create-forms?error=*"));
         }
+
 
         @Test
         @DisplayName("TC-22: Create form handles service exception")
@@ -443,16 +492,21 @@ class EventFormControllerIntegrationTest {
             when(eventFormService.createForm(any(CreateFormRequest.class)))
                     .thenThrow(new RuntimeException("Form creation failed"));
 
-            // Act & Assert
+            // Act + Assert
             mockMvc.perform(post("/forms/create")
                             .param("eventId", EVENT_ID.toString())
                             .param("formTitle", "Test Form"))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrlPattern("/music/" + EVENT_ID + "*error=*"));
+                    .andExpect(redirectedUrlPattern(
+                            "/manage/event/" + EVENT_ID + "/create-forms?error=*"
+                    ));
         }
+
     }
 
-    @Nested
+
+
+        @Nested
     @DisplayName("API Endpoints Tests")
     class ApiEndpointsTests {
         @Test

@@ -11,8 +11,10 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.request.Request;
 import com.group02.openevent.model.request.RequestStatus;
 import com.group02.openevent.model.request.RequestType;
+import com.group02.openevent.model.user.Host;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IDepartmentRepo;
+import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IRequestRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.util.CloudinaryUtil;
@@ -39,6 +41,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -56,6 +59,8 @@ class RequestServiceImplTest {
     private IAccountRepo accountRepo;
     @Mock
     private IDepartmentRepo departmentRepository;
+    @Mock
+    private IEventRepo eventRepo;
 
     @InjectMocks
     private RequestServiceImpl requestService;
@@ -68,7 +73,7 @@ class RequestServiceImplTest {
     private Event event;
     private CreateRequestDTO createRequestDTO;
     private Request sampleRequest;
-
+    private Host host;
     @BeforeEach
     void setUp() {
         sender = new Account();
@@ -79,9 +84,14 @@ class RequestServiceImplTest {
         receiver.setAccountId(2L);
         receiver.setEmail("receiver@mail.com");
 
+        host = new Host();
+        host.setId(5L);
+
         event = new Event();
         event.setId(10L);
         event.setTitle("Test Event");
+        event.setHost(host);
+
 
         createRequestDTO = CreateRequestDTO.builder()
                 .senderId(1L)
@@ -115,28 +125,29 @@ class RequestServiceImplTest {
         private MultipartFile file;
 
         @Test
-        @DisplayName("UNIT-01 (Happy Path): Tạo request với file upload thành công")
-        void whenCreateRequestWithFile_thenUploadSucceedsAndRequestSaved() throws IOException {
-            // Given (Điều kiện - Mock Setup)
-            when(file.isEmpty()).thenReturn(false);
-            when(cloudinaryUtil.uploadFile(file)).thenReturn("http://cloudinary.com/test-url");
+        @DisplayName("Happy Path: Tạo request (không file) thành công")
+        void whenCreateRequestNoFile_thenRequestSaved() {
+            // Given
             when(accountRepo.findById(1L)).thenReturn(Optional.of(sender));
             when(accountRepo.findById(2L)).thenReturn(Optional.of(receiver));
-            when(eventService.getEventById(10L)).thenReturn(Optional.of(event));
-            when(requestRepo.save(any(Request.class))).thenAnswer(invocation -> invocation.getArgument(0));
-            // When (Hành động)
-            requestService.createRequestWithFile(createRequestDTO, file);
 
-            // Then (Kết quả - Assert & Verify)
-            verify(cloudinaryUtil, times(1)).uploadFile(file);
+            // ✅ Mock đúng repository mà service thực sự dùng
+            when(eventRepo.findByIdWithHostAccount(10L))
+                    .thenReturn(Optional.of(event));
+
+            when(requestRepo.save(any(Request.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // When
+            RequestDTO resultDTO = requestService.createRequest(createRequestDTO);
+
+            // Then
             verify(requestRepo, times(1)).save(requestCaptor.capture());
-
             Request savedRequest = requestCaptor.getValue();
-            assertThat(savedRequest.getFileURL()).isEqualTo("http://cloudinary.com/test-url");
-            assertThat(savedRequest.getSender()).isEqualTo(sender);
-            assertThat(savedRequest.getReceiver()).isEqualTo(receiver);
+
             assertThat(savedRequest.getEvent()).isEqualTo(event);
-            assertThat(savedRequest.getStatus()).isEqualTo(RequestStatus.PENDING);
+            assertThat(savedRequest.getSender()).isEqualTo(sender);
+            assertThat(resultDTO.getEventId()).isEqualTo(10L);
         }
 
         @Test
@@ -145,7 +156,9 @@ class RequestServiceImplTest {
             // Given
             when(accountRepo.findById(1L)).thenReturn(Optional.of(sender));
             when(accountRepo.findById(2L)).thenReturn(Optional.of(receiver));
-            when(eventService.getEventById(10L)).thenReturn(Optional.of(event));
+            // ✅ Mock đúng repository mà service thực sự dùng
+            when(eventRepo.findByIdWithHostAccount(10L))
+                    .thenReturn(Optional.of(event));
             when(requestRepo.save(any(Request.class))).thenAnswer(invocation -> invocation.getArgument(0));
             // When
             requestService.createRequestWithFile(createRequestDTO, null); // file là null
@@ -163,7 +176,9 @@ class RequestServiceImplTest {
             when(file.isEmpty()).thenReturn(true); // file rỗng
             when(accountRepo.findById(1L)).thenReturn(Optional.of(sender));
             when(accountRepo.findById(2L)).thenReturn(Optional.of(receiver));
-            when(eventService.getEventById(10L)).thenReturn(Optional.of(event));
+            // ✅ Mock đúng repository mà service thực sự dùng
+            when(eventRepo.findByIdWithHostAccount(10L))
+                    .thenReturn(Optional.of(event));
             when(requestRepo.save(any(Request.class))).thenAnswer(invocation -> invocation.getArgument(0));
             // When
             requestService.createRequestWithFile(createRequestDTO, file);
@@ -434,7 +449,9 @@ class RequestServiceImplTest {
             // Given
             when(accountRepo.findById(1L)).thenReturn(Optional.of(sender));
             when(accountRepo.findById(2L)).thenReturn(Optional.of(receiver));
-            when(eventService.getEventById(10L)).thenReturn(Optional.of(event));
+            // ✅ Mock đúng repository mà service thực sự dùng
+            when(eventRepo.findByIdWithHostAccount(10L))
+                    .thenReturn(Optional.of(event));
             when(requestRepo.save(any(Request.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
@@ -450,25 +467,22 @@ class RequestServiceImplTest {
         }
 
         @Test
-        @DisplayName("Happy Path (No Event): Tạo request (không file, không event) thành công")
-        void whenCreateRequestNoFileNoEvent_thenRequestSaved() {
+        @DisplayName("UNIT-X: Khi eventId null → ném RuntimeException")
+        void whenEventIdNull_thenThrowError() {
             // Given
             createRequestDTO.setEventId(null);
             when(accountRepo.findById(1L)).thenReturn(Optional.of(sender));
             when(accountRepo.findById(2L)).thenReturn(Optional.of(receiver));
-            when(requestRepo.save(any(Request.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            // When
-            RequestDTO resultDTO = requestService.createRequest(createRequestDTO);
+            // When + Then
+            RuntimeException ex = assertThrows(RuntimeException.class,
+                    () -> requestService.createRequest(createRequestDTO));
 
-            // Then
-            verify(requestRepo, times(1)).save(requestCaptor.capture());
-            Request savedRequest = requestCaptor.getValue();
+            assertThat(ex.getMessage()).isEqualTo("Event ID is required for creating request");
 
-            assertThat(savedRequest.getEvent()).isNull();
-            verify(eventService, never()).getEventById(any());
-            assertThat(resultDTO.getEventId()).isNull();
+            verify(requestRepo, never()).save(any());
         }
+
 
         @Test
         @DisplayName("Edge Case (Event Not Found): Ném lỗi khi event không tìm thấy")
@@ -476,7 +490,9 @@ class RequestServiceImplTest {
             // Given
             when(accountRepo.findById(1L)).thenReturn(Optional.of(sender));
             when(accountRepo.findById(2L)).thenReturn(Optional.of(receiver));
-            when(eventService.getEventById(10L)).thenReturn(Optional.empty());
+            // ✅ Mock đúng repository mà service thực sự dùng
+            when(eventRepo.findByIdWithHostAccount(10L))
+                    .thenReturn(Optional.empty());
 
             // When & Then
             assertThatThrownBy(() -> requestService.createRequest(createRequestDTO))

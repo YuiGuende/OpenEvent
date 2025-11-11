@@ -15,6 +15,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.EventImage;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.HostService;
 import com.group02.openevent.service.IImageService;
 import com.group02.openevent.service.TicketTypeService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,10 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.group02.openevent.service.impl.HostServiceImpl;
+import com.group02.openevent.repository.IEventImageRepo;
+import com.group02.openevent.repository.IEventRepo;
+
 @Slf4j
 @WebMvcTest(controllers = EventController.class,
         excludeAutoConfiguration = SecurityAutoConfiguration.class)
@@ -70,13 +75,23 @@ public class EventControllerTest {
     @MockBean
     SessionInterceptor sessionInterceptor;
 
-    private EventResponse eventResponse;
-    ObjectMapper mapper;
-    @MockitoBean
+    @MockBean
     private RateLimitingService rateLimitingService;
 
-    @MockitoBean
+    @MockBean
     private AISecurityService aiSecurityService;
+
+    @MockBean
+    private HostServiceImpl hostService;
+
+    @MockBean
+    private IEventImageRepo eventImageRepo;
+
+    @MockBean
+    private IEventRepo eventRepo;
+
+    private EventResponse eventResponse;
+    ObjectMapper mapper;
     @BeforeEach
     public void setup() throws Exception {
         eventResponse = new EventResponse();
@@ -85,6 +100,7 @@ public class EventControllerTest {
         eventResponse.setStatus(EventStatus.DRAFT);
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         when(sessionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        when(hostService.findHostIdByAccountId(anyLong())).thenReturn(1L);
     }
 
     @ParameterizedTest
@@ -94,13 +110,14 @@ public class EventControllerTest {
             "CodeFest 2025, COMPETITION"
     })
     void TC01_ShouldRedirectToGettingStarted_WhenEventSavedSuccessfully(String title, String eventType) throws Exception {
-        when(eventService.saveEvent(any(EventCreationRequest.class), 1L)).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L) )).thenReturn(eventResponse);
 
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", title)
                         .param("eventType", eventType)
                         .param("startsAt", LocalDateTime.now().toString())
-                        .param("endsAt", LocalDateTime.now().plusDays(1).toString()))
+                        .param("endsAt", LocalDateTime.now().plusDays(1).toString())
+                        .sessionAttr("ACCOUNT_ID",1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/manage/event/101/getting-stared"));
 
@@ -113,17 +130,14 @@ public class EventControllerTest {
             "CodeFest 2025, COMPETITION"
     })
     void TC02_ShouldCallEventServiceWithCorrectRequest(String title, String eventType) throws Exception {
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
+        // Ensure saveEvent takes exactly 2 arguments. If 3, add another matcher.
+        when(eventService.saveEvent(any(EventCreationRequest.class), eq(1L))).thenReturn(eventResponse);
 
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", title)
-                        .param("eventType", eventType))
+                        .param("eventType", eventType)
+                        .sessionAttr("ACCOUNT_ID", 1L)) // REMOVED eq() here
                 .andExpect(status().is3xxRedirection());
-
-//        verify(eventService, times(1)).saveEvent(Mockito.argThat((EventCreationRequest req) ->
-//                req.getTitle().equals("Music Festival")
-//                        && req.getEventType() == EventType.MUSIC
-//        ));
     }
 
     @ParameterizedTest
@@ -134,13 +148,14 @@ public class EventControllerTest {
     })
     void TC03_ShouldReturnServerError_WhenServiceThrowsException(String title, String eventType) throws Exception {
         // given
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L))
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L)))
                 .thenThrow(new RuntimeException("Save failed"));
 
         // when & then
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", title)
-                        .param("eventType", eventType))
+                        .param("eventType", eventType)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().is4xxClientError());// hoặc .andExpect(status().isInternalServerError());
 
     }
@@ -148,14 +163,15 @@ public class EventControllerTest {
     @Test
     void TC04_ShouldHandleEmptyRequestGracefully() throws Exception {
         // given
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L))).thenReturn(eventResponse);
 
         // when & then
-        mockMvc.perform(post("/api/events/saveEvent"))
+        mockMvc.perform(post("/api/events/saveEvent")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/manage/event/101/getting-stared"));
 
-        verify(eventService, times(1)).saveEvent(any(EventCreationRequest.class),1L);
+        verify(eventService, times(1)).saveEvent(any(EventCreationRequest.class),eq(1L));
     }
 
     @ParameterizedTest(name = "TC{index} → Should redirect correctly for eventType={0}")
@@ -173,18 +189,19 @@ public class EventControllerTest {
         response.setEventType(EventType.valueOf(eventType));
         response.setStatus(EventStatus.DRAFT);
 
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(response);
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L))).thenReturn(response);
 
         // When + Then
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", "Parameterized Event")
                         .param("eventType", eventType)
                         .param("startsAt", LocalDateTime.now().toString())
-                        .param("endsAt", LocalDateTime.now().plusDays(1).toString()))
+                        .param("endsAt", LocalDateTime.now().plusDays(1).toString())
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(expectedRedirectUrl));
 
-        verify(eventService).saveEvent(any(EventCreationRequest.class),1L);
+        verify(eventService).saveEvent(any(EventCreationRequest.class),eq(1L));
     }
 
     @ParameterizedTest
@@ -197,12 +214,13 @@ public class EventControllerTest {
         EventResponse response = new EventResponse();
         response.setId(202);
         response.setEventType(EventType.valueOf(type));
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(response);
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L))).thenReturn(response);
 
         // When
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", rawTitle)
-                        .param("eventType", type))
+                        .param("eventType", type)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/manage/event/202/getting-stared"));
     }
@@ -212,12 +230,13 @@ public class EventControllerTest {
         // Given
         eventResponse.setId(303);
         eventResponse.setEventType(EventType.FESTIVAL);
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L))).thenReturn(eventResponse);
 
         // When / Then
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", "Festival Event")
-                        .param("eventType", "FESTIVAL"))
+                        .param("eventType", "FESTIVAL")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/manage/event/303/getting-stared"));
     }
@@ -225,12 +244,13 @@ public class EventControllerTest {
     @Test
     void TC07_ShouldNotFail_WhenModelIsEmpty() throws Exception {
         // Given
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L))).thenReturn(eventResponse);
 
         // When / Then
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", "Empty Model Test")
-                        .param("eventType", "WORKSHOP"))
+                        .param("eventType", "WORKSHOP")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().is3xxRedirection());
     }
 
@@ -239,10 +259,11 @@ public class EventControllerTest {
         EventCreationRequest req = new EventCreationRequest();
         req.setTitle("Integration Test");
         req.setEventType(EventType.MUSIC);
-        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),eq(1L))).thenReturn(eventResponse);
 
         mockMvc.perform(post("/api/events/saveEvent")
-                        .flashAttr("eventForm", req))
+                        .flashAttr("eventForm", req)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/manage/event/101/getting-stared"));
     }
@@ -252,7 +273,8 @@ public class EventControllerTest {
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", "Bad Date")
                         .param("eventType", "WORKSHOP")
-                        .param("startsAt", "invalid-date"))
+                        .param("startsAt", "invalid-date")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isBadRequest());
     }
 
@@ -264,7 +286,8 @@ public class EventControllerTest {
         // When / Then
         mockMvc.perform(post("/api/events/update/99")
                         .param("title", "Music Fest")
-                        .param("eventType", "MUSIC"))
+                        .param("eventType", "MUSIC")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/getting-started :: content"))
                 .andExpect(model().attributeExists("message"));
@@ -280,7 +303,8 @@ public class EventControllerTest {
         when(eventService.updateEvent(anyLong(), any())).thenReturn(eventResponse);
 
         mockMvc.perform(post("/api/events/update/99")
-                        .param("placesJson", placesJson))
+                        .param("placesJson", placesJson)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk());
 
         verify(eventService).updateEvent(eq(99L), argThat(req ->
@@ -297,7 +321,8 @@ public class EventControllerTest {
 
         // When / Then
         mockMvc.perform(post("/api/events/update/99")
-                        .param("placesJson", ""))
+                        .param("placesJson", "")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/getting-started :: content"));
 
@@ -311,7 +336,8 @@ public class EventControllerTest {
 
         // When / Then
         mockMvc.perform(post("/api/events/update/99")
-                        .param("placesJson", invalidJson))
+                        .param("placesJson", invalidJson)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk()) // vẫn trả về OK do controller catch lỗi
                 .andExpect(model().attributeExists("error"))
                 .andExpect(view().name("fragments/getting-started :: content"));
@@ -327,7 +353,8 @@ public class EventControllerTest {
 
         // When / Then
         mockMvc.perform(post("/api/events/update/99")
-                        .param("title", "Updated Event"))
+                        .param("title", "Updated Event")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("message", "Cập nhật thành công!"))
                 .andExpect(view().name("fragments/getting-started :: content"));
@@ -342,7 +369,8 @@ public class EventControllerTest {
                 .thenThrow(new RuntimeException("DB Error"));
 
         // When / Then
-        mockMvc.perform(post("/api/events/update/99"))
+        mockMvc.perform(post("/api/events/update/99")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("error"))
                 .andExpect(view().name("fragments/getting-started :: content"));
@@ -356,7 +384,8 @@ public class EventControllerTest {
         when(eventService.updateEvent(anyLong(), any())).thenReturn(eventResponse);
 
         // When / Then
-        mockMvc.perform(post("/api/events/update/99"))
+        mockMvc.perform(post("/api/events/update/99")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(view().name("fragments/getting-started :: content"));
     }
@@ -374,7 +403,8 @@ public class EventControllerTest {
 
         // When / Then
         mockMvc.perform(post("/api/events/update-tickets/10")
-                        .param("ticketsJson", ticketsJson))
+                        .param("ticketsJson", ticketsJson)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Tickets updated"));
 
@@ -387,14 +417,16 @@ public class EventControllerTest {
 
         // When / Then
         mockMvc.perform(post("/api/events/update-tickets/10")
-                        .param("ticketsJson", json))
+                        .param("ticketsJson", json)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Tickets updated"));
     }
     @Test
     void TCT03_ShouldSkipUpdate_WhenTicketsJsonEmpty() throws Exception {
         mockMvc.perform(post("/api/events/update-tickets/10")
-                        .param("ticketsJson", ""))
+                        .param("ticketsJson", "")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Tickets updated"));
 
@@ -407,7 +439,8 @@ public class EventControllerTest {
 
         // When / Then
         mockMvc.perform(post("/api/events/update-tickets/10")
-                        .param("ticketsJson", invalidJson))
+                        .param("ticketsJson", invalidJson)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Error")));
     }
@@ -420,7 +453,8 @@ public class EventControllerTest {
 
         // When / Then
         mockMvc.perform(post("/api/events/update-tickets/10")
-                        .param("ticketsJson", json))
+                        .param("ticketsJson", json)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Error: DB Error"));
     }
@@ -429,7 +463,8 @@ public class EventControllerTest {
         String json = "[{\"ticketTypeId\":1,\"name\":\"VIP\"}]";
 
         mockMvc.perform(post("/api/events/update-tickets/10")
-                        .param("ticketsJson", json))
+                        .param("ticketsJson", json)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").exists());
@@ -458,7 +493,8 @@ public class EventControllerTest {
                         .file(file2)
                         .param("orderIndexes", "0", "1")
                         .param("mainPosters", "true", "false")
-                        .param("eventId", "1"))
+                        .param("eventId", "1")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))  // ✅ Bây giờ có id
                 .andExpect(jsonPath("$.title").value("Test Event"));
@@ -479,7 +515,8 @@ public class EventControllerTest {
                         .file(file)
                         .param("orderIndexes", "0")
                         .param("mainPosters", "true")
-                        .param("eventId", "999"))
+                        .param("eventId", "999")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isNotFound());
 
         // ✅ Ensure that saveEvent is never called
@@ -506,7 +543,8 @@ public class EventControllerTest {
                         .file(file2)
                         .param("orderIndexes", "0") // ❌ chỉ 1 phần tử
                         .param("mainPosters", "true", "false") // ✅ 2 phần tử
-                        .param("eventId", "10"))
+                        .param("eventId", "10")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isBadRequest());
 
         // ✅ Verify không gọi tới các service xử lý ảnh/lưu event
@@ -537,7 +575,8 @@ public class EventControllerTest {
                         .file(emptyFile)
                         .param("orderIndexes", "0", "1")
                         .param("mainPosters", "true", "false")
-                        .param("eventId", "10"))
+                        .param("eventId", "10")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(10));
@@ -570,7 +609,8 @@ public class EventControllerTest {
                         .param("orderIndexes", "0")
                         .param("mainPosters", "true")
                         .param("eventId", "1")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isInternalServerError()) // ✅ Expect 500 now
                 .andExpect(jsonPath("$.error").exists())
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Disk error")));
@@ -582,7 +622,8 @@ public class EventControllerTest {
         doNothing().when(ticketTypeService).deleteTicketType(ticketId);
 
         // when + then
-        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId))
+        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Đã xóa vé"));
     }
@@ -594,7 +635,8 @@ public class EventControllerTest {
                 .when(ticketTypeService).deleteTicketType(ticketId);
 
         // when + then
-        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId))
+        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Vé đã có đơn hàng"));
     }
@@ -607,7 +649,8 @@ public class EventControllerTest {
                 .when(ticketTypeService).deleteTicketType(ticketId);
 
         // when + then
-        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId))
+        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message")
                         .value("Không thể xóa vé vì đã có đơn hàng tham chiếu"));
@@ -621,7 +664,8 @@ public class EventControllerTest {
                 .when(ticketTypeService).deleteTicketType(ticketId);
 
         // when + then
-        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId))
+        mockMvc.perform(delete("/api/events/ticket/{ticketTypeId}", ticketId)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Lỗi hệ thống khi xóa vé"));
     }
@@ -629,7 +673,8 @@ public class EventControllerTest {
     @Test
     void TC05_ShouldRejectInvalidId_WhenPathVarIsInvalid() throws Exception {
         // when + then
-        mockMvc.perform(delete("/api/events/ticket/abc"))
+        mockMvc.perform(delete("/api/events/ticket/abc")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isBadRequest());
     }
 
@@ -642,7 +687,8 @@ public class EventControllerTest {
         ev.setId(77L);
         when(eventService.getEventById(77L)).thenReturn(Optional.of(ev));
 
-        mockMvc.perform(get("/api/events/{id}", 77))
+        mockMvc.perform(get("/api/events/{id}", 77)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(77));
     }
@@ -651,7 +697,8 @@ public class EventControllerTest {
     void GET_EVENT_ShouldReturnEmpty_WhenNotFound() throws Exception {
         when(eventService.getEventById(999L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/events/{id}", 999))
+        mockMvc.perform(get("/api/events/{id}", 999)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().string("null"));
     }
@@ -663,7 +710,8 @@ public class EventControllerTest {
         when(eventService.getEventsByType(com.group02.openevent.model.event.MusicEvent.class))
                 .thenReturn(java.util.Arrays.asList(e1, e2));
 
-        mockMvc.perform(get("/api/events/type/{type}", "music"))
+        mockMvc.perform(get("/api/events/type/{type}", "music")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[1].id").value(2));
@@ -681,7 +729,8 @@ public class EventControllerTest {
                         .file(file)
                         .param("orderIndexes", "0")
                         .param("mainPosters", "true")
-                        .param("eventId", "5"))
+                        .param("eventId", "5")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(5));
     }
@@ -695,7 +744,8 @@ public class EventControllerTest {
                         .file(file)
                         .param("orderIndexes", "0")
                         .param("mainPosters", "true")
-                        .param("eventId", "123"))
+                        .param("eventId", "123")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isNotFound());
     }
 
@@ -713,7 +763,8 @@ public class EventControllerTest {
                         .file(file2)
                         .param("orderIndexes", "0", "1")
                         .param("mainPosters", "true", "false")
-                        .param("eventId", "7"))
+                        .param("eventId", "7")
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(7));
     }
@@ -726,7 +777,8 @@ public class EventControllerTest {
 
         mockMvc.perform(post("/api/events/upload/images-batch")
                         .param("eventId", "404")
-                        .param("images", imagesJson))
+                        .param("images", imagesJson)
+                        .sessionAttr("ACCOUNT_ID", 1L))
                 .andExpect(status().isNotFound());
     }
 

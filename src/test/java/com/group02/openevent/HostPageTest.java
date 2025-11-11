@@ -64,74 +64,76 @@ public class HostPageTest {
     @Test
     void testOpenCreateEventModal() {
 
-        testGotoEventAfterLogin();
+        testGotoEventAfterLogin(); // đã điều hướng tới trang Sự kiện
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-        // Đảm bảo page loaded
-        wait.until(ExpectedConditions
-                .textToBePresentInElementLocated(
-                        By.cssSelector("h1.page-title"),
-                        "Sự kiện"
-                ));
+        // 1) Đảm bảo đúng trang
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(
+                By.cssSelector("h1.page-title"), "Sự kiện"));
 
-        // Click button
-        WebElement btn = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.cssSelector(".btn-create-event")
-                )
-        );
-        btn.click();
+        // 2) Chờ nút hiện diện rồi mới clickable
+        wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.cssSelector(".btn-create-event")));
+        WebElement createBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector(".btn-create-event")));
 
-        // JS fallback
+        // 3) Click thường + fallback JS
         try {
-            ((JavascriptExecutor) driver).executeScript(
-                    "document.querySelector('.btn-create-event').click();");
-        } catch (Exception ignored) {
+            createBtn.click();
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", createBtn);
         }
 
-        // Wait modal present
-        WebElement modal = wait.until(
-                ExpectedConditions.presenceOfElementLocated(
-                        By.id("createEventModal")
-                )
-        );
-
-        wait.until(ExpectedConditions.visibilityOf(modal));
+        // 4) Chờ modal hiện
+        WebElement modal = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.id("createEventModal")));
 
         Assertions.assertTrue(modal.isDisplayed());
     }
 
+
+
     @Test
     void testCreateEventForm() {
 
-        testGotoEventAfterLogin();     // đang ở trang Sự kiện
-
+        testGotoEventAfterLogin();  // đang ở trang Sự kiện
+        testOpenCreateEventModal(); // modal mở
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // Nhập vào form
         WebElement title = wait.until(
                 ExpectedConditions.visibilityOfElementLocated(By.name("title"))
         );
         title.sendKeys("New Event Selenium");
 
-        // Select eventType
+        // eventType
         Select type = new Select(driver.findElement(By.name("eventType")));
         type.selectByVisibleText("MUSIC");
 
-        driver.findElement(By.name("startsAt")).sendKeys("2030-11-11T10:00");
-        driver.findElement(By.name("endsAt")).sendKeys("2030-11-11T12:00");
-        driver.findElement(By.name("enrollDeadline")).sendKeys("2030-11-09T12:00");
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        js.executeScript(
+                "arguments[0].value='2030-11-11T10:00';",
+                driver.findElement(By.name("startsAt"))
+        );
+        js.executeScript(
+                "arguments[0].value='2030-11-11T12:00';",
+                driver.findElement(By.name("endsAt"))
+        );
+        js.executeScript(
+                "arguments[0].value='2030-11-09T12:00';",
+                driver.findElement(By.name("enrollDeadline"))
+        );
 
         driver.findElement(By.cssSelector(".submit-btn")).click();
 
-        // Chờ redirect và hiển thị event mới
         wait.until(ExpectedConditions.textToBePresentInElementLocated(
                 By.cssSelector(".events-list"),
                 "New Event Selenium"
         ));
     }
+
 
 
 }

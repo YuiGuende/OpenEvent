@@ -175,6 +175,7 @@ class RequestControllerIntegrationTest {
                 .type(RequestType.EVENT_APPROVAL)
                 .createdAt(LocalDateTime.now())
                 .build();
+        sampleRequest.setHost(hostA);
         sampleRequest = requestRepo.save(sampleRequest);
     }
 

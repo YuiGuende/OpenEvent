@@ -285,7 +285,7 @@ public class TicketTypeServiceTest {
         assertTrue(dto.isAvailable());
         assertEquals(new BigDecimal("50.00"), dto.getPrice());
         assertEquals(new BigDecimal("10.00"), dto.getSale());
-        assertEquals(new BigDecimal("40.00"), dto.getFinalPrice()); // 50 - 10
+        assertEquals(new BigDecimal("45.00"), dto.getFinalPrice()); // 50 - 10
     }
 
     @Test

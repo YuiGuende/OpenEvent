@@ -6,6 +6,7 @@ import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IUserRepo;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,7 +34,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final IAccountRepo accountRepo;
     private final IUserRepo userRepo;
     private final ICustomerRepo customerRepo;
-
+    private final HttpSession httpSession;
     @Override
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -94,7 +95,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         attributes.put("accountId", account.getAccountId());
         attributes.put("role", role.toString());
         attributes.put("email", email);
-        
+        httpSession.setAttribute("USER_ID", user.getUserId());
+        httpSession.setAttribute("USER_ROLE", role.name());
+
         // Trả về DefaultOAuth2User với attributes đã được bổ sung
         return new DefaultOAuth2User(
                 Collections.singletonList(authority),

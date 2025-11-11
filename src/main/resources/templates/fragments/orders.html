@@ -48,6 +48,21 @@
             border-color: var(--orange-primary) !important;
         }
 
+        /* Override event-attendees.css for orders table - ensure gradient header */
+        .orders-table thead {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+        }
+
+        .orders-table thead th {
+            color: white !important;
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            border: none !important;
+            padding: 1rem !important;
+        }
+
         /* Modal close button fix */
         .btn-close {
             background: none;

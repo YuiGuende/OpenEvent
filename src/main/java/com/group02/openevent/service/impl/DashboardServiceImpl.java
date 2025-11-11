@@ -1,16 +1,21 @@
 package com.group02.openevent.service.impl;
 
 import com.group02.openevent.dto.response.DashboardStatsResponse;
+import com.group02.openevent.dto.response.HostDashboardStatsResponse;
+import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.ticket.TicketType;
+import com.group02.openevent.repository.IEventAttendanceRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,6 +35,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final IEventRepo eventRepo;
     private final ITicketTypeRepo ticketTypeRepo;
     private final IOrderRepo orderRepo;
+    private final IEventAttendanceRepo eventAttendanceRepo;
     
     // Helper class for daily stats calculation
     private static class DailyStatsData {
@@ -82,17 +88,26 @@ public class DashboardServiceImpl implements DashboardService {
         long unsoldTickets = 0;
         long vouchersUsed = 0; // TODO: Implement voucher tracking
         
-        // Calculate check-in data from orders
+        // Calculate check-in data from EventAttendance (not from orders!)
+        // Get all checked-in attendances for this event
+        List<EventAttendance> checkedInAttendances = eventAttendanceRepo.findCheckedInByEventId(eventId);
+        log.info("Found {} checked-in attendances for event {}", checkedInAttendances.size(), eventId);
+        
+        // Count check-ins by ticket type
         Map<Long, Long> checkInCountByTicketType = new HashMap<>();
-        for (Order order : orders) {
-            if (order.getStatus() == OrderStatus.PAID) {
-                Long ticketTypeId = order.getTicketType() != null ? order.getTicketType().getTicketTypeId() : null;
-                if (ticketTypeId != null) {
-                    checkInCountByTicketType.put(ticketTypeId, 
-                        checkInCountByTicketType.getOrDefault(ticketTypeId, 0L) + 1);
-                }
+        for (EventAttendance attendance : checkedInAttendances) {
+            if (attendance.getOrder() != null && 
+                attendance.getOrder().getTicketType() != null &&
+                (attendance.getCheckInTime() != null || 
+                 attendance.getStatus() == EventAttendance.AttendanceStatus.CHECKED_IN)) {
+                Long ticketTypeId = attendance.getOrder().getTicketType().getTicketTypeId();
+                checkInCountByTicketType.put(ticketTypeId, 
+                    checkInCountByTicketType.getOrDefault(ticketTypeId, 0L) + 1);
+                log.debug("Check-in found: TicketTypeId={}, AttendanceId={}", ticketTypeId, attendance.getAttendanceId());
             }
         }
+        
+        log.info("Check-in count by ticket type: {}", checkInCountByTicketType);
         
         // Process ticket types
         List<DashboardStatsResponse.TicketTypeStats> ticketTypeStats = ticketTypes.stream()
@@ -267,5 +282,78 @@ public class DashboardServiceImpl implements DashboardService {
         log.info("Final Rates - CheckIn: {}%, Refund: {}%, Unsold: {}%", checkInRate, refundRate, unsoldRate);
         
         return response;
+    }
+    
+    @Override
+    public HostDashboardStatsResponse getHostDashboardStats(Long hostId) {
+        log.info("Calculating host dashboard stats for host ID: {}", hostId);
+        
+        // Get all PAID orders for events belonging to this host
+        List<Order> orders = orderRepo.findByHostIdAndStatusPaid(hostId);
+        log.info("Found {} PAID orders for host {}", orders.size(), hostId);
+        
+        // Initialize counters
+        BigDecimal totalSales = BigDecimal.ZERO;
+        Long productsSold = 0L;
+        Long attendees = 0L;
+        Long totalOrders = (long) orders.size();
+        BigDecimal totalTax = BigDecimal.ZERO;
+        BigDecimal totalFees = BigDecimal.ZERO; // Platform fees - can be implemented later
+        
+        // Calculate statistics from orders
+        for (Order order : orders) {
+            // Total sales: sum of totalAmount
+            if (order.getTotalAmount() != null) {
+                totalSales = totalSales.add(order.getTotalAmount());
+            }
+            
+            // Products sold: sum of quantity
+            if (order.getQuantity() != null) {
+                productsSold += order.getQuantity();
+            }
+            
+            // Attendees: sum of quantity (each order represents attendees)
+            if (order.getQuantity() != null) {
+                attendees += order.getQuantity();
+            }
+            
+            // Calculate VAT (Tax): VAT = totalAmount / 11
+            // Since totalAmount = priceAfterDiscounts + VAT, and VAT = priceAfterDiscounts * 0.1
+            // We have: totalAmount = priceAfterDiscounts * 1.1
+            // So: priceAfterDiscounts = totalAmount / 1.1
+            // And: VAT = totalAmount - priceAfterDiscounts = totalAmount - (totalAmount / 1.1)
+            // Simplified: VAT = totalAmount * (0.1 / 1.1) = totalAmount / 11
+            if (order.getTotalAmount() != null && order.getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal vat = order.getTotalAmount().divide(new BigDecimal("11"), 2, java.math.RoundingMode.HALF_UP);
+                totalTax = totalTax.add(vat);
+            }
+        }
+        
+        // Build response
+        HostDashboardStatsResponse response = HostDashboardStatsResponse.builder()
+                .totalSales(totalSales)
+                .productsSold(productsSold)
+                .attendees(attendees)
+                .totalOrders(totalOrders)
+                .totalTax(totalTax)
+                .totalFees(totalFees)
+                .build();
+        
+        log.info("Host dashboard stats calculated for host {}: Sales={}, Products Sold={}, Attendees={}, Orders={}, Tax={}", 
+                hostId, totalSales, productsSold, attendees, totalOrders, totalTax);
+        
+        return response;
+    }
+    
+    @Override
+    public Page<Order> getHostOrders(Long hostId, Pageable pageable) {
+        log.info("Getting orders for host ID: {}, page: {}, size: {}", hostId, pageable.getPageNumber(), pageable.getPageSize());
+        return orderRepo.findByHostId(hostId, pageable);
+    }
+    
+    @Override
+    public Page<Order> getHostPaidOrders(Long hostId, Pageable pageable) {
+        log.info("Getting PAID orders for host ID: {}, page: {}, size: {}", hostId, pageable.getPageNumber(), pageable.getPageSize());
+        return orderRepo.findByHostIdAndStatusPaid(hostId, pageable);
     }
 }

@@ -2,6 +2,7 @@ package com.group02.openevent.controller.payout;
 
 
 import com.group02.openevent.dto.payment.PayoutRequestDto;
+import com.group02.openevent.dto.payment.PayoutResponseDto;
 import com.group02.openevent.exception.WalletException;
 import com.group02.openevent.model.payment.PayoutRequest;
 import com.group02.openevent.service.IPayoutService;
@@ -26,14 +27,15 @@ public class PayoutController {
 
     /**
      * Endpoint cho Host yêu cầu rút tiền
-     * POST /api/hosts/{hostId}/payouts
+     * POST /api/payout/{hostId}/request-withdraw
+     * Lưu ý: Thông tin ngân hàng sẽ được lấy từ ví của host, không cần gửi trong request
      */
     @PostMapping(path = "/{hostId}/request-withdraw")
     public ResponseEntity<?> requestPayout(
             @PathVariable Long hostId,
             @RequestBody PayoutRequestDto requestDto) {
 
-        if (requestDto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (requestDto.getAmount() == null || requestDto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return ResponseEntity.badRequest().body("Số tiền rút phải lớn hơn 0.");
         }
 
@@ -41,8 +43,22 @@ public class PayoutController {
             // Gọi Service để xử lý yêu cầu: Kiểm tra số dư, trừ tiền, gọi PayOS
             PayoutRequest payout = payoutService.processPayoutRequest(hostId, requestDto);
 
+            // Convert entity to DTO to avoid circular reference in JSON
+            PayoutResponseDto responseDto = PayoutResponseDto.builder()
+                    .id(payout.getId())
+                    .amount(payout.getAmount())
+                    .bankAccountNumber(payout.getBankAccountNumber())
+                    .bankCode(payout.getBankCode())
+                    .payosOrderCode(payout.getPayosOrderCode())
+                    .payosTransactionId(payout.getPayosTransactionId())
+                    .status(payout.getStatus())
+                    .transactionFee(payout.getTransactionFee())
+                    .requestedAt(payout.getRequestedAt())
+                    .processedAt(payout.getProcessedAt())
+                    .build();
+
             // Trả về thông tin yêu cầu Payout đã được tạo
-            return ResponseEntity.ok(payout);
+            return ResponseEntity.ok(responseDto);
 
         } catch (WalletException e) {
             // Bắt lỗi nghiệp vụ (ví dụ: số dư không đủ)

@@ -10,5 +10,8 @@ public interface IUserRepo extends JpaRepository<User, Long> {
     Optional<User> findByAccount(Account account);
     Optional<User> findByAccount_AccountId(Long accountId);
     Optional<User> findByAccount_Email(String email);
+
+    User findByHost_Id(Long hostId);
+
     boolean existsByPhoneNumber(String phoneNumber);
 }

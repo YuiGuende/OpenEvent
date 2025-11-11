@@ -48,7 +48,7 @@ public class DepartmentController {
     private DepartmentService departmentService;
 
     private Long getDepartmentAccountId(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Long accountId = (Long) session.getAttribute("USER_ID");
         if (accountId == null) {
             throw new RuntimeException("User not logged in");
         }

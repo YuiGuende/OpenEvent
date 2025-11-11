@@ -104,7 +104,7 @@ public class EventServiceTest {
         when(eventMapper.toEventResponse(mockEvent)).thenReturn(mockResponse);
 
         // When
-        EventResponse result = eventService.saveEvent(req, 1L);
+        EventResponse result = eventService.saveEvent(req,1L);
 
         // Then
         assertNotNull(result);
@@ -119,7 +119,7 @@ public class EventServiceTest {
         when(eventRepo.save(any(Event.class))).thenReturn(new MusicEvent());
         when(eventMapper.toEventResponse(any())).thenReturn(new EventResponse());
 
-        EventResponse res = eventService.saveEvent(req, 1L);
+        EventResponse res = eventService.saveEvent(req,1L);
 
         assertNotNull(res);
         verify(eventRepo).save(any(MusicEvent.class));
@@ -132,7 +132,7 @@ public class EventServiceTest {
         when(eventRepo.save(any(Event.class))).thenReturn(new Event());
         when(eventMapper.toEventResponse(any())).thenReturn(new EventResponse());
 
-        EventResponse res = eventService.saveEvent(req, 1L);
+        EventResponse res = eventService.saveEvent(req,1L);
 
         assertNotNull(res);
         verify(eventRepo).save(any(Event.class)); // generic event
@@ -142,7 +142,7 @@ public class EventServiceTest {
         EventCreationRequest req = new EventCreationRequest();
         req.setEventType(EventType.MUSIC);
         doThrow(RuntimeException.class).when(eventMapper).createEventFromRequest(any(), any());
-        assertThrows(RuntimeException.class, () -> eventService.saveEvent(req, 1L));
+        assertThrows(RuntimeException.class, () -> eventService.saveEvent(req,1L));
     }
     @Test
     void TC01_ShouldUpdateBasicFields_WhenEventExists() {

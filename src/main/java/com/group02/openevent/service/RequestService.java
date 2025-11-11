@@ -45,4 +45,9 @@ public interface RequestService {
 
     Request rejectRequest(Long requestId, String responseMessage);
     Page<Request> getRequestsByReceiver(Long receiverAccountId, RequestStatus status, Pageable pageable);
+    
+    /**
+     * Get all requests sent by a specific host
+     */
+    List<RequestDTO> getRequestsByHostId(Long hostId);
 }

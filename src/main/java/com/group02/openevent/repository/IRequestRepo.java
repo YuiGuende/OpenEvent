@@ -7,6 +7,8 @@ import com.group02.openevent.model.request.RequestType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,9 +19,9 @@ public interface IRequestRepo extends JpaRepository<Request, Long> {
 
     List<Request> findByType(RequestType type);
 
-    List<Request> findBySenderAccountId(Long senderId);
+    List<Request> findBySenderUserId(Long senderId);
 
-    List<Request> findByReceiver_AccountId(Long receiverId);
+    List<Request> findByReceiverUserId(Long receiverId);
 
     List<Request> findByEvent_Id(Long eventId);
 
@@ -32,13 +34,22 @@ public interface IRequestRepo extends JpaRepository<Request, Long> {
 
     Page<Request> findByStatusAndType(RequestStatus status, RequestType type, Pageable pageable);
 
-    Page<Request> findByReceiver_AccountId(Long receiverId, Pageable pageable);
+    Page<Request> findByReceiverUserId(Long receiverId, Pageable pageable);
 
-    long countByReceiverAccountIdAndStatus(Long accountId, RequestStatus requestStatus);
+    long countByReceiverUserIdAndStatus(Long receiverId, RequestStatus requestStatus);
 
-    Page<Request> findByReceiver_AccountIdAndStatus(Long receiverAccountId, RequestStatus status, Pageable pageable);
+    Page<Request> findByReceiverUserIdAndStatus(Long receiverId, RequestStatus status, Pageable pageable);
 
-    long countByReceiver_AccountIdAndStatus(Long receiverId, RequestStatus status);
+    List<Request> findByReceiverUserIdAndStatusOrderByUpdatedAtDesc(Long receiverId, RequestStatus status);
+    /**
+     * Find all requests by host ID (sent by this host), ordered by createdAt descending (newest first)
+     */
+    @Query("SELECT r FROM Request r WHERE r.host.id = :hostId ORDER BY r.createdAt DESC")
+    List<Request> findByHost_Id(@Param("hostId") Long hostId);
 
-    List<Request> findByReceiver_AccountIdAndStatusOrderByUpdatedAtDesc(Long receiverId, RequestStatus status);
+    /**
+     * Find all requests by host ID with pagination, ordered by createdAt descending (newest first)
+     */
+    @Query("SELECT r FROM Request r WHERE r.host.id = :hostId ORDER BY r.createdAt DESC")
+    Page<Request> findByHost_Id(@Param("hostId") Long hostId, Pageable pageable);
 }

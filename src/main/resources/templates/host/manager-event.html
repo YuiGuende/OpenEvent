@@ -17,13 +17,15 @@
 
         <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
         <!-- Cropper.js -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
         <link rel="stylesheet" href="/css/getting-stared.css">
         <link rel="stylesheet" href="/css/create-event.css">
         <link rel="stylesheet" href="/css/update-ticket.css">
         <link rel="stylesheet" href="/css/orders.css">
         <link rel="stylesheet" href="/css/dashboard-event.css">
+        <link rel="stylesheet" href="/css/event-attendees.css">
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -89,7 +91,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/manage/event/attendees" class="nav-link" data-link>
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/attendees'}" class="nav-link" data-link>
                                 <i class="bi bi-people"></i>
                                 <span>Người tham dự</span>
                                 <span class="badge">0</span>
@@ -110,9 +112,9 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="bi bi-speedometer2"></i>
-                                <span>Công suất</span>
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/request-form'}" class="nav-link" data-link>
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Yêu cầu duyệt</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -143,6 +145,18 @@
                             <a th:href="@{'/manage/event/' + ${eventId} + '/qr-codes'}" class="nav-link" data-link>
                                 <i class="bi bi-qr-code"></i>
                                 <span>QR Codes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">THÔNG BÁO</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/notification'}" class="nav-link" data-link>
+                                <i class="bi bi-bell"></i>
+                                <span>Thông báo</span>
                             </a>
                         </li>
                     </ul>
@@ -185,12 +199,15 @@
                         </ol>
                     </nav>
                 </div>
-
+                <a th:href="@{/}" class="btn btn-homepage">
+                    <i class="fas fa-home"></i>
+                    Về trang chủ
+                </a>
                 <div class="header-right">
-                    <button class="btn btn-outline-light btn-sm">
+                    <a th:href="@{/organizer}" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-up-right"></i>
-                        Xem trước trang sự kiện
-                    </button>
+                        Quay lại trang Host
+                    </a>
 
                     <button class="btn btn-outline-light btn-sm">
                         <i class="bi bi-share"></i>
@@ -198,11 +215,13 @@
                     </button>
 
                     <div class="dropdown">
-                        <button class="btn btn-icon" data-bs-toggle="dropdown">
-                            <i class="bi bi-globe"></i>
-                            <span class="d-none d-md-inline">DL</span>
+                        <button class="btn btn-icon" data-bs-toggle="dropdown" id="userDropdownBtn">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="d-none d-md-inline" id="userDisplayName">DL</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header" id="userNameHeader">User</h6></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#">Tiếng Việt</a></li>
                             <li><a class="dropdown-item" href="#">English</a></li>
                         </ul>
@@ -248,13 +267,153 @@
     <script src="/js/agenda-manager.js?v=7"></script>
     <script src="/js/image-manager.js?v=1"></script>
     <script src="/js/place-manager.js"></script>
+    <script src="/js/request-form.js"></script>
     <script src="/js/sidebar-manager.js"></script>
     <script src="/js/update-event.js"></script>
     <script src="/js/router.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/update-ticket.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <script src="/js/event-attendees.js"></script>
 
+    <script>
+        // Load and display user name in header
+        function loadUserName() {
+            fetch('/api/current-user')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.authenticated && data.name) {
+                        const userDisplayNameEl = document.getElementById('userDisplayName');
+                        const userNameHeaderEl = document.getElementById('userNameHeader');
+
+                        if (userDisplayNameEl) {
+                            // Display name, limit to 15 characters for display
+                            const displayName = data.name.length > 15 ? data.name.substring(0, 15) + '...' : data.name;
+                            userDisplayNameEl.textContent = displayName;
+                        }
+
+                        if (userNameHeaderEl) {
+                            userNameHeaderEl.textContent = data.name;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user name:', error);
+                });
+        }
+
+        // Load user name when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadUserName);
+        } else {
+            loadUserName();
+        }
+    </script>
+
+    <!-- Event Attendees Modals (Global - outside fragment to prevent recreation on reload) -->
+    <!-- Add Attendee Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-person-plus me-2"></i>Thêm Người Tham Dự
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="closeAddModal()"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <form id="addForm" onsubmit="event.preventDefault(); return false;">
+                        <div class="mb-3">
+                            <label for="addName" class="form-label fw-bold">Tên <span class="text-danger">*</span></label>
+                            <input type="text" id="addName" class="form-control form-control-lg" placeholder="Nhập tên" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addEmail" class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                            <input type="email" id="addEmail" class="form-control form-control-lg" placeholder="example@email.com" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addPhone" class="form-label fw-bold">Số Điện Thoại <span class="text-danger">*</span></label>
+                            <input type="tel" id="addPhone" class="form-control form-control-lg" placeholder="0912345678" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addOrganization" class="form-label fw-bold">Tổ Chức</label>
+                            <input type="text" id="addOrganization" class="form-control form-control-lg" placeholder="Nhập tổ chức (nếu có)">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addTicketType" class="form-label fw-bold">Loại Vé <span class="text-danger">*</span></label>
+                            <select id="addTicketType" class="form-select form-select-lg" required>
+                                <option value="">-- Chọn loại vé --</option>
+                                <!-- Options will be loaded via JavaScript -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer border-0 p-4 bg-light">
+                    <button type="button" class="btn btn-secondary btn-lg fw-bold" onclick="closeAddModal()">
+                        <i class="bi bi-x-lg me-1"></i>Hủy
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg fw-bold" onclick="submitAddAttendee()">
+                        <i class="bi bi-plus-lg me-1"></i>Thêm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Attendee Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-primary text-white border-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Người Tham Dự
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="closeEditModal()"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <form id="editForm" onsubmit="event.preventDefault(); return false;">
+                        <input type="hidden" id="editAttendanceId">
+
+                        <div class="mb-3">
+                            <label for="editName" class="form-label fw-bold">Tên <span class="text-danger">*</span></label>
+                            <input type="text" id="editName" class="form-control form-control-lg" placeholder="Nhập tên" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                            <input type="email" id="editEmail" class="form-control form-control-lg" placeholder="example@email.com" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editPhone" class="form-label fw-bold">Số Điện Thoại <span class="text-danger">*</span></label>
+                            <input type="tel" id="editPhone" class="form-control form-control-lg" placeholder="0912345678" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editOrganization" class="form-label fw-bold">Tổ Chức</label>
+                            <input type="text" id="editOrganization" class="form-control form-control-lg" placeholder="Nhập tổ chức (nếu có)">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer border-0 p-4 bg-light">
+                    <button type="button" class="btn btn-secondary btn-lg fw-bold" onclick="closeEditModal()">
+                        <i class="bi bi-x-lg me-1"></i>Hủy
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg fw-bold" onclick="submitEditAttendee()">
+                        <i class="bi bi-check-lg me-1"></i>Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     </body>
 
     </html>

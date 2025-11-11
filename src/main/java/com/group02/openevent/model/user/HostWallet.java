@@ -7,6 +7,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Getter
 @Setter
 @Entity
@@ -30,4 +32,21 @@ public class HostWallet {
 
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated = LocalDateTime.now();
+
+    // Thông tin ngân hàng
+    @Column(name = "bank_account_number", length = 50)
+    private String bankAccountNumber;
+
+    @Column(name = "bank_code", length = 20)
+    private String bankCode;
+
+    @Column(name = "account_holder_name", length = 100)
+    private String accountHolderName;
+
+    // Thông tin KYC
+    @Column(name = "kyc_verified", nullable = false)
+    private Boolean kycVerified = false;
+
+    @Column(name = "kyc_name", length = 100)
+    private String kycName;
 }

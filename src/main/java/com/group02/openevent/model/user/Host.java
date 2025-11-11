@@ -31,9 +31,9 @@ public class Host {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToOne(optional = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = true)
-    private Customer customer;
+//    @OneToOne(optional = true, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "customer_id", nullable = true)
+//    private Customer customer;
 
     @Column(name = "host_discount_percent", precision = 5, scale = 2)
     private BigDecimal hostDiscountPercent = BigDecimal.ZERO;
@@ -56,9 +56,7 @@ public class Host {
         if (user != null && user.getAccount() != null) {
             return user.getAccount().getEmail();
         }
-        if (customer != null && customer.getUser() != null && customer.getUser().getName() != null) {
-            return customer.getUser().getName();
-        }
+
         if (organization != null && organization.getOrgName() != null) {
             return organization.getOrgName();
         }

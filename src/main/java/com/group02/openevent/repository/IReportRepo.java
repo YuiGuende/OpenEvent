@@ -16,7 +16,7 @@ public interface IReportRepo extends JpaRepository<Report, Long> {
     List<Report> findByStatus(ReportStatus status);
     List<Report> findByType(ReportType type);
     List<Report> findByEventId(Long eventId);
-    List<Report> findByCustomerId(Long customerId);
+    List<Report> findByUserId(Long customerId);
     
     // Pageable listing
     Page<Report> findAll(Pageable pageable);

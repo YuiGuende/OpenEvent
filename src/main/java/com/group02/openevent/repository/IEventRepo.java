@@ -82,6 +82,21 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
                              @Param("fromDateTime") LocalDateTime fromDateTime,
                              @Param("toDateTime") LocalDateTime toDateTime);
 
+    /**
+     * Find event with host, customer, and account eagerly fetched for authorization checks
+     */
+    @Query("""
+        SELECT e FROM Event e
+        LEFT JOIN FETCH e.host h
+        WHERE e.id = :eventId
+    """)
+    Optional<Event> findByIdWithHostAccount(@Param("eventId") Long eventId);
+
+    /**
+     * Filter events by host ID with search, status, and time filters
+     */
+
+
 
 
 

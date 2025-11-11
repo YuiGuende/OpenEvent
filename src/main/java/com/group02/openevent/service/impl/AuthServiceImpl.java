@@ -17,11 +17,13 @@ import com.group02.openevent.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 	private final IAccountRepo accountRepo;
@@ -113,8 +115,9 @@ public class AuthServiceImpl implements AuthService {
 		Role role = user.getRole();
 
 		// Set HTTP session attributes for backward compatibility
-		httpSession.setAttribute("ACCOUNT_ID", account.getAccountId());
-		httpSession.setAttribute("ACCOUNT_ROLE", role.name());
+        log.info("set user id:{}", user.getUserId());
+		httpSession.setAttribute("USER_ID", user.getUserId());
+		httpSession.setAttribute("USER_ROLE", role.name());
 
 		return new AuthResponse(account.getAccountId(), account.getEmail(), role, redirectFor(role));
 	}

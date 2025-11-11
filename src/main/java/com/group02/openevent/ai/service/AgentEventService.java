@@ -10,6 +10,7 @@ import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.user.Host;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IEmailReminderRepo;
 import com.group02.openevent.service.*;
@@ -48,6 +49,9 @@ public class AgentEventService {
     private IEventRepo  eventRepo;
     @Autowired
     private IEmailReminderRepo emailReminderRepo;
+    @Autowired
+    private UserService userService;
+
     /**
      * Lưu yêu cầu nhắc nhở email vào cơ sở dữ liệu.
      * @param eventId ID sự kiện cần nhắc nhở.
@@ -247,8 +251,6 @@ public class AgentEventService {
      */
     public Event createEventByCustomer(Long userId, EventItem draft, @Nullable Long organizationId) {
         // 1) Load or create customer
-        Customer c = customerService.getOrCreateByUserId(userId);
-
         Event event;
         log.info("Saving event {}", draft.getEventType());
         log.info("Saving event from DTO type: {}", draft.getClass().getName());
@@ -283,16 +285,17 @@ public class AgentEventService {
             event.getSubEvents().forEach(sub -> sub.setParentEvent(finalEvent));
         }
         // 2) Find or create Host (idempotent)
-        Host h = c.getHost();
-        if (h == null) {
-            log.info("This customer has no host");
-            h = hostService.findByCustomerId(c.getCustomerId()).orElseGet(() -> {
-                Host nh = new Host();
-                nh.setCustomer(c);
-                log.info("Create host corresponding to customer id {}", c.getCustomerId());
-                return hostService.save(nh);
-            });
-        }
+        User user = userService.getUserById(userId);
+        Host h = user.getHost();
+//        if (h == null) {
+//            log.info("This customer has no host");
+//            h = hostService.findByCustomerId(customer.getCustomerId()).orElseGet(() -> {
+//                Host nh = new Host();
+//                nh.setCustomer(customer);
+//                log.info("Create host corresponding to customer id {}", customer.getCustomerId());
+//                return hostService.save(nh);
+//            });
+//        }
         
         // 3) Required host
         finalEvent.setHost(h);

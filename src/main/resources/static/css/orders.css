@@ -41,22 +41,24 @@
 .status-expired { background: #e5e7eb; color: #374151; }
 .status-refunded { background: #dbeafe; color: #1e40af; }
 
-/* Custom table header */
+/* Custom table header - Increase specificity to override event-attendees.css */
 .orders-table thead {
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
 }
 
 .orders-table thead th {
-    color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: none;
+    color: white !important;
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border: none !important;
+    padding: 1rem !important;
 }
 
 /* Modal header gradient */
 .modal-header-gradient {
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));!important;
     color: white;
 }
 

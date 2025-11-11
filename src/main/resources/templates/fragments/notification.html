@@ -1,0 +1,326 @@
+<div th:fragment="content" xmlns:th="http://www.thymeleaf.org">
+    <div class="notification-container">
+        <div class="notification-header">
+            <h2><i class="bi bi-bell"></i> Gửi Thông Báo</h2>
+            <p class="text-muted">Gửi thông báo đến tất cả người tham gia sự kiện</p>
+        </div>
+
+        <!-- Thông tin sự kiện và số lượng người nhận -->
+        <div class="event-info-card mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <strong>Sự kiện:</strong>
+                        <span th:text="${event?.title}">[Tên sự kiện]</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <strong>Số người sẽ nhận:</strong>
+                        <span id="receiver-count" class="badge bg-primary">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form gửi thông báo -->
+        <div class="notification-form-card mb-4">
+            <h4 class="mb-3">Tạo thông báo mới</h4>
+            <form id="notificationForm" enctype="multipart/form-data">
+                <input type="hidden" id="eventId" th:value="${eventId}">
+                
+                <div class="mb-3">
+                    <label for="title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="title" name="title" 
+                           placeholder="Ví dụ: Thay đổi địa điểm, Cần chuẩn bị..." 
+                           maxlength="100" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="message" class="form-label">Nội dung <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="message" name="message" rows="5" 
+                              placeholder="Nhập nội dung thông báo chi tiết tại đây (Tối đa 500 ký tự)" 
+                              maxlength="500" required></textarea>
+                    <small class="text-muted">
+                        <span id="char-count">0</span>/500 ký tự
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="file-upload" class="form-label">File đính kèm (Tùy chọn)</label>
+                    <input type="file" class="form-control" id="file-upload" name="file" 
+                           accept="image/*,application/pdf,.doc,.docx">
+                    <small class="text-muted">Hỗ trợ: Hình ảnh, PDF, Word (Tối đa 10MB)</small>
+                    
+                    <!-- Preview area -->
+                    <div id="file-preview" class="mt-3" style="display: none;">
+                        <div class="preview-item">
+                            <img id="preview-image" src="" alt="Preview" class="img-thumbnail" style="max-width: 300px; display: none;">
+                            <div id="preview-file-info" style="display: none;">
+                                <i class="bi bi-file-earmark"></i>
+                                <span id="preview-file-name"></span>
+                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeFile()">
+                                    <i class="bi bi-x"></i> Xóa
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i class="bi bi-send"></i> Gửi Thông Báo
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lịch sử thông báo -->
+        <div class="notification-history-card">
+            <h4 class="mb-3">Lịch sử thông báo</h4>
+            <div id="notification-history" class="notification-history-list">
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-hourglass-split" style="font-size: 3rem;"></i>
+                    <p class="mt-2">Đang tải lịch sử...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const eventId = document.getElementById('eventId')?.value;
+        
+        // Character counter
+        const messageTextarea = document.getElementById('message');
+        const charCount = document.getElementById('char-count');
+        
+        messageTextarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+
+        // File upload preview
+        const fileInput = document.getElementById('file-upload');
+        const previewDiv = document.getElementById('file-preview');
+        let selectedFile = null;
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                
+                if (file.type.startsWith('image/')) {
+                    reader.onload = function(e) {
+                        document.getElementById('preview-image').src = e.target.result;
+                        document.getElementById('preview-image').style.display = 'block';
+                        document.getElementById('preview-file-info').style.display = 'none';
+                        previewDiv.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    document.getElementById('preview-file-name').textContent = file.name;
+                    document.getElementById('preview-file-info').style.display = 'block';
+                    document.getElementById('preview-image').style.display = 'none';
+                    previewDiv.style.display = 'block';
+                }
+            }
+        });
+
+        function removeFile() {
+            fileInput.value = '';
+            previewDiv.style.display = 'none';
+            selectedFile = null;
+        }
+
+        function resetForm() {
+            document.getElementById('notificationForm').reset();
+            removeFile();
+            charCount.textContent = '0';
+        }
+
+        // Load receiver count
+        async function loadReceiverCount() {
+            try {
+                const response = await fetch(`/api/events/${eventId}/participants/count`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('receiver-count').textContent = data.count || 0;
+                } else {
+                    document.getElementById('receiver-count').textContent = 'N/A';
+                }
+            } catch (error) {
+                console.error('Error loading receiver count:', error);
+                document.getElementById('receiver-count').textContent = 'N/A';
+            }
+        }
+
+        // Load notification history
+        async function loadNotificationHistory() {
+            try {
+                const response = await fetch(`/api/notifications/event/${eventId}`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    displayNotificationHistory(data.notifications || []);
+                } else {
+                    document.getElementById('notification-history').innerHTML = 
+                        '<div class="text-center text-muted py-5"><p>Không thể tải lịch sử</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading notification history:', error);
+                document.getElementById('notification-history').innerHTML = 
+                    '<div class="text-center text-danger py-5"><p>Lỗi khi tải lịch sử</p></div>';
+            }
+        }
+
+        function displayNotificationHistory(notifications) {
+            const historyDiv = document.getElementById('notification-history');
+            if (!notifications || notifications.length === 0) {
+                historyDiv.innerHTML = 
+                    '<div class="text-center text-muted py-5">' +
+                    '<i class="bi bi-inbox" style="font-size: 3rem;"></i>' +
+                    '<p class="mt-2">Chưa có thông báo nào</p>' +
+                    '</div>';
+                return;
+            }
+
+            historyDiv.innerHTML = notifications.map(notif => {
+                const date = new Date(notif.createdAt).toLocaleString('vi-VN');
+                const fileBadge = notif.fileURL ? 
+                    `<span class="badge bg-info ms-2"><i class="bi bi-paperclip"></i> Có file</span>` : '';
+                return `
+                    <div class="notification-item mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${notif.title || '(Không có tiêu đề)'}${fileBadge}</h6>
+                                <p class="text-muted mb-2">${notif.message}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> ${date} | 
+                                    <i class="bi bi-people"></i> ${notif.receiverCount || 0} người nhận
+                                </small>
+                            </div>
+                            ${notif.fileURL ? `
+                                <a href="${notif.fileURL}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Form submission
+        document.getElementById('notificationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (!message) {
+                alert('Vui lòng nhập nội dung thông báo');
+                return;
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn gửi thông báo này đến tất cả người tham gia?')) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('eventId', eventId);
+            formData.append('title', title);
+            formData.append('message', message);
+            if (selectedFile) {
+                formData.append('file', selectedFile);
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang gửi...';
+
+            try {
+                const response = await fetch('/api/notifications/event-participants', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    alert('✅ ' + result);
+                    resetForm();
+                    loadNotificationHistory();
+                    loadReceiverCount();
+                } else {
+                    alert('❌ Lỗi: ' + result);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Có lỗi xảy ra khi gửi thông báo: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send"></i> Gửi Thông Báo';
+            }
+        });
+
+        // Initialize on load
+        if (eventId) {
+            loadReceiverCount();
+            loadNotificationHistory();
+        }
+    </script>
+
+    <style>
+        .notification-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .notification-header {
+            margin-bottom: 30px;
+        }
+
+        .event-info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .info-item {
+            padding: 10px 0;
+        }
+
+        .notification-form-card, .notification-history-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .notification-item {
+            background: #f8f9fa;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: #e9ecef;
+        }
+
+        .preview-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #file-preview {
+            margin-top: 10px;
+        }
+    </style>
+</div>

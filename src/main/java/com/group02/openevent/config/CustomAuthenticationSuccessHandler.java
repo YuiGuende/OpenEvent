@@ -2,6 +2,8 @@ package com.group02.openevent.config;
 
 
 import com.group02.openevent.model.user.CustomUserDetails;
+import com.group02.openevent.model.user.User;
+import com.group02.openevent.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,6 +17,7 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -22,6 +25,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     // Component này dùng để lưu trữ các request bị chặn trước đó (ví dụ: người dùng cố truy cập /event/10)
     private final HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+    private final UserService userService;
+
+    public CustomAuthenticationSuccessHandler(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public void onAuthenticationSuccess(
@@ -35,9 +43,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         // Xử lý cả hai trường hợp: Form login (CustomUserDetails) và OAuth2 login (OAuth2User)
         if (authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
             // Form login: sử dụng CustomUserDetails
-            session.setAttribute("ACCOUNT_ID", userDetails.getAccountId()); 
-            session.setAttribute("ACCOUNT_ROLE", userDetails.getRole());
-            log.info("Form login successful - Account ID: {}, Role: {}", userDetails.getAccountId(), userDetails.getRole());
+           Optional<User> userOptional= userService.getUserByAccountId(userDetails.getAccountId());
+            session.setAttribute("USER_ID", userOptional.get().getUserId());
+            session.setAttribute("USER_ROLE", userDetails.getRole());
+            log.info("Form login successful - Account ID: {}, Role: {}", userOptional.get().getUserId(), userDetails.getRole());
         } else if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
             // OAuth2 login: lấy thông tin từ OAuth2User attributes
             Object accountIdObj = oauth2User.getAttributes().get("accountId");
@@ -54,8 +63,9 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             }
             
             if (accountId != null && role != null) {
-                session.setAttribute("ACCOUNT_ID", accountId);
-                session.setAttribute("ACCOUNT_ROLE", role);
+                Optional<User> userOptional= userService.getUserByAccountId(accountId);
+                session.setAttribute("USER_ID", userOptional.get().getUserId());
+                session.setAttribute("USER_ROLE", role);
                 log.info("OAuth2 login successful - Account ID: {}, Role: {}", accountId, role);
             } else {
                 log.warn("OAuth2 user missing accountId or role in attributes. accountId: {}, role: {}", accountIdObj, role);

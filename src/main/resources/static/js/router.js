@@ -96,6 +96,9 @@ class SpaRouter {
             this.mainContent.innerHTML = html;
             document.title = route.title;
 
+            // Execute scripts in the injected HTML
+            this.executeScripts(this.mainContent);
+
             // Chạy hàm JavaScript khởi tạo cho trang đó (nếu có)
             if (typeof route.initializer === 'function') {
                 route.initializer();
@@ -189,6 +192,27 @@ class SpaRouter {
             if (link.getAttribute('href') === path) {
                 link.closest('.nav-item').classList.add('active');
             }
+        });
+    }
+
+    /**
+     * Execute scripts found in dynamically loaded HTML fragments.
+     * innerHTML does not execute script tags by default, so we need to manually execute them.
+     * @param {HTMLElement} container - The container element that contains the scripts.
+     */
+    executeScripts(container) {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach((oldScript) => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+            if (oldScript.src) {
+                newScript.src = oldScript.src;
+            } else {
+                newScript.textContent = oldScript.textContent;
+            }
+            oldScript.parentNode.replaceChild(newScript, oldScript);
         });
     }
 }

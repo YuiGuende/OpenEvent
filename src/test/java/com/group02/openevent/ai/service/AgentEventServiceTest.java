@@ -12,6 +12,8 @@ import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -100,6 +102,86 @@ class AgentEventServiceTest {
         verify(eventRepo).save(any(Event.class));
         verify(organizationService).findById(5L);
         verify(emailReminderRepo).findByEventIdAndUserId(7L, 9L);
+    }
+
+    // BR-04: Test missing title
+    @Test
+    void saveEventFromAction_missingTitle_throwsException() {
+        Action action = new Action();
+        action.setArgs(Map.of("start_time", "2025-01-01 10:00", "end_time", "2025-01-01 12:00"));
+        
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> {
+            service.saveEventFromAction(action, 9L);
+        });
+    }
+
+    // BR-04: Test missing start_time
+    @Test
+    void saveEventFromAction_missingStartTime_throwsException() {
+        Action action = new Action();
+        action.setArgs(Map.of("title", "T", "end_time", "2025-01-01 12:00"));
+        
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> {
+            service.saveEventFromAction(action, 9L);
+        });
+    }
+
+    // BR-04: Test missing end_time
+    @Test
+    void saveEventFromAction_missingEndTime_throwsException() {
+        Action action = new Action();
+        action.setArgs(Map.of("title", "T", "start_time", "2025-01-01 10:00"));
+        
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> {
+            service.saveEventFromAction(action, 9L);
+        });
+    }
+
+    // BR-10: Test invalid datetime format
+    @Test
+    void saveEventFromAction_invalidDateTimeFormat_throwsException() {
+        Action action = new Action();
+        action.setArgs(Map.of(
+            "title", "T",
+            "start_time", "invalid-format",
+            "end_time", "2025-01-01 12:00"
+        ));
+        
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> {
+            service.saveEventFromAction(action, 9L);
+        });
+    }
+
+    // BR-09: Test valid datetime formats
+    @ParameterizedTest
+    @CsvSource({
+        "2025-01-15T10:00,2025-01-15T12:00",
+        "2025-01-15 10:00,2025-01-15 12:00",
+        "15/01/2025 10:00,15/01/2025 12:00",
+        "15-01-2025 10:00,15-01-2025 12:00"
+    })
+    void saveEventFromAction_validDateTimeFormats_success(String startTime, String endTime) {
+        Action action = new Action();
+        action.setArgs(Map.of(
+            "title", "T",
+            "start_time", startTime,
+            "end_time", endTime
+        ));
+        
+        Customer c = new Customer();
+        Host h = new Host();
+        Event e = new Event();
+        e.setId(1L);
+        when(customerService.getOrCreateByUserId(anyLong())).thenReturn(c);
+        when(hostService.findByCustomerId(anyLong())).thenReturn(Optional.of(h));
+        when(eventRepo.save(any())).thenReturn(e);
+        
+        // Should not throw exception
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
+            service.saveEventFromAction(action, 9L);
+        });
+        
+        verify(eventRepo, times(1)).save(any(Event.class));
     }
 }
 

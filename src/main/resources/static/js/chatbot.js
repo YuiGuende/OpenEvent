@@ -1,162 +1,505 @@
-// ===== CONFIGURATION =====
-// These will be set dynamically from the page
-let API_BASE_URL = "";
-let USER_ID = 2;
-const API_ENDPOINT = "/api/ai/chat/enhanced";
 
-// ===== GLOBAL VARIABLES =====
-let chatbotToggler = null;
-let closeBtn = null;
-let chatInput = null;
-let sendBtn = null;
-let chatMessages = null;
-let typingIndicator = null;
-let sessionPopupInitialized = false;
+    // ===== CONFIGURATION =====
+    // These will be set dynamically from the page
+    let API_BASE_URL = "";
+    let USER_ID = null;
+    const API_ENDPOINT = "/api/ai/chat/enhanced";
+    const WELCOME_FLAG = "oe_welcome_shown";
 
-// ===== CHAT HISTORY MANAGEMENT =====
-const chatHistory = new Map(); // Lưu trữ chat history cho mỗi session
+    // Long validator (string of digits, > 0)
+    function isValidUserId(id) {
+    if (id == null) return false;
+    const s = String(id);
+    if (!/^\d+$/.test(s)) return false;
+    try { return BigInt(s) > 0n; } catch { return false; }
+}
 
-// Hàm lưu chat history
-function saveChatHistory(sessionId) {
-    if (!chatMessages) return;
+    // ===== BOOT GUARD (PATCH) =====
+    let __chatbotBooting = false;
+    let __chatbotReady = false;
 
-    const messages = Array.from(chatMessages.children).map(msg => ({
-        type: msg.classList.contains('user-message') ? 'user' : 'bot',
-        content: msg.querySelector('.message-bubble').textContent.trim(),
-        timestamp: new Date().toISOString()
-    }));
+    // ===== GLOBAL VARIABLES =====
+    let chatbotToggler = null;
+    let closeBtn = null;
+    let chatInput = null;
+    let sendBtn = null;
+    let chatMessages = null;
+    let typingIndicator = null;
+    let sessionPopupInitialized = false;
+    let __sending = false;
+
+    // ===== EARLY EXPORT FOR INLINE SCRIPTS =====
+    if (typeof window !== "undefined" && !window.sendMessage) {
+    window.__actualSendMessage = null;
+    window.__sendMessagePlaceholderActive = true;
+
+    window.sendMessage = function () {
+    if (!window.__sendMessagePlaceholderActive) {
+    console.error("❌ Placeholder called but should be replaced. This should not happen.");
+    return;
+}
+    if (window.__actualSendMessage && typeof window.__actualSendMessage === "function") {
+    console.log("📤 Calling actual sendMessage function from placeholder");
+    try {
+    return window.__actualSendMessage.apply(this, arguments);
+} catch (error) {
+    console.error("❌ Error calling actual sendMessage:", error);
+    throw error;
+}
+} else {
+    console.warn("⚠️ sendMessage function not ready yet. Retrying in 200ms...");
+    const self = this;
+    const args = Array.from(arguments);
+    setTimeout(function () {
+    if (window.__actualSendMessage && typeof window.__actualSendMessage === "function") {
+    console.log("📤 Calling actual sendMessage function (after retry)");
+    return window.__actualSendMessage.apply(self, args);
+} else {
+    console.error("❌ sendMessage function still not ready after retry.");
+}
+}, 200);
+}
+};
+
+    window.__setSendMessage = function (fn) {
+    if (!fn || typeof fn !== "function") {
+    console.error("❌ Invalid function passed to __setSendMessage");
+    return;
+}
+    console.log("🔄 Updating sendMessage from placeholder to actual function");
+    window.__actualSendMessage = fn;
+    window.__sendMessagePlaceholderActive = false;
+    window.sendMessage = fn;
+    console.log("✅ sendMessage function updated from placeholder to actual");
+};
+
+    console.log("✅ sendMessage placeholder exported to window (early)");
+}
+
+    // ===== CHAT HISTORY MANAGEMENT =====
+    const chatHistory = new Map();
+
+    function saveChatHistory(sessionId) {
+    if (!chatMessages || !sessionId) return;
+
+    const items = Array.from(chatMessages.querySelectorAll(".message"));
+    const messages = items.map((msg) => {
+    const type = msg.classList.contains("user-message") ? "user" : "bot";
+    const bubble = msg.querySelector(".message-bubble, .bot-bubble, .user-bubble, .message-content");
+    const text = bubble ? bubble.textContent.trim() : msg.textContent.trim();
+    return { type, content: text, timestamp: new Date().toISOString() };
+});
 
     chatHistory.set(sessionId, messages);
     console.log(`Saved chat history for session ${sessionId}:`, messages);
 }
 
-// Hàm khôi phục chat history
-function restoreChatHistory(sessionId) {
+    function restoreChatHistory(sessionId) {
     if (!chatMessages) return;
 
     const history = chatHistory.get(sessionId);
+
     if (!history || history.length === 0) {
-        // Nếu không có history, hiển thị welcome message
-        displayMessage('bot', 'Chào bạn, chúng ta bắt đầu lại nhé! Bạn cần tôi giúp gì?');
-        return;
-    }
+    if (sessionStorage.getItem(WELCOME_FLAG) === "1") {
+    hideWelcome();
+} else {
+    showWelcome();
+}
+    return;
+}
 
-    // Xóa chat hiện tại
-    chatMessages.innerHTML = '';
-
-    // Khôi phục từng tin nhắn
-    history.forEach(msg => {
-        displayMessage(msg.type, msg.content);
-    });
+    hideWelcome();
+    chatMessages.innerHTML = "";
+    history.forEach((msg) => {
+    displayMessage(msg.type, msg.content);
+});
 
     console.log(`Restored chat history for session ${sessionId}:`, history);
 }
 
-// ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', async () => {
+    // ===== INITIALIZATION =====
+    async function initChatbot() {
+    if (__chatbotReady || __chatbotBooting) return;
+    __chatbotBooting = true;
+
     try {
-        // Get configuration from page
-        const contextPathMeta = document.querySelector('meta[name="context-path"]');
-        const userIdFromBody = document.body.getAttribute('data-user-id');
+    console.log("🚀 Starting chatbot initialization...");
 
-        // Extract context path from Thymeleaf URL (e.g., "/openevent/" -> "/openevent")
-        let contextPath = contextPathMeta ? contextPathMeta.content : '';
-        if (contextPath.endsWith('/')) {
-            contextPath = contextPath.slice(0, -1); // Remove trailing slash
-        }
-        API_BASE_URL = contextPath;
-        USER_ID = userIdFromBody ? parseInt(userIdFromBody) : 2;
+    const contextPathMeta = document.querySelector('meta[name="context-path"]');
 
-        console.log('Chatbot config:', {API_BASE_URL, USER_ID});
+    let contextPath = contextPathMeta ? contextPathMeta.content : "";
 
-        // Debug: Check if user is authenticated
-        console.log('Checking authentication...');
-        try {
-            const authCheck = await fetch(`${API_BASE_URL}/api/ai/chat/enhanced/health`, {
-                method: 'GET',
-                headers: {'Content-Type': 'application/json'}
-            });
-            console.log('Auth check result:', authCheck.status, authCheck.statusText);
-        } catch (error) {
-            console.error('Auth check failed:', error);
-        }
+    if (!contextPath || contextPath === "/") {
+    const pathname = window.location.pathname;
+    const pathParts = pathname.split("/").filter((p) => p);
+    if (pathParts.length > 0) {
+    contextPath =
+    pathParts[0] !== "events" && pathParts[0] !== "index" && pathParts[0] !== ""
+    ? "/" + pathParts[0]
+    : "";
+} else {
+    contextPath = "";
+}
+}
 
-        // Load chatbot HTML dynamically
-        await loadChatbotHTML();
+    if (contextPath.endsWith("/")) {
+    contextPath = contextPath.slice(0, -1);
+}
 
-        // Initialize chatbot functionality
-        initializeChatbot();
+    API_BASE_URL = contextPath || "";
+    USER_ID = resolveUserId();
+    if (!isValidUserId(USER_ID)) {
+    // chưa đăng nhập → set trạng thái yêu cầu đăng nhập (không gửi API)
+    updateConnectionStatus("auth");
+}
 
-        // Adjust chatbot position for viewport
-        adjustChatbotPosition();
-
-        // Listen for window resize
-        window.addEventListener('resize', adjustChatbotPosition);
-
-        // Check API health on initialization
-        checkApiHealth();
-
-    } catch (error) {
-        console.error('Error initializing chatbot:', error);
-        showConnectionError('Không thể khởi tạo chatbot. Vui lòng tải lại trang.');
-    }
+    console.log("📋 Chatbot config:", {
+    API_BASE_URL: API_BASE_URL || "(root)",
+    USER_ID: USER_ID,
+    contextPathMeta: contextPathMeta ? contextPathMeta.content : "not found",
+    fullApiUrl: `${API_BASE_URL}${API_ENDPOINT}`,
 });
 
-// ===== HEALTH CHECK =====
-async function checkApiHealth() {
-    try {
-        // Try to check health endpoint
-        const response = await fetch(`${API_BASE_URL}/api/ai/chat/enhanced/health`, {
-            method: 'GET',
-            headers: {'Content-Type': 'application/json'}
-        });
+    await loadChatbotHTML();
 
-        if (response.ok) {
-            console.log('API Health: OK');
-            updateConnectionStatus('online');
-        } else if (response.status === 401 || response.status === 403) {
-            console.log('API Health: Authentication required');
-            updateConnectionStatus('offline');
-        } else {
-            console.log('API Health: Error', response.status);
-            updateConnectionStatus('offline');
-        }
-    } catch (error) {
-        console.warn('API Health check failed:', error);
-        updateConnectionStatus('offline');
-    }
+    console.log("⏳ Waiting for fragment to render...");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    if (sessionStorage.getItem(WELCOME_FLAG) === "1") {
+    hideWelcome();
 }
 
-function updateConnectionStatus(status) {
-    const statusDot = document.querySelector('.status-dot');
-    const statusText = document.querySelector('.status-text');
+    const toggleBtn = document.getElementById("chatbot-toggle-btn");
+    const chatbotContainer = document.querySelector(".chatbot-container");
+
+    console.log("🔍 Element check:", {
+    toggleBtn: !!toggleBtn,
+    chatbotContainer: !!chatbotContainer,
+    toggleBtnId: toggleBtn ? toggleBtn.id : "not found",
+    containerClass: chatbotContainer ? chatbotContainer.className : "not found",
+});
+
+    console.log("🔧 Initializing toggle...");
+    initializeChatbotToggle();
+
+    let retryCount = 0;
+    const maxRetries = 5;
+    while (!toggleInitialized && retryCount < maxRetries) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log(`🔄 Retrying toggle initialization (${retryCount + 1}/${maxRetries})...`);
+    initializeChatbotToggle();
+    retryCount++;
+}
+
+    if (toggleInitialized) {
+    console.log("✅ Toggle initialized successfully");
+} else {
+    console.error("❌ Failed to initialize toggle after retries");
+}
+
+    initializeChatbot();
+
+    setTimeout(() => {
+    checkAndRestoreFromChatWeb();
+}, 500);
+
+    adjustChatbotPosition();
+    window.addEventListener("resize", adjustChatbotPosition);
+
+    checkApiHealth();
+
+    // Attach outside click once (PATCH)
+    attachOutsideClickOnce();
+
+    console.log("✅ Chatbot initialization complete!");
+    __chatbotReady = true;
+} catch (error) {
+    console.error("❌ Error initializing chatbot:", error);
+    console.error("Error stack:", error.stack);
+    showConnectionError("Không thể khởi tạo chatbot. Vui lòng tải lại trang.");
+} finally {
+    __chatbotBooting = false;
+}
+}
+
+    if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initChatbot);
+} else {
+    initChatbot();
+}
+    setTimeout(() => {
+    if (!toggleInitialized) {
+    console.log("🔄 Late initialization attempt...");
+    initChatbot();
+}
+}, 1000);
+
+    // ===== HEALTH CHECK =====
+    async function checkApiHealth() {
+    try {
+    // dùng đúng API_ENDPOINT
+    const url = `${API_BASE_URL}${API_ENDPOINT}/health`;
+    const response = await fetch(url, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+});
+
+    if (response.ok) {
+    console.log("API Health: OK");
+    updateConnectionStatus("online");
+} else if (response.status === 401 || response.status === 403) {
+    console.log("API Health: Authentication required");
+    updateConnectionStatus("auth");
+} else {
+    console.log("API Health: Error", response.status);
+    updateConnectionStatus("offline");
+}
+} catch (error) {
+    console.warn("API Health check failed:", error);
+    updateConnectionStatus("offline");
+}
+}
+
+    function updateConnectionStatus(status) {
+    const statusDot = document.querySelector(".status-dot");
+    const statusText = document.querySelector(".status-text");
 
     if (statusDot && statusText) {
-        if (status === 'online') {
-            statusDot.style.background = 'var(--success)';
-            statusText.textContent = 'Online';
-        } else {
-            statusDot.style.background = 'var(--error)';
-            statusText.textContent = 'Offline';
-        }
-    }
+    if (status === "online") {
+    statusDot.style.background = "var(--success)";
+    statusText.textContent = "Online";
+} else if (status === "auth") {
+    statusDot.style.background = "var(--error)";
+    statusText.textContent = "Đăng nhập";
+} else {
+    statusDot.style.background = "var(--error)";
+    statusText.textContent = "Offline";
+}
+}
 }
 
-function showConnectionError(message) {
+    function resolveUserId() {
+    // 1) data-user-id từ body (Thymeleaf render)
+    const fromBody = document.body?.getAttribute("data-user-id");
+    if (fromBody && /^\d+$/.test(fromBody)) return fromBody;
+
+    // 2) <meta name="user-id" content="...">
+    const metaUser = document.querySelector('meta[name="user-id"]')?.content;
+    if (metaUser && /^\d+$/.test(metaUser)) return metaUser;
+
+    // 3) window.__USER_ID (nếu app set global khi login)
+    if (typeof window.__USER_ID !== "undefined") {
+    const v = String(window.__USER_ID);
+    if (/^\d+$/.test(v)) return v;
+}
+
+    // 4) localStorage (nếu bạn lưu sau login)
+    const ls = localStorage.getItem("oe_user_id");
+    if (ls && /^\d+$/.test(ls)) return ls;
+
+    return null; // không có user
+}
+
+    function showConnectionError(message) {
     if (chatMessages) {
-        displayMessage('bot', `⚠️ ${message}`);
-    }
+    displayMessage("bot", `⚠️ ${message}`);
+}
 }
 
-// ===== LOAD CHATBOT HTML =====
-async function loadChatbotHTML() {
-    // HTML is already loaded via Thymeleaf fragment, no need to fetch
-    console.log('Chatbot HTML already loaded via Thymeleaf fragment');
+    // ===== CHATBOT TOGGLE FUNCTIONALITY =====
+    let toggleInitialized = false;
+    let isToggling = false;
+
+    // Outside click attach/detach (PATCH)
+    let outsideClickHandler = null;
+    let outsideClickHandlerAttached = false;
+
+    function attachOutsideClickOnce() {
+    if (outsideClickHandlerAttached) return;
+    outsideClickHandler = function (e) {
+    try {
+    const toggleBtn = document.getElementById("chatbot-toggle-btn");
+    const chatbotContainer = document.querySelector(".chatbot-container");
+
+    if (!isToggling && chatbotContainer && chatbotContainer.classList.contains("active")) {
+    if (toggleBtn && !toggleBtn.contains(e.target) && !chatbotContainer.contains(e.target)) {
+    chatbotContainer.classList.remove("active");
+    chatbotContainer.style.display = "none";
+    if (toggleBtn) {
+    toggleBtn.style.background = "white";
+    toggleBtn.style.color = "#ff9d6b";
+    toggleBtn.title = "Mở chatbot";
+}
+    console.log("Chatbot closed by outside click");
+}
+}
+} catch (error) {
+    if (error.message && !error.message.includes("runtime.lastError")) {
+    console.debug("Error in outside click handler:", error);
+}
+}
+};
+    document.addEventListener("click", outsideClickHandler, true);
+    outsideClickHandlerAttached = true;
+}
+    function detachOutsideClickIfAny() {
+    if (outsideClickHandlerAttached && outsideClickHandler) {
+    document.removeEventListener("click", outsideClickHandler, true);
+    outsideClickHandlerAttached = false;
+    outsideClickHandler = null;
+}
 }
 
-// ===== FALLBACK CHATBOT =====
-function createFallbackChatbot() {
-    const container = document.getElementById('openevent-chatbot-container');
+    function attachToggleListener() {
+    const toggleBtn = document.getElementById("chatbot-toggle-btn");
+    const chatbotContainer = document.querySelector(".chatbot-container");
+
+    console.log("attachToggleListener called", {
+    toggleBtn: !!toggleBtn,
+    chatbotContainer: !!chatbotContainer,
+    toggleBtnElement: toggleBtn,
+    chatbotContainerElement: chatbotContainer,
+});
+
+    if (!toggleBtn || !chatbotContainer) {
+    console.warn("Toggle button or container not found, retrying...", {
+    toggleBtn: !!toggleBtn,
+    chatbotContainer: !!chatbotContainer,
+});
+    setTimeout(attachToggleListener, 200);
+    return;
+}
+
+    if (toggleBtn.hasAttribute("data-listener-attached")) {
+    console.log("Listener already attached, skipping...");
+    return;
+}
+
+    toggleBtn.setAttribute("data-listener-attached", "true");
+
+    toggleBtn.addEventListener(
+    "click",
+    function (e) {
+    try {
+    console.log("=== TOGGLE BUTTON CLICKED ===", e);
+    e.stopPropagation();
+    e.preventDefault();
+
+    const currentToggleBtn = document.getElementById("chatbot-toggle-btn");
+    const currentContainer = document.querySelector(".chatbot-container");
+
+    if (!currentContainer) {
+    console.error("Chatbot container not found!");
+    return;
+}
+
+    isToggling = true;
+
+    currentContainer.classList.toggle("active");
+    const hasActive = currentContainer.classList.contains("active");
+
+    console.log("Toggle state:", {
+    hasActive: hasActive,
+    containerClasses: currentContainer.classList.toString(),
+    computedDisplay: window.getComputedStyle(currentContainer).display,
+    inlineDisplay: currentContainer.style.display,
+});
+
+    if (hasActive) {
+    currentContainer.style.display = "flex";
+    currentContainer.style.zIndex = "999";
+
+    if (currentToggleBtn) {
+    currentToggleBtn.style.background = "#ff9d6b";
+    currentToggleBtn.style.color = "white";
+    currentToggleBtn.title = "Đóng chatbot";
+}
+
+    console.log("✅ Chatbot OPENED");
+
+    setTimeout(() => {
+    const messageInput = document.querySelector(".message-input");
+    if (messageInput) {
+    messageInput.focus();
+}
+}, 100);
+} else {
+    currentContainer.style.display = "none";
+
+    if (currentToggleBtn) {
+    currentToggleBtn.style.background = "white";
+    currentToggleBtn.style.color = "#ff9d6b";
+    currentToggleBtn.title = "Mở chatbot";
+}
+
+    console.log("❌ Chatbot CLOSED");
+}
+
+    setTimeout(() => {
+    isToggling = false;
+}, 300);
+} catch (error) {
+    console.error("❌ Error in toggle button handler:", error);
+    console.error("Error stack:", error.stack);
+
+    try {
+    const currentContainer = document.querySelector(".chatbot-container");
+    if (currentContainer) {
+    currentContainer.classList.add("active");
+    currentContainer.style.display = "flex";
+    console.log("Recovery: Forced chatbot to open");
+}
+} catch (recoveryError) {
+    console.error("Failed to recover chatbot state:", recoveryError);
+}
+}
+},
+    true
+    );
+
+    console.log("✅ Toggle listener attached successfully to button");
+}
+
+    function initializeChatbotToggle() {
+    if (toggleInitialized) {
+    console.log("Chatbot toggle already initialized");
+    return;
+}
+
+    attachToggleListener();
+
+    const toggleBtn = document.getElementById("chatbot-toggle-btn");
+    const chatbotContainer = document.querySelector(".chatbot-container");
+
+    console.log("Checking chatbot elements:", {
+    toggleBtn: toggleBtn,
+    chatbotContainer: chatbotContainer,
+    toggleBtnExists: !!toggleBtn,
+    containerExists: !!chatbotContainer,
+});
+
+    if (toggleBtn && chatbotContainer) {
+    console.log("Chatbot toggle initialized successfully");
+    toggleInitialized = true;
+} else {
+    console.warn("Chatbot elements not found yet. Will retry...");
+    setTimeout(() => {
+    if (!toggleInitialized) {
+    console.log("Retrying chatbot toggle initialization...");
+    initializeChatbotToggle();
+}
+}, 500);
+}
+}
+
+    // ===== LOAD CHATBOT HTML =====
+    async function loadChatbotHTML() {
+    console.log("Chatbot HTML already loaded via Thymeleaf fragment");
+}
+
+    // ===== FALLBACK CHATBOT =====
+    function createFallbackChatbot() {
+    const container = document.getElementById("openevent-chatbot-container");
     if (!container) return;
 
     container.innerHTML = `
@@ -222,208 +565,290 @@ function createFallbackChatbot() {
     `;
 }
 
-// ===== INITIALIZE CHATBOT =====
-function initializeChatbot() {
-    // Get DOM elements
-    chatbotToggler = document.querySelector(".chatbot-toggler");
-    closeBtn = document.querySelector(".close-btn");
-    chatInput = document.getElementById('chatInput');
-    sendBtn = document.getElementById('chatSendBtn');
-    chatMessages = document.getElementById('chatMessages');
-    typingIndicator = document.getElementById('typingIndicator');
+    // ===== INITIALIZE CHATBOT =====
+    function initializeChatbot() {
+    console.log("🔧 Initializing chatbot functionality...");
 
-    // Check if elements exist
-    if (!chatbotToggler || !closeBtn || !chatInput || !sendBtn || !chatMessages || !typingIndicator) {
-        console.error('Chatbot elements not found');
-        return;
-    }
+    chatInput = document.querySelector(".message-input");
+    sendBtn = document.querySelector(".send-btn, .send-button, #chatSendBtn");
 
+    console.log("🔍 Elements found:", {
+    chatInput: !!chatInput,
+    sendBtn: !!sendBtn,
+    chatInputElement: chatInput,
+    sendBtnElement: sendBtn,
+});
 
-    // Add event listeners
-    sendBtn.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+    const chatbotBody = document.querySelector(".chatbot-body");
+    if (chatbotBody && !document.getElementById("chatMessages")) {
+    const messagesContainer = document.createElement("div");
+    messagesContainer.id = "chatMessages";
+    messagesContainer.className = "messages-container";
+    messagesContainer.style.cssText =
+    "flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px;";
 
-    // Toggle chatbot popup
-    chatbotToggler.addEventListener("click", () => {
-        document.body.classList.toggle("show-chatbot");
-        if (document.body.classList.contains("show-chatbot")) {
-            chatInput.focus();
-        } else {
-            // Close session popup when chatbot is closed
-            closeSessionPopup();
-        }
-    });
-
-    // Close chatbot
-    closeBtn.addEventListener("click", () => {
-        document.body.classList.remove("show-chatbot");
-        // Close session popup when chatbot is closed
-        closeSessionPopup();
-    });
-
-    // Avatar click to open session popup
-    const avatarContainer = document.querySelector('.avatar-container');
-    if (avatarContainer) {
-        avatarContainer.addEventListener('click', openSessionPopup);
-    }
+    const quickActions = chatbotBody.querySelector(".quick-actions");
+    if (quickActions) {
+    chatbotBody.insertBefore(messagesContainer, quickActions);
+} else {
+    chatbotBody.appendChild(messagesContainer);
+}
 }
 
-// ===== MESSAGE FUNCTIONS =====
-function sendQuickAction(message) {
+    chatMessages = document.getElementById("chatMessages");
+
+    if (chatMessages && !document.getElementById("typingIndicator")) {
+    const typingIndicatorDiv = document.createElement("div");
+    typingIndicatorDiv.id = "typingIndicator";
+    typingIndicatorDiv.className = "typing-indicator";
+    typingIndicatorDiv.style.cssText = "display: none; padding: 10px 20px;";
+    typingIndicatorDiv.innerHTML = `
+            <div class="message bot-message">
+                <div class="message-avatar">🤖</div>
+                <div class="message-bubble bot-bubble">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+    chatMessages.appendChild(typingIndicatorDiv);
+}
+
+    typingIndicator = document.getElementById("typingIndicator");
+
+    if (!chatInput || !sendBtn || !chatMessages) {
+    console.warn("Some chatbot elements not found, some features may not work");
+    if (!chatInput || !sendBtn) {
+    return;
+}
+}
+
+    // PATCH: Remove existing listener by cloning sendBtn to avoid duplicates
+    if (sendBtn) {
+    const cloned = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(cloned, sendBtn);
+    sendBtn = cloned;
+    sendBtn.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("📤 Send button clicked (main)");
+    sendMessage();
+});
+    console.log("✅ Send button listener attached (cloned)");
+} else {
+    console.warn("⚠️ Send button not found");
+}
+
     if (chatInput) {
-        chatInput.value = message;
-        sendMessage();
-    }
+    const clonedInput = chatInput.cloneNode(true);
+    chatInput.parentNode.replaceChild(clonedInput, chatInput);
+    chatInput = clonedInput;
+
+    chatInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    console.log("📤 Enter key pressed (main)");
+    sendMessage();
+}
+});
+
+    chatInput.addEventListener("input", function () {
+    this.style.height = "auto";
+    const newHeight = Math.min(this.scrollHeight, 120);
+    this.style.height = newHeight + "px";
+});
+
+    chatInput.style.height = "auto";
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + "px";
+
+    console.log("✅ Chat input listeners attached");
+} else {
+    console.warn("⚠️ Chat input not found");
 }
 
-async function sendMessage() {
-    if (!chatInput) return;
+    const actionButtons = document.querySelectorAll(".action-btn");
+    actionButtons.forEach((btn) => {
+    btn.addEventListener("click", function () {
+    const actionText = this.textContent.trim();
+    let messageToSend = actionText;
 
-    const message = chatInput.value.trim();
-    if (!message) return;
+    switch (actionText) {
+    case "Tạo sự kiện":
+    messageToSend = "Tôi muốn tạo sự kiện mới";
+    break;
+    case "Các sự kiện nổi bật gần đây":
+    messageToSend = "Cho tôi xem các sự kiện nổi bật gần đây";
+    break;
+    case "Mua vé sự kiện":
+    messageToSend = "Tôi muốn mua vé sự kiện";
+    break;
+    default:
+    messageToSend = actionText;
+}
 
-    // Lưu chat history trước khi gửi tin nhắn mới
-    const currentSessionId = getCurrentSessionId();
-    saveChatHistory(currentSessionId);
+    if (chatInput) {
+    chatInput.value = messageToSend;
+    sendMessage();
+}
+});
+});
 
-    // Check if this is the first user message in current session
-    const history = chatHistory.get(currentSessionId) || [];
-    const userMessages = history.filter(msg => msg.type === 'user');
-    const isFirstMessage = userMessages.length === 0;
+    const refreshBtn = document.querySelector('.header-btn[title="Làm mới"]');
+    console.log("🔍 Refresh button found:", !!refreshBtn);
+    if (refreshBtn) {
+    const newRefreshBtn = refreshBtn.cloneNode(true);
+    refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+    const freshRefreshBtn = document.querySelector('.header-btn[title="Làm mới"]');
 
-    if (isFirstMessage) {
-        // Hàm này sẽ tự động tạo session ID mới và cập nhật UI
-        createNewSession(message);
-    }
+    freshRefreshBtn.addEventListener("click", function (e) {
+    console.log("🔄 Refresh button clicked");
+    e.stopPropagation();
+    e.preventDefault();
+    if (confirm("Bạn có chắc muốn làm mới cuộc trò chuyện? Lịch sử chat hiện tại sẽ được xóa.")) {
+    clearChat({ restoreWelcome: true });
+    setTimeout(() => {
+    createNewSession(null, false);
+}, 100);
+}
+});
+    console.log("✅ Refresh button handler attached");
+} else {
+    console.warn("⚠️ Refresh button not found");
+}
 
-    displayMessage('user', message);
-    chatInput.value = '';
+    const maximizeBtn = document.querySelector('.header-btn[title="Phóng to"]');
+    console.log("🔍 Maximize button found:", !!maximizeBtn);
+    if (maximizeBtn) {
+    const newMaximizeBtn = maximizeBtn.cloneNode(true);
+    maximizeBtn.parentNode.replaceChild(newMaximizeBtn, maximizeBtn);
+    const freshMaximizeBtn = document.querySelector('.header-btn[title="Phóng to"]');
+
+    freshMaximizeBtn.addEventListener("click", function (e) {
+    console.log("⛶ Maximize button clicked - toggling fullscreen");
+    e.stopPropagation();
+    e.preventDefault();
+    toggleMaximize();
+});
+    console.log("✅ Maximize button handler attached");
+} else {
+    console.warn("⚠️ Maximize button not found");
+}
+
+    const closeHeaderBtn = document.querySelector('.header-btn[title="Đóng"]');
+    console.log("🔍 Close button found:", !!closeHeaderBtn);
+    if (closeHeaderBtn) {
+    const newCloseBtn = closeHeaderBtn.cloneNode(true);
+    closeHeaderBtn.parentNode.replaceChild(newCloseBtn, closeHeaderBtn);
+    const freshCloseBtn = document.querySelector('.header-btn[title="Đóng"]');
+
+    freshCloseBtn.addEventListener("click", function (e) {
+    console.log("✕ Close button clicked");
+    e.stopPropagation();
+    e.preventDefault();
+    closeChatbot();
+});
+    console.log("✅ Close button handler attached");
+} else {
+    console.warn("⚠️ Close button not found");
+}
+}
+
+    // ===== MESSAGE FUNCTIONS =====
+    function sendQuickAction(message) {
+    if (chatInput) {
+    chatInput.value = message;
+    sendMessage();
+}
+}
+
+    async function sendMessage() {
+    const inputEl = document.querySelector(".message-input");
+    const sendBtnEl = document.querySelector(".send-btn, .send-button, #chatSendBtn");
+    if (!inputEl) {
+    console.warn("⚠️ Chat input not found");
+    return;
+}
+
+    const raw = inputEl.value;
+    const message = raw ? raw.trim() : "";
+    if (!message) {
+    console.log("⚠️ Empty message, not sending");
+    return;
+}
+
+    if (window.__sendingMsg) return;
+    window.__sendingMsg = true;
+    if (sendBtnEl) sendBtnEl.disabled = true;
+
+    try {
+    console.log("📤 Sending message:", message);
+
+    let sessionId = getCurrentSessionId();
+    const history = chatHistory.get(sessionId) || [];
+    const isFirstUserMsg = history.findIndex((m) => m?.type === "user") === -1;
+
+    if (isFirstUserMsg) {
+    hideWelcome();
+    sessionStorage.setItem(WELCOME_FLAG, "1");
+
+    const newSessionId = `SESSION_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    sessionStorage.setItem("chatbot_session_id", newSessionId);
+    sessionId = newSessionId;
+    chatHistory.set(sessionId, []);
+}
+
+    // PATCH: cập nhật tiêu đề session theo tin nhắn đầu
+    if (isFirstUserMsg) {
+    updateSessionTitle(sessionId, message);
+}
+
+    displayMessage("user", message);
+    inputEl.value = "";
+    inputEl.style.height = "auto";
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
+
+    const cur = chatHistory.get(sessionId) || [];
+    cur.push({ type: "user", content: message, timestamp: new Date().toISOString() });
+    chatHistory.set(sessionId, cur);
+
     showTyping(true);
 
-    // // If this is the first user message, update session title
-    // if (isFirstMessage) {
-    //     updateSessionTitle(currentSessionId, message);
-    // }
-
     await sendMessageToApi(message);
+} finally {
+    showTyping(false);
+    if (sendBtnEl) sendBtnEl.disabled = false;
+    window.__sendingMsg = false;
+    const again = document.querySelector(".message-input");
+    if (again) again.focus();
+}
 }
 
-// ===== API INTEGRATION =====
-async function sendMessageToApi(message, retryCount = 0) {
-    if (!sendBtn) return;
+    // ===== API INTEGRATION =====
+    async function sendMessageToApi(message, retryCount = 0) {
+    // PATCH: lock local button reference
+    const localSendBtn = document.querySelector(".send-btn, .send-button, #chatSendBtn");
+    if (localSendBtn) localSendBtn.disabled = true;
 
-    sendBtn.disabled = true;
-    try {
-        const response = await fetch(`${API_BASE_URL}${API_ENDPOINT}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                message: message,
-                userId: USER_ID,
-                sessionId: getCurrentSessionId()
-            })
-        });
+    if (!message || typeof message !== "string" || message.trim().length === 0) {
+    console.error("❌ Invalid message:", message);
+    displayMessage("bot", "⚠️ Tin nhắn không hợp lệ. Vui lòng nhập nội dung.");
+    if (localSendBtn) localSendBtn.disabled = false;
+    showTyping(false);
+    return;
+}
+    if (!isValidUserId(USER_ID)) {
+    console.error("❌ Invalid USER_ID:", USER_ID);
+    displayMessage("bot", "🔒 Bạn chưa đăng nhập. Vui lòng đăng nhập để dùng chatbot.");
 
-        if (!response.ok) {
-            let errorMessage = `Lỗi HTTP! Trạng thái: ${response.status}`;
-
-            // Xử lý các mã lỗi cụ thể
-            switch (response.status) {
-                case 400:
-                    errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại tin nhắn.';
-                    break;
-                case 401:
-                    errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
-                    break;
-                case 403:
-                    errorMessage = 'Không có quyền truy cập. Vui lòng đăng nhập để sử dụng chatbot.';
-                    break;
-                case 429:
-                    errorMessage = 'Bạn đã gửi quá nhiều tin nhắn. Vui lòng chờ một chút rồi thử lại.';
-                    break;
-                case 500:
-                    errorMessage = 'Lỗi máy chủ. Vui lòng thử lại sau.';
-                    break;
-                case 503:
-                    errorMessage = 'Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau.';
-                    break;
-            }
-
-            throw new Error(errorMessage);
-        }
-
-        const data = await response.json();
-        showTyping(false);
-
-        // 1. Tách tin nhắn và tín hiệu
-        let botMessage = data.message || 'Xin lỗi, tôi chưa hiểu ý bạn.';
-        let redirectUrl = null;
-        let doReload = false;
-
-        // 2. Kiểm tra tín hiệu REDIRECT trước
-        if (botMessage.includes("__REDIRECT:")) {
-            const match = botMessage.match(/__REDIRECT:([^]*)__/);
-            if (match && match[1]) {
-                redirectUrl = match[1];
-                botMessage = botMessage.replace(match[0], "").trim(); // Xóa tín hiệu
-            }
-        } else if (botMessage.includes("__RELOAD__")) { // Kiểm tra RELOAD
-            doReload = true;
-            botMessage = botMessage.replace("__RELOAD__", "").trim(); // Xóa tín hiệu
-        }
-
-        // 3. Hiển thị tin nhắn sạch cho người dùng
-        displayMessage('bot', botMessage);
-
-        // 4. (Rất quan trọng) Lưu lịch sử chat
-        // (Bạn nên có logic lưu history vào sessionStorage/localStorage ở đây
-        // để không bị mất chat khi chuyển trang)
-        try {
-            const currentSessionId = getCurrentSessionId();
-            saveChatHistory(currentSessionId);
-        } catch (e) {
-            console.warn('Không thể lưu chat history', e);
-        }
-
-
-        // 5. Thực hiện hành động (Redirect hoặc Reload)
-        if (redirectUrl) {
-            displayMessage('bot', '🤖 Chuyển hướng trong 1.5 giây...');
-            setTimeout(() => {
-                // Đảm bảo URL là đầy đủ nếu cần
-                // Nếu API_BASE_URL là "/openevent" và redirectUrl là "/events"
-                // thì nó sẽ thành "/openevent/events"
-                window.location.href = API_BASE_URL + redirectUrl;
-            }, 1500);
-        } else if (doReload) {
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        }
-
-    } catch (error) {
-        console.error("Lỗi khi gửi tin nhắn đến API:", error);
-        showTyping(false);
-
-        // Thử lại nếu chưa quá số lần cho phép
-        if (retryCount < 2 && !error.message.includes('Phiên đăng nhập') && !error.message.includes('quyền truy cập')) {
-            displayMessage('bot', `Đang thử lại kết nối... (${retryCount + 1}/2)`);
-            setTimeout(() => {
-                sendMessageToApi(message, retryCount + 1);
-            }, 2000 * (retryCount + 1)); // Tăng thời gian chờ theo số lần thử
-        } else {
-            displayMessage('bot', `❌ ${error.message}`);
-
-            // Hiển thị nút thử lại
-            const retryButton = document.createElement('button');
-            retryButton.textContent = '🔄 Thử lại';
-            retryButton.className = 'retry-button';
-            retryButton.style.cssText = `
+    const last = chatMessages?.lastElementChild?.querySelector(".bot-bubble");
+    if (last && !last.querySelector(".login-button")) {
+    const btn = document.createElement("button");
+    btn.textContent = "Đăng nhập";
+    btn.className = "login-button";
+    btn.style.cssText = `
                 background: var(--primary);
                 color: white;
                 border: none;
@@ -432,364 +857,721 @@ async function sendMessageToApi(message, retryCount = 0) {
                 cursor: pointer;
                 margin-top: 8px;
                 font-size: 12px;
-            `;
-            retryButton.onclick = () => {
-                retryButton.remove();
-                sendMessageToApi(message);
-            };
-
-            // Thêm nút vào tin nhắn cuối cùng
-            const lastMessage = chatMessages.lastElementChild;
-            if (lastMessage && lastMessage.querySelector('.bot-bubble')) {
-                lastMessage.querySelector('.bot-bubble').appendChild(retryButton);
-            }
-        }
-    } finally {
-        if (sendBtn) {
-            sendBtn.disabled = false;
-        }
-    }
+                `;
+    btn.onclick = () => {
+    window.location.href = `${API_BASE_URL}/login`;
+};
+    last.appendChild(btn);
+}
+    if (localSendBtn) localSendBtn.disabled = false;
+    showTyping(false);
+    return;
 }
 
-// ===== SESSION MANAGEMENT =====
-function getCurrentSessionId() {
-    let sessionId = sessionStorage.getItem('chatbot_session_id');
+    const sessionId = getCurrentSessionId();
+    if (!sessionId || sessionId.trim().length === 0) {
+    console.error("❌ Invalid sessionId:", sessionId);
+    displayMessage("bot", "⚠️ Lỗi phiên làm việc. Vui lòng tải lại trang.");
+    if (localSendBtn) localSendBtn.disabled = false;
+    showTyping(false);
+    return;
+}
+
+    const requestUrl = `${API_BASE_URL}${API_ENDPOINT}`;
+    const requestBody = {
+    message: message.trim(),
+    userId: String(USER_ID), // gửi dạng chuỗi để an toàn Long
+    sessionId: sessionId,
+};
+
+    console.log("Sending message to API:", {
+    url: requestUrl,
+    method: "POST",
+    body: requestBody,
+    messageLength: message.trim().length,
+    userIdType: typeof requestBody.userId,
+    sessionIdLength: sessionId.length,
+});
+
+    const controller = new AbortController();
+    const timeoutMs = 20000;
+    const tId = setTimeout(() => controller.abort(new Error("TIMEOUT")), timeoutMs);
+
+    try {
+    const response = await fetch(requestUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestBody),
+    signal: controller.signal,
+});
+
+    console.log("API Response:", {
+    status: response.status,
+    statusText: response.statusText,
+    ok: response.ok,
+});
+
+    if (!response.ok) {
+    let errorMessage = `Lỗi HTTP! Trạng thái: ${response.status}`;
+    try {
+    const errJson = await response.json();
+    if (errJson?.message) errorMessage = errJson.message;
+    else if (errJson?.error) errorMessage = errJson.error;
+    console.log("Error response data:", errJson);
+} catch { /* ignore parse error */ }
+
+    switch (response.status) {
+    case 400:
+    if (errorMessage.startsWith("Lỗi HTTP")) errorMessage = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại tin nhắn.";
+    break;
+    case 401:
+    errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+    break;
+    case 403:
+    errorMessage = "Không có quyền truy cập. Vui lòng đăng nhập để sử dụng chatbot.";
+    break;
+    case 429:
+    errorMessage = "Bạn đã gửi quá nhiều tin nhắn. Vui lòng chờ một chút rồi thử lại.";
+    break;
+    case 500:
+    errorMessage = "Lỗi máy chủ. Vui lòng thử lại sau.";
+    break;
+    case 503:
+    errorMessage = "Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau.";
+    break;
+}
+    throw new Error(errorMessage);
+}
+
+    let data = null;
+    try {
+    data = await response.json();
+} catch {
+    data = {};
+}
+
+    let botMessage = data?.message || "Xin lỗi, tôi chưa hiểu ý bạn.";
+    let redirectUrl = null;
+    let doReload = false;
+
+    if (typeof botMessage === "string" && botMessage.includes("__REDIRECT:")) {
+    const m = botMessage.match(/__REDIRECT:([^]*?)__/);
+    if (m && m[1]) {
+    redirectUrl = m[1].trim();
+    botMessage = botMessage.replace(m[0], "").trim();
+}
+}
+    if (typeof botMessage === "string" && botMessage.includes("__RELOAD__")) {
+    doReload = true;
+    botMessage = botMessage.replace("__RELOAD__", "").trim();
+}
+
+    displayMessage("bot", botMessage);
+
+    try {
+    const history = chatHistory.get(sessionId) || [];
+    history.push({
+    type: "bot",
+    content: botMessage,
+    timestamp: new Date().toISOString(),
+});
+    chatHistory.set(sessionId, history);
+    saveChatHistory(sessionId);
+} catch (e) {
+    console.warn("Không thể lưu bot reply vào chatHistory", e);
+}
+
+    if (redirectUrl) {
+    displayMessage("bot", "🤖 Chuyển hướng trong 1.5 giây...");
+    setTimeout(() => {
+    window.location.href = API_BASE_URL + redirectUrl;
+}, 1500);
+} else if (doReload) {
+    setTimeout(() => location.reload(), 1500);
+}
+} catch (error) {
+    console.error("Lỗi khi gửi tin nhắn đến API:", error);
+    const isAuthErr = /đăng nhập|quyền truy cập/i.test(error.message || "");
+    const isTimeout = error?.name === "AbortError" || /TIMEOUT/i.test(error?.message || "");
+    const isNetwork = /NetworkError|Failed to fetch|network/i.test(error?.message || "");
+
+    // Retry lỗi mạng/timeout
+    if (retryCount < 2 && !isAuthErr && (isTimeout || isNetwork)) {
+    const attempt = retryCount + 1;
+    displayMessage("bot", `Đang thử lại kết nối... (${attempt}/2)`);
+    setTimeout(() => {
+    sendMessageToApi(message, attempt);
+}, 2000 * attempt);
+} else {
+    const finalMsg =
+    error?.name === "AbortError"
+    ? "⏳ Máy chủ phản hồi chậm. Vui lòng thử lại."
+    : `❌ ${error.message || "Đã xảy ra lỗi không xác định."}`;
+    displayMessage("bot", finalMsg);
+
+    const lastMessage = chatMessages?.lastElementChild;
+    const bubble = lastMessage?.querySelector(".bot-bubble");
+    if (bubble && !bubble.querySelector(".retry-button")) {
+    const retryButton = document.createElement("button");
+    retryButton.textContent = "🔄 Thử lại";
+    retryButton.className = "retry-button";
+    retryButton.style.cssText = `
+                    background: var(--primary);
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    margin-top: 8px;
+                    font-size: 12px;
+                `;
+    retryButton.onclick = () => {
+    retryButton.remove();
+    sendMessageToApi(message);
+};
+    bubble.appendChild(retryButton);
+}
+}
+} finally {
+    clearTimeout(tId);
+    showTyping(false);
+    if (localSendBtn) localSendBtn.disabled = false;
+}
+}
+
+    // ===== SESSION MANAGEMENT =====
+    function getCurrentSessionId() {
+    let sessionId = sessionStorage.getItem("chatbot_session_id");
     if (!sessionId) {
-        sessionId = 'SESSION_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        sessionStorage.setItem('chatbot_session_id', sessionId);
-    }
+    sessionId = "SESSION_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+    sessionStorage.setItem("chatbot_session_id", sessionId);
+}
     return sessionId;
 }
 
-// ===== UI FUNCTIONS =====
-function clearChat() {
-    if (!chatMessages) return;
+    // ===== RESTORE FROM CHATWEB =====
+    function checkAndRestoreFromChatWeb() {
+    try {
+    const returningFromChatWeb = sessionStorage.getItem("returning_from_chatweb");
+    if (returningFromChatWeb !== "true") return;
 
-    chatMessages.innerHTML = '';
-    // Tùy chọn: Gửi yêu cầu xóa lịch sử chat trên server nếu cần
-    // fetch(`${API_BASE_URL}/api/ai/clear_history`, { method: 'POST', ... });
-    displayMessage('bot', 'Chào bạn, chúng ta bắt đầu lại nhé! Bạn cần tôi giúp gì?');
+    console.log("🔄 Detected return from chatweb, restoring chat history...");
+
+    if (!chatMessages) {
+    chatMessages = document.getElementById("chatMessages");
+    if (!chatMessages) {
+    console.warn("⚠️ Chat messages container not found, retrying...");
+    setTimeout(checkAndRestoreFromChatWeb, 200);
+    return;
+}
 }
 
-function displayMessage(sender, message) {
+    const savedSessionId = sessionStorage.getItem("chatweb_session_id");
+    const savedHistory = sessionStorage.getItem("chatweb_history");
+    if (!savedSessionId || !savedHistory) {
+    console.warn("⚠️ No chat history found from chatweb");
+    sessionStorage.removeItem("returning_from_chatweb");
+    return;
+}
+
+    let historyData;
+    try {
+    historyData = JSON.parse(savedHistory);
+} catch (e) {
+    console.error("Failed to parse chat history:", e);
+    sessionStorage.removeItem("returning_from_chatweb");
+    return;
+}
+
+    let restored = Array.isArray(historyData) ? historyData : historyData[savedSessionId] || [];
+    if (!Array.isArray(restored)) restored = [];
+
+    chatHistory.set(savedSessionId, restored);
+    sessionStorage.setItem("chatbot_session_id", savedSessionId);
+
+    const hasUserMsg =
+    restored.some((m) => m && m.type === "user" && m.content && String(m.content).trim().length);
+    if (hasUserMsg) {
+    sessionStorage.setItem(WELCOME_FLAG, "1");
+}
+
+    if (restored.length === 0) {
+    showWelcome();
+} else {
+    hideWelcome();
+    chatMessages.innerHTML = "";
+    restored.forEach((msg) => {
+    const t = msg && (msg.type === "user" || msg.type === "bot") ? msg.type : "bot";
+    const c = msg && msg.content ? String(msg.content) : "";
+    displayMessage(t, c);
+});
+}
+
+    console.log("✅ Restored chat history:", restored.length, "messages");
+
+    setTimeout(() => {
+    const chatbotContainer = document.querySelector(".chatbot-container");
+    const toggleBtn = document.getElementById("chatbot-toggle-btn");
+    if (chatbotContainer) {
+    chatbotContainer.classList.add("active");
+    chatbotContainer.style.display = "flex";
+    chatbotContainer.style.zIndex = "999";
+}
+    if (toggleBtn) {
+    toggleBtn.style.background = "#ff9d6b";
+    toggleBtn.style.color = "white";
+    toggleBtn.title = "Đóng chatbot";
+}
+    const input = document.querySelector(".message-input");
+    if (input) input.focus();
+    if (typeof scrollToBottom === "function") scrollToBottom();
+}, 300);
+} catch (error) {
+    console.error("Error restoring from chatweb:", error);
+} finally {
+    sessionStorage.removeItem("returning_from_chatweb");
+}
+}
+
+    // ===== UI FUNCTIONS =====
+    function clearChat({ restoreWelcome = false } = {}) {
     if (!chatMessages) return;
 
-    const messageDiv = document.createElement('div');
+    chatMessages.querySelectorAll(".message").forEach((msg) => msg.remove());
+
+    const typingIndicator = document.getElementById("typingIndicator");
+    if (typingIndicator) typingIndicator.remove();
+
+    if (restoreWelcome) {
+    sessionStorage.removeItem(WELCOME_FLAG);
+    showWelcome();
+} else {
+    hideWelcome();
+}
+
+    console.log("✅ Chat cleared");
+}
+
+    function formatMessage(message) {
+    // PATCH: stronger XSS-safe + linkify
+    let safe = String(message).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    safe = safe.replace(/\bhttps?:\/\/[^\s<]+/g, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+
+    safe = safe.replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+    return safe;
+}
+
+    function displayMessage(sender, message) {
+    const chatbotContainer = document.querySelector(".chatbot-container");
+    const isFullscreen = chatbotContainer && chatbotContainer.classList.contains("fullscreen");
+
+    let targetContainer = chatMessages;
+    if (isFullscreen) {
+    const messagesSectionFullscreen = document.getElementById("messages-section-fullscreen");
+    if (messagesSectionFullscreen) {
+    targetContainer = messagesSectionFullscreen;
+}
+}
+
+    if (!targetContainer) {
+    const chatbotBody = document.querySelector(".chatbot-body");
+    if (chatbotBody) {
+    const messagesContainer = document.createElement("div");
+    messagesContainer.id = "chatMessages";
+    messagesContainer.className = "messages-container";
+    messagesContainer.style.cssText =
+    "flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px;";
+
+    if (isFullscreen) {
+    const messagesSectionFullscreen = document.getElementById("messages-section-fullscreen");
+    if (messagesSectionFullscreen) {
+    messagesSectionFullscreen.appendChild(messagesContainer);
+} else {
+    chatbotBody.appendChild(messagesContainer);
+}
+} else {
+    const quickActions = chatbotBody.querySelector(".quick-actions");
+    if (quickActions) {
+    chatbotBody.insertBefore(messagesContainer, quickActions);
+} else {
+    chatbotBody.appendChild(messagesContainer);
+}
+}
+    targetContainer = messagesContainer;
+    chatMessages = messagesContainer;
+} else {
+    console.error("Chatbot body not found");
+    return;
+}
+}
+
+    if (sender === "user") {
+    const subtitle = document.querySelector(".chatbot-body > .subtitle");
+    const welcomeBubble = document.querySelector(".chatbot-body > .message-bubble");
+    const quickActions = document.querySelector(".chatbot-body > .quick-actions");
+
+    if (subtitle) {
+    subtitle.style.display = "none";
+}
+    if (
+    welcomeBubble &&
+    welcomeBubble.closest(".chatbot-body") &&
+    !welcomeBubble.closest(".messages-container") &&
+    !welcomeBubble.closest("#messages-section-fullscreen")
+    ) {
+    welcomeBubble.style.display = "none";
+}
+    if (quickActions) {
+    quickActions.style.display = "none";
+}
+}
+
+    const messageDiv = document.createElement("div");
     messageDiv.className = `message ${sender}-message`;
+    messageDiv.style.cssText =
+    sender === "bot"
+    ? "display: flex; gap: 0; align-items: flex-start; margin-bottom: 16px; position: relative; padding-left: 0;"
+    : "display: flex; gap: 0; align-items: flex-start; margin-bottom: 16px;";
 
-    // Tạo avatar container
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = 'message-avatar';
+    let avatarDiv = null;
+    if (sender === "bot") {
+    avatarDiv = document.createElement("div");
+    avatarDiv.className = "message-avatar";
+    avatarDiv.style.cssText =
+    "position: absolute; top: 0; left: 0; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; background: linear-gradient(135deg, #ff9d6b 0%, #ffb48c 100%); color: white; z-index: 10; transform: translate(-8px, -8px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);";
+    avatarDiv.textContent = "🤖";
+}
 
-    const avatarIcon = document.createElement('span');
-    avatarIcon.className = 'material-symbols-outlined';
-    avatarIcon.textContent = sender === 'bot' ? 'smart_toy' : 'person';
-    avatarDiv.appendChild(avatarIcon);
-
-    // Tạo message bubble
-    const bubbleDiv = document.createElement('div');
+    const bubbleDiv = document.createElement("div");
     bubbleDiv.className = `message-bubble ${sender}-bubble`;
+    bubbleDiv.style.cssText =
+    sender === "bot"
+    ? "background: white; padding: 12px 16px; border-radius: 12px; max-width: 80%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative; margin-left: 0;"
+    : "background: #ff9d6b; color: white; padding: 12px 16px; border-radius: 12px; max-width: 80%; margin-left: auto;";
 
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "message-content";
+    contentDiv.style.cssText = "font-size: 14px; line-height: 1.5; word-wrap: break-word;";
     contentDiv.innerHTML = formatMessage(message);
 
     bubbleDiv.appendChild(contentDiv);
 
-    // Thêm các phần tử vào message
-    if (sender === 'user') {
-        messageDiv.appendChild(bubbleDiv);
-        messageDiv.appendChild(avatarDiv);
-    } else {
-        messageDiv.appendChild(avatarDiv);
-        messageDiv.appendChild(bubbleDiv);
-    }
+    if (sender === "bot" && avatarDiv) {
+    messageDiv.appendChild(avatarDiv);
+    messageDiv.appendChild(bubbleDiv);
+} else {
+    messageDiv.appendChild(bubbleDiv);
+}
 
-    chatMessages.appendChild(messageDiv);
+    targetContainer.appendChild(messageDiv);
 
-    // Force scroll to bottom with animation
     setTimeout(() => {
-        chatMessages.scrollTo({
-            top: chatMessages.scrollHeight,
-            behavior: 'smooth'
-        });
-    }, 100);
+    if (targetContainer) {
+    targetContainer.scrollTo({
+    top: targetContainer.scrollHeight,
+    behavior: "smooth",
+});
+}
+    if (isFullscreen) {
+    const chatbotBody = document.querySelector(".chatbot-body");
+    if (chatbotBody) {
+    chatbotBody.scrollTo({
+    top: chatbotBody.scrollHeight,
+    behavior: "smooth",
+});
+}
+}
+}, 100);
 }
 
-function formatMessage(message) {
-    // Chuyển đổi an toàn để tránh lỗi XSS
-    const safeMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    // Chuyển đổi Markdown: newlines, bold, italic
-    return safeMessage
-        .replace(/\n/g, '<br>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+    function hideWelcome() {
+    const wb = document.getElementById("welcome-block");
+    if (wb) {
+    wb.style.display = "none";
+    return;
 }
 
-function showTyping(show) {
-    if (!typingIndicator || !chatMessages) return;
+    const subtitle = document.querySelector(".chatbot-body > .subtitle");
+    const welcomeBubble = document.querySelector(".chatbot-body > .message-bubble");
+    const quickActions = document.querySelector(".chatbot-body > .quick-actions");
+    if (subtitle) subtitle.style.display = "none";
+    if (welcomeBubble) welcomeBubble.style.display = "none";
+    if (quickActions) quickActions.style.display = "none";
+}
+    function showWelcome() {
+    if (sessionStorage.getItem(WELCOME_FLAG) === "1") {
+    hideWelcome();
+    return;
+}
 
-    // Ensure typing indicator is inside the messages container so it's visible
-    // if (!chatMessages.contains(typingIndicator)) {
-    //     chatMessages.appendChild(typingIndicator);
-    // }
+    const wb = document.getElementById("welcome-block");
+    if (wb) {
+    wb.style.display = "block";
+    return;
+}
 
+    const subtitle = document.querySelector(".chatbot-body > .subtitle");
+    const welcomeBubble = document.querySelector(".chatbot-body > .message-bubble");
+    const quickActions = document.querySelector(".chatbot-body > .quick-actions");
+    if (subtitle) subtitle.style.display = "block";
+    if (welcomeBubble) welcomeBubble.style.display = "block";
+    if (quickActions) quickActions.style.display = "grid";
+}
+
+    function showTyping(show) {
+    if (!chatMessages) return;
+
+    if (!typingIndicator) {
+    typingIndicator = document.getElementById("typingIndicator");
+    if (!typingIndicator) {
+    const typingDiv = document.createElement("div");
+    typingDiv.id = "typingIndicator";
+    typingDiv.className = "typing-indicator";
+    typingDiv.style.cssText = "display: flex; gap: 12px; align-items: flex-start; padding: 10px 0;";
+    typingDiv.innerHTML = `
+                <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
+                <div style="background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div class="typing-dots" style="display: flex; gap: 4px;">
+                        <span style="width: 8px; height: 8px; background: #ccc; border-radius: 50%; animation: typing 1.4s infinite;"></span>
+                        <span style="width: 8px; height: 8px; background: #ccc; border-radius: 50%; animation: typing 1.4s infinite 0.2s;"></span>
+                        <span style="width: 8px; height: 8px; background: #ccc; border-radius: 50%; animation: typing 1.4s infinite 0.4s;"></span>
+                    </div>
+                </div>
+            `;
+    chatMessages.appendChild(typingDiv);
+    typingIndicator = typingDiv;
+}
+}
+
+    typingIndicator.style.display = show ? "flex" : "none";
     if (show) {
-        typingIndicator.classList.add('show');
-        // Scroll to bottom to reveal the typing indicator
-        chatMessages.scrollTo({
-            top: chatMessages.scrollHeight,
-            behavior: 'smooth'
-        });
-    } else {
-        typingIndicator.classList.remove('show');
-    }
+    requestAnimationFrame(() => {
+    if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+}
 }
 
-// ===== UTILITY FUNCTIONS =====
-function isChatbotOpen() {
-    return document.body.classList.contains("show-chatbot");
+    // ===== UTILITY FUNCTIONS =====
+    function isChatbotOpen() {
+    const chatbotContainer = document.querySelector(".chatbot-container");
+    return chatbotContainer && chatbotContainer.classList.contains("active");
 }
 
-function openChatbot() {
-    document.body.classList.add("show-chatbot");
+    function openChatbot() {
+    const chatbotContainer = document.querySelector(".chatbot-container");
+    const toggleBtn = document.getElementById("chatbot-toggle-btn");
+
+    if (chatbotContainer) {
+    chatbotContainer.classList.add("active");
+    if (toggleBtn) {
+    toggleBtn.style.background = "#ff9d6b";
+    toggleBtn.style.color = "white";
+    toggleBtn.title = "Đóng chatbot";
+}
     if (chatInput) {
-        chatInput.focus();
-    }
+    setTimeout(() => chatInput.focus(), 100);
+}
+}
 }
 
-function closeChatbot() {
-    document.body.classList.remove("show-chatbot");
+    function closeChatbot() {
+    const chatbotContainer = document.querySelector(".chatbot-container");
+    const chatbotWrapper = document.querySelector(".chatbot-wrapper");
+    const toggleBtn = document.getElementById("chatbot-toggle-btn");
+
+    const headerActions = document.querySelector(".header-actions");
+    let maximizeBtn = null;
+    if (headerActions) {
+    const buttons = headerActions.querySelectorAll(".header-btn");
+    if (buttons.length > 1) {
+    maximizeBtn = buttons[1];
+}
 }
 
-// ===== SCROLL TO BOTTOM =====
-function scrollToBottom() {
+    if (chatbotContainer && chatbotContainer.classList.contains("fullscreen")) {
+    chatbotContainer.classList.remove("fullscreen");
+    if (chatbotWrapper) {
+    chatbotWrapper.classList.remove("fullscreen");
+}
+    document.body.classList.remove("chatbot-fullscreen");
+    document.body.style.overflow = "";
+
+    if (maximizeBtn) {
+    maximizeBtn.textContent = "⛶";
+    maximizeBtn.title = "Phóng to";
+}
+}
+
+    if (chatbotContainer) {
+    chatbotContainer.classList.remove("active");
+    chatbotContainer.style.display = "none";
+    if (toggleBtn) {
+    toggleBtn.style.background = "white";
+    toggleBtn.style.color = "#ff9d6b";
+    toggleBtn.title = "Mở chatbot";
+}
+}
+}
+
+    // ===== SCROLL TO BOTTOM =====
+    function scrollToBottom() {
     if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 }
 
-// ===== ADJUST CHATBOT POSITION =====
-function adjustChatbotPosition() {
-    const container = document.getElementById('chatbotContainer');
-    if (!container) return;
-
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Reset styles first
-    container.style.right = '';
-    container.style.width = '';
-    container.style.maxWidth = '';
-    container.style.height = '';
-    container.style.maxHeight = '';
-    container.style.minHeight = '';
-
-    // Responsive adjustments based on viewport size
-    if (viewportWidth <= 480) {
-        // Full screen for very small devices
-        container.style.right = '0';
-        container.style.bottom = '0';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.minHeight = '100%';
-        container.style.maxHeight = '100%';
-        container.style.borderRadius = '0';
-        container.style.border = 'none';
-        container.style.boxShadow = 'none';
-    } else if (viewportWidth <= 600) {
-        // Almost full width for small devices
-        container.style.right = '4px';
-        container.style.width = 'calc(100vw - 8px)';
-        container.style.height = `min(90vh, ${Math.min(450, viewportHeight - 100)}px)`;
-        container.style.minHeight = '300px';
-    } else if (viewportWidth <= 768) {
-        // Medium screens
-        container.style.right = '8px';
-        container.style.width = 'calc(100vw - 16px)';
-        container.style.height = `min(85vh, ${Math.min(500, viewportHeight - 120)}px)`;
-        container.style.minHeight = '350px';
-    } else {
-        // Large screens - default behavior
-        container.style.right = '16px';
-        container.style.width = 'min(400px, calc(100vw - 32px))';
-        container.style.height = `min(75vh, ${Math.min(600, viewportHeight - 120)}px)`;
-        container.style.minHeight = '400px';
-    }
-
-    // Ensure chatbot doesn't exceed viewport height
-    const maxHeight = viewportHeight - 120;
-    if (container.offsetHeight > maxHeight) {
-        container.style.height = `${maxHeight}px`;
-    }
-
-    console.log('Chatbot position adjusted for viewport:', {
-        viewportWidth,
-        viewportHeight,
-        containerWidth: container.offsetWidth,
-        containerHeight: container.offsetHeight,
-        containerStyle: {
-            right: container.style.right,
-            width: container.style.width,
-            height: container.style.height
-        }
-    });
+    // ===== ADJUST CHATBOT POSITION =====
+    function adjustChatbotPosition() {
+    const container = document.querySelector(".chatbot-container");
+    if (container) {
+    console.log("Chatbot position is managed by CSS");
+}
 }
 
-// ===== SESSION POPUP FUNCTIONS =====
-function openSessionPopup() {
-    const sessionPopup = document.getElementById('sessionPopup');
+    // ===== SESSION POPUP FUNCTIONS =====
+    function openSessionPopup() {
+    const sessionPopup = document.getElementById("sessionPopup");
     if (sessionPopup) {
-        sessionPopup.style.display = 'flex';
-        setTimeout(() => {
-            sessionPopup.classList.add('show');
-        }, 10);
+    sessionPopup.style.display = "flex";
+    setTimeout(() => {
+    sessionPopup.classList.add("show");
+}, 10);
 
-        // Add event listeners for popup - chỉ setup một lần
-        if (!sessionPopupInitialized) {
-            setupSessionPopupEvents();
-            sessionPopupInitialized = true;
-        }
-    }
+    if (!sessionPopupInitialized) {
+    setupSessionPopupEvents();
+    sessionPopupInitialized = true;
+}
+}
 }
 
-function closeSessionPopup() {
-    const sessionPopup = document.getElementById('sessionPopup');
+    function closeSessionPopup() {
+    const sessionPopup = document.getElementById("sessionPopup");
     if (sessionPopup) {
-        sessionPopup.classList.remove('show');
-        setTimeout(() => {
-            sessionPopup.style.display = 'none';
-        }, 300);
-    }
+    sessionPopup.classList.remove("show");
+    setTimeout(() => {
+    sessionPopup.style.display = "none";
+}, 300);
+}
 }
 
-function setupSessionPopupEvents() {
-    const sessionPopup = document.getElementById('sessionPopup');
-    const sessionPopupClose = document.getElementById('sessionPopupClose');
-    const newSessionBtn = document.getElementById('oeNewSessionBtn');
+    function setupSessionPopupEvents() {
+    const sessionPopup = document.getElementById("sessionPopup");
+    const sessionPopupClose = document.getElementById("sessionPopupClose");
+    const newSessionBtn = document.getElementById("oeNewSessionBtn");
 
     if (sessionPopupClose) {
-        sessionPopupClose.addEventListener('click', closeSessionPopup);
-    }
-
-    // Close popup with Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && sessionPopup && sessionPopup.style.display !== 'none') {
-            closeSessionPopup();
-        }
-    });
-
-    // Handle new session button - sử dụng event delegation
-    if (newSessionBtn) {
-        newSessionBtn.addEventListener('click', () => {
-            createNewSession();
-            closeSessionPopup();
-        });
-    }
-
-    // Sử dụng event delegation cho session items
-    const sessionList = document.querySelector('.session-list');
-    if (sessionList) {
-        // Xóa listener cũ nếu có
-        const clonedList = sessionList.cloneNode(true);
-        sessionList.parentNode.replaceChild(clonedList, sessionList);
-
-        // Thêm listener mới cho toàn bộ list
-        clonedList.addEventListener('click', (e) => {
-            const clickedItem = e.target.closest('.session-item');
-            if (!clickedItem) return;
-
-            const deleteBtn = e.target.closest('.session-delete-btn');
-            const actionBtn = e.target.closest('.session-action-btn');
-
-            if (deleteBtn) {
-                e.stopPropagation();
-                deleteSession(clickedItem);
-            } else if (actionBtn) {
-                e.stopPropagation();
-                // Switch to this session
-                const sessionId = clickedItem.getAttribute('data-session-id');
-                selectSession(sessionId);
-            } else if (e.target.closest('.session-item')) {
-                // Click vào session item để select
-                const sessionId = clickedItem.getAttribute('data-session-id');
-                selectSession(sessionId);
-            }
-        });
-    }
+    sessionPopupClose.addEventListener("click", closeSessionPopup);
 }
 
-// Hàm chuyển đổi phiên làm việc
-function selectSession(sessionId) {
-    // Lưu chat history của phiên hiện tại
+    document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sessionPopup && sessionPopup.style.display !== "none") {
+    closeSessionPopup();
+}
+});
+
+    if (newSessionBtn) {
+    newSessionBtn.addEventListener("click", () => {
+    createNewSession();
+    closeSessionPopup();
+});
+}
+
+    const sessionList = document.querySelector(".session-list");
+    if (sessionList) {
+    const clonedList = sessionList.cloneNode(true);
+    sessionList.parentNode.replaceChild(clonedList, sessionList);
+
+    clonedList.addEventListener("click", (e) => {
+    const clickedItem = e.target.closest(".session-item");
+    if (!clickedItem) return;
+
+    const deleteBtn = e.target.closest(".session-delete-btn");
+    const actionBtn = e.target.closest(".session-action-btn");
+
+    if (deleteBtn) {
+    e.stopPropagation();
+    deleteSession(clickedItem);
+} else if (actionBtn) {
+    e.stopPropagation();
+    const sessionId = clickedItem.getAttribute("data-session-id");
+    selectSession(sessionId);
+} else if (e.target.closest(".session-item")) {
+    const sessionId = clickedItem.getAttribute("data-session-id");
+    selectSession(sessionId);
+}
+});
+}
+}
+
+    function selectSession(sessionId) {
     const currentSessionId = getCurrentSessionId();
     saveChatHistory(currentSessionId);
 
-    // Chuyển sang phiên mới
-    sessionStorage.setItem('chatbot_session_id', sessionId);
+    sessionStorage.setItem("chatbot_session_id", sessionId);
 
-    // Khôi phục chat history của phiên được chọn
-    restoreChatHistory(sessionId);
-
-    // Cập nhật UI
-    const sessionItems = document.querySelectorAll('.session-item');
-    sessionItems.forEach(si => si.classList.remove('active'));
-
-    const selectedItem = document.querySelector(`[data-session-id="${sessionId}"]`);
-    if (selectedItem) {
-        selectedItem.classList.add('active');
-    }
-
-    console.log('Switched to session:', sessionId);
+    const history = chatHistory.get(sessionId) || [];
+    if (history.length === 0) {
+    sessionStorage.removeItem(WELCOME_FLAG);
+} else {
+    sessionStorage.setItem(WELCOME_FLAG, "1");
 }
 
-function createNewSession(firstMessageTitle = null) {
-    // Kiểm tra nếu đang trong quá trình tạo session để tránh tạo nhiều lần
-    if (window.isCreatingSession) {
-        console.log('Đang tạo session, vui lòng đợi...');
-        return;
-    }
+    restoreChatHistory(sessionId);
 
+    const sessionItems = document.querySelectorAll(".session-item");
+    sessionItems.forEach((si) => si.classList.remove("active"));
+
+    const selectedItem = document.querySelector(`[data-session-id="${sessionId}"]`);
+    if (selectedItem) selectedItem.classList.add("active");
+
+    console.log("Switched to session:", sessionId);
+}
+
+    function createNewSession(firstMessageTitle = null, shouldClearChat = true) {
+    if (window.isCreatingSession) {
+    console.log("Đang tạo session, vui lòng đợi...");
+    return null;
+}
     window.isCreatingSession = true;
 
     try {
-        // Lưu chat history của phiên hiện tại
-        const currentSessionId = getCurrentSessionId();
-        saveChatHistory(currentSessionId);
+    const currentSessionId = getCurrentSessionId();
+    saveChatHistory(currentSessionId);
 
-        // Generate a new session ID
-        const newSessionId = `SESSION_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newSessionId = `SESSION_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        // Update session storage
-        sessionStorage.setItem('chatbot_session_id', newSessionId);
+    sessionStorage.setItem("chatbot_session_id", newSessionId);
 
-        // Khôi phục chat history cho phiên mới (sẽ là welcome message)
-        // restoreChatHistory(newSessionId);
-        clearChat();
+    if (!chatHistory.has(newSessionId)) {
+    chatHistory.set(newSessionId, []);
+}
 
-        // Update UI session list
-        const sessionList = document.querySelector('.session-list');
-        if (sessionList) {
-            // Remove active class from all sessions
-            const sessionItems = document.querySelectorAll('.session-item');
-            sessionItems.forEach(si => si.classList.remove('active'));
+    sessionStorage.removeItem(WELCOME_FLAG);
 
-            let title = "Phiên mới"; // Mặc định
-            if (firstMessageTitle) {
-                title = firstMessageTitle.trim();
-                if (title.length > 30) {
-                    title = title.substring(0, 30) + '...';
-                }
-            }
+    if (shouldClearChat) {
+    clearChat({ restoreWelcome: true });
+} else {
+    showWelcome();
+}
 
-            // Create new session item
-            const newSessionItem = document.createElement('div');
-            newSessionItem.classList.add('session-item', 'active');
-            newSessionItem.setAttribute('data-session-id', newSessionId);
-            newSessionItem.innerHTML = `
+    const sessionList = document.querySelector(".session-list");
+    if (sessionList) {
+    document.querySelectorAll(".session-item").forEach((si) => si.classList.remove("active"));
+
+    let title = "Phiên mới";
+    if (firstMessageTitle) {
+    title = firstMessageTitle.trim();
+    if (title.length > 30) title = title.substring(0, 30) + "...";
+}
+
+    const newSessionItem = document.createElement("div");
+    newSessionItem.classList.add("session-item", "active");
+    newSessionItem.setAttribute("data-session-id", newSessionId);
+    newSessionItem.innerHTML = `
                 <div class="session-info">
-                    <span class="session-title">${title}</span> 
+                    <span class="session-title">${title}</span>
                     <span class="session-time">Vừa tạo</span>
                 </div>
                 <div class="session-actions">
@@ -801,65 +1583,308 @@ function createNewSession(firstMessageTitle = null) {
                     </button>
                 </div>
             `;
-
-            // Add new session at the top
-            sessionList.insertBefore(newSessionItem, sessionList.firstChild);
-
-            console.log('Created new session:', newSessionId);
-        }
-    } finally {
-        // Reset flag sau một khoảng thời gian ngắn
-        setTimeout(() => {
-            window.isCreatingSession = false;
-        }, 300);
-    }
+    sessionList.insertBefore(newSessionItem, sessionList.firstChild);
 }
 
-function deleteSession(sessionItem) {
-    const sessionId = sessionItem.getAttribute('data-session-id');
-    const sessionTitle = sessionItem.querySelector('.session-title').textContent;
+    setTimeout(() => {
+    const input = document.querySelector(".message-input");
+    if (input) input.focus();
+    if (typeof scrollToBottom === "function") scrollToBottom();
+}, 50);
 
-    // Show confirmation dialog
+    console.log("Created new session:", newSessionId);
+    return newSessionId;
+} finally {
+    setTimeout(() => {
+    window.isCreatingSession = false;
+}, 300);
+}
+}
+
+    function deleteSession(sessionItem) {
+    const sessionId = sessionItem.getAttribute("data-session-id");
+    const sessionTitle = sessionItem.querySelector(".session-title").textContent;
+
     if (confirm(`Bạn có chắc chắn muốn xóa phiên "${sessionTitle}"?`)) {
-        // Xóa chat history
-        chatHistory.delete(sessionId);
+    chatHistory.delete(sessionId);
+    sessionItem.remove();
 
-        // Remove from DOM
-        sessionItem.remove();
-
-        // If this was the active session, activate another one
-        const remainingSessions = document.querySelectorAll('.session-item');
-        if (remainingSessions.length > 0) {
-            const newActiveSessionId = remainingSessions[0].getAttribute('data-session-id');
-            selectSession(newActiveSessionId);
-        }
-
-        console.log('Deleted session:', sessionTitle);
-    }
+    const remainingSessions = document.querySelectorAll(".session-item");
+    if (remainingSessions.length > 0) {
+    const newActiveSessionId = remainingSessions[0].getAttribute("data-session-id");
+    selectSession(newActiveSessionId);
 }
 
-function updateSessionTitle(sessionId, firstMessage) {
-    // Extract title from first message (limit to 30 characters)
+    console.log("Deleted session:", sessionTitle);
+}
+}
+
+    function updateSessionTitle(sessionId, firstMessage) {
     let title = firstMessage.trim();
     if (title.length > 30) {
-        title = title.substring(0, 30) + '...';
-    }
-
-    // Find the session item and update its title
-    const sessionItem = document.querySelector(`[data-session-id="${sessionId}"]`);
-    if (sessionItem) {
-        const titleElement = sessionItem.querySelector('.session-title');
-        if (titleElement) {
-            titleElement.textContent = title;
-        }
-    }
+    title = title.substring(0, 30) + "...";
 }
 
-// ===== EXPORT FOR EXTERNAL USE =====
-window.OpenEventAI = {
+    const sessionItem = document.querySelector(`[data-session-id="${sessionId}"]`);
+    if (sessionItem) {
+    const titleElement = sessionItem.querySelector(".session-title");
+    if (titleElement) {
+    titleElement.textContent = title;
+}
+}
+}
+
+    // ===== TOGGLE MAXIMIZE/FULLSCREEN =====
+    function toggleMaximize() {
+    const chatbotContainer = document.querySelector(".chatbot-container");
+    const chatbotWrapper = document.querySelector(".chatbot-wrapper");
+
+    const headerActions = document.querySelector(".header-actions");
+    let maximizeBtn = null;
+    if (headerActions) {
+    const buttons = headerActions.querySelectorAll(".header-btn");
+    if (buttons.length > 1) {
+    maximizeBtn = buttons[1];
+}
+}
+
+    if (!chatbotContainer || !chatbotWrapper) {
+    console.warn("⚠️ Chatbot container or wrapper not found");
+    return;
+}
+
+    const isFullscreen = chatbotContainer.classList.contains("fullscreen");
+
+    if (isFullscreen) {
+    chatbotContainer.classList.remove("fullscreen");
+    chatbotWrapper.classList.remove("fullscreen");
+    document.body.classList.remove("chatbot-fullscreen");
+
+    document.body.style.overflow = "";
+
+    if (maximizeBtn) {
+    maximizeBtn.textContent = "⛶";
+    maximizeBtn.title = "Phóng to";
+}
+
+    console.log("✅ Exited fullscreen mode - page elements restored");
+} else {
+    if (!chatbotContainer.classList.contains("active")) {
+    chatbotContainer.classList.add("active");
+    chatbotContainer.style.display = "flex";
+}
+
+    chatbotContainer.classList.add("fullscreen");
+    chatbotWrapper.classList.add("fullscreen");
+    document.body.classList.add("chatbot-fullscreen");
+
+    if (maximizeBtn) {
+    maximizeBtn.textContent = "⤡";
+    maximizeBtn.title = "Thu nhỏ";
+}
+
+    document.body.style.overflow = "hidden";
+
+    console.log("✅ Entered fullscreen mode - header is now main header, body shows messages");
+}
+
+    setTimeout(() => {
+    const chatbotBody = document.querySelector(".chatbot-body");
+    if (chatbotBody) {
+    chatbotBody.scrollTo({
+    top: chatbotBody.scrollHeight,
+    behavior: "smooth",
+});
+}
+    if (chatMessages) {
+    chatMessages.scrollTo({
+    top: chatMessages.scrollHeight,
+    behavior: "smooth",
+});
+}
+}, 100);
+}
+
+    // (PATCH) Removed moveMessagesToFullscreen/moveMessagesToPopup: dùng 1 container, chỉ đổi layout bằng CSS
+
+    function navigateToChatWeb() {
+    const currentSessionId = getCurrentSessionId();
+    saveChatHistory(currentSessionId);
+
+    sessionStorage.setItem("chatweb_session_id", currentSessionId);
+    if (isValidUserId(USER_ID)) {
+    sessionStorage.setItem("chatweb_user_id", String(USER_ID));
+} else {
+    sessionStorage.removeItem("chatweb_user_id");
+}
+    sessionStorage.setItem("chatweb_api_base_url", API_BASE_URL);
+
+    const historyData = {};
+    chatHistory.forEach((value, key) => {
+    historyData[key] = value;
+});
+    sessionStorage.setItem("chatweb_history", JSON.stringify(historyData));
+
+    // PATCH: chuẩn hóa BASE URL tránh //
+    const base = (API_BASE_URL || "").replace(/\/+$/, "");
+    const chatwebPath = `${base}/chatweb`;
+
+    const fullUrl = new URL(chatwebPath, window.location.origin);
+    fullUrl.searchParams.set("sessionId", currentSessionId);
+    if (isValidUserId(USER_ID)) fullUrl.searchParams.set("userId", String(USER_ID));
+
+    console.log("Navigating to chatweb:", {
+    url: fullUrl.toString(),
+    path: chatwebPath,
+    sessionId: currentSessionId,
+    userId: USER_ID,
+    historySaved: Object.keys(historyData).length,
+    API_BASE_URL: API_BASE_URL,
+});
+
+    window.location.href = fullUrl.toString();
+}
+
+    // ===== SHARE FUNCTIONALITY =====
+    function shareChatbot() {
+    const chatbotContainer = document.querySelector(".chatbot-container");
+    if (!chatbotContainer) return;
+
+    const messages = chatMessages ? Array.from(chatMessages.querySelectorAll(".message")) : [];
+    let chatContent = "💬 Cuộc trò chuyện với Eva - Trợ lý AI OpenEvent\n\n";
+
+    messages.forEach((msg) => {
+    const isUser = msg.classList.contains("user-message");
+    const content = msg.querySelector(".message-content")?.textContent || msg.textContent;
+    if (content && content.trim()) {
+    chatContent += `${isUser ? "👤 Bạn" : "🤖 Eva"}: ${content.trim()}\n\n`;
+}
+});
+
+    if (messages.length === 0) {
+    chatContent = "💬 Trải nghiệm Eva - Trợ lý AI của OpenEvent!\n\n";
+    chatContent += window.location.href;
+} else {
+    chatContent += `\n🔗 ${window.location.href}`;
+}
+
+    if (navigator.share) {
+    navigator
+    .share({
+    title: "Cuộc trò chuyện với Eva - OpenEvent",
+    text: chatContent,
+    url: window.location.href,
+})
+    .catch((err) => {
+    console.log("Error sharing:", err);
+    copyToClipboard(chatContent);
+});
+} else {
+    copyToClipboard(chatContent);
+}
+}
+
+    function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+    .writeText(text)
+    .then(() => {
+    showNotification("Đã sao chép vào clipboard!", "success");
+})
+    .catch((err) => {
+    console.error("Failed to copy:", err);
+    fallbackCopyToClipboard(text);
+});
+} else {
+    fallbackCopyToClipboard(text);
+}
+}
+
+    function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+    document.execCommand("copy");
+    showNotification("Đã sao chép vào clipboard!", "success");
+} catch (err) {
+    console.error("Fallback copy failed:", err);
+    showNotification("Không thể sao chép. Vui lòng thử lại.", "error");
+}
+
+    document.body.removeChild(textArea);
+}
+
+    function showNotification(message, type = "info") {
+    const notification = document.createElement("div");
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === "success" ? "#4caf50" : type === "error" ? "#f44336" : "#2196f3"};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10001;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease-out;
+        max-width: 300px;
+    `;
+    notification.textContent = message;
+
+    if (!document.getElementById("notification-styles")) {
+    const style = document.createElement("style");
+    style.id = "notification-styles";
+    style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+    document.head.appendChild(style);
+}
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+    notification.style.animation = "slideOutRight 0.3s ease-out";
+    setTimeout(() => {
+    if (notification.parentNode) {
+    notification.parentNode.removeChild(notification);
+}
+}, 300);
+}, 3000);
+}
+
+    // ===== EXPORT FOR EXTERNAL USE =====
+    if (typeof window !== "undefined") {
+    if (window.__setSendMessage) {
+    window.__setSendMessage(sendMessage);
+} else {
+    window.sendMessage = sendMessage;
+    console.log("✅ sendMessage exported to window (direct, no placeholder found)");
+}
+}
+
+    window.OpenEventAI = {
     sendQuickAction,
     clearChat,
     openChatbot,
     closeChatbot,
-    isChatbotOpen
-};
+    isChatbotOpen,
+    toggleMaximize,
+    navigateToChatWeb,
+    shareChatbot,
+    sendMessage,
+}

@@ -1,6 +1,5 @@
 package com.group02.openevent.controller.attendance;
 
-import com.group02.openevent.ai.security.AISecurityService;
 import com.group02.openevent.ai.security.RateLimitingService;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.dto.attendance.AttendanceRequest;
@@ -56,9 +55,6 @@ class EventAttendanceControllerIntegrationTest {
     private static final String EMAIL = "test@example.com";
     @MockitoBean
     private RateLimitingService rateLimitingService;
-
-    @MockitoBean
-    private AISecurityService aiSecurityService;
     @BeforeEach
     void setUp() throws Exception {
         event = new Event();

@@ -36,30 +36,101 @@ class EventAIControllerTest {
 	}
 
 	@ParameterizedTest(name = "tool={0}, expect={1}")
-//    @CsvSource({"ADD_EVENT,200","UPDATE_EVENT,400","DELETE_EVENT,400","FOO,400"})
-	@CsvSource({"UPDATE_EVENT,400","DELETE_EVENT,400","FOO,400"})
+	@CsvSource({"ADD_EVENT,200","UPDATE_EVENT,400","DELETE_EVENT,400","FOO,400"})
 	void createEvent_toolValidation(String tool, int expect) throws Exception {
 		String body = """
-		{"action":{"toolName":"%s","args":{"title":"T"}},"userId":1}
+		{"action":{"toolName":"%s","args":{"title":"T","start_time":"2025-01-01T10:00","end_time":"2025-01-01T12:00"}},"userId":1}
 		""".formatted(tool);
+		if ("ADD_EVENT".equals(tool)) {
+			org.mockito.Mockito.doNothing()
+					.when(agentEventService).saveEventFromAction(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong());
+		}
 		mockMvc.perform(post("/api/ai/event/create")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(body))
 				.andExpect(status().is(expect));
 	}
 
-//	@org.junit.jupiter.api.Test
-//	void createEvent_serviceException_500() throws Exception {
-//		String body = """
-//		{"action":{"toolName":"ADD_EVENT","args":{"title":"T"}},"userId":1}
-//		""";
-//		org.mockito.Mockito.doThrow(new RuntimeException("svc"))
-//				.when(agentEventService).saveEventFromAction(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong());
-//		mockMvc.perform(post("/api/ai/event/create")
-//				.contentType(MediaType.APPLICATION_JSON)
-//				.content(body))
-//				.andExpect(status().isInternalServerError());
-//	}
+	// BR-01: Test invalid userId
+	@org.junit.jupiter.api.Test
+	void createEvent_invalidUserId_null_400() throws Exception {
+		String body = """
+		{"action":{"toolName":"ADD_EVENT","args":{"title":"T","start_time":"2025-01-01T10:00","end_time":"2025-01-01T12:00"}},"userId":null}
+		""";
+		mockMvc.perform(post("/api/ai/event/create")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
+				.andExpect(status().isBadRequest());
+	}
+
+	@org.junit.jupiter.api.Test
+	void createEvent_invalidUserId_zero_400() throws Exception {
+		String body = """
+		{"action":{"toolName":"ADD_EVENT","args":{"title":"T","start_time":"2025-01-01T10:00","end_time":"2025-01-01T12:00"}},"userId":0}
+		""";
+		mockMvc.perform(post("/api/ai/event/create")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
+				.andExpect(status().isBadRequest());
+	}
+
+	@org.junit.jupiter.api.Test
+	void createEvent_invalidUserId_negative_400() throws Exception {
+		String body = """
+		{"action":{"toolName":"ADD_EVENT","args":{"title":"T","start_time":"2025-01-01T10:00","end_time":"2025-01-01T12:00"}},"userId":-1}
+		""";
+		mockMvc.perform(post("/api/ai/event/create")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
+				.andExpect(status().isBadRequest());
+	}
+
+	// BR-02: Test null action
+	@org.junit.jupiter.api.Test
+	void createEvent_nullAction_400() throws Exception {
+		String body = """
+		{"action":null,"userId":1}
+		""";
+		mockMvc.perform(post("/api/ai/event/create")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
+				.andExpect(status().isBadRequest())
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.error")
+						.value(org.hamcrest.Matchers.containsString("Action không được để trống")));
+	}
+
+	// BR-11: Test happy path
+	@org.junit.jupiter.api.Test
+	void createEvent_happyPath_200() throws Exception {
+		org.mockito.Mockito.doNothing()
+				.when(agentEventService).saveEventFromAction(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong());
+		
+		String body = """
+		{"action":{"toolName":"ADD_EVENT","args":{"title":"Workshop Python","start_time":"2025-01-15T10:00","end_time":"2025-01-15T12:00","place":"Main Hall"}},"userId":1}
+		""";
+		mockMvc.perform(post("/api/ai/event/create")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
+				.andExpect(status().isOk())
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(true))
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message")
+						.value(org.hamcrest.Matchers.containsString("Đã tạo sự kiện thành công")));
+	}
+
+	// BR-11: Test service exception
+	@org.junit.jupiter.api.Test
+	void createEvent_serviceException_500() throws Exception {
+		String body = """
+		{"action":{"toolName":"ADD_EVENT","args":{"title":"T","start_time":"2025-01-01T10:00","end_time":"2025-01-01T12:00"}},"userId":1}
+		""";
+		org.mockito.Mockito.doThrow(new RuntimeException("svc"))
+				.when(agentEventService).saveEventFromAction(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong());
+		mockMvc.perform(post("/api/ai/event/create")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
+				.andExpect(status().isInternalServerError())
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.success").value(false));
+	}
 
 	@ParameterizedTest(name = "timeContext={0}")
 	@CsvSource({"TODAY","TOMORROW","THIS_WEEK","NEXT_WEEK"})

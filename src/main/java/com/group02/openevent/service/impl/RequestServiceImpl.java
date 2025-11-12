@@ -49,12 +49,13 @@ public class RequestServiceImpl implements RequestService {
 
         List<RequestFormDTO.DepartmentDTO> departmentDTOs = departments.stream()
                 .map(dept -> {
-                    Long accountId = null;
-                    if (dept.getUser() != null && dept.getUser().getAccount() != null) {
-                        accountId = dept.getUser().getAccount().getAccountId();
+                    // Use user_id (userId) instead of account_id because Request entity uses User (user_id)
+                    Long userId = null;
+                    if (dept.getUser() != null) {
+                        userId = dept.getUser().getUserId();
                     }
                     return RequestFormDTO.DepartmentDTO.builder()
-                            .id(accountId)
+                            .id(userId) // Use user_id, not account_id
                             .name(dept.getDepartmentName())
                             .build();
                 })
@@ -121,6 +122,22 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDTO createRequest(CreateRequestDTO createRequestDTO) {
+        // Validate: Check if there's already a PENDING or APPROVED request for this event
+        if (createRequestDTO.getEventId() != null) {
+            List<RequestStatus> blockingStatuses = List.of(RequestStatus.PENDING, RequestStatus.APPROVED);
+            List<Request> existingRequests = requestRepo.findByEvent_IdAndStatusIn(
+                    createRequestDTO.getEventId(), blockingStatuses);
+            
+            if (!existingRequests.isEmpty()) {
+                Request existingRequest = existingRequests.get(0);
+                if (existingRequest.getStatus() == RequestStatus.APPROVED) {
+                    throw new RuntimeException("Cannot send request: Event has already been approved. Request ID: " + existingRequest.getRequestId());
+                } else if (existingRequest.getStatus() == RequestStatus.PENDING) {
+                    throw new RuntimeException("Cannot send request: There is already a pending request for this event. Request ID: " + existingRequest.getRequestId());
+                }
+            }
+        }
+        
         Request request = Request.builder()
                 .type(createRequestDTO.getType())
                 .message(createRequestDTO.getMessage())
@@ -154,6 +171,22 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDTO createRequestWithFile(CreateRequestDTO createRequestDTO, MultipartFile file) {
+        // Validate: Check if there's already a PENDING or APPROVED request for this event
+        if (createRequestDTO.getEventId() != null) {
+            List<RequestStatus> blockingStatuses = List.of(RequestStatus.PENDING, RequestStatus.APPROVED);
+            List<Request> existingRequests = requestRepo.findByEvent_IdAndStatusIn(
+                    createRequestDTO.getEventId(), blockingStatuses);
+            
+            if (!existingRequests.isEmpty()) {
+                Request existingRequest = existingRequests.get(0);
+                if (existingRequest.getStatus() == RequestStatus.APPROVED) {
+                    throw new RuntimeException("Cannot send request: Event has already been approved. Request ID: " + existingRequest.getRequestId());
+                } else if (existingRequest.getStatus() == RequestStatus.PENDING) {
+                    throw new RuntimeException("Cannot send request: There is already a pending request for this event. Request ID: " + existingRequest.getRequestId());
+                }
+            }
+        }
+        
         String fileURL = null;
 
         // Upload file to Cloudinary if provided
@@ -177,7 +210,6 @@ public class RequestServiceImpl implements RequestService {
                 .build();
 
         if (createRequestDTO.getEventId() != null) {
-            // Use findByIdWithHostAccount to eagerly fetch Host relationship
             Event event = eventRepo.findByIdWithHostAccount(createRequestDTO.getEventId())
                     .orElseThrow(() -> new RuntimeException("Event not found"));
             request.setEvent(event);

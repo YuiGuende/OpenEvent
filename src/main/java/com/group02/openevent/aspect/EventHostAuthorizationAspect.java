@@ -3,6 +3,8 @@ package com.group02.openevent.aspect;
 
 import com.group02.openevent.annotation.RequireEventHost;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.user.Host;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IEventRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +77,7 @@ public class EventHostAuthorizationAspect {
             log.error("Request parameters: {}", request.getParameterMap().keySet());
             if (request.getSession(false) != null) {
                 log.error("Session attributes: {}", Collections.list(request.getSession(false).getAttributeNames()));
-                log.error("ACCOUNT_ID in session: {}", request.getSession(false).getAttribute("ACCOUNT_ID"));
+                log.error("ACCOUNT_ID in session: {}", request.getSession(false).getAttribute("USER_ID"));
             } else {
                 log.error("No session found");
             }
@@ -85,7 +87,13 @@ public class EventHostAuthorizationAspect {
         log.info("Authorization check - eventId: {}, userId: {}", eventId, userId);
         
         // Check if event exists and user is the host
-        Optional<Event> event = eventRepository.findById(eventId);
+        // Use eager fetch to avoid LazyInitializationException
+        Optional<Event> event = eventRepository.findByIdWithHostAccount(eventId);
+        if (event.isEmpty()) {
+            // Fallback to regular findById if eager fetch method doesn't work
+            log.warn("Eager fetch returned empty, trying regular findById");
+            event = eventRepository.findById(eventId);
+        }
         
         if (event.isEmpty()) {
             log.error("Event not found: {}", eventId);
@@ -93,6 +101,8 @@ public class EventHostAuthorizationAspect {
         }
         
         Event eventEntity = event.get();
+        log.debug("Event found: ID={}, Title={}, Host={}", eventEntity.getId(), eventEntity.getTitle(), 
+                eventEntity.getHost() != null ? eventEntity.getHost().getId() : "null");
         
         // Safely extract host account ID with null checks
         Long eventHostId = null;
@@ -101,21 +111,38 @@ public class EventHostAuthorizationAspect {
                 log.error("Event {} has no host assigned", eventId);
                 throw new IllegalArgumentException("Event has no host assigned");
             }
-
             
-            if (eventEntity.getHost().getUser()== null) {
-                log.error("Event {} host customer has no account assigned", eventId);
-                throw new IllegalArgumentException("Event host customer has no account assigned");
+            Host host = eventEntity.getHost();
+            log.debug("Host found: ID={}", host.getId());
+            
+            // Force initialization of lazy-loaded User relationship
+            try {
+                // Access user to trigger lazy loading
+                User hostUser = host.getUser();
+                if (hostUser == null) {
+                    log.error("Event {} host has no user assigned", eventId);
+                    throw new IllegalArgumentException("Event host has no user assigned");
+                }
+                
+                eventHostId = hostUser.getUserId();
+                log.debug("Host user found: userId={}", eventHostId);
+                
+                if (eventHostId == null) {
+                    log.error("Event {} host user ID is null", eventId);
+                    throw new IllegalArgumentException("Event host user ID is null");
+                }
+            } catch (org.hibernate.LazyInitializationException e) {
+                log.error("LazyInitializationException when accessing host.user for event {}: {}", eventId, e.getMessage());
+                // Try to reload event with eager fetch
+                log.warn("Attempting to reload event with eager fetch for host.user");
+                throw new IllegalStateException("Cannot access host user due to lazy loading. Please ensure transaction is active.");
             }
-            
-            eventHostId = eventEntity.getHost().getUser().getUserId();
-            
-            if (eventHostId == null) {
-                log.error("Event {} host account ID is null", eventId);
-                throw new IllegalArgumentException("Event host account ID is null");
-            }
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            // Re-throw these as-is
+            throw e;
         } catch (Exception e) {
             log.error("Error extracting host account ID for event {}: {}", eventId, e.getMessage(), e);
+            log.error("Exception type: {}", e.getClass().getName());
             throw new IllegalStateException("Cannot determine event host: " + e.getMessage(), e);
         }
         
@@ -157,24 +184,24 @@ public class EventHostAuthorizationAspect {
     private Long getUserIdFromSession(HttpServletRequest request) {
         try {
             if (request.getSession(false) != null) {
-                Object accountId = request.getSession(false).getAttribute("ACCOUNT_ID");
-                log.debug("ACCOUNT_ID from session: {} (type: {})", accountId, accountId != null ? accountId.getClass().getName() : "null");
+                Object userId = request.getSession(false).getAttribute("USER_ID");
+                log.debug("USER_ID from session: {} (type: {})", userId, userId != null ? userId.getClass().getName() : "null");
                 
-                if (accountId instanceof Long) {
-                    return (Long) accountId;
-                } else if (accountId != null) {
+                if (userId instanceof Long) {
+                    return (Long) userId;
+                } else if (userId != null) {
                     try {
-                        Long parsedId = Long.parseLong(accountId.toString());
-                        log.debug("Parsed ACCOUNT_ID from session: {}", parsedId);
+                        Long parsedId = Long.parseLong(userId.toString());
+                        log.debug("Parsed USER_ID from session: {}", parsedId);
                         return parsedId;
                     } catch (NumberFormatException e) {
-                        log.warn("ACCOUNT_ID in session is not a valid Long: {}", accountId);
+                        log.warn("USER_ID in session is not a valid Long: {}", userId);
                     }
                 } else {
-                    log.warn("ACCOUNT_ID is null in session");
+                    log.warn("USER_ID is null in session");
                 }
             } else {
-                log.warn("Session is null when trying to get ACCOUNT_ID");
+                log.warn("Session is null when trying to get USER_ID");
             }
         } catch (Exception e) {
             log.error("Error getting userId from session: {}", e.getMessage(), e);
@@ -268,7 +295,7 @@ public class EventHostAuthorizationAspect {
     private Object getValueFromSession(HttpServletRequest request, SessionAttribute sessionAttribute) {
         try {
             if (request.getSession(false) != null) {
-                String attributeName = sessionAttribute.value().isEmpty() ? "ACCOUNT_ID" : sessionAttribute.value();
+                String attributeName = sessionAttribute.value().isEmpty() ? "USER_ID" : sessionAttribute.value();
                 return request.getSession(false).getAttribute(attributeName);
             }
         } catch (Exception e) {

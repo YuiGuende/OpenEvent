@@ -28,7 +28,7 @@ public class SessionInterceptor implements HandlerInterceptor {
             System.out.println("=== SessionInterceptor: " + method + " " + requestPath + " ===");
             System.out.println("Is public path: " + isPublicPath(requestPath));
             if (request.getSession(false) != null) {
-                System.out.println("Session exists, ACCOUNT_ID: " + request.getSession(false).getAttribute("ACCOUNT_ID"));
+                System.out.println("Session exists, ACCOUNT_ID: " + request.getSession(false).getAttribute("USER_ID"));
             } else {
                 System.out.println("No session found");
             }
@@ -48,7 +48,7 @@ public class SessionInterceptor implements HandlerInterceptor {
             
             // Also check ACCOUNT_ID for backward compatibility (if some legacy code sets it)
             if (userId == null) {
-                userId = (Long) httpSession.getAttribute("ACCOUNT_ID");
+                userId = (Long) httpSession.getAttribute("USER_ID");
             }
             
             if (userId != null) {
@@ -134,7 +134,7 @@ public class SessionInterceptor implements HandlerInterceptor {
                    Long userId = (Long) request.getSession(false).getAttribute("USER_ID");
                    // Also check ACCOUNT_ID for backward compatibility
                    if (userId == null) {
-                       userId = (Long) request.getSession(false).getAttribute("ACCOUNT_ID");
+                       userId = (Long) request.getSession(false).getAttribute("USER_ID");
                    }
                    if (userId != null) {
                        // Set request attributes for HTTP session
@@ -224,7 +224,7 @@ public class SessionInterceptor implements HandlerInterceptor {
             Long userId = (Long) request.getSession(false).getAttribute("USER_ID");
             // Also check ACCOUNT_ID for backward compatibility
             if (userId == null) {
-                userId = (Long) request.getSession(false).getAttribute("ACCOUNT_ID");
+                userId = (Long) request.getSession(false).getAttribute("USER_ID");
             }
             if (userId != null) {
                 // User is logged in via HTTP session, allow access

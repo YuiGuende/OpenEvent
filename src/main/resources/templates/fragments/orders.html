@@ -1,5 +1,5 @@
 
-<div class="container" th:fragment="content">
+<div class="container" th:fragment="content" th:attr="data-event-id=${eventId}">
     <style>
         .modal-backdrop {
             z-index: 1040 !important;
@@ -212,9 +212,13 @@
                     <nav>
                         <ul class="pagination mb-0">
                             <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
-                                <a class="page-link" th:href="@{/fragments/orders(page=${orders.number - 1}, size=${orders.size}, status=${selectedStatus})}">
+                                <a class="page-link" 
+                                   th:onclick="${!orders.first} ? |loadOrdersPage(${orders.number - 1})| : ''"
+                                   th:if="${!orders.first}"
+                                   href="javascript:void(0)">
                                     Trước
                                 </a>
+                                <span class="page-link" th:if="${orders.first}">Trước</span>
                             </li>
 
                             <li
@@ -222,13 +226,20 @@
                                     th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}"
                                     th:classappend="${i == orders.number} ? 'active'"
                             >
-                                <a class="page-link" th:href="@{/fragments/orders(page=${i}, size=${orders.size}, status=${selectedStatus})}" th:text="${i + 1}"></a>
+                                <a class="page-link" 
+                                   th:onclick="|loadOrdersPage(${i})|"
+                                   th:text="${i + 1}"
+                                   href="javascript:void(0)"></a>
                             </li>
 
                             <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
-                                <a class="page-link" th:href="@{/fragments/orders(page=${orders.number + 1}, size=${orders.size}, status=${selectedStatus})}">
+                                <a class="page-link"
+                                   th:onclick="${!orders.last} ? |loadOrdersPage(${orders.number + 1})| : ''"
+                                   th:if="${!orders.last}"
+                                   href="javascript:void(0)">
                                     Sau
                                 </a>
+                                <span class="page-link" th:if="${orders.last}">Sau</span>
                             </li>
                         </ul>
                     </nav>

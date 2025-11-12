@@ -1,34 +1,22 @@
-package com.group02.openevent.controller.event;
+package com.group02.openevent.controller.host;
 
-import com.group02.openevent.dto.department.OrderDTO;
 import com.group02.openevent.dto.request.create.EventCreationRequest;
 import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
-import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
-import com.group02.openevent.model.order.OrderStatus;
-import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.model.user.Host;
 import com.group02.openevent.service.*;
-import com.group02.openevent.service.DepartmentService;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import com.group02.openevent.service.RequestService;
-import com.group02.openevent.service.impl.HostServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Arrays;

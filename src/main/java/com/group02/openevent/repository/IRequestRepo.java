@@ -24,6 +24,17 @@ public interface IRequestRepo extends JpaRepository<Request, Long> {
     List<Request> findByReceiverUserId(Long receiverId);
 
     List<Request> findByEvent_Id(Long eventId);
+    
+    /**
+     * Find requests by event ID and status
+     */
+    List<Request> findByEvent_IdAndStatus(Long eventId, RequestStatus status);
+    
+    /**
+     * Find requests by event ID and status in (for checking PENDING or APPROVED)
+     */
+    @Query("SELECT r FROM Request r WHERE r.event.id = :eventId AND r.status IN :statuses")
+    List<Request> findByEvent_IdAndStatusIn(@Param("eventId") Long eventId, @Param("statuses") List<RequestStatus> statuses);
 
     // Pageable listing
     Page<Request> findAll(Pageable pageable);

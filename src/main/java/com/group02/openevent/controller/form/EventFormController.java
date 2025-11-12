@@ -171,7 +171,7 @@ public class EventFormController {
             if (accountId == null) {
                 HttpSession session = httpRequest.getSession(false);
                 if (session != null) {
-                    accountId = (Long) session.getAttribute("ACCOUNT_ID");
+                    accountId = (Long) session.getAttribute("USER_ID");
                 }
             }
             
@@ -460,6 +460,36 @@ public class EventFormController {
             return "host/view-form";
         } catch (Exception e) {
             log.error("Error loading form ID: {}", formId, e);
+            return "redirect:/?error=form_not_found";
+        }
+    }
+    
+    // API: Get form statistics
+    @GetMapping("/{formId}/stats")
+    @ResponseBody
+    public ResponseEntity<com.group02.openevent.dto.form.FormStatsDTO> getFormStats(@PathVariable Long formId) {
+        try {
+            com.group02.openevent.dto.form.FormStatsDTO stats = eventFormService.getFormStatistics(formId);
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            log.error("Error getting form statistics: {}", e.getMessage(), e);
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Host: View form statistics page (full page)
+    @GetMapping("/stats/{formId}")
+    public String viewFormStats(@PathVariable Long formId, Model model) {
+        try {
+            com.group02.openevent.dto.form.EventFormDTO form = eventFormService.getFormById(formId);
+            model.addAttribute("formId", formId);
+            model.addAttribute("formTitle", form.getFormTitle());
+            model.addAttribute("formType", form.getFormType());
+            model.addAttribute("eventId", form.getEventId());
+            model.addAttribute("content", "fragments/statis-form :: content");
+            return "host/manager-event";
+        } catch (Exception e) {
+            log.error("Error loading form statistics page: {}", e.getMessage(), e);
             return "redirect:/?error=form_not_found";
         }
     }

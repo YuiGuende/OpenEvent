@@ -362,7 +362,121 @@ if (document.readyState === 'loading') {
     setTimeout(initializeOrders, 100);
 }
 
+// Function to load orders page (for pagination)
+function loadOrdersPage(page) {
+    console.log('📄 Loading orders page:', page);
+    
+    const eventId = getEventId();
+    if (!eventId) {
+        console.error('[Orders] Cannot load page - eventId not found');
+        alert('Không tìm thấy ID sự kiện. Vui lòng tải lại trang.');
+        return;
+    }
+
+    // Get current status filter
+    let status = '';
+    const statusFilterText = document.getElementById('statusFilterText');
+    if (statusFilterText) {
+        const statusText = statusFilterText.textContent.trim();
+        // Map Vietnamese text to status value
+        const statusMap = {
+            'Tất cả trạng thái': '',
+            'Chờ xử lý': 'PENDING',
+            'Đã thanh toán': 'PAID',
+            'Đã hủy': 'CANCELLED',
+            'Hết hạn': 'EXPIRED',
+            'Hoàn tiền': 'REFUNDED'
+        };
+        status = statusMap[statusText] || '';
+    }
+    
+    // Fallback: try to get from URL params
+    if (!status) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlStatus = urlParams.get('status');
+        if (urlStatus) status = urlStatus;
+    }
+    
+    // Build query params
+    const params = new URLSearchParams({
+        id: eventId,
+        page: page,
+        size: '10'
+    });
+    
+    if (status) {
+        params.set('status', status);
+    }
+
+    // Show loading state
+    const mainContent = document.querySelector('#main-content');
+    if (mainContent) {
+        const originalContent = mainContent.innerHTML;
+        mainContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Đang tải...</span></div></div>';
+        
+        // Fetch fragment
+        fetch(`/fragments/orders?${params.toString()}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                mainContent.innerHTML = html;
+                
+                // Re-initialize orders page after loading
+                setTimeout(() => {
+                    if (typeof window.initializeOrders === 'function') {
+                        window.initializeOrders();
+                    }
+                }, 100);
+                
+                // Update URL without reloading page
+                const newUrl = `/manage/event/${eventId}/orders?page=${page}${status ? '&status=' + status : ''}`;
+                window.history.pushState({ path: newUrl }, '', newUrl);
+            })
+            .catch(error => {
+                console.error('[Orders] Error loading fragment:', error);
+                mainContent.innerHTML = originalContent;
+                alert('Lỗi khi tải dữ liệu. Vui lòng thử lại.');
+            });
+    }
+}
+
+// Helper function to get eventId from URL or data attribute
+function getEventId() {
+    // Try to get from URL
+    const urlMatch = window.location.pathname.match(/\/manage\/event\/(\d+)/);
+    if (urlMatch && urlMatch[1]) {
+        return urlMatch[1];
+    }
+    
+    // Try to get from data attribute in main content
+    const mainContent = document.querySelector('#main-content');
+    if (mainContent) {
+        const eventId = mainContent.getAttribute('data-event-id');
+        if (eventId) return eventId;
+    }
+    
+    // Try to get from current URL query params (if fragment was loaded with id)
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (id) return id;
+    
+    // Try to extract from any link in the page
+    const ordersLink = document.querySelector('a[href*="/fragments/orders"]');
+    if (ordersLink) {
+        const href = ordersLink.getAttribute('href');
+        const match = href.match(/id=(\d+)/);
+        if (match && match[1]) return match[1];
+    }
+    
+    return null;
+}
+
 // Export for manual initialization
 window.initializeOrders = initializeOrders;
 window.closeModal = closeModal;
+window.loadOrdersPage = loadOrdersPage; // Export for pagination
 console.log('✅ orders.js setup complete');

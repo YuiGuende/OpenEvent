@@ -54,7 +54,7 @@ public class WalletController {
         debugInfo.put("sessionExists", session != null);
         if (session != null) {
             debugInfo.put("sessionId", session.getId());
-            debugInfo.put("ACCOUNT_ID", session.getAttribute("ACCOUNT_ID"));
+            debugInfo.put("ACCOUNT_ID", session.getAttribute("USER_ID"));
             debugInfo.put("USER_ID", session.getAttribute("USER_ID"));
             debugInfo.put("KYC_NAME", session.getAttribute("KYC_NAME"));
             java.util.Enumeration<String> attrNames = session.getAttributeNames();

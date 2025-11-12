@@ -11,6 +11,7 @@ import com.group02.openevent.model.request.RequestStatus;
 import com.group02.openevent.model.request.RequestType;
 import com.group02.openevent.service.RequestService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ import java.util.NoSuchElementException; // THÊM MỚI (hoặc khác tùy theo 
 @Controller
 @RequestMapping("/api/requests")
 @RequiredArgsConstructor
+@Slf4j
 public class RequestController {
     private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
     private final RequestService requestService;
@@ -61,11 +63,13 @@ public class RequestController {
         }catch (Exception e){
             logger.error(e.getMessage());
         }
+        log.debug("formData {} ",formData);
         model.addAttribute("formData", formData);
 
         // Load sent requests for the current user
         try {
             Long currentSenderId = (Long) session.getAttribute("USER_ID");
+            log.info("Current Sender Id: " + currentSenderId);
             if (currentSenderId != null) {
                 List<RequestDTO> sentRequests = requestService.getRequestsBySenderId(currentSenderId);
                 model.addAttribute("sentRequests", sentRequests);
@@ -85,7 +89,7 @@ public class RequestController {
     @PostMapping(consumes = {"multipart/form-data"})
     @ResponseBody
     @RequireEventHost(eventIdParamName = "eventId", userIdParamName = "senderId")
-    public ResponseEntity<RequestDTO> createRequestWithFile(
+    public ResponseEntity<?> createRequestWithFile(
             @SessionAttribute("USER_ID") Long senderId,
             // @RequestParam("senderId") Long senderId,
             @RequestParam("receiverId") Long receiverId,
@@ -122,9 +126,25 @@ public class RequestController {
         } catch (IllegalArgumentException e) {
             logger.error("Invalid argument when creating request: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (RuntimeException e) {
+            // Handle validation errors (e.g., already approved, pending request exists)
+            // Don't log validation errors, only return to client
+            if (e.getMessage() != null && e.getMessage().contains("Cannot send request:")) {
+                // Return error message as plain text response without logging
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .contentType(org.springframework.http.MediaType.TEXT_PLAIN)
+                        .body(e.getMessage());
+            }
+            // Log other runtime exceptions
+            logger.error("Runtime error when creating request: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(org.springframework.http.MediaType.TEXT_PLAIN)
+                    .body(e.getMessage() != null ? e.getMessage() : "Internal server error");
         } catch (Exception e) {
             logger.error("Error creating request: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(org.springframework.http.MediaType.TEXT_PLAIN)
+                    .body(e.getMessage() != null ? e.getMessage() : "Internal server error");
         }
     }
 

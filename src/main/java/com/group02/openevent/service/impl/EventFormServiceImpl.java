@@ -18,8 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @Service
 @RequiredArgsConstructor
@@ -343,5 +344,94 @@ public class EventFormServiceImpl implements EventFormService {
         dto.setResponseValue(response.getResponseValue());
         dto.setSubmittedAt(response.getSubmittedAt());
         return dto;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public FormStatsDTO getFormStatistics(Long formId) {
+        EventForm form = eventFormRepo.findById(formId)
+                .orElseThrow(() -> new RuntimeException("Form not found"));
+        
+        // Get all responses for this form
+        List<FormResponse> responses = formResponseRepo.findByFormId(formId);
+        
+        // Get all questions for this form
+        List<FormQuestion> questions = formQuestionRepo.findByFormIdOrderByOrder(formId);
+        
+        // Calculate total responses and unique submissions
+        long totalResponses = responses.size();
+        long totalSubmissions = responses.stream()
+                .map(r -> r.getCustomer().getCustomerId())
+                .distinct()
+                .count();
+        
+        // Build question statistics
+        List<FormStatsDTO.QuestionStatsDTO> questionStats = new ArrayList<>();
+        
+        for (FormQuestion question : questions) {
+            List<FormResponse> questionResponses = responses.stream()
+                    .filter(r -> r.getFormQuestion().getQuestionId().equals(question.getQuestionId()))
+                    .collect(Collectors.toList());
+            
+            FormStatsDTO.QuestionStatsDTO.QuestionStatsDTOBuilder statsBuilder = FormStatsDTO.QuestionStatsDTO.builder()
+                    .questionId(question.getQuestionId())
+                    .questionText(question.getQuestionText())
+                    .questionType(question.getQuestionType().name())
+                    .responseCount((long) questionResponses.size());
+            
+            // Handle different question types
+            if (question.getQuestionType() == FormQuestion.QuestionType.RADIO || 
+                question.getQuestionType() == FormQuestion.QuestionType.SELECT ||
+                question.getQuestionType() == FormQuestion.QuestionType.CHECKBOX) {
+                // Count responses by option
+                Map<String, Long> optionCountMap = new HashMap<>();
+                for (FormResponse response : questionResponses) {
+                    String value = response.getResponseValue();
+                    if (value != null && !value.trim().isEmpty()) {
+                        // For CHECKBOX, value might be comma-separated
+                        if (question.getQuestionType() == FormQuestion.QuestionType.CHECKBOX) {
+                            String[] options = value.split(",");
+                            for (String option : options) {
+                                option = option.trim();
+                                optionCountMap.put(option, optionCountMap.getOrDefault(option, 0L) + 1);
+                            }
+                        } else {
+                            optionCountMap.put(value, optionCountMap.getOrDefault(value, 0L) + 1);
+                        }
+                    }
+                }
+                
+                // Convert to OptionCountDTO list
+                List<FormStatsDTO.OptionCountDTO> optionCounts = optionCountMap.entrySet().stream()
+                        .map(entry -> FormStatsDTO.OptionCountDTO.builder()
+                                .option(entry.getKey())
+                                .count(entry.getValue())
+                                .build())
+                        .sorted((a, b) -> Long.compare(b.getCount(), a.getCount())) // Sort by count descending
+                        .collect(Collectors.toList());
+                
+                statsBuilder.optionCounts(optionCounts);
+            } else {
+                // For TEXT, EMAIL, PHONE, TEXTAREA: collect sample responses
+                List<String> textResponses = questionResponses.stream()
+                        .map(FormResponse::getResponseValue)
+                        .filter(value -> value != null && !value.trim().isEmpty())
+                        .limit(10) // Limit to first 10 responses
+                        .collect(Collectors.toList());
+                
+                statsBuilder.textResponses(textResponses);
+            }
+            
+            questionStats.add(statsBuilder.build());
+        }
+        
+        return FormStatsDTO.builder()
+                .formId(formId)
+                .formTitle(form.getFormTitle())
+                .formType(form.getFormType().name())
+                .totalResponses(totalResponses)
+                .totalSubmissions(totalSubmissions)
+                .questionStats(questionStats)
+                .build();
     }
 }

@@ -151,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
 
 		// Set session token in HTTP session for backward compatibility
 		httpSession.setAttribute("SESSION_TOKEN", session.getSessionToken());
-		httpSession.setAttribute("ACCOUNT_ID", account.getAccountId());
+		httpSession.setAttribute("USER_ID", account.getAccountId());
 		httpSession.setAttribute("ACCOUNT_ROLE", role.name());
 
 		return new AuthResponse(account.getAccountId(), account.getEmail(), role, redirectFor(role));

@@ -19,8 +19,8 @@ import java.util.List;
 public class Department {
     
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "department_id")
+    private Long id;
     
     @OneToOne
     @MapsId

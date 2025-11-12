@@ -13,9 +13,12 @@ import com.group02.openevent.service.IImageService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.http.HttpStatus;
+import com.group02.openevent.repository.IEventImageRepo;
+import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.service.TicketTypeService;
+import com.group02.openevent.service.UserService;
+import com.group02.openevent.service.impl.HostServiceImpl;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -29,6 +32,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.Model;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,20 +54,25 @@ public class EventController {
 
     private  final TicketTypeService ticketTypeService;
 
+    private  final HostServiceImpl hostService;
+    
+    private final IEventImageRepo eventImageRepo;
+    
+    private final IEventRepo eventRepo;
+    private final UserService userService;
+
     @Autowired
-    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService) {
+    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService, IEventImageRepo eventImageRepo, IEventRepo eventRepo, UserService userService) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
         this.ticketTypeService = ticketTypeService;
+        this.hostService = hostService;
+        this.eventImageRepo = eventImageRepo;
+        this.eventRepo = eventRepo;
+        this.userService = userService;
     }
-    private Long getHostAccountId(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
-            throw new RuntimeException("User not logged in");
-        }
-        return accountId;
-    }
+
 
 
     // POST - create event
@@ -92,11 +101,10 @@ public class EventController {
     }
 
     @PostMapping("/saveEvent")
-    public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, Model model, HttpSession session) {
+    public String createEvent(@ModelAttribute("eventForm") EventCreationRequest request, HttpSession session) {
+        Long hostId = hostService.getHostFromSession(session).getId();
         log.info("startsAt = {}", request.getStartsAt());
         log.info("endsAt = {}", request.getEndsAt());
-        Long hostId = getHostAccountId(session);
-        log.info("Host ID : {}", hostId);
         EventResponse savedEvent =  eventService.saveEvent(request,hostId);
         log.info(String.valueOf(savedEvent.getEventType()));
         return "redirect:/manage/event/" + savedEvent.getId()+ "/getting-stared";
@@ -107,6 +115,25 @@ public class EventController {
     @ResponseBody
     public Optional<Event> getEvent(@PathVariable Long id) {
         return eventService.getEventById(id);
+    }
+
+    @GetMapping("/{id}/participants/count")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getParticipantsCount(@PathVariable Long id) {
+        try {
+            long count = eventService.countUniqueParticipantsByEventId(id);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("count", count);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error getting participants count for event {}: {}", id, e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("count", 0);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/update/{id}")
@@ -239,6 +266,10 @@ public class EventController {
             }
 
             Event savedEvent = eventService.saveEvent(event);
+            
+            // Update event imageUrl from poster with mainPoster = true and orderIndex = 0
+            updateEventImageUrlFromPoster(eventId);
+            
             return ResponseEntity.ok(savedEvent);
 
         } catch (Exception e) {
@@ -246,6 +277,9 @@ public class EventController {
                     .body(Map.of("error", "Internal server error", "message", e.getMessage()));
         }
     }
+
+
+
 
     // Delete a single ticket type by id (direct hard delete)
     @DeleteMapping("/ticket/{ticketTypeId}")
@@ -269,6 +303,90 @@ public class EventController {
             log.error("Error deleting ticket {}", ticketTypeId, e);
             ApiResponse<Void> err = ApiResponse.<Void>builder().message("Lỗi hệ thống khi xóa vé").build();
             return org.springframework.http.ResponseEntity.status(500).body(err);
+        }
+    }
+
+    /**
+     * Update event imageUrl from the poster with mainPoster = true and orderIndex = 0
+     */
+    private void updateEventImageUrlFromPoster(Long eventId) {
+        log.info("Updating event imageUrl for eventId: {}", eventId);
+        
+        // Find all main posters for this event
+        List<EventImage> mainPosters = eventImageRepo.findByEventIdAndMainPoster(eventId, true);
+        
+        // Find the poster with mainPoster = true and orderIndex = 0
+        EventImage mainPoster = mainPosters.stream()
+                .filter(img -> img.isMainPoster() && img.getOrderIndex() == 0)
+                .findFirst()
+                .orElse(null);
+        
+        if (mainPoster != null) {
+            Optional<Event> eventOpt = eventRepo.findById(eventId);
+            if (eventOpt.isPresent()) {
+                Event event = eventOpt.get();
+                event.setImageUrl(mainPoster.getUrl());
+                eventRepo.save(event);
+                log.info("Updated event imageUrl to: {} for eventId: {}", mainPoster.getUrl(), eventId);
+            } else {
+                log.warn("Event not found with id: {}", eventId);
+            }
+        } else {
+            log.info("No main poster with orderIndex = 0 found for eventId: {}", eventId);
+        }
+    }
+
+    /**
+     * DELETE - Delete event by id (only if it belongs to the current host)
+     */
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable("id") Long id, HttpSession session) {
+        try {
+            Long hostId = userService.getCurrentUser(session).getHost().getId();
+            
+            // Verify event exists and belongs to this host
+            Optional<Event> eventOpt = eventService.getEventById(id);
+            if (eventOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Không tìm thấy sự kiện")
+                                .build());
+            }
+            
+            Event event = eventOpt.get();
+            if (event.getHost() == null || !event.getHost().getId().equals(hostId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Bạn không có quyền xóa sự kiện này")
+                                .build());
+            }
+            
+            // Delete the event
+            boolean deleted = eventService.removeEvent(id);
+            if (deleted) {
+                log.info("Event {} deleted successfully by host {}", id, hostId);
+                return ResponseEntity.ok(ApiResponse.<Void>builder()
+                        .message("Đã xóa sự kiện thành công")
+                        .build());
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(ApiResponse.<Void>builder()
+                                .message("Không thể xóa sự kiện")
+                                .build());
+            }
+        } catch (RuntimeException e) {
+            log.error("Error deleting event {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.<Void>builder()
+                            .message("Người dùng chưa đăng nhập")
+                            .build());
+        } catch (Exception e) {
+            log.error("Error deleting event {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.<Void>builder()
+                            .message("Lỗi hệ thống khi xóa sự kiện: " + e.getMessage())
+                            .build());
         }
     }
 

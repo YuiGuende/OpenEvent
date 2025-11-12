@@ -1,5 +1,6 @@
 package com.group02.openevent.ai.controller;
 
+import com.group02.openevent.ai.exception.AIException;
 import com.group02.openevent.ai.util.SessionManager;
 import com.group02.openevent.model.ai.ChatHistory;
 import com.group02.openevent.repository.IChatHistoryRepo;

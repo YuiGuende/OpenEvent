@@ -40,6 +40,7 @@ public class EnhancedAIController {
     private final TranslationService translationService;
     private final AISecurityService securityService;
     private final RateLimitingService rateLimitingService;
+    private final SessionUtils sessionUtils;
 
     @Operation(summary = "List sessions with language support")
     @GetMapping("/sessions")
@@ -47,7 +48,7 @@ public class EnhancedAIController {
             @RequestParam(required = false, defaultValue = "vi") String language,
             HttpSession httpSession) {
         
-        UserSession us = SessionUtils.requireUser(httpSession);
+        UserSession us = sessionUtils.requireUser(httpSession);
         String userId = us.getUserId().toString();
         
         // Check rate limit
@@ -66,7 +67,7 @@ public class EnhancedAIController {
             @RequestParam(required = false, defaultValue = "vi") String language,
             HttpSession httpSession) {
         
-        UserSession us = SessionUtils.requireUser(httpSession);
+        UserSession us = sessionUtils.requireUser(httpSession);
         String userId = us.getUserId().toString();
         
         // Check rate limit
@@ -94,7 +95,7 @@ public class EnhancedAIController {
             @RequestParam(required = false, defaultValue = "vi") String language,
             HttpSession httpSession) {
         
-        UserSession us = SessionUtils.requireUser(httpSession);
+        UserSession us = sessionUtils.requireUser(httpSession);
         String userId = us.getUserId().toString();
         
         // Check rate limit
@@ -133,7 +134,7 @@ public class EnhancedAIController {
             @RequestParam(required = false, defaultValue = "vi") String language,
             HttpSession httpSession) {
         
-        UserSession us = SessionUtils.requireUser(httpSession);
+        UserSession us = sessionUtils.requireUser(httpSession);
         String userId = us.getUserId().toString();
         
         // Check rate limit
@@ -198,7 +199,7 @@ public class EnhancedAIController {
             @RequestBody Map<String, String> request,
             HttpSession httpSession) {
         
-        UserSession us = SessionUtils.requireUser(httpSession);
+        UserSession us = sessionUtils.requireUser(httpSession);
         String userId = us.getUserId().toString();
         
         // Check rate limit
@@ -241,7 +242,7 @@ public class EnhancedAIController {
             @RequestBody Map<String, String> request,
             HttpSession httpSession) {
         
-        UserSession us = SessionUtils.requireUser(httpSession);
+        UserSession us = sessionUtils.requireUser(httpSession);
         String userId = us.getUserId().toString();
         
         // Check rate limit
@@ -296,7 +297,7 @@ public class EnhancedAIController {
     @Operation(summary = "Get rate limit information")
     @GetMapping("/rate-limit")
     public ResponseEntity<Map<String, Object>> getRateLimitInfo(HttpSession httpSession) {
-        UserSession us = SessionUtils.requireUser(httpSession);
+        UserSession us = sessionUtils.requireUser(httpSession);
         String userId = us.getUserId().toString();
         
         Map<RateLimitingService.RateLimitType, RateLimitingService.RateLimitInfo> rateLimitInfo = 

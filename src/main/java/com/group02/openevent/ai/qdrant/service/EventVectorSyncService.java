@@ -124,7 +124,16 @@ public class EventVectorSyncService {
             List<String> textsToEmbed = allEvents.stream().map(this::toSearchableText).toList();
 
             // 2. Gọi EmbeddingService MỘT LẦN DUY NHẤT
-            List<float[]> vectors = embeddingService.getEmbeddings(textsToEmbed);
+            List<float[]> vectors;
+            try {
+                vectors = embeddingService.getEmbeddings(textsToEmbed);
+            } catch (IllegalStateException e) {
+                log.warn("Embedding service không khả dụng, bỏ qua sync events: {}", e.getMessage());
+                return;
+            } catch (Exception e) {
+                log.error("Lỗi khi tạo embeddings cho events: {}", e.getMessage());
+                return;
+            }
 
             // 3. Chuẩn bị danh sách các điểm (points) để upsert
             List<Map<String, Object>> pointsToUpsert = IntStream.range(0, allEvents.size())
@@ -233,7 +242,13 @@ public class EventVectorSyncService {
     private void seedPrompts(List<String> prompts, String type) {
         for (String p : prompts) {
             try {
-                float[] vec = embeddingService.getEmbedding(p);
+                float[] vec;
+                try {
+                    vec = embeddingService.getEmbedding(p);
+                } catch (IllegalStateException e) {
+                    log.warn("Embedding service không khả dụng, bỏ qua seed prompt: {}", e.getMessage());
+                    return; // Dừng luôn vì không thể seed
+                }
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("kind", "prompt");
                 payload.put("type", type);
@@ -248,7 +263,13 @@ public class EventVectorSyncService {
     private void seedLabels(List<String> labels, String type) {
         for (String label : labels) {
             try {
-                float[] vec = embeddingService.getEmbedding(label);
+                float[] vec;
+                try {
+                    vec = embeddingService.getEmbedding(label);
+                } catch (IllegalStateException e) {
+                    log.warn("Embedding service không khả dụng, bỏ qua seed label: {}", e.getMessage());
+                    return; // Dừng luôn vì không thể seed
+                }
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("kind", "label");
                 payload.put("type", type);
@@ -263,7 +284,13 @@ public class EventVectorSyncService {
     private void seedToolPrompts(List<String> prompts, String toolName) {
         for (String p : prompts) {
             try {
-                float[] vec = embeddingService.getEmbedding(p);
+                float[] vec;
+                try {
+                    vec = embeddingService.getEmbedding(p);
+                } catch (IllegalStateException e) {
+                    log.warn("Embedding service không khả dụng, bỏ qua seed tool prompt: {}", e.getMessage());
+                    return; // Dừng luôn vì không thể seed
+                }
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("kind", "tool_prompt");
                 payload.put("toolName", toolName);
@@ -293,7 +320,17 @@ public class EventVectorSyncService {
                     .toList();
 
             // 2. Tạo embeddings một lần
-            List<float[]> vectors = embeddingService.getEmbeddings(textsToEmbed);
+            List<float[]> vectors;
+            try {
+                vectors = embeddingService.getEmbeddings(textsToEmbed);
+            } catch (IllegalStateException e) {
+                // Embedding service không khả dụng, bỏ qua seed
+                log.warn("Embedding service không khả dụng, bỏ qua seed places: {}", e.getMessage());
+                return;
+            } catch (Exception e) {
+                log.error("Lỗi khi tạo embeddings cho places: {}", e.getMessage());
+                return;
+            }
 
             // 3. Chuẩn bị points
             List<Map<String, Object>> pointsToUpsert = IntStream.range(0, allPlaces.size())
@@ -333,7 +370,16 @@ public class EventVectorSyncService {
 
         try {
             // 1. Tạo tất cả embeddings một lần
-            List<float[]> vectors = embeddingService.getEmbeddings(contents);
+            List<float[]> vectors;
+            try {
+                vectors = embeddingService.getEmbeddings(contents);
+            } catch (IllegalStateException e) {
+                log.warn("Embedding service không khả dụng, bỏ qua seed: {}", e.getMessage());
+                return;
+            } catch (Exception e) {
+                log.error("Lỗi khi tạo embeddings: {}", e.getMessage());
+                return;
+            }
 
             // 2. Chuẩn bị points
             List<Map<String, Object>> pointsToUpsert = IntStream.range(0, contents.size())

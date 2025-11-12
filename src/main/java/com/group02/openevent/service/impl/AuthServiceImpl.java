@@ -6,34 +6,43 @@ import com.group02.openevent.dto.request.LoginRequest;
 import com.group02.openevent.dto.request.RegisterRequest;
 import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.model.session.Session;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.AuthService;
 import com.group02.openevent.service.SessionService;
+import com.group02.openevent.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 	private final IAccountRepo accountRepo;
 	private final ICustomerRepo customerRepo;
+	private final IUserRepo userRepo;
 	private final PasswordEncoder passwordEncoder;
 	private final HttpSession httpSession;
 	private final SessionService sessionService;
+	private final UserService userService;
 
-	public AuthServiceImpl(IAccountRepo accountRepo, ICustomerRepo customerRepo,
-			PasswordEncoder passwordEncoder, HttpSession httpSession, SessionService sessionService) {
+	public AuthServiceImpl(IAccountRepo accountRepo, ICustomerRepo customerRepo, IUserRepo userRepo,
+			PasswordEncoder passwordEncoder, HttpSession httpSession, SessionService sessionService, UserService userService) {
 		this.accountRepo = accountRepo;
 		this.customerRepo = customerRepo;
+		this.userRepo = userRepo;
 		this.passwordEncoder = passwordEncoder;
 		this.httpSession = httpSession;
 		this.sessionService = sessionService;
+		this.userService = userService;
 	}
 
 	private String redirectFor(Role role) {
@@ -59,23 +68,28 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalArgumentException("Email này đã được đăng ký");
 		}
 
-		Role role = Role.CUSTOMER;
-
 		Account account = new Account();
 		account.setEmail(request.getEmail().trim());
 		account.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-		account.setRole(role);
 		account = accountRepo.save(account);
 
 		// Luôn tạo User record cho mọi account
+		User user = userService.getOrCreateUser(account);
+		if (user.getName() == null && request.getPhoneNumber() != null) {
+			user.setName(account.getEmail()); // Default name
+			user.setPhoneNumber(request.getPhoneNumber());
+		}
+		
 		Customer customer = new Customer();
-		customer.setAccount(account);
-		customer.setPhoneNumber(request.getPhoneNumber());
+		customer.setUser(user);
 		customer.setPoints(0);
 		customerRepo.save(customer);
 
+		// Lấy role từ User (sau khi đã tạo Customer)
+		Role role = user.getRole();
+
 		// Do NOT auto-login after registration; redirect to login page with success flag
-		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), "/login?registered=1");
+		return new AuthResponse(account.getAccountId(), account.getEmail(), role, "/login?registered=1");
 	}
 
 	@Override
@@ -95,11 +109,17 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalArgumentException("Email hoặc mật khẩu không đúng");
 		}
 
-		// Set HTTP session attributes for backward compatibility
-		httpSession.setAttribute("ACCOUNT_ID", account.getAccountId());
-		httpSession.setAttribute("ACCOUNT_ROLE", account.getRole().name());
+		// Lấy User để xác định Role
+		User user = userRepo.findByAccount_AccountId(account.getAccountId())
+				.orElseThrow(() -> new IllegalArgumentException("User not found for account"));
+		Role role = user.getRole();
 
-		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), redirectFor(account.getRole()));
+		// Set HTTP session attributes for backward compatibility
+        log.info("set user id:{}", user.getUserId());
+		httpSession.setAttribute("USER_ID", user.getUserId());
+		httpSession.setAttribute("USER_ROLE", role.name());
+
+		return new AuthResponse(account.getAccountId(), account.getEmail(), role, redirectFor(role));
 	}
 
 	/**
@@ -121,14 +141,19 @@ public class AuthServiceImpl implements AuthService {
 			throw new IllegalArgumentException("Email hoặc mật khẩu không đúng");
 		}
 
+		// Lấy User để xác định Role
+		User user = userRepo.findByAccount_AccountId(account.getAccountId())
+				.orElseThrow(() -> new IllegalArgumentException("User not found for account"));
+		Role role = user.getRole();
+
 		// Create custom session
 		Session session = sessionService.createSession(account, httpRequest);
 
 		// Set session token in HTTP session for backward compatibility
 		httpSession.setAttribute("SESSION_TOKEN", session.getSessionToken());
 		httpSession.setAttribute("ACCOUNT_ID", account.getAccountId());
-		httpSession.setAttribute("ACCOUNT_ROLE", account.getRole().name());
+		httpSession.setAttribute("ACCOUNT_ROLE", role.name());
 
-		return new AuthResponse(account.getAccountId(), account.getEmail(), account.getRole(), redirectFor(account.getRole()));
+		return new AuthResponse(account.getAccountId(), account.getEmail(), role, redirectFor(role));
 	}
 } 

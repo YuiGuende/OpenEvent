@@ -8,6 +8,7 @@ import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.OrderService;
@@ -214,7 +215,8 @@ class OrderAIServiceTest {
 	@ValueSource(booleans = {true, false})
 	void confirmOrder_success_variants(boolean reminderThrows) {
 		Customer c = customer();
-		when(userRepo.findByAccount_AccountId(userId)).thenReturn(Optional.of(c));
+		User user = c.getUser();
+		when(userRepo.findByAccount_AccountId(userId)).thenReturn(Optional.of(user));
 		Order order = new Order(); order.setOrderId(7L); order.setEvent(seedPending.getEvent());
 		when(orderService.createOrderWithTicketTypes(ArgumentMatchers.any(CreateOrderWithTicketTypeRequest.class), eq(c))).thenReturn(order);
 		Payment p = new Payment(); p.setPaymentId(3L); p.setCheckoutUrl("http://pay/7"); p.setQrCode("QR"); p.setAmount(BigDecimal.valueOf(500000));
@@ -231,7 +233,9 @@ class OrderAIServiceTest {
 	@ParameterizedTest(name = "exception: {0}")
 	@ValueSource(strings = {"boom", "db-error", "payment-failed"})
 	void confirmOrder_exception_bubblesMessage(String msg) {
-		when(userRepo.findByAccount_AccountId(userId)).thenReturn(Optional.of(customer()));
+		Customer c = customer();
+		User user = c.getUser();
+		when(userRepo.findByAccount_AccountId(userId)).thenReturn(Optional.of(user));
 		when(orderService.createOrderWithTicketTypes(any(), any())).thenThrow(new RuntimeException(msg));
 		Map<String, Object> res = sut.confirmOrder(userId);
 		assertThat(res.get("success")).isEqualTo(false);
@@ -240,8 +244,14 @@ class OrderAIServiceTest {
 
 	private Customer customer() {
 		Customer c = new Customer();
-		Account a = new Account(); a.setAccountId(userId); a.setEmail("cust@example.com");
-		c.setAccount(a); c.setCustomerId(9L);
+		c.setCustomerId(9L);
+		Account a = new Account(); 
+		a.setAccountId(userId); 
+		a.setEmail("cust@example.com");
+		User user = new User();
+		user.setAccount(a);
+		user.setUserId(1L);
+		c.setUser(user);
 		return c;
 	}
 

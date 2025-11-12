@@ -7,8 +7,7 @@ CREATE TABLE account
     account_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(100) NOT NULL UNIQUE,
     phone_number VARCHAR(20),
-    password_hash VARCHAR(255) NOT NULL,
-    role          ENUM('ADMIN','CUSTOMER','HOST','DEPARTMENT') NOT NULL
+    password_hash VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE organization
@@ -49,31 +48,63 @@ CREATE TABLE subscription_plans
     duration_months INT            NOT NULL
 );
 
--- 2. Bảng phụ thuộc account / organization
+-- 2. User table (Profile layer between Account and Role entities)
+CREATE TABLE `user`
+(
+    user_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    account_id    BIGINT NOT NULL UNIQUE,
+    name          VARCHAR(100),
+    phone_number  VARCHAR(20),
+    avatar        VARCHAR(500),
+    date_of_birth DATETIME(6),
+    address       VARCHAR(500),
+    created_at    DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at    DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_user_account FOREIGN KEY (account_id) REFERENCES account (account_id) ON DELETE CASCADE,
+    INDEX idx_user_account_id (account_id),
+    INDEX idx_user_created_at (created_at),
+    INDEX idx_user_phone_number (phone_number)
+);
+
+-- 3. Bảng phụ thuộc account / organization / user
 CREATE TABLE admin
 (
     admin_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
     email        VARCHAR(100),
     name         VARCHAR(50) NOT NULL,
     phone_number VARCHAR(20),
-    account_id   BIGINT NOT NULL UNIQUE,
-    CONSTRAINT fk_admin_account FOREIGN KEY (account_id) REFERENCES account (account_id)
+    user_id      BIGINT NOT NULL UNIQUE,
+    CONSTRAINT fk_admin_user FOREIGN KEY (user_id) REFERENCES `user` (user_id) ON DELETE CASCADE,
+    INDEX idx_admin_user_id (user_id)
 );
 
 CREATE TABLE customer
 (
     customer_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
-    email           VARCHAR(100),
+    email           VARCHAR(100), -- Keep for backward compatibility
     organization_id BIGINT,
-    phone_number    VARCHAR(20),
+    phone_number    VARCHAR(20), -- Keep for backward compatibility
     points          INT NOT NULL,
-    account_id      BIGINT NOT NULL UNIQUE,
-    CONSTRAINT fk_user_account FOREIGN KEY (account_id) REFERENCES account (account_id),
-    CONSTRAINT fk_user_org FOREIGN KEY (organization_id) REFERENCES organization (org_id)
+    user_id         BIGINT NOT NULL UNIQUE,
+    CONSTRAINT fk_customer_user FOREIGN KEY (user_id) REFERENCES `user` (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_customer_org FOREIGN KEY (organization_id) REFERENCES organization (org_id),
+    INDEX idx_customer_user_id (user_id)
 );
 
 -- Add foreign key constraint for organization representative
 ALTER TABLE organization ADD CONSTRAINT fk_org_customer FOREIGN KEY (representative_id) REFERENCES customer (customer_id);
+
+-- Department table (uses user_id as primary key with @MapsId)
+CREATE TABLE department
+(
+    user_id        BIGINT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL,
+    description    TEXT,
+    created_at     DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at     DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    CONSTRAINT fk_department_user FOREIGN KEY (user_id) REFERENCES `user` (user_id) ON DELETE CASCADE,
+    INDEX idx_department_name (department_name)
+);
 
 -- User Sessions Table
 CREATE TABLE user_sessions
@@ -236,10 +267,14 @@ CREATE TABLE host
     host_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
     created_at  DATETIME(6) NOT NULL,
     organize_id BIGINT,
-    customer_id BIGINT NOT NULL,
+    user_id     BIGINT NOT NULL,
+    customer_id BIGINT NULL, -- Optional: can be NULL if host is not a customer
     host_discount_percent DECIMAL(5,2) DEFAULT 0.00,
-    CONSTRAINT fk_host_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
-    CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id)
+    description TEXT,
+    CONSTRAINT fk_host_user FOREIGN KEY (user_id) REFERENCES `user` (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_host_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON DELETE SET NULL,
+    CONSTRAINT fk_host_org FOREIGN KEY (organize_id) REFERENCES organization (org_id),
+    INDEX idx_host_user_id (user_id)
 );
 
 -- Add foreign key constraints for event table after related tables are created
@@ -522,14 +557,14 @@ CREATE INDEX idx_orders_original_price ON orders (original_price);
 CREATE INDEX idx_orders_total_amount ON orders (total_amount);
 
 -- 11. INSERT SAMPLE DATA
--- Sample accounts
-INSERT INTO account (email, password_hash, role) VALUES
-('admin@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN'),
-('host1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
-('host2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'HOST'),
-('user1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER'),
-('user2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER'),
-('user3@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'CUSTOMER');
+-- Sample accounts (role is determined from User entities: customer/host/admin/department)
+INSERT INTO account (email, password_hash) VALUES
+('admin@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+('host1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+('host2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+('user1@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+('user2@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+('user3@openevent.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
 
 -- Sample organizations
 INSERT INTO organization (org_name, description, email, phone, address, created_at) VALUES
@@ -556,12 +591,21 @@ INSERT INTO speaker (name, default_role, profile, image_url) VALUES
 ('DJ Mike', 'ARTIST', 'Electronic Music Producer', 'https://via.placeholder.com/150'),
 ('Chef Anna', 'OTHER', 'Culinary Expert and Food Blogger', 'https://via.placeholder.com/150');
 
+-- Sample users (User table - must be created before Customer/Admin/Department)
+INSERT INTO `user` (account_id, name, phone_number, created_at, updated_at) VALUES
+(1, 'System Admin', '0901234567', NOW(), NOW()),
+(2, 'Host 1', '0901234568', NOW(), NOW()),
+(3, 'Host 2', '0901234569', NOW(), NOW()),
+(4, 'User 1', '0901234570', NOW(), NOW()),
+(5, 'User 2', '0901234571', NOW(), NOW()),
+(6, 'User 3', '0901234572', NOW(), NOW());
+
 -- Sample admin
-INSERT INTO admin (name, email, phone_number, account_id) VALUES
+INSERT INTO admin (name, email, phone_number, user_id) VALUES
 ('System Admin', 'admin@openevent.com', '0901234567', 1);
 
--- Sample users
-INSERT INTO customer (email, phone_number, points, account_id, organization_id) VALUES
+-- Sample customers
+INSERT INTO customer (email, phone_number, points, user_id, organization_id) VALUES
 ('host1@openevent.com', '0901234568', 100, 2, 1),
 ('host2@openevent.com', '0901234569', 150, 3, 2),
 ('user1@openevent.com', '0901234570', 50, 4, 1),
@@ -650,13 +694,13 @@ INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sol
 (6, 'Full Festival Pass', 'Access to all 3 days', 4000.00, 100, 22, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
 
 -- Sample hosts
-INSERT INTO host (created_at, customer_id, organize_id, host_discount_percent) VALUES
-(NOW(), 1, 3, 10.00), -- Host1 for Creative Arts Center with 10% discount
-(NOW(), 1, 1, 5.00), -- Host1 for HCMC University with 5% discount
-(NOW(), 2, 2, 15.00), -- Host2 for Tech Hub Vietnam with 15% discount
-(NOW(), 1, 1, 0.00), -- Host1 for HCMC University with no discount
-(NOW(), 2, 3, 8.00), -- Host2 for Creative Arts Center with 8% discount
-(NOW(), 2, 3, 12.00); -- Host2 for Creative Arts Center with 12% discount
+INSERT INTO host (created_at, user_id, customer_id, organize_id, host_discount_percent) VALUES
+(NOW(), 2, 1, 3, 10.00), -- Host1 for Creative Arts Center with 10% discount
+(NOW(), 2, 1, 1, 5.00), -- Host1 for HCMC University with 5% discount
+(NOW(), 3, 2, 2, 15.00), -- Host2 for Tech Hub Vietnam with 15% discount
+(NOW(), 2, 1, 1, 0.00), -- Host1 for HCMC University with no discount
+(NOW(), 3, 2, 3, 8.00), -- Host2 for Creative Arts Center with 8% discount
+(NOW(), 3, 2, 3, 12.00); -- Host2 for Creative Arts Center with 12% discount
 
 -- Update event table to set host_id after hosts are created
 UPDATE event SET host_id = 1 WHERE id = 1; -- Spring Music Festival -> Host1

@@ -5,7 +5,8 @@ import com.group02.openevent.dto.requestApproveEvent.ApproveRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.CreateRequestDTO;
 import com.group02.openevent.dto.requestApproveEvent.RequestDTO;
 import com.group02.openevent.model.account.Account;
-import com.group02.openevent.model.department.Department; // THÊM IMPORT
+import com.group02.openevent.model.department.Department;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.request.Request;
@@ -494,8 +495,13 @@ class RequestServiceImplTest {
         @DisplayName("Happy Path: Lấy data cho form thành công")
         void whenGetRequestFormData_thenSucceed() throws Exception {
             // Given
+            Account account = new Account();
+            account.setAccountId(100L);
+            User user = new User();
+            user.setAccount(account);
+            user.setUserId(100L);
             Department dept1 = new Department();
-            dept1.setAccountId(100L);
+            dept1.setUser(user);
             dept1.setDepartmentName("Dept 1");
             when(departmentRepository.findAll()).thenReturn(List.of(dept1));
             when(eventService.getEventById(10L)).thenReturn(Optional.of(event));
@@ -568,24 +574,24 @@ class RequestServiceImplTest {
         @DisplayName("getRequestsBySenderId: Trả về danh sách DTO (Cover lambda)")
         void whenGetRequestsBySenderId_thenReturnDtoList() {
             // Given
-            when(requestRepo.findBySenderAccountId(1L)).thenReturn(List.of(sampleRequest));
+            when(requestRepo.findBySenderUserId(1L)).thenReturn(List.of(sampleRequest));
             // When
             List<RequestDTO> results = requestService.getRequestsBySenderId(1L);
             // Then
             assertThat(results).hasSize(1);
-            verify(requestRepo, times(1)).findBySenderAccountId(1L);
+            verify(requestRepo, times(1)).findBySenderUserId(1L);
         }
 
         @Test
         @DisplayName("getRequestsByReceiverId: Trả về danh sách DTO (Cover lambda)")
         void whenGetRequestsByReceiverId_thenReturnDtoList() {
             // Given
-            when(requestRepo.findByReceiver_AccountId(2L)).thenReturn(List.of(sampleRequest));
+            when(requestRepo.findByReceiverUserId(2L)).thenReturn(List.of(sampleRequest));
             // When
             List<RequestDTO> results = requestService.getRequestsByReceiverId(2L);
             // Then
             assertThat(results).hasSize(1);
-            verify(requestRepo, times(1)).findByReceiver_AccountId(2L);
+            verify(requestRepo, times(1)).findByReceiverUserId(2L);
         }
 
         @Test
@@ -640,15 +646,15 @@ class RequestServiceImplTest {
         void whenGetByReceiverWithStatus_thenCallCorrectRepo() {
             // Given
             Page<Request> page = new PageImpl<>(List.of(sampleRequest));
-            when(requestRepo.findByReceiver_AccountIdAndStatus(2L, RequestStatus.PENDING, pageable)).thenReturn(page);
+            when(requestRepo.findByReceiverUserIdAndStatus(2L, RequestStatus.PENDING, pageable)).thenReturn(page);
 
             // When
             Page<Request> results = requestService.getRequestsByReceiver(2L, RequestStatus.PENDING, pageable);
 
             // Then
             assertThat(results.getTotalElements()).isEqualTo(1);
-            verify(requestRepo, times(1)).findByReceiver_AccountIdAndStatus(2L, RequestStatus.PENDING, pageable);
-            verify(requestRepo, never()).findByReceiver_AccountId(anyLong(), any(Pageable.class));
+            verify(requestRepo, times(1)).findByReceiverUserIdAndStatus(2L, RequestStatus.PENDING, pageable);
+            verify(requestRepo, never()).findByReceiverUserId(anyLong(), any(Pageable.class));
         }
 
         @Test
@@ -656,15 +662,15 @@ class RequestServiceImplTest {
         void whenGetByReceiverWithNullStatus_thenCallCorrectRepo() {
             // Given
             Page<Request> page = new PageImpl<>(List.of(sampleRequest));
-            when(requestRepo.findByReceiver_AccountId(2L, pageable)).thenReturn(page);
+            when(requestRepo.findByReceiverUserId(2L, pageable)).thenReturn(page);
 
             // When
             Page<Request> results = requestService.getRequestsByReceiver(2L, null, pageable);
 
             // Then
             assertThat(results.getTotalElements()).isEqualTo(1);
-            verify(requestRepo, never()).findByReceiver_AccountIdAndStatus(anyLong(), any(), any());
-            verify(requestRepo, times(1)).findByReceiver_AccountId(2L, pageable);
+            verify(requestRepo, never()).findByReceiverUserIdAndStatus(anyLong(), any(), any());
+            verify(requestRepo, times(1)).findByReceiverUserId(2L, pageable);
         }
     }
 
@@ -678,7 +684,7 @@ class RequestServiceImplTest {
             // Given
             Pageable pageable = PageRequest.of(0, 10);
             Page<Request> page = new PageImpl<>(List.of(sampleRequest), pageable, 1);
-            when(requestRepo.findByReceiver_AccountId(2L, pageable)).thenReturn(page);
+            when(requestRepo.findByReceiverUserId(2L, pageable)).thenReturn(page);
 
             // When
             Page<RequestDTO> resultPage = requestService.listRequestsByReceiver(2L, pageable);

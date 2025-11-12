@@ -3881,8 +3881,8 @@
                     </div>
 
                     <!-- Buy button: purchasable whenever not sold out -->
-                    <a th:if="${!ticket.isSoldOut()}"
-                       th:href="@{'/ticket/' + ${eventDetail.getId()}}"
+                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut()}"
+                       th:href="@{/ticket/{eventId}(eventId=${eventDetail.getId()}, selectedTicketId=${ticket.ticketTypeId})}"
                        class="btn btn-common">Buy Ticket</a>
 
                     <a th:if="${ticket.isSoldOut()}"
@@ -3890,6 +3890,12 @@
                        class="btn btn-common disabled"
                        style="background-color: #ccc; cursor: not-allowed;">
                         Sold Out
+                    </a>
+                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}"
+                       href="#"
+                       class="btn btn-common disabled"
+                       style="background-color: #999; cursor: not-allowed;">
+                        Sale Not Active
                     </a>
 
                     

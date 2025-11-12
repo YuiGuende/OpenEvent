@@ -41,7 +41,7 @@ public class UserOrderController {
             return "redirect:/login";
         }
 
-        Customer customer = customerRepo.findByAccount_AccountId(accountId)
+        Customer customer = customerRepo.findByUser_Account_AccountId(accountId)
                 .orElse(null);
         if (customer == null) {
             model.addAttribute("error", "Customer not found");
@@ -79,7 +79,7 @@ public class UserOrderController {
             return "redirect:/login";
         }
 
-        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
+        Customer customer = customerRepo.findByUser_Account_AccountId(accountId).orElse(null);
         if (customer == null) {
             model.addAttribute("error", "Customer not found");
             return "error/404";

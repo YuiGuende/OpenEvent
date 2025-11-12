@@ -1,7 +1,6 @@
 package com.group02.openevent.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,29 +18,21 @@ public class Customer {
     private Long customerId;
 
     @OneToOne(optional = false)
-    @JoinColumn(name = "account_id", nullable = false, unique = true,
-            foreignKey = @ForeignKey(name = "fk_user_account"))
-    @JsonIgnoreProperties({"passwordHash"})
-    private Account account;
-
-    @Column(name = "email", length = 100)
-    private String email;
-
-    private String name;
+    @JoinColumn(name = "user_id", nullable = false, unique = true,
+            foreignKey = @ForeignKey(name = "fk_customer_user"))
+    @JsonIgnoreProperties({"account", "customer", "host", "admin", "department"})
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "organization_id", 
             foreignKey = @ForeignKey(name = "fk_user_org"))
     private Organization organization;
 
-    @Column(name = "phone_number", length = 20)
-    private String phoneNumber;
-
     @Column(name = "points", nullable = false)
     private Integer points = 0;
 
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Host host;
+//    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Host host;
 
     @Column(unique = true, length = 100)
     private String memberID;
@@ -57,28 +48,13 @@ public class Customer {
         this.customerId = customerId;
     }
 
-    public Host getHost() {
-        return host;
+
+    public User getUser() {
+        return user;
     }
 
-    public void setHost(Host host) {
-        this.host = host;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Integer getPoints() {
@@ -87,14 +63,6 @@ public class Customer {
 
     public void setPoints(Integer points) {
         this.points = points;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Organization getOrganization() {

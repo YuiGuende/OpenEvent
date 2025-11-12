@@ -9,6 +9,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.config.SessionInterceptor;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IOrderRepo;
@@ -79,11 +80,14 @@ class OrderControllerIntegrationTest {
         account.setAccountId(ACCOUNT_ID);
         account.setEmail("test@example.com");
 
+        User user = new User();
+        user.setAccount(account);
+        user.setUserId(1L);
+        user.setEmail("test@example.com");
+        user.setName("Test Customer");
         customer = new Customer();
         customer.setCustomerId(CUSTOMER_ID);
-        customer.setAccount(account);
-        customer.setEmail("test@example.com");
-        customer.setName("Test Customer");
+        customer.setUser(user);
 
         event = new Event();
         event.setId(EVENT_ID);
@@ -201,7 +205,7 @@ class OrderControllerIntegrationTest {
         @DisplayName("TC-06: Get my orders successfully")
         void getMyOrders_Success() throws Exception {
             // Arrange
-            when(customerRepo.findByAccount_AccountId(ACCOUNT_ID)).thenReturn(Optional.of(customer));
+            when(customerRepo.findByUser_Account_AccountId(ACCOUNT_ID)).thenReturn(Optional.of(customer));
             when(orderService.getOrdersByCustomer(customer)).thenReturn(List.of(order));
 
             // Act & Assert
@@ -229,7 +233,7 @@ class OrderControllerIntegrationTest {
         @DisplayName("TC-08: Get my orders fails when customer not found")
         void getMyOrders_CustomerNotFound() throws Exception {
             // Arrange
-            when(customerRepo.findByAccount_AccountId(ACCOUNT_ID)).thenReturn(Optional.empty());
+            when(customerRepo.findByUser_Account_AccountId(ACCOUNT_ID)).thenReturn(Optional.empty());
 
             // Act & Assert
             mockMvc.perform(get("/api/orders/my-orders")
@@ -356,8 +360,12 @@ class OrderControllerIntegrationTest {
             // Arrange
             Account otherAccount = new Account();
             otherAccount.setAccountId(999L);
+            User otherUser = new User();
+            otherUser.setUserId(999L);
+            otherUser.setAccount(otherAccount);
             Customer otherCustomer = new Customer();
-            otherCustomer.setAccount(otherAccount);
+            otherCustomer.setCustomerId(999L);
+            otherCustomer.setUser(otherUser);
             order.setCustomer(otherCustomer);
 
             when(orderService.getById(ORDER_ID)).thenReturn(Optional.of(order));

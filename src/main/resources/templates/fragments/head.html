@@ -15,38 +15,41 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    
+
+    <!-- Modal CSS -->
+    <link rel="stylesheet" th:href="@{/css/modal.css}">
+
     <!-- Chatbot CSS -->
     <link rel="stylesheet" th:href="@{/css/chatbot.css}">
-    
+
     <!-- Context Path Meta -->
     <meta name="context-path" th:content="@{/}">
-    
+
     <!-- Favicon -->
     <link rel="icon" th:href="@{/images/Logo.png}" type="image/png">
-    
+
     <!-- SEO Meta Tags -->
     <meta name="description" content="OpenEvent - Nền tảng quản lý sự kiện thông minh với AI Assistant">
     <meta name="keywords" content="sự kiện, event, quản lý, AI, chatbot, OpenEvent">
     <meta name="author" content="OpenEvent Team">
-    
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" th:content="${pageTitle} + ' - OpenEvent'">
     <meta property="og:description" content="Nền tảng quản lý sự kiện thông minh với AI Assistant">
     <meta property="og:type" content="website">
     <meta property="og:url" th:content="@{/}">
     <meta property="og:image" th:content="@{/images/Logo.png}">
-    
+
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" th:content="${pageTitle} + ' - OpenEvent'">
     <meta name="twitter:description" content="Nền tảng quản lý sự kiện thông minh với AI Assistant">
     <meta name="twitter:image" th:content="@{/images/Logo.png}">
-    
+
     <!-- Theme Color -->
     <meta name="theme-color" content="#F97316">
     <meta name="msapplication-TileColor" content="#F97316">
-    
+
     <!-- Preload Critical Resources -->
     <link rel="preload" th:href="@{/css/main.css}" as="style">
     <link rel="preload" th:href="@{/css/chatbot.css}" as="style">

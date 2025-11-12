@@ -4,11 +4,16 @@ import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.IHostWalletService;
+import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.dto.payment.PaymentResult;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
+import com.group02.openevent.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +31,17 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final OrderService orderService;
     private final PayOS payOS;
+    private final IHostWalletService hostWalletService;
+    private final EventAttendanceService attendanceService;
+    private final UserService userService;
 
-    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS) {
+    public PaymentController(PaymentService paymentService, OrderService orderService, PayOS payOS, IHostWalletService hostWalletService, EventAttendanceService attendanceService, UserService userService) {
         this.paymentService = paymentService;
         this.orderService = orderService;
         this.payOS = payOS;
+        this.hostWalletService = hostWalletService;
+        this.attendanceService = attendanceService;
+        this.userService = userService;
     }
 
     /**
@@ -137,6 +148,41 @@ public class PaymentController {
                 orderService.save(order);
                 
                 System.out.println("Payment and Order updated to PAID");
+                
+                // Create EventAttendance when order is paid
+                try {
+                    attendanceService.createAttendanceFromOrder(order);
+                    System.out.println("EventAttendance created successfully for order: " + order.getOrderId());
+                } catch (Exception e) {
+                    System.out.println("Error creating EventAttendance for order " + order.getOrderId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                    // Don't fail the webhook if attendance creation fails
+                }
+
+                // Credit host wallet when order is paid successfully
+                // This will automatically create wallet if it doesn't exist
+                try {
+                    if (order.getEvent() != null && order.getEvent().getHost() != null && order.getEvent().getHost().getId() != null) {
+                        Long hostId = order.getEvent().getHost().getId();
+                        
+                        // Ensure wallet exists (getWalletByHostId will create if not exists)
+                        hostWalletService.getWalletByHostId(hostId);
+                        
+                        // Calculate amount to credit (total amount paid by customer, minus platform fee if any)
+                        // For now, credit full amount to host. You can adjust this with commission calculation if needed
+                        java.math.BigDecimal amountToCredit = order.getTotalAmount();
+                        String balancedescription = "Doanh thu từ đơn hàng #" + order.getOrderId();
+                        
+                        hostWalletService.addBalance(hostId, amountToCredit, String.valueOf(order.getOrderId()), balancedescription);
+                        System.out.println("Credited " + amountToCredit + " to host " + hostId + " wallet for order " + order.getOrderId());
+                    } else {
+                        System.out.println("Warning: Order " + order.getOrderId() + " has no associated host, skipping wallet credit");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error crediting host wallet: " + e.getMessage());
+                    e.printStackTrace();
+                    // Don't fail the webhook if wallet credit fails
+                }
             }
             
             PaymentResult result = PaymentResult.success("Payment processed successfully");
@@ -298,30 +344,24 @@ public class PaymentController {
      */
     @PostMapping("/create-for-order/{orderId}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> createPaymentForOrder(@PathVariable Long orderId, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> createPaymentForOrder(@PathVariable Long orderId, HttpServletRequest request, HttpSession httpSession) {
         try {
-            Long accountId = (Long) request.getAttribute("currentUserId");
-            if (accountId == null) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "User not logged in"
-                ));
-            }
 
-            // Get order
+            Customer customer = userService.getCurrentUser(httpSession).getCustomer();
+
             Order order = orderService.getById(orderId).orElse(null);
             if (order == null) {
                 return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Order not found"
+                        "success", false,
+                        "message", "Order not found"
                 ));
             }
 
             // Check if order belongs to current customer
-            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
+            if (!order.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
                 return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Order does not belong to current user"
+                        "success", false,
+                        "message", "Order does not belong to current user"
                 ));
             }
 
@@ -345,7 +385,7 @@ public class PaymentController {
             // Create payment link using PaymentService only
             String returnUrl = "http://localhost:8080/payment/success?orderId=" + orderId;
             String cancelUrl = "http://localhost:8080/payment/cancel?orderId=" + orderId;
-            
+
             // Create payment record and PayOS link
             Payment payment = paymentService.createPaymentLinkForOrder(order, returnUrl, cancelUrl);
 
@@ -361,8 +401,8 @@ public class PaymentController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
+                    "success", false,
+                    "message", e.getMessage()
             ));
         }
     }

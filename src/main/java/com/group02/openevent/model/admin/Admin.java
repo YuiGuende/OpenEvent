@@ -1,6 +1,6 @@
 package com.group02.openevent.model.admin;
 
-import com.group02.openevent.model.account.Account;
+import com.group02.openevent.model.user.User;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,9 +12,9 @@ public class Admin {
 	private Long adminId;
 
 	@OneToOne(optional = false)
-	@JoinColumn(name = "account_id", nullable = false, unique = true,
-		foreignKey = @ForeignKey(name = "fk_admin_account"))
-	private Account account;
+	@JoinColumn(name = "user_id", nullable = false, unique = true,
+		foreignKey = @ForeignKey(name = "fk_admin_user"))
+	private User user;
 
 	@Column(name = "name", nullable = false, length = 50)
 	private String name;
@@ -33,12 +33,12 @@ public class Admin {
 		this.adminId = adminId;
 	}
 
-	public Account getAccount() {
-		return account;
+	public User getUser() {
+		return user;
 	}
 
-	public void setAccount(Account account) {
-		this.account = account;
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public String getName() {

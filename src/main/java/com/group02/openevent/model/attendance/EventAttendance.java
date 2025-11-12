@@ -23,7 +23,7 @@ public class EventAttendance {
     private Long attendanceId;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id",nullable = true)
     private Order order;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -61,6 +61,9 @@ public class EventAttendance {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "notes")
+    private String notes;
     
     @PreUpdate
     protected void onUpdate() {

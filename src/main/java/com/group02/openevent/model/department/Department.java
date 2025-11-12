@@ -1,7 +1,7 @@
 package com.group02.openevent.model.department;
 
-import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,13 +19,13 @@ import java.util.List;
 public class Department {
     
     @Id
-    @Column(name = "account_id")
-    private Long accountId;
+    @Column(name = "user_id")
+    private Long userId;
     
     @OneToOne
     @MapsId
-    @JoinColumn(name = "account_id")
-    private Account account;
+    @JoinColumn(name = "user_id")
+    private User user;
     
     @Column(name = "department_name", nullable = false, length = 100)
     private String departmentName;

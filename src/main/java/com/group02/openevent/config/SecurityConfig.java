@@ -1,46 +1,26 @@
 package com.group02.openevent.config;
 
+import com.group02.openevent.service.impl.CustomUserDetailsService;
+import com.group02.openevent.service.impl.CustomOAuth2UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            // Disable CSRF for API testing
-            .csrf(AbstractHttpConfigurer::disable)
-            
-            // Disable authentication and authorization
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/**").permitAll()
-                .anyRequest().permitAll()
-            )
-            
-            // Disable session management
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
-            )
-            
-            // Enable CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-
-        return http.build();
-    }
+    @Autowired
+    private CustomAuthenticationSuccessHandler successHandler;
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private CustomOAuth2UserService oauth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,40 +28,75 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Allow specific origins for development (can't use "*" with credentials)
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:8080",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:8080"
-        ));
-        
-        // Allow all methods
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        
-        // Allow all headers
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        
-        // Allow credentials
-        configuration.setAllowCredentials(true);
-        
-        // Expose common headers
-        configuration.setExposedHeaders(Arrays.asList(
-            "Authorization", 
-            "Content-Type", 
-            "X-Requested-With",
-            "accept",
-            "Origin",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
-        ));
+    public DaoAuthenticationProvider authenticationProvider() {
+        System.out.println("DaoAuthenticationProvider khởi tạo");
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        
-        return source;
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+
+        authenticationManagerBuilder.authenticationProvider(authenticationProvider());
+
+        return authenticationManagerBuilder.build();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("securityFilterChain khởi tạo");
+        http
+                // 1. VÔ HIỆU HÓA HOÀN TOÀN CSRF (CHỈ DÀNH CHO MỤC ĐÍCH TEST/DEBUG)
+                .csrf(csrf -> csrf.disable())
+
+                // Cấu hình Header để đảm bảo không bị lỗi cache chặn chuyển hướng
+                .headers(headers -> headers.cacheControl(cache -> cache.disable()))
+
+                // 2. Cấu hình Authorization
+                .authorizeHttpRequests(auth -> auth
+                        // Cho phép truy cập các endpoint công khai
+                        .requestMatchers(
+                                "/api/ekyc/**",
+                                "/web-sdk-version-3.2.0.0.js",
+                                "/login", "/login/**", "/oauth2/**",
+                                "/api/auth/register", "/css/**", "/js/**",
+                                "/img/**", "/images/**", "/",
+                                "/api/payments/webhook", "/api/payments/webhook/test",
+                                "/api/payments/webhook/test-data",
+                                "/api/ekyc/file-service/v1/addFile").permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                // 3. Cấu hình Form Login
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/perform_login")
+                        .successHandler(successHandler) // Handler tùy chỉnh để lưu ACCOUNT_ID
+                        .failureUrl("/login?error")
+                        .permitAll()
+                )
+
+                // 4. Cấu hình OAuth2 Login
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oauth2UserService)
+                        )
+                        .successHandler(successHandler)
+                        .failureUrl("/login?error=oauth")
+                )
+
+                // 5. Cấu hình Logout
+                .logout(logout -> logout
+                        .logoutUrl("/api/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
+                );
+
+        return http.build();
     }
 }

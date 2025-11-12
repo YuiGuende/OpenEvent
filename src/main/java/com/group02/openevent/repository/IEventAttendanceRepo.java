@@ -1,6 +1,8 @@
 package com.group02.openevent.repository;
 
 import com.group02.openevent.model.attendance.EventAttendance;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +28,11 @@ public interface IEventAttendanceRepo extends JpaRepository<EventAttendance, Lon
      * Find attendance by order and customer
      */
     Optional<EventAttendance> findByOrderOrderIdAndCustomerCustomerId(Long orderId, Long customerId);
+    
+    /**
+     * Find attendance by order ID
+     */
+    Optional<EventAttendance> findByOrder_OrderId(Long orderId);
     
     /**
      * Count attendances by event and status
@@ -59,8 +66,84 @@ public interface IEventAttendanceRepo extends JpaRepository<EventAttendance, Lon
     boolean existsByEventIdAndEmailAndCheckedIn(@Param("eventId") Long eventId, @Param("email") String email);
     
     /**
+     * Count check-ins by event and ticket type (through order)
+     * Only counts attendances with checkInTime IS NOT NULL or status = CHECKED_IN
+     */
+    @Query("SELECT COUNT(a) FROM EventAttendance a " +
+           "WHERE a.event.id = :eventId " +
+           "AND (a.checkInTime IS NOT NULL OR a.status = 'CHECKED_IN') " +
+           "AND a.order IS NOT NULL " +
+           "AND a.order.ticketType.ticketTypeId = :ticketTypeId")
+    long countCheckInsByEventIdAndTicketTypeId(@Param("eventId") Long eventId, @Param("ticketTypeId") Long ticketTypeId);
+    
+    /**
+     * Get all checked-in attendances for an event (for counting by ticket type)
+     * Uses LEFT JOIN FETCH to eagerly load order and ticketType to avoid LazyInitializationException
+     */
+    @Query("SELECT a FROM EventAttendance a " +
+           "LEFT JOIN FETCH a.order o " +
+           "LEFT JOIN FETCH o.ticketType " +
+           "WHERE a.event.id = :eventId " +
+           "AND (a.checkInTime IS NOT NULL OR a.status = 'CHECKED_IN') " +
+           "AND a.order IS NOT NULL")
+    List<EventAttendance> findCheckedInByEventId(@Param("eventId") Long eventId);
+    
+    /**
      * Count total attendances for an event
      */
     long countByEventId(Long eventId);
+
+    Page<EventAttendance>findByEvent_Id(Long eventId, Pageable pageable);
+
+    @Query("SELECT ea FROM EventAttendance ea " +
+            "WHERE ea.order.event.id = :eventId " +
+            "AND (ea.order.participantName LIKE %:search% " +
+            "OR ea.order.participantEmail LIKE %:search% " +
+            "OR ea.order.participantPhone LIKE %:search%)")
+    Page<EventAttendance> searchAttendees(@Param("eventId") Long eventId,
+                                          @Param("search") String search,
+                                          Pageable pageable);
+    // Câu query chính cho Pageable
+    @Query(value = "SELECT ea FROM EventAttendance ea " +
+            "LEFT JOIN FETCH ea.order o " +
+            "LEFT JOIN FETCH o.ticketType tt " +
+            "WHERE ea.event.id = :eventId " +
+            "AND (:ticketTypeId IS NULL OR tt.ticketTypeId = :ticketTypeId) " +
+            "AND (:paymentStatus IS NULL OR CAST(o.status AS STRING) = :paymentStatus) " +
+            "AND (:checkinStatus IS NULL OR " +
+            "  (:checkinStatus = 'CHECKED_IN' AND ea.checkInTime IS NOT NULL AND ea.checkOutTime IS NULL) OR " +
+            "  (:checkinStatus = 'NOT_CHECKED_IN' AND ea.checkInTime IS NULL) OR " +
+            "  (:checkinStatus = 'CHECKED_OUT' AND ea.checkOutTime IS NOT NULL))",
+            countQuery = "SELECT COUNT(ea) FROM EventAttendance ea " +
+                    "LEFT JOIN ea.order o " +
+                    "LEFT JOIN o.ticketType tt " +
+                    "WHERE ea.event.id = :eventId " +
+                    "AND (:ticketTypeId IS NULL OR tt.ticketTypeId = :ticketTypeId) " +
+                    "AND (:paymentStatus IS NULL OR CAST(o.status AS STRING) = :paymentStatus) " +
+                    "AND (:checkinStatus IS NULL OR " +
+                    "  (:checkinStatus = 'CHECKED_IN' AND ea.checkInTime IS NOT NULL AND (ea.checkOutTime IS NULL OR ea.status != 'CHECKED_OUT')) OR " +
+                    "  (:checkinStatus = 'NOT_CHECKED_IN' AND ea.checkInTime IS NULL) OR " +
+                    "  (:checkinStatus = 'CHECKED_OUT' AND (ea.checkOutTime IS NOT NULL OR ea.status = 'CHECKED_OUT')))")
+    Page<EventAttendance> filterAttendees(@Param("eventId") Long eventId,
+                                          @Param("ticketTypeId") Long ticketTypeId,
+                                          @Param("paymentStatus") String paymentStatus,
+                                          @Param("checkinStatus") String checkinStatus,
+                                          Pageable pageable);
+    @Query("SELECT DISTINCT ea FROM EventAttendance ea " +
+            "LEFT JOIN FETCH ea.order o " +
+            "LEFT JOIN FETCH o.ticketType tt " +
+            "WHERE ea.event.id = :eventId " +
+            "AND (:ticketTypeId IS NULL OR tt.ticketTypeId = :ticketTypeId) " +
+            "AND (:paymentStatus IS NULL OR CAST(o.status AS STRING) = :paymentStatus) " +
+            "AND (:checkinStatus IS NULL OR " +
+            "  (:checkinStatus = 'CHECKED_IN' AND ea.checkInTime IS NOT NULL AND (ea.checkOutTime IS NULL OR ea.status != 'CHECKED_OUT')) OR " +
+            "  (:checkinStatus = 'NOT_CHECKED_IN' AND ea.checkInTime IS NULL) OR " +
+            "  (:checkinStatus = 'CHECKED_OUT' AND (ea.checkOutTime IS NOT NULL OR ea.status = 'CHECKED_OUT')))")
+    List<EventAttendance> filterAttendees(
+            @Param("eventId") Long eventId,
+            @Param("ticketTypeId") Long ticketTypeId,
+            @Param("paymentStatus") String paymentStatus,
+            @Param("checkinStatus") String checkinStatus);
+    Optional<EventAttendance> findByEvent_IdAndAttendanceId(Long eventId, Long attendanceId);
 }
 

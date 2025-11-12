@@ -19,7 +19,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.event.Place;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.ai.ChatMessageRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.PlaceService;
@@ -53,7 +53,7 @@ public class EventAIAgent implements Serializable {
     private final WeatherService weatherService;
     private final EventVectorSearchService eventVectorSearchService;
     private final OrderAIService orderAIService;
-    private final IUserRepo userRepo;
+    private final ICustomerRepo customerRepo;
     private final TicketTypeService ticketTypeService;
     private final AIEventMapper AIEventMapper;
     private final ChatMessageRepo chatMessageRepo;
@@ -74,7 +74,7 @@ public class EventAIAgent implements Serializable {
                         QdrantService qdrantService,
                         EventVectorSearchService eventVectorSearchService,
                         OrderAIService orderAIService,
-                        IUserRepo userRepo,
+                        ICustomerRepo customerRepo,
                         TicketTypeService ticketTypeService,
                         AIEventMapper AIEventMapper,
                         ChatMessageRepo chatMessageRepo,
@@ -92,7 +92,7 @@ public class EventAIAgent implements Serializable {
         this.llm = llm;
         this.qdrantService = qdrantService;
         this.orderAIService = orderAIService;
-        this.userRepo = userRepo;
+        this.customerRepo = customerRepo;
         this.ticketTypeService = ticketTypeService;
         this.AIEventMapper = AIEventMapper;
         this.chatMessageRepo = chatMessageRepo;
@@ -622,7 +622,17 @@ hoặc
             }
         }
 
-        float[] userVector = embeddingService.getEmbedding(userInput);
+        float[] userVector;
+        try {
+            userVector = embeddingService.getEmbedding(userInput);
+        } catch (IllegalStateException e) {
+            // Embedding service không khả dụng, set userVector = null để classifier dùng fallback
+            log.warn("Embedding service không khả dụng, sử dụng fallback intent classification: {}", e.getMessage());
+            userVector = null;
+        } catch (Exception e) {
+            log.error("Lỗi khi tạo embedding: {}", e.getMessage(), e);
+            userVector = null;
+        }
 
         /* ==================== ORDER FLOW ==================== */
         ActionType intent = classifier.classifyIntent(userInput, userVector);
@@ -740,6 +750,10 @@ hoặc
                                     } else {
                                         placeOpt = placeService.findPlaceByNameFlexible(placeName);
                                     }
+                                } catch (IllegalStateException e) {
+                                    // Embedding service không khả dụng, dùng fallback
+                                    log.warn("Embedding service không khả dụng, dùng tìm kiếm place bằng tên: {}", e.getMessage());
+                                    placeOpt = placeService.findPlaceByNameFlexible(placeName);
                                 } catch (Exception e) {
                                     log.error("Qdrant Place search failed: {}", e.getMessage());
                                     placeOpt = placeService.findPlaceByNameFlexible(placeName);
@@ -944,13 +958,15 @@ hoặc
 
                             Event finalEvent = targetEventOpt.get();
 
-                            Optional<Customer> customerOpt = userRepo.findByAccount_AccountId(userId);
-                            if (customerOpt.isEmpty() || customerOpt.get().getAccount().getEmail() == null) {
+                            Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(userId);
+                            if (customerOpt.isEmpty() || customerOpt.get().getUser() == null 
+                                || customerOpt.get().getUser().getAccount() == null 
+                                || customerOpt.get().getUser().getAccount().getEmail() == null) {
                                 systemResult.append("❌ Tài khoản của bạn chưa có email để nhận thông báo.");
                                 break;
                             }
 
-                            String userEmail = customerOpt.get().getAccount().getEmail();
+                            String userEmail = customerOpt.get().getUser().getAccount().getEmail();
                             log.info("Saving reminder: eventId={}, userId={}, minutes={}", finalEvent.getId(), userId, remindMinutes);
                             agentEventService.createOrUpdateEmailReminder(finalEvent.getId(), remindMinutes.intValue(), userId);
 
@@ -1106,12 +1122,13 @@ hoặc
                     }
 
                     Event finalEvent = targetEventOpt.get();
-                    Optional<Customer> customerOpt = userRepo.findByAccount_AccountId(userId);
-                    if (customerOpt.isEmpty() || customerOpt.get().getAccount() == null) {
+                    Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(userId);
+                    if (customerOpt.isEmpty() || customerOpt.get().getUser() == null 
+                        || customerOpt.get().getUser().getAccount() == null) {
                         return "❌ Không tìm thấy thông tin tài khoản của bạn. Vui lòng đăng nhập lại.";
                     }
 
-                    String userEmail = customerOpt.get().getAccount().getEmail();
+                    String userEmail = customerOpt.get().getUser().getAccount().getEmail();
                     if (userEmail == null || userEmail.trim().isEmpty()) {
                         return "❌ Tài khoản của bạn chưa có địa chỉ email. Vui lòng cập nhật email trong thông tin cá nhân.";
                     }

@@ -9,6 +9,7 @@ import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,10 +70,13 @@ class PaymentControllerIntegrationTest {
         account.setAccountId(ACCOUNT_ID);
         account.setEmail("test@example.com");
 
+        User user = new User();
+        user.setAccount(account);
+        user.setUserId(1L);
+        user.setEmail("test@example.com");
         customer = new Customer();
         customer.setCustomerId(CUSTOMER_ID);
-        customer.setAccount(account);
-        customer.setEmail("test@example.com");
+        customer.setUser(user);
 
         order = new Order();
         order.setOrderId(ORDER_ID);
@@ -162,8 +166,11 @@ class PaymentControllerIntegrationTest {
             // Arrange
             Account otherAccount = new Account();
             otherAccount.setAccountId(999L);
+            User otherUser = new User();
+            otherUser.setAccount(otherAccount);
+            otherUser.setUserId(2L);
             Customer otherCustomer = new Customer();
-            otherCustomer.setAccount(otherAccount);
+            otherCustomer.setUser(otherUser);
             order.setCustomer(otherCustomer);
 
             when(orderService.getById(ORDER_ID)).thenReturn(Optional.of(order));

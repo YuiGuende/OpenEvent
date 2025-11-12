@@ -50,7 +50,16 @@ public class EventVectorSearchService {
         );
 
         // 3. TẠO VECTOR TRUY VẤN
-        float[] queryVector = embeddingService.getEmbedding(description);
+        float[] queryVector;
+        try {
+            queryVector = embeddingService.getEmbedding(description);
+        } catch (IllegalStateException e) {
+            // Embedding service không khả dụng, trả về danh sách rỗng
+            return List.of();
+        } catch (Exception e) {
+            // Lỗi khác, trả về danh sách rỗng
+            return List.of();
+        }
 
         // 4. GỌI QDRANT VỚI FILTER
         List<Map<String, Object>> qdrantResults =

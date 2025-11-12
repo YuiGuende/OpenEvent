@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>VNPT eKYC - Xác thực CCCD</title>
+
+    <!-- SDK -->
+    <script th:src="@{/web-sdk-version-3.2.0.0.js}"></script>
+    <script th:src="@{/lib/VNPTQRBrowserApp.js}"></script>
+    <script th:src="@{/lib/VNPTBrowserSDKAppV4.0.0.js}"></script>
+</head>
+
+<body>
+<div id="ekyc_sdk_intergrated"></div>
+
+<script>
+    // Vì frontend và backend cùng port (8080), không cần CORS nữa
+    const BACKEND_URL = '/api/ekyc';
+
+    const CALL_BACK_END_FLOW = async (result) => {
+        console.log('Kết quả eKYC:', result);
+        await fetch(`${BACKEND_URL}/callback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(result)
+        });
+    };
+
+    const dataConfig = {
+        BACKEND_URL,
+        CALL_BACK_END_FLOW,
+        HAS_BACKGROUND_IMAGE: true,
+        MAX_SIZE_IMAGE: 1,
+        LIST_TYPE_DOCUMENT: [-1, 4, 5, 6, 7]
+    };
+
+    window.addEventListener('load', function () {
+        if (window.SDK && typeof window.SDK.launch === 'function') {
+            window.SDK.launch(dataConfig);
+        } else {
+            console.error("SDK chưa được tải hoặc lỗi khởi tạo!");
+        }
+    });
+</script>
+</body>
+
+</html>

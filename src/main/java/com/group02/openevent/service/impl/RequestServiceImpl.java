@@ -7,9 +7,11 @@ import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IDepartmentRepo;
+import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IRequestRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.RequestService;
+import com.group02.openevent.service.UserService;
 import com.group02.openevent.util.CloudinaryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,18 +38,26 @@ public class RequestServiceImpl implements RequestService {
 
     private final IRequestRepo requestRepo;
     private final EventService eventService;
+    private final IEventRepo eventRepo;
     private final CloudinaryUtil cloudinaryUtil;
     private final IAccountRepo accountRepo;
     private final IDepartmentRepo departmentRepository;
+    private final UserService userService;
 
     public RequestFormDTO getRequestFormData(Long eventId) throws Exception {
         List<Department> departments = departmentRepository.findAll();
 
         List<RequestFormDTO.DepartmentDTO> departmentDTOs = departments.stream()
-                .map(dept -> RequestFormDTO.DepartmentDTO.builder()
-                        .id(dept.getAccountId())
-                        .name(dept.getDepartmentName())
-                        .build())
+                .map(dept -> {
+                    Long accountId = null;
+                    if (dept.getUser() != null && dept.getUser().getAccount() != null) {
+                        accountId = dept.getUser().getAccount().getAccountId();
+                    }
+                    return RequestFormDTO.DepartmentDTO.builder()
+                            .id(accountId)
+                            .name(dept.getDepartmentName())
+                            .build();
+                })
                 .collect(Collectors.toList());
         Optional<Event> event = eventService.getEventById(eventId);
         if (event.isEmpty()) {
@@ -102,9 +112,9 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public Page<Request> getRequestsByReceiver(Long receiverAccountId, RequestStatus status, Pageable pageable) {
         if (status != null) {
-            return requestRepo.findByReceiver_AccountIdAndStatus(receiverAccountId, status, pageable);
+            return requestRepo.findByReceiverUserIdAndStatus(receiverAccountId, status, pageable);
         } else {
-            return requestRepo.findByReceiver_AccountId(receiverAccountId, pageable);
+            return requestRepo.findByReceiverUserId(receiverAccountId, pageable);
         }
     }
 
@@ -114,8 +124,8 @@ public class RequestServiceImpl implements RequestService {
         Request request = Request.builder()
                 .type(createRequestDTO.getType())
                 .message(createRequestDTO.getMessage())
-                .sender(accountRepo.findById(createRequestDTO.getSenderId()).orElseThrow(() -> new RuntimeException("Sender not found")))
-                .receiver(accountRepo.findById(createRequestDTO.getReceiverId()).orElseThrow(() -> new RuntimeException("Receiver not found")))
+                .sender(userService.getUserById(createRequestDTO.getSenderId()))
+                .receiver(userService.getUserById(createRequestDTO.getReceiverId()))
                 .fileURL(createRequestDTO.getFileURL())
                 .targetUrl(createRequestDTO.getTargetUrl())
                 .status(RequestStatus.PENDING)
@@ -123,9 +133,18 @@ public class RequestServiceImpl implements RequestService {
                 .build();
 
         if (createRequestDTO.getEventId() != null) {
-            Event event = eventService.getEventById(createRequestDTO.getEventId())
+            // Use findByIdWithHostAccount to eagerly fetch Host relationship
+            Event event = eventRepo.findByIdWithHostAccount(createRequestDTO.getEventId())
                     .orElseThrow(() -> new RuntimeException("Event not found"));
             request.setEvent(event);
+            
+            // Set host from event (required by database constraint)
+            if (event.getHost() == null) {
+                throw new RuntimeException("Event has no host assigned");
+            }
+            request.setHost(event.getHost());
+        } else {
+            throw new RuntimeException("Event ID is required for creating request");
         }
 
         Request savedRequest = requestRepo.save(request);
@@ -148,8 +167,8 @@ public class RequestServiceImpl implements RequestService {
 
         Request request = Request.builder()
                 .type(createRequestDTO.getType())
-                .sender(accountRepo.findById(createRequestDTO.getSenderId()).orElseThrow(() -> new RuntimeException("Sender not found")))
-                .receiver(accountRepo.findById(createRequestDTO.getReceiverId()).orElseThrow(() -> new RuntimeException("Receiver not found")))
+                .sender(userService.getUserById(createRequestDTO.getSenderId()))
+                .receiver(userService.getUserById(createRequestDTO.getReceiverId()))
                 .message(createRequestDTO.getMessage())
                 .fileURL(fileURL) // Use uploaded file URL
                 .targetUrl(createRequestDTO.getTargetUrl())
@@ -158,9 +177,18 @@ public class RequestServiceImpl implements RequestService {
                 .build();
 
         if (createRequestDTO.getEventId() != null) {
-            Event event = eventService.getEventById(createRequestDTO.getEventId())
+            // Use findByIdWithHostAccount to eagerly fetch Host relationship
+            Event event = eventRepo.findByIdWithHostAccount(createRequestDTO.getEventId())
                     .orElseThrow(() -> new RuntimeException("Event not found"));
             request.setEvent(event);
+            
+            // Set host from event (required by database constraint)
+            if (event.getHost() == null) {
+                throw new RuntimeException("Event has no host assigned");
+            }
+            request.setHost(event.getHost());
+        } else {
+            throw new RuntimeException("Event ID is required for creating request");
         }
 
         Request savedRequest = requestRepo.save(request);
@@ -236,14 +264,14 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDTO> getRequestsBySenderId(Long senderId) {
-        return requestRepo.findBySenderAccountId(senderId).stream()
+        return requestRepo.findBySenderUserId(senderId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<RequestDTO> getRequestsByReceiverId(Long receiverId) {
-        return requestRepo.findByReceiver_AccountId(receiverId).stream()
+        return requestRepo.findByReceiverUserId(receiverId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -274,7 +302,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public Page<RequestDTO> listRequestsByReceiver(Long receiverId, Pageable pageable) {
-        return requestRepo.findByReceiver_AccountId(receiverId, pageable)
+        return requestRepo.findByReceiverUserId(receiverId, pageable)
                 .map(this::convertToDTO);
     }
 
@@ -282,10 +310,10 @@ public class RequestServiceImpl implements RequestService {
     public RequestDTO convertToDTO(Request request) {
         return RequestDTO.builder()
                 .requestId(request.getRequestId())
-                .senderId(request.getSender() != null ? request.getSender().getAccountId() : null)
-                .senderName(request.getSender() != null ? request.getSender().getEmail() : null)
-                .receiverId(request.getReceiver() != null ? request.getReceiver().getAccountId() : null)
-                .receiverName(request.getReceiver() != null ? request.getReceiver().getEmail() : null)
+                .senderId(request.getSender() != null ? request.getSender().getUserId() : null)
+                .senderName(request.getSender() != null ? request.getSender().getAccount().getEmail() : null)
+                .receiverId(request.getReceiver() != null ? request.getReceiver().getUserId() : null)
+                .receiverName(request.getReceiver() != null ? request.getReceiver().getAccount().getEmail() : null)
                 .type(request.getType())
                 .eventId(request.getEvent() != null ? request.getEvent().getId() : null)
                 .eventTitle(request.getEvent() != null ? request.getEvent().getTitle() : null)
@@ -298,5 +326,12 @@ public class RequestServiceImpl implements RequestService {
                 .createdAt(request.getCreatedAt())
                 .updatedAt(request.getUpdatedAt())
                 .build();
+    }
+    
+    @Override
+    public List<RequestDTO> getRequestsByHostId(Long hostId) {
+        return requestRepo.findByHost_Id(hostId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 }

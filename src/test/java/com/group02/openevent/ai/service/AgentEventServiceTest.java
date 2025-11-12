@@ -50,7 +50,7 @@ class AgentEventServiceTest {
         Event e = new Event();
         e.setId(1L);
         when(customerService.getOrCreateByUserId(anyLong())).thenReturn(c);
-        when(hostService.findByCustomerId(anyLong())).thenReturn(Optional.of(h));
+        when(hostService.findByCustomerId(anyLong())).thenReturn(h);
         when(eventRepo.save(any())).thenReturn(e);
 
         service.saveEventFromAction(action, 9L);
@@ -90,7 +90,7 @@ class AgentEventServiceTest {
         Customer c = new Customer();
         Host h = new Host();
         when(customerService.getOrCreateByUserId(anyLong())).thenReturn(c);
-        when(hostService.findByCustomerId(anyLong())).thenReturn(Optional.of(h));
+        when(hostService.findByCustomerId(anyLong())).thenReturn(h);
         Organization org = new Organization();
         when(organizationService.findById(5L)).thenReturn(Optional.of(org));
         Event saved = new Event(); saved.setId(7L);

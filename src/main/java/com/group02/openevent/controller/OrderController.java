@@ -8,8 +8,10 @@ import com.group02.openevent.model.account.Account;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.UserService;
 import com.group02.openevent.service.VoucherService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,12 +31,14 @@ public class OrderController {
     private final ICustomerRepo customerRepo;
     private final IAccountRepo accountRepo;
     private final VoucherService voucherService;
+    private final UserService userService;
 
-    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, VoucherService voucherService) {
+    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, VoucherService voucherService, UserService userService) {
         this.orderService = orderService;
         this.customerRepo = customerRepo;
         this.accountRepo = accountRepo;
         this.voucherService = voucherService;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -67,26 +71,11 @@ public class OrderController {
      * Tạo order mới với TicketType
      */
     @PostMapping("/create-with-ticket-types")
-    public ResponseEntity<?> createWithTicketTypes(@Valid @RequestBody CreateOrderWithTicketTypeRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> createWithTicketTypes(@Valid @RequestBody CreateOrderWithTicketTypeRequest request, HttpServletRequest httpRequest, HttpSession httpSession) {
         try {
-            Long accountId = (Long) httpRequest.getAttribute("currentUserId");
-            if (accountId == null) {
-                return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
-            }
 
-            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
-            if (customer == null) {
-                // Tự động tạo Customer nếu chưa có
-                Account account = accountRepo.findById(accountId)
-                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
-                
-                customer = new Customer();
-                customer.setAccount(account);
-                customer.setEmail(account.getEmail());
-                customer.setPoints(0);
-                customer = customerRepo.save(customer);
-            }
 
+            Customer customer = userService.getCurrentUser(httpSession).getCustomer();
             // Check if customer already registered (paid) for this event
             if (orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -132,57 +121,14 @@ public class OrderController {
         }
     }
 
-    /**
-     * Lấy tất cả orders của user hiện tại
-     */
-    @GetMapping("/my-orders")
-    public ResponseEntity<?> getMyOrders(HttpServletRequest httpRequest) {
-        Long accountId = (Long) httpRequest.getAttribute("currentUserId");
-        if (accountId == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
-        }
-
-        Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
-        if (customer == null) {
-            // Tự động tạo Customer nếu chưa có
-            Account account = accountRepo.findById(accountId)
-                    .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
-            
-            customer = new Customer();
-            customer.setAccount(account);
-            customer.setEmail(account.getEmail());
-            customer.setPoints(0);
-            customer = customerRepo.save(customer);
-        }
-
-        List<Order> orders = orderService.getOrdersByCustomer(customer);
-        return ResponseEntity.ok(Map.of("success", true, "orders", orders));
-    }
-
 
     /**
      * Kiểm tra xem user đã đăng ký event này chưa
      */
     @GetMapping("/check-registration/{eventId}")
-    public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> checkRegistration(@PathVariable Long eventId, HttpServletRequest httpRequest,HttpSession httpSession) {
         try {
-            Long accountId = (Long) httpRequest.getAttribute("currentUserId");
-            if (accountId == null) {
-                return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not logged in"));
-            }
-
-            Customer customer = customerRepo.findByAccount_AccountId(accountId).orElse(null);
-            if (customer == null) {
-                // Tự động tạo Customer nếu chưa có
-                Account account = accountRepo.findById(accountId)
-                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + accountId));
-                
-                customer = new Customer();
-                customer.setAccount(account);
-                customer.setEmail(account.getEmail());
-                customer.setPoints(0);
-                customer = customerRepo.save(customer);
-            }
+            Customer customer = userService.getCurrentUser(httpSession).getCustomer();
 
             boolean isRegistered = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), eventId);
             return ResponseEntity.ok(Map.of(
@@ -252,7 +198,7 @@ public class OrderController {
             Order order = orderOpt.get();
 
             // Kiểm tra quyền sở hữu order
-            if (!order.getCustomer().getAccount().getAccountId().equals(accountId)) {
+            if (!order.getCustomer().getUser().getAccount().getAccountId().equals(accountId)) {
                 return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied"));
             }
 

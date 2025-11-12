@@ -20,6 +20,11 @@ const HostDashboard = {
         this.setupSidebarTooltips();
         this.setupMobileMenu();
         this.setupSidebarToggle();
+        
+        // Re-setup navigation after a delay to ensure DOM is ready
+        setTimeout(() => {
+            this.setupNavigation();
+        }, 500);
     },
 
     // Navigation handling
@@ -123,13 +128,30 @@ const HostDashboard = {
     },
     setupNavigation() {
         const navItems = document.querySelectorAll('.nav-item');
+        console.log('Setting up navigation for', navItems.length, 'items');
         navItems.forEach(item => {
-            item.addEventListener('click', () => this.handleNavigation(item));
+            // Check if already has listener by checking data attribute
+            if (item.dataset.navListener === 'true') {
+                return; // Skip if already has listener
+            }
+            
+            // Mark as having listener
+            item.dataset.navListener = 'true';
+            
+            // Add event listener
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Nav item clicked:', item.id, item);
+                this.handleNavigation(item);
+            });
         });
     },
 
     // Handle navigation between menu items
     handleNavigation(navItem) {
+        console.log('Navigation clicked:', navItem.id, navItem);
+        
         // Xóa active hiện tại
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(nav => nav.classList.remove('active'));
@@ -138,7 +160,9 @@ const HostDashboard = {
         // Xác định URL
         let url = "";
         let fragmentUrl = "";
-        switch (navItem.id) {
+        const navId = navItem.id;
+        
+        switch (navId) {
             case "nav-host":
                 url = "/dashboard";
                 fragmentUrl = "/fragment/dashboard";
@@ -147,14 +171,38 @@ const HostDashboard = {
                 url = "/events";
                 fragmentUrl = "/fragment/events";
                 break;
+            case "nav-request":
+                url = "/requests";
+                fragmentUrl = "/fragment/sent-requests";
+                break;
+            case "nav-wallet":
+                url = "/wallet";
+                fragmentUrl = "/fragment/wallet";
+                break;
             case "nav-settings":
                 url = "/settings";
                 fragmentUrl = "/fragment/settings";
                 break;
+            default:
+                console.warn('Unknown navigation item:', navId);
+                // Try to find wallet by checking if it has wallet icon or text
+                const navText = navItem.querySelector("span")?.textContent?.toLowerCase() || "";
+                if (navText.includes("ví") || navText.includes("wallet")) {
+                    url = "/wallet";
+                    fragmentUrl = "/fragment/wallet";
+                } else if (navText.includes("yêu cầu") || navText.includes("request")) {
+                    url = "/requests";
+                    fragmentUrl = "/fragment/sent-requests";
+                }
+                break;
         }
+
+        console.log('Navigating to:', url, fragmentUrl);
 
         if (fragmentUrl) {
             this.loadFragment(fragmentUrl, url);
+        } else {
+            console.error('No fragment URL found for navigation item:', navId);
         }
 
         const navText = navItem.querySelector("span")?.textContent || "Open.events";
@@ -187,6 +235,7 @@ const HostDashboard = {
     },
 
     loadFragment(fragmentUrl, newUrl) {
+        console.log('Loading fragment:', fragmentUrl, 'URL:', newUrl);
         this.showLoadingState();
         fetch(fragmentUrl)
             .then(res => {
@@ -194,9 +243,192 @@ const HostDashboard = {
                 return res.text();
             })
             .then(html => {
-                if (this.mainContent) this.mainContent.innerHTML = html;
+                console.log('Raw HTML received, length:', html.length);
+                console.log('HTML preview (first 500 chars):', html.substring(0, 500));
+                console.log('HTML preview (last 500 chars):', html.substring(Math.max(0, html.length - 500)));
+                
+                // Check if HTML contains script tags as string
+                const hasScriptTag = html.includes('<script') || html.includes('&lt;script');
+                console.log('HTML contains script tag (string check):', hasScriptTag);
+                if (hasScriptTag) {
+                    console.log('Script tag found in HTML! Searching for exact location...');
+                    const scriptIndex = html.indexOf('<script');
+                    if (scriptIndex >= 0) {
+                        console.log('Script tag starts at index:', scriptIndex);
+                        console.log('Script tag preview:', html.substring(scriptIndex, Math.min(scriptIndex + 200, html.length)));
+                    }
+                }
+                
+                if (this.mainContent) {
+                    // Use a temporary container to extract scripts
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    
+                    // Get all scripts from the fragment
+                    const scripts = tempDiv.querySelectorAll('script');
+                    const scriptsArray = Array.from(scripts);
+                    console.log('Found', scriptsArray.length, 'scripts in fragment (querySelector)');
+                    
+                    // Also check for script tags in raw HTML with improved regex
+                    // Match script tags including multiline content - try multiple patterns
+                    let scriptTagMatches = html.match(/<script[^>]*>[\s\S]*?<\/script>/gi);
+                    if (!scriptTagMatches) {
+                        // Try with th:inline="none"
+                        scriptTagMatches = html.match(/<script\s+th:inline="none"[^>]*>[\s\S]*?<\/script>/gi);
+                    }
+                    if (!scriptTagMatches) {
+                        // Try with any attributes
+                        scriptTagMatches = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi);
+                    }
+                    console.log('Script tags found in raw HTML (regex):', scriptTagMatches ? scriptTagMatches.length : 0);
+                    if (scriptTagMatches) {
+                        console.log('Script tags details:', scriptTagMatches.map((s, i) => `Script ${i + 1}: ${s.substring(0, 100)}...`));
+                    }
+                    
+                    // STEP 1: Extract script contents from HTML (before removing)
+                    const scriptContents = [];
+                    if (scriptTagMatches && scriptTagMatches.length > 0) {
+                        console.log('STEP 1: Extracting script contents from HTML...');
+                        scriptTagMatches.forEach((scriptTag, index) => {
+                            const contentMatch = scriptTag.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
+                            if (contentMatch && contentMatch[1]) {
+                                const scriptContent = contentMatch[1].trim();
+                                if (scriptContent.length > 0) {
+                                    scriptContents.push(scriptContent);
+                                    console.log(`  Extracted script ${index + 1}, length: ${scriptContent.length} chars`);
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Also try querySelector as backup
+                    if (scriptsArray.length > 0 && scriptContents.length === 0) {
+                        console.log('STEP 1 (backup): Extracting from querySelector...');
+                        scriptsArray.forEach((oldScript, index) => {
+                            const scriptContent = (oldScript.innerHTML || oldScript.textContent || '').trim();
+                            if (scriptContent.length > 0) {
+                                scriptContents.push(scriptContent);
+                                console.log(`  Extracted script from querySelector ${index + 1}, length: ${scriptContent.length} chars`);
+                            }
+                        });
+                    }
+                    
+                    // STEP 2: Insert HTML WITHOUT scripts first (DOM must be ready)
+                    console.log('STEP 2: Inserting HTML without scripts...');
+                    let htmlWithoutScripts = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+                    htmlWithoutScripts = htmlWithoutScripts.replace(/<script\s+th:inline="none"[^>]*>[\s\S]*?<\/script>/gi, '');
+                    this.mainContent.innerHTML = htmlWithoutScripts;
+                    console.log(`  HTML inserted. Length: ${htmlWithoutScripts.length} chars. Scripts to execute: ${scriptContents.length}`);
+                    
+                    // STEP 3: Execute scripts AFTER DOM is ready (use DOM append - most reliable)
+                    let scriptsExecuted = false;
+                    if (scriptContents.length > 0) {
+                        console.log('STEP 3: Executing scripts by appending to DOM...');
+                        scriptContents.forEach((scriptContent, index) => {
+                            try {
+                                const scriptEl = document.createElement('script');
+                                scriptEl.textContent = scriptContent;
+                                scriptEl.setAttribute('data-fragment-script', 'true');
+                                scriptEl.setAttribute('data-script-index', index);
+                                // Append to body - browser will execute automatically in global scope
+                                document.body.appendChild(scriptEl);
+                                console.log(`  ✓ Script ${index + 1}/${scriptContents.length} appended to DOM`);
+                                scriptsExecuted = true;
+                                // Cleanup after execution
+                                setTimeout(() => {
+                                    if (scriptEl.parentNode) {
+                                        scriptEl.remove();
+                                    }
+                                }, 2000);
+                            } catch (e) {
+                                console.error(`  ✗ Error appending script ${index + 1}:`, e);
+                                // Fallback
+                                try {
+                                    (new Function(scriptContent))();
+                                    console.log(`  ✓ Script ${index + 1} executed via Function constructor`);
+                                    scriptsExecuted = true;
+                                } catch (e2) {
+                                    console.error(`  ✗ Function constructor failed:`, e2);
+                                }
+                            }
+                        });
+                    } else {
+                        console.warn('STEP 3: No scripts found to execute!');
+                    }
+                    
+                    console.log(`Script execution completed: ${scriptsExecuted ? 'SUCCESS' : 'FAILED'} (${scriptContents.length} scripts)`);
+                    
+                    // Trigger wallet initialization if wallet page is loaded
+                    if (fragmentUrl.includes('/wallet')) {
+                        setTimeout(() => {
+                            console.log('Wallet fragment detected, checking for initWallet...');
+                            console.log('window.initWallet type:', typeof window.initWallet);
+                            console.log('window.loadWalletData type:', typeof window.loadWalletData);
+                            console.log('window.loadTransactionHistory type:', typeof window.loadTransactionHistory);
+                            if (typeof window.initWallet === 'function') {
+                                console.log('Calling window.initWallet()');
+                                window.initWallet();
+                            } else if (typeof initWallet === 'function') {
+                                console.log('Calling initWallet() (non-window)');
+                                initWallet();
+                            } else {
+                                // If initWallet not available, try to load wallet data directly
+                                console.log('initWallet not found, trying alternative initialization');
+                                if (typeof window.loadWalletData === 'function') {
+                                    console.log('Calling window.loadWalletData()');
+                                    window.loadWalletData();
+                                }
+                                if (typeof window.loadTransactionHistory === 'function') {
+                                    console.log('Calling window.loadTransactionHistory()');
+                                    window.loadTransactionHistory();
+                                }
+                            }
+                        }, 500); // Increased timeout to ensure scripts are executed
+                    }
+                    
+                    // Trigger event dropdowns initialization if events page is loaded
+                    if (fragmentUrl.includes('/events') || fragmentUrl.includes('/fragment/events')) {
+                        setTimeout(() => {
+                            console.log('Events fragment detected, initializing dropdowns...');
+                            if (typeof window.initEventDropdowns === 'function') {
+                                console.log('Calling window.initEventDropdowns()');
+                                window.initEventDropdowns();
+                            }
+                        }, 100); // Small delay to ensure DOM is ready
+                    }
+                }
                 this.attachDynamicEvents();
-                if (newUrl) history.pushState(null, "", newUrl);
+                // Update URL in browser
+                if (newUrl) {
+                    window.history.pushState(null, "", newUrl);
+                    console.log('URL updated to:', newUrl);
+                }
+
+                // Initialize events page if it's the events fragment
+                // Note: events-manager.js is loaded in host.html, so functions should be available
+                if (fragmentUrl.includes('/fragment/events') || fragmentUrl.includes('/events')) {
+                    console.log('Events fragment loaded, initializing events page...');
+                    console.log('window.initializeEventsPage type:', typeof window.initializeEventsPage);
+                    console.log('window.setupEventSearch type:', typeof window.setupEventSearch);
+                    console.log('window.loadEventsFragment type:', typeof window.loadEventsFragment);
+                    
+                    // Use a short delay to ensure DOM is ready, then initialize
+                    setTimeout(() => {
+                        if (typeof window.initializeEventsPage === 'function') {
+                            console.log('Calling initializeEventsPage after loading events fragment');
+                            try {
+                                window.initializeEventsPage();
+                                console.log('✅ initializeEventsPage called successfully');
+                            } catch (e) {
+                                console.error('❌ Error calling initializeEventsPage:', e);
+                            }
+                        } else {
+                            console.warn('⚠️ initializeEventsPage function not found!');
+                            console.warn('Available window functions with "event":', Object.keys(window).filter(k => k.toLowerCase().includes('event')));
+                            console.warn('Make sure events-manager.js is loaded in host.html');
+                        }
+                    }, 150); // Short delay to ensure DOM is ready
+                }
 
             })
             .catch(err => {
@@ -208,17 +440,28 @@ const HostDashboard = {
     },
     loadInitialPage() {
         const currentPath = window.location.pathname;
+        console.log('Initial page load, current path:', currentPath);
         let fragmentUrl = "";
         let activeId = "";
         switch (currentPath) {
             case "/":
             case "/dashboard":
+            case "/organizer":
                 fragmentUrl = "/fragment/dashboard";
                 activeId = "nav-host";
                 break;
             case "/events":
                 fragmentUrl = "/fragment/events";
                 activeId = "nav-events";
+                // Initialization will be handled by loadFragment() which checks for events fragment
+                break;
+            case "/requests":
+                fragmentUrl = "/fragment/sent-requests";
+                activeId = "nav-request";
+                break;
+            case "/wallet":
+                fragmentUrl = "/fragment/wallet";
+                activeId = "nav-wallet";
                 break;
             case "/settings":
                 fragmentUrl = "/fragment/settings";
@@ -229,10 +472,16 @@ const HostDashboard = {
                 activeId = "nav-host";
         }
 
+        console.log('Loading initial fragment:', fragmentUrl, 'active:', activeId);
         this.loadFragment(fragmentUrl);
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
         const activeNav = document.getElementById(activeId);
-        if (activeNav) activeNav.classList.add('active');
+        if (activeNav) {
+            activeNav.classList.add('active');
+            console.log('Set active nav:', activeId);
+        } else {
+            console.warn('Active nav not found:', activeId);
+        }
     },
 
 
@@ -247,6 +496,7 @@ const HostDashboard = {
         const titles = {
             'Bảng điều khiển nhà tổ chức': 'duc le - Bảng điều khiển',
             'Sự kiện': 'duc le - Quản lý sự kiện',
+            'Yêu cầu duyệt': 'duc le - Yêu cầu duyệt',
             'Cài đặt': 'duc le - Cài đặt',
             'Thiết kế trang sự kiện': 'duc le - Thiết kế trang sự kiện'
         };

@@ -85,6 +85,7 @@ public class VectorIntentClassifier {
             } catch (Exception e) {
                 log.error("Lỗi khi tạo embedding cho câu mẫu: '{}'. Bỏ qua câu này.", example, e);
             }
+
         }
         log.info("Hoàn tất khởi tạo {} vector mẫu.", this.ticketInfoExampleVectors.size());
     }
@@ -565,4 +566,5 @@ public class VectorIntentClassifier {
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 }
+
 

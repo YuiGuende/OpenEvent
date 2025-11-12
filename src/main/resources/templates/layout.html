@@ -1,9 +1,9 @@
+<!-- templates/layout.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head(${pageTitle})}"></head>
 
-<body class="page-bg">
-
+<body class="page-bg" th:attr="data-user-id=${uid}">
 <!-- FRAGMENT LAYOUT: nhận content, activeMenu, uid -->
 <th:block th:fragment="layout(content, activeMenu, uid)">
     <header th:replace="~{fragments/header :: siteHeader(${activeMenu})}"></header>
@@ -14,9 +14,15 @@
 
     <footer th:replace="~{fragments/footer :: siteFooter()}"></footer>
 
+    <!-- WebSocket Libraries for Realtime Notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    
+    <!-- Chatbot Integration -->
     <!-- Chatbot: chỉ render khi có uid -->
     <div id="openevent-chatbot-container"></div>
-    <th:block th:if="${uid != null}">
+    <th:block >
         <div th:replace="~{fragments/chatbot :: chatbot(${uid})}"></div>
     </th:block>
 

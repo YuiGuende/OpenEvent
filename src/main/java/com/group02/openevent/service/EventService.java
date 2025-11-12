@@ -56,7 +56,7 @@ public interface EventService {
     List<EventCardDTO> getPosterEvents();
     List<EventCardDTO> getRecommendedEvents(int limit);
     EventCardDTO convertToDTO(Event event);
-    EventResponse saveEvent(EventCreationRequest event,Long hostId);
+    EventResponse saveEvent(EventCreationRequest event, Long hostId);
     EventResponse updateEvent(Long id, EventUpdateRequest event);
     MusicEvent saveMusicEvent(MusicEvent musicEvent);
     List<EventCardDTO> getCustomerEvents(Long customerId);

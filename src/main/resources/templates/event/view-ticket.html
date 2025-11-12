@@ -1,498 +1,3 @@
-<!--<!DOCTYPE html>-->
-<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <title>View Ticket</title>-->
-<!--    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">-->
-<!--    <link rel="stylesheet" th:href="@{/css/view-ticket.css}">-->
-<!--    <style>-->
-<!--        * {-->
-<!--            margin: 0;-->
-<!--            padding: 0;-->
-<!--            box-sizing: border-box;-->
-<!--        }-->
-
-<!--        body {-->
-<!--            font-family: 'Inter', sans-serif;-->
-<!--            background-color: #f5f5f5;-->
-<!--            padding: 20px;-->
-<!--        }-->
-
-<!--        .container {-->
-<!--            max-width: 1200px;-->
-<!--            margin: 0 auto;-->
-<!--            display: grid;-->
-<!--            grid-template-columns: 2fr 1fr;-->
-<!--            gap: 30px;-->
-<!--        }-->
-
-<!--        .left {-->
-<!--            background: white;-->
-<!--            padding: 30px;-->
-<!--            border-radius: 12px;-->
-<!--            box-shadow: 0 2px 8px rgba(0,0,0,0.1);-->
-<!--        }-->
-
-<!--        .event-info h2 {-->
-<!--            font-size: 28px;-->
-<!--            margin-bottom: 10px;-->
-<!--            color: #1a1a1a;-->
-<!--        }-->
-
-<!--        .event-info p {-->
-<!--            color: #666;-->
-<!--            margin-bottom: 20px;-->
-<!--        }-->
-
-<!--        .promo {-->
-<!--            display: flex;-->
-<!--            gap: 10px;-->
-<!--            margin-bottom: 30px;-->
-<!--        }-->
-
-<!--        .promo input {-->
-<!--            flex: 1;-->
-<!--            padding: 12px;-->
-<!--            border: 1px solid #ddd;-->
-<!--            border-radius: 8px;-->
-<!--            font-size: 14px;-->
-<!--        }-->
-
-<!--        .promo button {-->
-<!--            padding: 12px 24px;-->
-<!--            background: #4CAF50;-->
-<!--            color: white;-->
-<!--            border: none;-->
-<!--            border-radius: 8px;-->
-<!--            cursor: pointer;-->
-<!--            font-weight: 600;-->
-<!--        }-->
-
-<!--        .ticket {-->
-<!--            border: 1px solid #e0e0e0;-->
-<!--            border-radius: 12px;-->
-<!--            padding: 20px;-->
-<!--            margin-bottom: 20px;-->
-<!--            transition: all 0.3s;-->
-<!--        }-->
-
-<!--        .ticket:hover {-->
-<!--            box-shadow: 0 4px 12px rgba(0,0,0,0.1);-->
-<!--        }-->
-
-<!--        .ticket h3 {-->
-<!--            font-size: 18px;-->
-<!--            margin-bottom: 10px;-->
-<!--            color: #1a1a1a;-->
-<!--        }-->
-
-<!--        .ticket .price {-->
-<!--            font-size: 24px;-->
-<!--            font-weight: 700;-->
-<!--            color: #2196F3;-->
-<!--            margin-bottom: 10px;-->
-<!--        }-->
-
-<!--        .ticket .original-price {-->
-<!--            text-decoration: line-through;-->
-<!--            color: #999;-->
-<!--            font-size: 18px;-->
-<!--            margin-right: 10px;-->
-<!--        }-->
-
-<!--        .ticket .sale-badge {-->
-<!--            display: inline-block;-->
-<!--            background: #ff4444;-->
-<!--            color: white;-->
-<!--            padding: 4px 8px;-->
-<!--            border-radius: 4px;-->
-<!--            font-size: 12px;-->
-<!--            font-weight: 600;-->
-<!--            margin-left: 10px;-->
-<!--        }-->
-
-<!--        .ticket .desc {-->
-<!--            color: #666;-->
-<!--            line-height: 1.6;-->
-<!--            margin-bottom: 10px;-->
-<!--            display: -webkit-box;-->
-<!--            -webkit-line-clamp: 2;-->
-<!--            -webkit-box-orient: vertical;-->
-<!--            overflow: hidden;-->
-<!--        }-->
-
-<!--        .ticket .desc.expanded {-->
-<!--            -webkit-line-clamp: unset;-->
-<!--        }-->
-
-<!--        .see-more-btn {-->
-<!--            background: none;-->
-<!--            border: none;-->
-<!--            color: #2196F3;-->
-<!--            cursor: pointer;-->
-<!--            font-size: 14px;-->
-<!--            margin-bottom: 10px;-->
-<!--        }-->
-
-<!--        .ticket .availability {-->
-<!--            font-size: 14px;-->
-<!--            color: #666;-->
-<!--            margin-bottom: 10px;-->
-<!--        }-->
-
-<!--        .ticket .availability.low-stock {-->
-<!--            color: #ff9800;-->
-<!--            font-weight: 600;-->
-<!--        }-->
-
-<!--        .quantity {-->
-<!--            display: flex;-->
-<!--            align-items: center;-->
-<!--            gap: 15px;-->
-<!--            margin-top: 15px;-->
-<!--        }-->
-
-<!--        .quantity button {-->
-<!--            width: 36px;-->
-<!--            height: 36px;-->
-<!--            border: 1px solid #ddd;-->
-<!--            background: white;-->
-<!--            border-radius: 8px;-->
-<!--            cursor: pointer;-->
-<!--            font-size: 18px;-->
-<!--            font-weight: 600;-->
-<!--            transition: all 0.2s;-->
-<!--        }-->
-
-<!--        .quantity button:hover:not(:disabled) {-->
-<!--            background: #f0f0f0;-->
-<!--        }-->
-
-<!--        .quantity button:disabled {-->
-<!--            opacity: 0.5;-->
-<!--            cursor: not-allowed;-->
-<!--        }-->
-
-<!--        .quantity .count {-->
-<!--            font-size: 18px;-->
-<!--            font-weight: 600;-->
-<!--            min-width: 30px;-->
-<!--            text-align: center;-->
-<!--        }-->
-
-<!--        .right {-->
-<!--            position: sticky;-->
-<!--            top: 20px;-->
-<!--            height: fit-content;-->
-<!--        }-->
-
-<!--        .summary {-->
-<!--            background: white;-->
-<!--            padding: 25px;-->
-<!--            border-radius: 12px;-->
-<!--            box-shadow: 0 2px 8px rgba(0,0,0,0.1);-->
-<!--        }-->
-
-<!--        .event-thumb {-->
-<!--            width: 100%;-->
-<!--            height: 200px;-->
-<!--            border-radius: 8px;-->
-<!--            overflow: hidden;-->
-<!--            margin-bottom: 20px;-->
-<!--        }-->
-
-<!--        .event-thumb img {-->
-<!--            width: 100%;-->
-<!--            height: 100%;-->
-<!--            object-fit: cover;-->
-<!--        }-->
-
-<!--        .summary h3 {-->
-<!--            font-size: 20px;-->
-<!--            margin-bottom: 15px;-->
-<!--            color: #1a1a1a;-->
-<!--        }-->
-
-<!--        #order-list {-->
-<!--            list-style: none;-->
-<!--            margin-bottom: 20px;-->
-<!--        }-->
-
-<!--        #order-list li {-->
-<!--            display: flex;-->
-<!--            justify-content: space-between;-->
-<!--            padding: 10px 0;-->
-<!--            border-bottom: 1px solid #f0f0f0;-->
-<!--        }-->
-
-<!--        #total {-->
-<!--            font-size: 24px;-->
-<!--            font-weight: 700;-->
-<!--            color: #1a1a1a;-->
-<!--            padding-top: 15px;-->
-<!--            border-top: 2px solid #e0e0e0;-->
-<!--            margin-bottom: 20px;-->
-<!--        }-->
-
-<!--        .payment-methods {-->
-<!--            margin-bottom: 20px;-->
-<!--        }-->
-
-<!--        .payment-option {-->
-<!--            display: flex;-->
-<!--            align-items: center;-->
-<!--            gap: 10px;-->
-<!--            padding: 12px;-->
-<!--            border: 2px solid #e0e0e0;-->
-<!--            border-radius: 8px;-->
-<!--            cursor: pointer;-->
-<!--            transition: all 0.2s;-->
-<!--        }-->
-
-<!--        .payment-option:hover {-->
-<!--            border-color: #2196F3;-->
-<!--        }-->
-
-<!--        .payment-option input[type="radio"] {-->
-<!--            width: 18px;-->
-<!--            height: 18px;-->
-<!--        }-->
-
-<!--        .logo-icon {-->
-<!--            width: 24px;-->
-<!--            height: 24px;-->
-<!--        }-->
-
-<!--        .checkout-btn {-->
-<!--            width: 100%;-->
-<!--            padding: 15px;-->
-<!--            background: #2196F3;-->
-<!--            color: white;-->
-<!--            border: none;-->
-<!--            border-radius: 8px;-->
-<!--            font-size: 16px;-->
-<!--            font-weight: 600;-->
-<!--            cursor: pointer;-->
-<!--            transition: all 0.3s;-->
-<!--        }-->
-
-<!--        .checkout-btn:hover:not(:disabled) {-->
-<!--            background: #1976D2;-->
-<!--        }-->
-
-<!--        .checkout-btn:disabled {-->
-<!--            background: #ccc;-->
-<!--            cursor: not-allowed;-->
-<!--        }-->
-
-<!--        .loading {-->
-<!--            text-align: center;-->
-<!--            padding: 40px;-->
-<!--            color: #666;-->
-<!--        }-->
-
-<!--        @media (max-width: 768px) {-->
-<!--            .container {-->
-<!--                grid-template-columns: 1fr;-->
-<!--            }-->
-
-<!--            .right {-->
-<!--                position: static;-->
-<!--            }-->
-<!--        }-->
-<!--    </style>-->
-<!--</head>-->
-<!--<body>-->
-<!--<div class="container">-->
-<!--    <div class="left">-->
-<!--        <div class="event-info">-->
-<!--            <h2 th:text="${event.title}">Event FPT University 2025</h2>-->
-<!--            <p th:text="${#temporals.format(event.startsAt, 'EEE, dd MMM yyyy HH:mm')} + ' - ' + ${#temporals.format(event.endsAt, 'EEE, dd MMM yyyy HH:mm')} + ' GMT'">-->
-<!--                Sat, 15 Nov 2025 09:00 - Sun, 16 Nov 2025 18:00 GMT-->
-<!--            </p>-->
-<!--        </div>-->
-
-<!--        <div class="promo">-->
-<!--            <input type="text" placeholder="OpenEvent Voucher">-->
-<!--            <button>Apply</button>-->
-<!--        </div>-->
-
-<!--        <div th:each="ticket : ${tickets}"-->
-<!--             class="ticket"-->
-<!--             th:attr="data-type=${ticket.name},-->
-<!--              data-price=${ticket.finalPrice},-->
-<!--              data-ticket-id=${ticket.ticketTypeId},-->
-<!--              data-available=${ticket.availableQuantity}">-->
-<!--            <h3 th:text="${ticket.name}">Gold Entry - Saturday 15th November</h3>-->
-
-<!--            <div th:if="${ticket.hasSale}">-->
-<!--                <span class="original-price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</span>-->
-<!--                <span class="price" th:text="${ticket.formattedFinalPrice} + ' VNĐ'">23.00 VNĐ</span>-->
-<!--                <span class="sale-badge" th:text="'-' + ${ticket.salePercentage} + '%'">-20%</span>-->
-<!--            </div>-->
-<!--            <p th:unless="${ticket.hasSale}" class="price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</p>-->
-
-<!--            <p class="desc" th:text="${ticket.description}">-->
-<!--                Full-day access for adults (18+), including all main halls, workshops...-->
-<!--            </p>-->
-<!--            <button class="see-more-btn">See more</button>-->
-
-<!--            <p th:classappend="${ticket.availableQuantity < 10} ? 'low-stock' : ''"-->
-<!--               th:text="${ticket.availableQuantity} + ' / ' + ${ticket.totalQuantity} + ' tickets available' +-->
-<!--                        (${ticket.availableQuantity < 10} ? ' - Hurry up!' : '')">-->
-<!--                Sales end on 15 Nov 2025-->
-<!--            </p>-->
-
-<!--            <p th:text="'Sales end on ' + ${ticket.saleEndDate}">Sales end on 15 Nov 2025</p>-->
-
-<!--&lt;!&ndash;            <div class="quantity">&ndash;&gt;-->
-<!--&lt;!&ndash;                <button class="minus" th:disabled="${!ticket.isAvailable}">-</button>&ndash;&gt;-->
-<!--&lt;!&ndash;                <span class="count">0</span>&ndash;&gt;-->
-<!--&lt;!&ndash;                <button class="plus" th:disabled="${!ticket.isAvailable}">+</button>&ndash;&gt;-->
-<!--&lt;!&ndash;            </div>&ndash;&gt;-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--    <div class="right">-->
-<!--        <div class="summary">-->
-<!--            <div class="event-thumb">-->
-<!--                <img th:src="${event.imageUrl}" alt="Event Banner">-->
-<!--            </div>-->
-
-<!--            <h3>Order Summary</h3>-->
-<!--            <ul id="order-list">-->
-<!--                <li><span>No tickets selected</span><span>0 VNĐ</span></li>-->
-<!--            </ul>-->
-<!--            <h3 id="total">Total 0 VNĐ</h3>-->
-
-<!--            <div class="payment-methods">-->
-<!--                <label class="payment-option">-->
-<!--                    <input type="radio" name="payment" value="payos">-->
-<!--                    <img class="logo-icon" th:src="@{/images/payos-logo.png}" alt="PayOS">-->
-<!--                    <span>PayOS</span>-->
-<!--                </label>-->
-<!--            </div>-->
-
-<!--            <button class="checkout-btn" id="checkoutBtn">Place Order</button>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
-
-<!--<script th:inline="javascript">-->
-<!--    const eventId = /*[[${eventId}]]*/ null;-->
-<!--    const tickets = document.querySelectorAll(".ticket");-->
-<!--    const orderList = document.getElementById("order-list");-->
-<!--    const totalDisplay = document.getElementById("total");-->
-
-<!--    // Khi click vào ticket -> chọn ticket đó-->
-<!--    tickets.forEach(ticket => {-->
-<!--        ticket.addEventListener("click", () => {-->
-<!--            // Bỏ chọn các ticket khác-->
-<!--            tickets.forEach(t => {-->
-<!--                t.classList.remove("selected");-->
-<!--            });-->
-
-<!--            // Đánh dấu ticket đang chọn-->
-<!--            ticket.classList.add("selected");-->
-<!--            updateSummary(ticket);-->
-<!--        });-->
-<!--    });-->
-<!--    function capitalize(str) {-->
-<!--        return str.charAt(0).toUpperCase() + str.slice(1);-->
-<!--    }-->
-<!--    function updateSummary(selectedTicket) {-->
-<!--        orderList.innerHTML = "";-->
-
-<!--        if (selectedTicket) {-->
-<!--            const price = parseFloat(selectedTicket.dataset.price);-->
-<!--            const subtotal = price; // luôn = 1 vé-->
-<!--            const vat = subtotal * 0.10;-->
-<!--            const total = subtotal + vat;-->
-
-<!--            const li1 = document.createElement("li");-->
-<!--            li1.innerHTML = `<span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>${subtotal.toFixed(2)} VNĐ</span>`;-->
-
-<!--            const li2 = document.createElement("li");-->
-<!--            li2.innerHTML = `<span>Subtotal</span><span>${subtotal.toFixed(2)} VNĐ</span>`;-->
-
-<!--            const li3 = document.createElement("li");-->
-<!--            li3.innerHTML = `<span>VAT (10%)</span><span>${vat.toFixed(2)} VNĐ</span>`;-->
-
-<!--            orderList.appendChild(li1);-->
-<!--            orderList.appendChild(li2);-->
-<!--            orderList.appendChild(li3);-->
-
-<!--            totalDisplay.textContent = `Total ${total.toFixed(2)} VNĐ`;-->
-<!--        } else {-->
-<!--            const li = document.createElement("li");-->
-<!--            li.innerHTML = `<span>No tickets selected</span><span>0 VNĐ</span>`;-->
-<!--            orderList.appendChild(li);-->
-<!--            totalDisplay.textContent = "Total 0 VNĐ";-->
-<!--        }-->
-<!--    }-->
-
-<!--    document.getElementById("checkoutBtn").addEventListener("click", async () => {-->
-<!--        const selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;-->
-<!--        const selectedTicket = document.querySelector(".ticket.selected");-->
-
-<!--        if (!selectedTicket) {-->
-<!--            alert("Please select a ticket first!");-->
-<!--            return;-->
-<!--        }-->
-
-<!--        if (!selectedMethod) {-->
-<!--            alert("Please select a payment method!");-->
-<!--            return;-->
-<!--        }-->
-
-<!--        try {-->
-<!--            const ticketData = {-->
-<!--                ticketTypeId: parseInt(selectedTicket.dataset.ticketId),-->
-<!--                quantity: 1-->
-<!--            };-->
-
-<!--            const orderData = {-->
-<!--                eventId: eventId,-->
-<!--                orderItems: [ticketData]-->
-<!--            };-->
-
-<!--            const orderResponse = await fetch("/api/orders/create-with-ticket-types", {-->
-<!--                method: "POST",-->
-<!--                headers: { "Content-Type": "application/json" },-->
-<!--                credentials: "include",-->
-<!--                body: JSON.stringify(orderData)-->
-<!--            });-->
-
-<!--            const orderResult = await orderResponse.json();-->
-
-<!--            if (!orderResult.success) {-->
-<!--                throw new Error(orderResult.message || "Order creation failed");-->
-<!--            }-->
-
-<!--            const paymentResponse = await fetch(`/api/payments/create-for-order/${orderResult.orderId}`, {-->
-<!--                method: "POST",-->
-<!--                headers: { "Content-Type": "application/json" },-->
-<!--                credentials: "include"-->
-<!--            });-->
-
-<!--            const paymentResult = await paymentResponse.json();-->
-
-<!--            if (paymentResult.success && paymentResult.checkoutUrl) {-->
-<!--                window.location.href = paymentResult.checkoutUrl;-->
-<!--            } else {-->
-<!--                throw new Error(paymentResult.message || "Payment creation failed");-->
-<!--            }-->
-<!--        } catch (err) {-->
-<!--            console.error(err);-->
-<!--            alert("Error during checkout: " + err.message);-->
-<!--        }-->
-<!--    });-->
-
-<!--</script>-->
-<!--<script th:src="@{/js/view-ticket.js}"></script>-->
-<!--</body>-->
-<!--</html>-->
-
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -769,6 +274,12 @@
             border-color: #2196F3;
         }
 
+        /* CSS MỚI: Highlight phương thức thanh toán được chọn */
+        .payment-option.selected-payment {
+            border-color: #2196F3;
+            border-width: 3px; /* "in đậm" */
+        }
+
         .payment-option input[type="radio"] {
             width: 18px;
             height: 18px;
@@ -790,6 +301,10 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            /* Thêm để căn giữa spinner và text */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .checkout-btn:hover:not(:disabled) {
@@ -800,6 +315,46 @@
             background: #ccc;
             cursor: not-allowed;
         }
+
+        /* CSS MỚI: Spinner */
+        .spinner {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #ffffff; /* White */
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            display: none; /* Ẩn mặc định */
+            margin-right: 10px; /* Khoảng cách với text */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* CSS MỚI: Trạng thái loading của button */
+        .checkout-btn.loading .spinner {
+            display: block; /* Hiện spinner */
+        }
+
+        .checkout-btn.loading .btn-text {
+            /* Bạn có thể chọn ẩn text hoặc không */
+            display: none; /* Ẩn chữ "Place Order" */
+        }
+
+        /* Nếu muốn giữ chữ và thêm ... */
+        .checkout-btn.loading .btn-text::after {
+            content: "...";
+            animation: dots 1.4s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60% { content: "..."; }
+        }
+
 
         .loading {
             text-align: center;
@@ -820,7 +375,6 @@
 </head>
 <body>
 <div class="container">
-    <!-- LEFT SIDE -->
     <div class="left">
         <div class="event-info">
             <h2 th:text="${event.title}">Event FPT University 2025</h2>
@@ -830,14 +384,12 @@
             </p>
         </div>
 
-        <!-- Voucher Section -->
         <div class="promo">
             <input type="text" id="voucherCode" placeholder="Nhập mã voucher">
             <button id="applyVoucherBtn">Apply</button>
             <div id="voucherStatus" class="voucher-status"></div>
         </div>
 
-        <!-- Ticket list -->
         <div th:each="ticket : ${tickets}"
              class="ticket"
              th:attr="data-type=${ticket.name},
@@ -868,7 +420,6 @@
         </div>
     </div>
 
-    <!-- RIGHT SIDE -->
     <div class="right">
         <div class="summary">
             <div class="event-thumb">
@@ -882,19 +433,20 @@
             <h3 id="total">Total 0 VNĐ</h3>
 
             <div class="payment-methods">
-                <label class="payment-option">
-                    <input type="radio" name="payment" value="payos">
+                <label class="payment-option"> <input type="radio" name="payment" value="payos">
                     <img class="logo-icon" th:src="@{https://payos.vn/docs/img/logo.svg}" alt="PayOS">
                     <span>PayOS</span>
                 </label>
             </div>
 
-            <button class="checkout-btn" id="checkoutBtn">Place Order</button>
+            <button class="checkout-btn" id="checkoutBtn">
+                <span class="spinner"></span>
+                <span class="btn-text">Place Order</span>
+            </button>
         </div>
     </div>
 </div>
 
-<!-- JS -->
 <script th:inline="javascript">
     const eventId = /*[[${eventId}]]*/ null;
     const tickets = document.querySelectorAll(".ticket");
@@ -940,6 +492,17 @@
         });
     });
 
+    // JS MỚI: Highlight phương thức thanh toán
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    paymentOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            // Xóa class 'selected-payment' khỏi tất cả
+            paymentOptions.forEach(opt => opt.classList.remove('selected-payment'));
+            // Thêm class 'selected-payment' cho cái được click
+            option.classList.add('selected-payment');
+        });
+    });
+
     function capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
@@ -952,30 +515,30 @@
         orderList.innerHTML = "";
         if (selectedTicket) {
             const originalPrice = parseFloat(selectedTicket.dataset.price);
-            
+
             // Calculate host discount
             const hostDiscountAmount = originalPrice * (hostDiscountPercent / 100);
             const priceAfterHostDiscount = originalPrice - hostDiscountAmount;
-            
+
             // Calculate voucher discount
             const voucherDiscountAmount = appliedVoucher ? parseFloat(appliedVoucher.discountAmount) : 0;
             const priceAfterVoucherDiscount = Math.max(0, priceAfterHostDiscount - voucherDiscountAmount);
-            
+
             // Calculate VAT on final price (after discounts)
             const vat = priceAfterVoucherDiscount * 0.10;
             const finalPrice = priceAfterVoucherDiscount + vat;
 
             // Build order summary
             orderList.innerHTML += `<li><span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>${originalPrice} VNĐ</span></li>`;
-            
+
             if (hostDiscountPercent > 0) {
                 orderList.innerHTML += `<li><span>Host Discount (${hostDiscountPercent}%)</span><span>-${hostDiscountAmount} VNĐ</span></li>`;
             }
-            
+
             if (appliedVoucher) {
                 orderList.innerHTML += `<li><span>Voucher Discount (${appliedVoucher.code})</span><span>-${voucherDiscountAmount} VNĐ</span></li>`;
             }
-            
+
             orderList.innerHTML += `<li><span>Subtotal</span><span>${priceAfterVoucherDiscount} VNĐ</span></li>`;
             orderList.innerHTML += `<li><span>VAT (10%)</span><span>${vat} VNĐ</span></li>`;
             totalDisplay.textContent = `Total ${finalPrice} VNĐ`;
@@ -989,24 +552,24 @@
     document.getElementById("applyVoucherBtn").addEventListener("click", async () => {
         const voucherCode = document.getElementById("voucherCode").value.trim();
         const statusDiv = document.getElementById("voucherStatus");
-        
+
         if (!voucherCode) {
             showVoucherStatus("Vui lòng nhập mã voucher", "error");
             return;
         }
-        
+
         try {
             const response = await fetch(`/api/vouchers/validate/${voucherCode}`, {
                 method: "GET",
                 credentials: "include"
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 appliedVoucher = result.voucher;
                 showVoucherStatus(`Voucher "${voucherCode}" đã được áp dụng! Giảm ${result.voucher.discountAmount} VNĐ`, "success");
-                
+
                 // Update summary if ticket is selected
                 const selectedTicket = document.querySelector(".ticket.selected");
                 if (selectedTicket) {
@@ -1020,12 +583,12 @@
             showVoucherStatus("Lỗi khi áp dụng voucher", "error");
         }
     });
-    
+
     function showVoucherStatus(message, type) {
         const statusDiv = document.getElementById("voucherStatus");
         statusDiv.textContent = message;
         statusDiv.className = `voucher-status ${type}`;
-        
+
         // Auto hide success messages after 3 seconds
         if (type === "success") {
             setTimeout(() => {
@@ -1034,7 +597,9 @@
         }
     }
 
+    // JS MỚI: Cập nhật checkout listener với trạng thái loading
     document.getElementById("checkoutBtn").addEventListener("click", async () => {
+        const checkoutBtn = document.getElementById("checkoutBtn"); // Lấy nút
         const selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;
         const selectedTicket = document.querySelector(".ticket.selected");
 
@@ -1046,6 +611,12 @@
             alert("Please select a payment method!");
             return;
         }
+
+        // --- BẮT ĐẦU LOADING ---
+        checkoutBtn.disabled = true;
+        checkoutBtn.classList.add("loading");
+        // Nếu bạn ẩn text, bạn có thể thay đổi text ở đây
+        // checkoutBtn.querySelector('.btn-text').textContent = 'Placing...';
 
         try {
             const orderData = {
@@ -1071,14 +642,24 @@
             const paymentResult = await paymentResponse.json();
             if (paymentResult.success && paymentResult.checkoutUrl) {
                 window.location.href = paymentResult.checkoutUrl;
-            } else throw new Error(paymentResult.message || "Payment creation failed");
+                // Lưu ý: Trang sẽ chuyển hướng, việc reset nút có thể không cần thiết
+                // nhưng vẫn nên có phòng trường hợp chuyển hướng thất bại
+            } else {
+                throw new Error(paymentResult.message || "Payment creation failed");
+            }
         } catch (err) {
             console.error(err);
             alert("Error during checkout: " + err.message);
+        } finally {
+            // --- DỪNG LOADING ---
+            // Khối finally này sẽ *luôn luôn* chạy sau try/catch
+            // (trừ khi đã chuyển hướng trang thành công)
+            checkoutBtn.disabled = false;
+            checkoutBtn.classList.remove("loading");
+            // checkoutBtn.querySelector('.btn-text').textContent = 'Place Order';
         }
     });
 </script>
 <script th:src="@{/js/view-ticket.js}"></script>
 </body>
 </html>
-

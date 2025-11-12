@@ -1,19 +1,25 @@
 package com.group02.openevent.model.report;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "reports")
 public class Report {
-    
+
+    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "report_id")
     private Long reportId;
     
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
     
     @Column(name = "event_id", nullable = false)
     private Long eventId;
@@ -38,35 +44,11 @@ public class Report {
     // Constructors
     public Report() {}
     
-    public Report(Long customerId, Long eventId, String content, ReportType type) {
-        this.customerId = customerId;
+    public Report(Long userId, Long eventId, String content, ReportType type) {
+        this.userId = userId;
         this.eventId = eventId;
         this.content = content;
         this.type = type;
     }
-    
-    // Getters and Setters
-    public Long getReportId() { return reportId; }
-    public void setReportId(Long reportId) { this.reportId = reportId; }
-    
-    public Long getCustomerId() { return customerId; }
-    public void setCustomerId(Long customerId) { this.customerId = customerId; }
-    
-    public Long getEventId() { return eventId; }
-    public void setEventId(Long eventId) { this.eventId = eventId; }
-    
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-    
-    public ReportType getType() { return type; }
-    public void setType(ReportType type) { this.type = type; }
-    
-    public ReportStatus getStatus() { return status; }
-    public void setStatus(ReportStatus status) { this.status = status; }
-    
-    public Boolean getSeen() { return seen; }
-    public void setSeen(Boolean seen) { this.seen = seen; }
-    
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
 }

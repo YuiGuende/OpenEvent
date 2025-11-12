@@ -35,7 +35,15 @@
 
     window.sendMessage = function () {
     if (!window.__sendMessagePlaceholderActive) {
-    console.error("❌ Placeholder called but should be replaced. This should not happen.");
+    // Placeholder đã bị thay thế, gọi hàm thực trực tiếp
+    if (window.__actualSendMessage && typeof window.__actualSendMessage === "function") {
+    try {
+    return window.__actualSendMessage.apply(this, arguments);
+} catch (error) {
+    console.error("❌ Error calling actual sendMessage:", error);
+    throw error;
+}
+}
     return;
 }
     if (window.__actualSendMessage && typeof window.__actualSendMessage === "function") {
@@ -53,9 +61,13 @@
     setTimeout(function () {
     if (window.__actualSendMessage && typeof window.__actualSendMessage === "function") {
     console.log("📤 Calling actual sendMessage function (after retry)");
+    try {
     return window.__actualSendMessage.apply(self, args);
+} catch (error) {
+    console.error("❌ Error calling sendMessage after retry:", error);
+}
 } else {
-    console.error("❌ sendMessage function still not ready after retry.");
+    console.error("❌ sendMessage function still not ready after retry. Please wait for chatbot.js to load completely.");
 }
 }, 200);
 }
@@ -147,7 +159,7 @@
 }
 
     API_BASE_URL = contextPath || "";
-    USER_ID = resolveUserId();
+    USER_ID = await resolveUserId();
     if (!isValidUserId(USER_ID)) {
     // chưa đăng nhập → set trạng thái yêu cầu đăng nhập (không gửi API)
     updateConnectionStatus("auth");
@@ -278,25 +290,160 @@
 }
 }
 
-    function resolveUserId() {
+    async function resolveUserId() {
     // 1) data-user-id từ body (Thymeleaf render)
     const fromBody = document.body?.getAttribute("data-user-id");
-    if (fromBody && /^\d+$/.test(fromBody)) return fromBody;
+    console.log("🔍 Resolving USER_ID - fromBody:", fromBody);
+    if (fromBody && /^\d+$/.test(fromBody)) {
+    console.log("✅ Found USER_ID from body:", fromBody);
+    // Cache vào localStorage để lần sau không cần đọc lại
+    localStorage.setItem("oe_user_id", fromBody);
+    return fromBody;
+}
 
     // 2) <meta name="user-id" content="...">
     const metaUser = document.querySelector('meta[name="user-id"]')?.content;
-    if (metaUser && /^\d+$/.test(metaUser)) return metaUser;
+    console.log("🔍 Resolving USER_ID - metaUser:", metaUser);
+    if (metaUser && /^\d+$/.test(metaUser)) {
+    console.log("✅ Found USER_ID from meta:", metaUser);
+    localStorage.setItem("oe_user_id", metaUser);
+    return metaUser;
+}
 
-    // 3) window.__USER_ID (nếu app set global khi login)
+    // 3) window.__CURRENT_USER_ID (nếu header script đã set - ưu tiên cao nhất)
+    if (typeof window.__CURRENT_USER_ID !== "undefined") {
+    const v = String(window.__CURRENT_USER_ID);
+    console.log("🔍 Resolving USER_ID - window.__CURRENT_USER_ID:", v);
+    if (/^\d+$/.test(v)) {
+    console.log("✅ Found USER_ID from window.__CURRENT_USER_ID:", v);
+    localStorage.setItem("oe_user_id", v);
+    if (document.body) {
+    document.body.setAttribute("data-user-id", v);
+}
+    return v;
+}
+}
+
+    // 3.5) window.__USER_ID (nếu app set global khi login)
     if (typeof window.__USER_ID !== "undefined") {
     const v = String(window.__USER_ID);
-    if (/^\d+$/.test(v)) return v;
+    console.log("🔍 Resolving USER_ID - window.__USER_ID:", v);
+    if (/^\d+$/.test(v)) {
+    console.log("✅ Found USER_ID from window.__USER_ID:", v);
+    localStorage.setItem("oe_user_id", v);
+    return v;
+}
+}
+
+    // 3.6) window.__CURRENT_USER_ACCOUNT_ID (nếu header script đã set - fallback)
+    if (typeof window.__CURRENT_USER_ACCOUNT_ID !== "undefined") {
+    const v = String(window.__CURRENT_USER_ACCOUNT_ID);
+    console.log("🔍 Resolving USER_ID - window.__CURRENT_USER_ACCOUNT_ID:", v);
+    if (/^\d+$/.test(v)) {
+    console.log("✅ Found USER_ID from window.__CURRENT_USER_ACCOUNT_ID:", v);
+    localStorage.setItem("oe_user_id", v);
+    if (document.body) {
+    document.body.setAttribute("data-user-id", v);
+}
+    return v;
+}
 }
 
     // 4) localStorage (nếu bạn lưu sau login)
     const ls = localStorage.getItem("oe_user_id");
-    if (ls && /^\d+$/.test(ls)) return ls;
+    console.log("🔍 Resolving USER_ID - localStorage:", ls);
+    if (ls && /^\d+$/.test(ls)) {
+    console.log("✅ Found USER_ID from localStorage:", ls);
+    return ls;
+}
 
+    // 5) Thử tìm trong các element khác có thể chứa user ID
+    const userProfileBtn = document.querySelector('[data-user-id]');
+    if (userProfileBtn) {
+    const uid = userProfileBtn.getAttribute("data-user-id");
+    console.log("🔍 Resolving USER_ID - from user profile button:", uid);
+    if (uid && /^\d+$/.test(uid)) {
+    console.log("✅ Found USER_ID from user profile button:", uid);
+    localStorage.setItem("oe_user_id", uid);
+    return uid;
+}
+}
+
+    // 6) Gọi API /api/current-user để lấy user ID (fallback)
+    console.log("🔍 Resolving USER_ID - calling /api/current-user API...");
+    console.log("🔍 API_BASE_URL:", API_BASE_URL);
+    try {
+    // Đảm bảo API_BASE_URL được set, nếu chưa thì dùng giá trị mặc định
+    let baseUrl = API_BASE_URL;
+    if (!baseUrl || baseUrl === "") {
+    // Thử lấy từ context path meta tag
+    const contextPathMeta = document.querySelector('meta[name="context-path"]');
+    if (contextPathMeta && contextPathMeta.content) {
+    baseUrl = contextPathMeta.content;
+    } else {
+    baseUrl = "";
+    }
+}
+    const apiUrl = baseUrl && baseUrl !== "/" ? `${baseUrl}/api/current-user` : "/api/current-user";
+    console.log("🔍 Calling API URL:", apiUrl);
+    const response = await fetch(apiUrl, {
+    method: "GET",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+});
+    console.log("🔍 API Response status:", response.status, response.statusText);
+    if (response.ok) {
+    const data = await response.json();
+    console.log("🔍 API Response data:", data);
+    if (data && data.authenticated) {
+    // PATCH: Ưu tiên dùng userId (nếu có), nếu không thì dùng accountId
+    const userIdToUse = data.userId || data.accountId;
+    if (userIdToUse) {
+    const userIdStr = String(userIdToUse);
+    console.log("🔍 Extracted userId:", userIdStr, "Type:", typeof userIdStr, "(userId:", data.userId, ", accountId:", data.accountId, ")");
+    if (/^\d+$/.test(userIdStr)) {
+    console.log("✅ Found USER_ID from /api/current-user API:", userIdStr);
+    // Cache vào localStorage và set vào body attribute
+    localStorage.setItem("oe_user_id", userIdStr);
+    if (document.body) {
+    document.body.setAttribute("data-user-id", userIdStr);
+}
+    // Lưu vào window object
+    window.__CURRENT_USER_ID = userIdStr;
+    window.__CURRENT_USER_ACCOUNT_ID = userIdStr;
+    return userIdStr;
+} else {
+    console.warn("⚠️ userId không phải là số:", userIdStr);
+}
+} else {
+    console.warn("⚠️ API response không có userId hoặc accountId:", data);
+}
+} else {
+    console.warn("⚠️ API response không có authenticated:", data);
+}
+} else {
+    console.warn("⚠️ API response không OK, status:", response.status);
+    // Thử đọc error message (chỉ đọc một lần)
+    try {
+    const errorText = await response.text();
+    console.warn("⚠️ API error response:", errorText);
+    // Thử parse JSON nếu có thể
+    try {
+    const errorData = JSON.parse(errorText);
+    console.warn("⚠️ API error data (parsed):", errorData);
+} catch (parseError) {
+    // Không phải JSON, bỏ qua
+}
+} catch (e) {
+    console.warn("⚠️ Không thể đọc error response:", e);
+}
+}
+} catch (error) {
+    console.error("❌ Failed to fetch user ID from API:", error);
+    console.error("❌ Error details:", error.message, error.stack);
+}
+
+    console.warn("⚠️ Could not resolve USER_ID from any source");
     return null; // không có user
 }
 
@@ -544,6 +691,7 @@
                             <span class="material-symbols-outlined">smart_toy</span>
                         </div>
                         <div class="message-bubble bot-bubble typing-bubble">
+                            <div style="font-size: 13px; color: #666; margin-bottom: 6px;">AI đang suy nghĩ...</div>
                             <div class="typing-dots">
                                 <span></span>
                                 <span></span>
@@ -606,6 +754,7 @@
             <div class="message bot-message">
                 <div class="message-avatar">🤖</div>
                 <div class="message-bubble bot-bubble">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">AI đang suy nghĩ...</div>
                     <div class="typing-dots">
                         <span></span>
                         <span></span>
@@ -839,8 +988,20 @@
     showTyping(false);
     return;
 }
-    if (!isValidUserId(USER_ID)) {
-    console.error("❌ Invalid USER_ID:", USER_ID);
+    // PATCH: Resolve USER_ID mới nhất từ DOM trước khi kiểm tra (để xử lý trường hợp đăng nhập sau khi trang đã load)
+    let currentUserId = null;
+    try {
+    console.log("🔍 Starting to resolve USER_ID...");
+    currentUserId = await resolveUserId();
+    console.log("🔍 Resolved USER_ID result:", currentUserId);
+    // Cập nhật biến global USER_ID để lần sau không cần resolve lại
+    USER_ID = currentUserId;
+} catch (error) {
+    console.error("❌ Error resolving USER_ID:", error);
+    currentUserId = null;
+}
+    if (!isValidUserId(currentUserId)) {
+    console.error("❌ Invalid USER_ID:", currentUserId, "- All sources checked, but no valid user ID found");
     displayMessage("bot", "🔒 Bạn chưa đăng nhập. Vui lòng đăng nhập để dùng chatbot.");
 
     const last = chatMessages?.lastElementChild?.querySelector(".bot-bubble");
@@ -880,7 +1041,7 @@
     const requestUrl = `${API_BASE_URL}${API_ENDPOINT}`;
     const requestBody = {
     message: message.trim(),
-    userId: String(USER_ID), // gửi dạng chuỗi để an toàn Long
+    userId: String(currentUserId), // gửi dạng chuỗi để an toàn Long
     sessionId: sessionId,
 };
 
@@ -1167,11 +1328,14 @@
     const chatbotContainer = document.querySelector(".chatbot-container");
     const isFullscreen = chatbotContainer && chatbotContainer.classList.contains("fullscreen");
 
+    // PATCH: Luôn thêm tin nhắn vào cả popup và fullscreen để đồng bộ
     let targetContainer = chatMessages;
+    let fullscreenContainer = null;
+    
     if (isFullscreen) {
-    const messagesSectionFullscreen = document.getElementById("messages-section-fullscreen");
-    if (messagesSectionFullscreen) {
-    targetContainer = messagesSectionFullscreen;
+    fullscreenContainer = document.getElementById("messages-section-fullscreen");
+    if (fullscreenContainer) {
+    targetContainer = fullscreenContainer;
 }
 }
 
@@ -1265,7 +1429,23 @@
     messageDiv.appendChild(bubbleDiv);
 }
 
+    // PATCH: Thêm tin nhắn vào cả popup và fullscreen để đồng bộ
     targetContainer.appendChild(messageDiv);
+    
+    // Nếu đang ở fullscreen mode, cũng thêm vào popup messages để đồng bộ
+    if (isFullscreen && fullscreenContainer && chatMessages && targetContainer === fullscreenContainer) {
+    const clonedMsg = messageDiv.cloneNode(true);
+    chatMessages.appendChild(clonedMsg);
+}
+    
+    // Nếu đang ở popup mode, cũng thêm vào fullscreen messages để đồng bộ (nếu fullscreen container tồn tại)
+    if (!isFullscreen && chatMessages && targetContainer === chatMessages) {
+    const fullscreenMsgs = document.getElementById("messages-section-fullscreen");
+    if (fullscreenMsgs) {
+    const clonedMsg = messageDiv.cloneNode(true);
+    fullscreenMsgs.appendChild(clonedMsg);
+}
+}
 
     setTimeout(() => {
     if (targetContainer) {
@@ -1274,11 +1454,27 @@
     behavior: "smooth",
 });
 }
+    // Scroll trong fullscreen messages section nếu đang ở fullscreen
+    if (isFullscreen && fullscreenContainer) {
+    fullscreenContainer.scrollTo({
+    top: fullscreenContainer.scrollHeight,
+    behavior: "smooth",
+});
+}
+    // Scroll trong chatbot body nếu đang ở fullscreen
     if (isFullscreen) {
     const chatbotBody = document.querySelector(".chatbot-body");
     if (chatbotBody) {
     chatbotBody.scrollTo({
     top: chatbotBody.scrollHeight,
+    behavior: "smooth",
+});
+}
+}
+    // Scroll trong popup messages nếu đang ở popup mode
+    if (!isFullscreen && chatMessages) {
+    chatMessages.scrollTo({
+    top: chatMessages.scrollHeight,
     behavior: "smooth",
 });
 }
@@ -1331,8 +1527,9 @@
     typingDiv.className = "typing-indicator";
     typingDiv.style.cssText = "display: flex; gap: 12px; align-items: flex-start; padding: 10px 0;";
     typingDiv.innerHTML = `
-                <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
-                <div style="background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🤖</div>
+                <div style="background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 120px;">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">AI đang suy nghĩ...</div>
                     <div class="typing-dots" style="display: flex; gap: 4px;">
                         <span style="width: 8px; height: 8px; background: #ccc; border-radius: 50%; animation: typing 1.4s infinite;"></span>
                         <span style="width: 8px; height: 8px; background: #ccc; border-radius: 50%; animation: typing 1.4s infinite 0.2s;"></span>
@@ -1685,6 +1882,32 @@
 
     document.body.style.overflow = "hidden";
 
+    // PATCH: Copy messages từ popup mode sang fullscreen mode
+    const messagesSectionFullscreen = document.getElementById("messages-section-fullscreen");
+    const popupMessages = document.getElementById("chatMessages");
+    
+    if (messagesSectionFullscreen && popupMessages) {
+    // Xóa messages cũ trong fullscreen (nếu có)
+    messagesSectionFullscreen.innerHTML = "";
+    
+    // Copy tất cả messages từ popup sang fullscreen
+    const messages = popupMessages.querySelectorAll(".message");
+    if (messages.length > 0) {
+    messages.forEach((msg) => {
+    const clonedMsg = msg.cloneNode(true);
+    messagesSectionFullscreen.appendChild(clonedMsg);
+});
+    console.log("✅ Copied", messages.length, "messages to fullscreen mode");
+} else {
+    console.log("ℹ️ No messages to copy to fullscreen mode");
+}
+} else {
+    console.warn("⚠️ Messages section not found:", {
+    messagesSectionFullscreen: !!messagesSectionFullscreen,
+    popupMessages: !!popupMessages,
+});
+}
+
     console.log("✅ Entered fullscreen mode - header is now main header, body shows messages");
 }
 
@@ -1696,7 +1919,16 @@
     behavior: "smooth",
 });
 }
-    if (chatMessages) {
+    // Scroll trong fullscreen messages section
+    const messagesSectionFullscreen = document.getElementById("messages-section-fullscreen");
+    if (messagesSectionFullscreen) {
+    messagesSectionFullscreen.scrollTo({
+    top: messagesSectionFullscreen.scrollHeight,
+    behavior: "smooth",
+});
+}
+    // Scroll trong popup messages (nếu đang ở popup mode)
+    if (chatMessages && !chatbotContainer.classList.contains("fullscreen")) {
     chatMessages.scrollTo({
     top: chatMessages.scrollHeight,
     behavior: "smooth",
@@ -1869,11 +2101,24 @@
 
     // ===== EXPORT FOR EXTERNAL USE =====
     if (typeof window !== "undefined") {
+    // PATCH: Đảm bảo sendMessage luôn được export, dù có placeholder hay không
     if (window.__setSendMessage) {
+    try {
     window.__setSendMessage(sendMessage);
+    console.log("✅ sendMessage exported via __setSendMessage");
+} catch (error) {
+    console.error("❌ Error setting sendMessage via __setSendMessage:", error);
+    window.sendMessage = sendMessage;
+    console.log("✅ sendMessage exported directly (fallback)");
+}
 } else {
     window.sendMessage = sendMessage;
     console.log("✅ sendMessage exported to window (direct, no placeholder found)");
+}
+    
+    // Đảm bảo OpenEventAI object cũng có sendMessage
+    if (!window.OpenEventAI) {
+    window.OpenEventAI = {};
 }
 }
 
@@ -1887,4 +2132,10 @@
     navigateToChatWeb,
     shareChatbot,
     sendMessage,
+};
+    
+    // PATCH: Đánh dấu chatbot.js đã load xong
+    if (typeof window !== "undefined") {
+    window.chatbotJsLoaded = true;
+    console.log("✅ Chatbot.js fully loaded and initialized");
 }

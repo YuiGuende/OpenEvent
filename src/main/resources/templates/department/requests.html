@@ -84,7 +84,7 @@
                 <div>
                     <h5 class="mb-1">Yêu cầu duyệt sự kiện</h5>
                     <small class="text-muted">
-                        Từ: <span th:text="${request.sender.email}"></span> |
+                        Từ: <span th:text="${request.sender.account.email}"></span> |
                         <span th:text="${#temporals.format(request.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
                     </small>
                 </div>

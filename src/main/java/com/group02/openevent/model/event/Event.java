@@ -134,7 +134,7 @@ public class Event {
             foreignKey = @ForeignKey(name = "fk_event_org"))
     private Organization organization;
     @ManyToOne
-    @JoinColumn(name = "account_id", nullable = true,
+    @JoinColumn(name = "department_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_event_department"))
     private Department department;
     @ManyToOne

@@ -94,7 +94,7 @@ public class EventControllerTest {
             "CodeFest 2025, COMPETITION"
     })
     void TC01_ShouldRedirectToGettingStarted_WhenEventSavedSuccessfully(String title, String eventType) throws Exception {
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class), 1L)).thenReturn(eventResponse);
 
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", title)
@@ -113,7 +113,7 @@ public class EventControllerTest {
             "CodeFest 2025, COMPETITION"
     })
     void TC02_ShouldCallEventServiceWithCorrectRequest(String title, String eventType) throws Exception {
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
 
         mockMvc.perform(post("/api/events/saveEvent")
                         .param("title", title)
@@ -134,7 +134,7 @@ public class EventControllerTest {
     })
     void TC03_ShouldReturnServerError_WhenServiceThrowsException(String title, String eventType) throws Exception {
         // given
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong()))
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L))
                 .thenThrow(new RuntimeException("Save failed"));
 
         // when & then
@@ -148,14 +148,14 @@ public class EventControllerTest {
     @Test
     void TC04_ShouldHandleEmptyRequestGracefully() throws Exception {
         // given
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
 
         // when & then
         mockMvc.perform(post("/api/events/saveEvent"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/manage/event/101/getting-stared"));
 
-        verify(eventService).saveEvent(any(EventCreationRequest.class), anyLong());
+        verify(eventService, times(1)).saveEvent(any(EventCreationRequest.class),1L);
     }
 
     @ParameterizedTest(name = "TC{index} → Should redirect correctly for eventType={0}")
@@ -173,7 +173,7 @@ public class EventControllerTest {
         response.setEventType(EventType.valueOf(eventType));
         response.setStatus(EventStatus.DRAFT);
 
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(response);
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(response);
 
         // When + Then
         mockMvc.perform(post("/api/events/saveEvent")
@@ -184,7 +184,7 @@ public class EventControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(expectedRedirectUrl));
 
-        verify(eventService).saveEvent(any(EventCreationRequest.class), anyLong());
+        verify(eventService).saveEvent(any(EventCreationRequest.class),1L);
     }
 
     @ParameterizedTest
@@ -197,7 +197,7 @@ public class EventControllerTest {
         EventResponse response = new EventResponse();
         response.setId(202);
         response.setEventType(EventType.valueOf(type));
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(response);
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(response);
 
         // When
         mockMvc.perform(post("/api/events/saveEvent")
@@ -212,7 +212,7 @@ public class EventControllerTest {
         // Given
         eventResponse.setId(303);
         eventResponse.setEventType(EventType.FESTIVAL);
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
 
         // When / Then
         mockMvc.perform(post("/api/events/saveEvent")
@@ -225,7 +225,7 @@ public class EventControllerTest {
     @Test
     void TC07_ShouldNotFail_WhenModelIsEmpty() throws Exception {
         // Given
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
 
         // When / Then
         mockMvc.perform(post("/api/events/saveEvent")
@@ -239,7 +239,7 @@ public class EventControllerTest {
         EventCreationRequest req = new EventCreationRequest();
         req.setTitle("Integration Test");
         req.setEventType(EventType.MUSIC);
-        when(eventService.saveEvent(any(EventCreationRequest.class), anyLong())).thenReturn(eventResponse);
+        when(eventService.saveEvent(any(EventCreationRequest.class),1L)).thenReturn(eventResponse);
 
         mockMvc.perform(post("/api/events/saveEvent")
                         .flashAttr("eventForm", req))

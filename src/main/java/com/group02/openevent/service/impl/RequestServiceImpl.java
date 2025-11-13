@@ -9,11 +9,15 @@ import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IDepartmentRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IRequestRepo;
+import com.group02.openevent.event.EventApprovalRequestedEvent;
+import com.group02.openevent.event.EventApprovedEvent;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.RequestService;
 import com.group02.openevent.service.UserService;
 import com.group02.openevent.util.CloudinaryUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
@@ -43,6 +48,7 @@ public class RequestServiceImpl implements RequestService {
     private final IAccountRepo accountRepo;
     private final IDepartmentRepo departmentRepository;
     private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public RequestFormDTO getRequestFormData(Long eventId) throws Exception {
         List<Department> departments = departmentRepository.findAll();
@@ -84,6 +90,12 @@ public class RequestServiceImpl implements RequestService {
         request.setStatus(RequestStatus.APPROVED);
         request.setResponseMessage(responseMessage);
         request.setUpdatedAt(LocalDateTime.now());
+        Event event = request.getEvent();
+
+        event.setDepartment(request.getReceiver().getDepartment());
+        log.info("setDepartment with id {}", request.getReceiver().getDepartment());
+        Event event1=  eventService.saveEvent(event);
+        log.info("Department after update {}", event1.getDepartment().getDepartmentName());
 
         if (request.getType() == RequestType.EVENT_APPROVAL && request.getEvent() != null) {
             eventService.updateEventStatus(request.getEvent().getId(), EventStatus.PUBLIC);
@@ -148,6 +160,22 @@ public class RequestServiceImpl implements RequestService {
         }
 
         Request savedRequest = requestRepo.save(request);
+        
+        // Publish EventApprovalRequestedEvent for audit log if type is EVENT_APPROVAL
+        if (savedRequest.getType() == RequestType.EVENT_APPROVAL) {
+            try {
+                Long actorId = savedRequest.getSender() != null 
+                        ? savedRequest.getSender().getUserId() 
+                        : null;
+                if (actorId != null) {
+                    eventPublisher.publishEvent(new EventApprovalRequestedEvent(this, savedRequest, actorId));
+                }
+            } catch (Exception e) {
+                // Log error but don't fail the request creation
+                System.err.println("Error publishing EventApprovalRequestedEvent: " + e.getMessage());
+            }
+        }
+        
         return convertToDTO(savedRequest);
     }
 
@@ -192,12 +220,29 @@ public class RequestServiceImpl implements RequestService {
         }
 
         Request savedRequest = requestRepo.save(request);
+        
+        // Publish EventApprovalRequestedEvent for audit log if type is EVENT_APPROVAL
+        if (savedRequest.getType() == RequestType.EVENT_APPROVAL) {
+            try {
+                Long actorId = savedRequest.getSender() != null 
+                        ? savedRequest.getSender().getUserId() 
+                        : null;
+                if (actorId != null) {
+                    eventPublisher.publishEvent(new EventApprovalRequestedEvent(this, savedRequest, actorId));
+                }
+            } catch (Exception e) {
+                // Log error but don't fail the request creation
+                System.err.println("Error publishing EventApprovalRequestedEvent: " + e.getMessage());
+            }
+        }
+        
         return convertToDTO(savedRequest);
     }
 
     @Override
     @Transactional
     public RequestDTO approveRequest(Long requestId, ApproveRequestDTO approveRequestDTO) {
+        log.info("Approve request received");
         Request request = requestRepo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
@@ -211,7 +256,25 @@ public class RequestServiceImpl implements RequestService {
 
         // If it's an event approval request, update the event status to PUBLIC
         if (request.getType() == RequestType.EVENT_APPROVAL && request.getEvent() != null) {
+            log.info("EVENT_APPROVAL request received");
+            Event event= request.getEvent();
+            event.setDepartment(request.getReceiver().getDepartment());
+            log.info("department {}", request.getReceiver().getDepartment());
             eventService.updateEventStatus(request.getEvent().getId(), EventStatus.PUBLIC);
+           Event event1= eventService.saveEvent(event);
+            log.info("event1 {}", event1.getDepartment().getDepartmentName());
+            // Publish EventApprovedEvent for audit log
+            try {
+                Long actorId = request.getReceiver() != null 
+                        ? request.getReceiver().getUserId() 
+                        : null;
+                if (actorId != null && request.getEvent() != null) {
+                    eventPublisher.publishEvent(new EventApprovedEvent(this, request.getEvent(), actorId));
+                }
+            } catch (Exception e) {
+                // Log error but don't fail the approval
+                System.err.println("Error publishing EventApprovedEvent: " + e.getMessage());
+            }
         }
 
         Request savedRequest = requestRepo.save(request);

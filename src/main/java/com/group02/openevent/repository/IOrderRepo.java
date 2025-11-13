@@ -109,6 +109,13 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.event.host.id = :hostId " +
             "ORDER BY o.createdAt DESC")
     Page<Order> findByHostId(@Param("hostId") Long hostId, Pageable pageable);
+    
+    /**
+     * Find pending orders created before a specific time
+     */
+    @Query("SELECT o FROM Order o WHERE o.status = com.group02.openevent.model.order.OrderStatus.PENDING " +
+            "AND o.createdAt < :beforeTime")
+    List<Order> findPendingOrdersCreatedBefore(@Param("beforeTime") java.time.LocalDateTime beforeTime);
 }
 
 

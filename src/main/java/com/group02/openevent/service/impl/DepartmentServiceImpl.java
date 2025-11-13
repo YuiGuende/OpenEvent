@@ -34,11 +34,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final IRequestRepo requestRepo;
     private final IArticleRepo articleRepo;
     private final IOrderRepo  orderRepo;
-    @Override
-    public Department getDepartmentByAccountId(Long accountId) {
-        return departmentRepo.findByUser_Account_AccountId(accountId)
-                .orElseThrow(() -> new RuntimeException("Department not found for account ID: " + accountId));
-    }
 
     @Override
     public Department saveDepartment(Department department) {
@@ -176,6 +171,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             long participantCount = events.stream()
                     .filter(e -> e.getCreatedAt() != null)
                     .filter(e -> !e.getCreatedAt().isBefore(monthStart) && e.getCreatedAt().isBefore(monthEnd))
+                    .filter(e -> e.getCapacity() != null)
                     .mapToLong(Event::getCapacity)
                     .sum();
 

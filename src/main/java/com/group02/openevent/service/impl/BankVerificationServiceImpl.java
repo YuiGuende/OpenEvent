@@ -67,7 +67,7 @@ public class BankVerificationServiceImpl implements BankVerificationService {
         
         // Chuyển thành chữ hoa và loại bỏ khoảng trắng thừa
         normalized = normalized.toUpperCase().replaceAll("\\s+", " ").trim();
-        
+        normalized = normalized.replace("Đ", "D");
         return normalized;
     }
 

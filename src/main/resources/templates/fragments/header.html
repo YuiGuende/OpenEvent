@@ -380,8 +380,6 @@
                             var hostNameInput = document.getElementById('hostName');
                             var formData = {
                                 hostName: hostNameInput && hostNameInput.value ? hostNameInput.value.trim() : null,
-                                organizationId: organizationSelect && organizationSelect.value ? parseInt(organizationSelect.value) : null,
-                                hostDiscountPercent: document.getElementById('hostDiscountPercent') && document.getElementById('hostDiscountPercent').value ? parseFloat(document.getElementById('hostDiscountPercent').value) : null,
                                 description: document.getElementById('description') ? (document.getElementById('description').value || null) : null
                             };
                             
@@ -630,19 +628,6 @@
                         <input type="text" id="hostName" name="hostName" 
                                required placeholder="Nhập tên host của bạn" 
                                style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                    </div>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label for="organizationId">Tổ chức (Tùy chọn)</label>
-                        <select id="organizationId" name="organizationId">
-                            <option value="">-- Chọn tổ chức (không bắt buộc) --</option>
-                        </select>
-                    </div>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label for="hostDiscountPercent">Phần trăm giảm giá host (%) (Tùy chọn)</label>
-                        <input type="number" id="hostDiscountPercent" name="hostDiscountPercent" 
-                               min="0" max="100" step="0.01" placeholder="0.00">
                     </div>
                     
                     <div style="margin-bottom: 1rem;">

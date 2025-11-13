@@ -18,6 +18,9 @@ import com.group02.openevent.model.user.Host;
 import com.group02.openevent.repository.*;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
+import com.group02.openevent.event.EventCancelledEvent;
+import com.group02.openevent.event.EventCreatedEvent;
+import com.group02.openevent.event.EventUpdatedEvent;
 import com.group02.openevent.service.EventService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.jpa.repository.Query;
@@ -29,6 +32,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AccessLevel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +68,8 @@ public class EventServiceImpl implements EventService {
     IOrganizationRepo organizationRepo;
     IHostRepo hostRepo;
     IPlaceRepo placeRepo;
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -104,7 +110,21 @@ public class EventServiceImpl implements EventService {
             event.getSubEvents().forEach(sub -> sub.setParentEvent(finalEvent));
         }
         event.setHost(hostRepo.getHostById(hostId));
-        return eventMapper.toEventResponse(eventRepo.save(event));
+        Event savedEvent = eventRepo.save(event);
+        
+        // Publish EventCreatedEvent for audit log
+        try {
+            Long userId = savedEvent.getHost() != null && savedEvent.getHost().getUser() != null
+                    ? savedEvent.getHost().getUser().getUserId()
+                    : null;
+            if (userId != null) {
+                eventPublisher.publishEvent(new EventCreatedEvent(this, savedEvent, userId));
+            }
+        } catch (Exception e) {
+            log.error("Error publishing EventCreatedEvent: {}", e.getMessage(), e);
+        }
+        
+        return eventMapper.toEventResponse(savedEvent);
     }
 
     @Override
@@ -219,6 +239,18 @@ public class EventServiceImpl implements EventService {
         // ✅ Save cuối cùng
         log.info("Saving event with {} places to database", event.getPlaces().size());
         Event saved = eventRepo.saveAndFlush(event);
+        
+        // Publish EventUpdatedEvent for audit log
+        try {
+            Long userId = saved.getHost() != null && saved.getHost().getUser() != null
+                    ? saved.getHost().getUser().getUserId()
+                    : null;
+            if (userId != null) {
+                eventPublisher.publishEvent(new EventUpdatedEvent(this, saved, userId));
+            }
+        } catch (Exception e) {
+            log.error("Error publishing EventUpdatedEvent: {}", e.getMessage(), e);
+        }
 
         return eventMapper.toEventResponse(saved);
     }
@@ -471,11 +503,38 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event updateEventStatus(Long eventId, EventStatus status) {
+        return updateEventStatus(eventId, status, null);
+    }
+    
+    // Overload method với userId parameter
+    public Event updateEventStatus(Long eventId, EventStatus status, Long userId) {
         Optional<Event> eventOpt = eventRepo.findById(eventId);
         if (eventOpt.isPresent()) {
             Event event = eventOpt.get();
+            EventStatus oldStatus = event.getStatus();
             event.setStatus(status);
-            return eventRepo.save(event);
+            Event savedEvent = eventRepo.save(event);
+            
+            // Publish events for audit log
+            try {
+                // Determine userId: use parameter if provided, otherwise try to get from event host
+                Long actorId = userId;
+                if (actorId == null && savedEvent.getHost() != null && savedEvent.getHost().getUser() != null) {
+                    actorId = savedEvent.getHost().getUser().getUserId();
+                }
+                
+                if (actorId != null) {
+                    // Publish EventCancelledEvent if status changed to CANCEL
+                    if (status == EventStatus.CANCEL) {
+                        eventPublisher.publishEvent(new EventCancelledEvent(this, savedEvent, actorId));
+                    }
+                    // Note: EventApprovedEvent is published from RequestServiceImpl when request is approved
+                }
+            } catch (Exception e) {
+                log.error("Error publishing event status change event: {}", e.getMessage(), e);
+            }
+            
+            return savedEvent;
         }
         throw new RuntimeException("Event not found with id: " + eventId);
     }

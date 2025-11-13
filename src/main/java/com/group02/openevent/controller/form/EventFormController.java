@@ -3,6 +3,7 @@ package com.group02.openevent.controller.form;
 import com.group02.openevent.dto.form.*;
 import com.group02.openevent.service.EventFormService;
 import com.group02.openevent.service.EventAttendanceService;
+import com.group02.openevent.service.AuditLogService;
 import com.group02.openevent.dto.attendance.AttendanceRequest;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.account.Account;
@@ -39,6 +40,7 @@ public class EventFormController {
     private final ICustomerRepo customerRepo;
     private final IAccountRepo accountRepo;
     private final UserService userService;
+    private final AuditLogService auditLogService;
 
     // Host: Create form for event
     @GetMapping("/create/{eventId}")
@@ -273,6 +275,25 @@ public class EventFormController {
                 if (currentEmail != null) {
                     attendanceService.checkOut(eventId, currentEmail);
                 }
+                
+                // Create audit log for feedback submission
+                try {
+                    Long userId = customer.getUser() != null ? customer.getUser().getUserId() : null;
+                    auditLogService.createAuditLog(
+                        "FEEDBACK_SUBMITTED",
+                        "FEEDBACK",
+                        request.getFormId(),
+                        userId,
+                        String.format("Feedback submitted for event (Event ID: %d, Form ID: %d) by customer (ID: %d)",
+                            eventId != null ? eventId : 0L,
+                            request.getFormId(),
+                            customer.getCustomerId())
+                    );
+                    log.debug("Audit log created for FEEDBACK_SUBMITTED: Form ID {}", request.getFormId());
+                } catch (Exception e) {
+                    log.error("Error creating audit log for FEEDBACK_SUBMITTED: {}", e.getMessage(), e);
+                }
+                
                 // Redirect to event detail page after successful feedback submission
                 String redirectUrl = "/events/" + eventId + "?success=feedback_submitted";
                 log.info("Redirecting to: {}", redirectUrl);

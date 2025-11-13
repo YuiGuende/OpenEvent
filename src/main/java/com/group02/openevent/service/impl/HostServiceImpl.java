@@ -5,12 +5,14 @@ import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.user.Host;
 import com.group02.openevent.model.user.User;
+import com.group02.openevent.event.UserCreatedEvent;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IHostRepo;
 import com.group02.openevent.service.HostService;
 import com.group02.openevent.service.OrganizationService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +27,15 @@ public class HostServiceImpl implements HostService {
     private final OrganizationService organizationService;
     private final IAccountRepo accountRepo;
     private final ICustomerRepo customerRepo;
+    private final ApplicationEventPublisher eventPublisher;
 
     public HostServiceImpl(IHostRepo hostRepo, OrganizationService organizationService,
-                           IAccountRepo accountRepo, ICustomerRepo customerRepo) {
+                           IAccountRepo accountRepo, ICustomerRepo customerRepo, ApplicationEventPublisher eventPublisher) {
         this.hostRepo = hostRepo;
         this.organizationService = organizationService;
         this.accountRepo = accountRepo;
         this.customerRepo = customerRepo;
+        this.eventPublisher = eventPublisher;
     }
     
     @Override
@@ -69,53 +73,65 @@ public class HostServiceImpl implements HostService {
     }
 
     @Override
-    public boolean isUserHost(Long customerId) {
-        return hostRepo.findByUser_UserId(customerId).isPresent();
+    public boolean isUserHost(Long userId) {
+        return hostRepo.findByUser_UserId(userId).isPresent();
     }
 
     @Override
-    public Host registerHost(Customer customer, HostRegistrationRequest request) {
-        // Kiểm tra xem customer đã là host chưa
-        if (isUserHost(customer.getCustomerId())) {
-            throw new RuntimeException("Customer is already a host");
+    public Host registerHost(User user, HostRegistrationRequest request) {
+        // Kiểm tra xem user đã là host chưa
+        if (isUserHost(user.getUserId())) {
+            throw new RuntimeException("User is already a host");
         }
 
         // Set host name vào Customer.name nếu có
-        if (request.getHostName() != null && !request.getHostName().trim().isEmpty()) {
-            customer.getUser().setName(request.getHostName().trim());
-        } else if (customer.getUser().getName() == null || customer.getUser().getName().trim().isEmpty()) {
-            // Nếu không có hostName và customer chưa có name, dùng email username
-            if (customer.getUser().getAccount() != null && customer.getUser().getAccount().getEmail() != null) {
-                String email = customer.getUser().getAccount().getEmail();
-                String username = email.contains("@") ? email.split("@")[0] : email;
-                customer.getUser().setName(username);
-            }
-        }
+//        if (request.getHostName() != null && !request.getHostName().trim().isEmpty()) {
+//            user.setName(request.getHostName().trim());
+//        } else if (user.getName() == null || user.getName().trim().isEmpty()) {
+//            // Nếu không có hostName và user chưa có name, dùng email username
+//            if (user.getAccount() != null && user.getAccount().getEmail() != null) {
+//                String email = user.getAccount().getEmail();
+//                String username = email.contains("@") ? email.split("@")[0] : email;
+//                user.setName(username);
+//            }
+//        }
 
         // Tạo host mới
         Host host = new Host();
         host.setCreatedAt(LocalDateTime.now());
-        host.setUser(customer.getUser());
+        host.setUser(user);
         // Set organization nếu có
-        if (request.getOrganizationId() != null) {
-            Optional<Organization> organization = organizationService.findById(request.getOrganizationId());
-            if (organization.isPresent()) {
-                host.setOrganization(organization.get());
-            }
-        }
+//        if (request.getOrganizationId() != null) {
+//            Optional<Organization> organization = organizationService.findById(request.getOrganizationId());
+//            organization.ifPresent(host::setOrganization);
+//        }
 
         // Set discount percent (default 0 nếu null)
-        if (request.getHostDiscountPercent() != null) {
-            host.setHostDiscountPercent(request.getHostDiscountPercent());
-        } else {
-            host.setHostDiscountPercent(BigDecimal.ZERO);
-        }
+//        if (request.getHostDiscountPercent() != null) {
+//            host.setHostDiscountPercent(request.getHostDiscountPercent());
+//        } else {
+//            host.setHostDiscountPercent(BigDecimal.ZERO);
+//        }
         // Set description
         host.setDescription(request.getDescription());
-        // Lưu customer (với name đã được update) trước khi save host
-        customerRepo.save(customer);
+        // Lưu user (với name đã được update) trước khi save host
+//        customerRepo.save(user);
 
         // Lưu host
-        return hostRepo.save(host);
+        Host savedHost = hostRepo.save(host);
+        
+        // Publish UserCreatedEvent for audit log (user registered as HOST)
+        try {
+            Long actorId = user != null
+                    ? user.getUserId()
+                    : null;
+            if (actorId != null) {
+                eventPublisher.publishEvent(new UserCreatedEvent(this, user, actorId, "HOST"));
+            }
+        } catch (Exception e) {
+            System.err.println("Error publishing UserCreatedEvent for HOST: " + e.getMessage());
+        }
+        
+        return savedHost;
     }
 }

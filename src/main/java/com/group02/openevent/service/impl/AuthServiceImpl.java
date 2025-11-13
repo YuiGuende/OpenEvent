@@ -11,6 +11,7 @@ import com.group02.openevent.model.session.Session;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IUserRepo;
+import com.group02.openevent.event.UserCreatedEvent;
 import com.group02.openevent.service.AuthService;
 import com.group02.openevent.service.SessionService;
 import com.group02.openevent.service.UserService;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -33,9 +35,10 @@ public class AuthServiceImpl implements AuthService {
 	private final HttpSession httpSession;
 	private final SessionService sessionService;
 	private final UserService userService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	public AuthServiceImpl(IAccountRepo accountRepo, ICustomerRepo customerRepo, IUserRepo userRepo,
-			PasswordEncoder passwordEncoder, HttpSession httpSession, SessionService sessionService, UserService userService) {
+			PasswordEncoder passwordEncoder, HttpSession httpSession, SessionService sessionService, UserService userService, ApplicationEventPublisher eventPublisher) {
 		this.accountRepo = accountRepo;
 		this.customerRepo = customerRepo;
 		this.userRepo = userRepo;
@@ -43,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
 		this.httpSession = httpSession;
 		this.sessionService = sessionService;
 		this.userService = userService;
+		this.eventPublisher = eventPublisher;
 	}
 
 	private String redirectFor(Role role) {
@@ -84,6 +88,13 @@ public class AuthServiceImpl implements AuthService {
 		customer.setUser(user);
 		customer.setPoints(0);
 		customerRepo.save(customer);
+
+		// Publish UserCreatedEvent for audit log (self-registration, actorId = null)
+		try {
+			eventPublisher.publishEvent(new UserCreatedEvent(this, user, null, "CUSTOMER"));
+		} catch (Exception e) {
+			log.error("Error publishing UserCreatedEvent: {}", e.getMessage(), e);
+		}
 
 		// Lấy role từ User (sau khi đã tạo Customer)
 		Role role = user.getRole();

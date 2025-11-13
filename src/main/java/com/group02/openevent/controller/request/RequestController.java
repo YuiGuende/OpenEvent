@@ -139,6 +139,7 @@ public class RequestController {
             @RequestBody ApproveRequestDTO approveRequestDTO,
             @SessionAttribute("USER_ID") Long currentUserId) { // <-- THÊM MỚI
         try {
+            logger.info("approveRequest is called");
             RequestDTO approvedRequest = requestService.approveRequest(requestId, approveRequestDTO);
             return ResponseEntity.ok(approvedRequest);
         } catch (AccessDeniedException e) { // <-- THÊM MỚI

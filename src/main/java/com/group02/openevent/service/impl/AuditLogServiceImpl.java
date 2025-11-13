@@ -50,4 +50,9 @@ public class AuditLogServiceImpl implements AuditLogService {
         LocalDateTime date = LocalDateTime.now().minusDays(days);
         return auditLogRepo.countByActionTypeAndDateAfter(actionType, date);
     }
+    
+    @Override
+    public Long countAuditLogsByActionTypeAndDateRange(String actionType, LocalDateTime startDate, LocalDateTime endDate) {
+        return auditLogRepo.countByActionTypeAndDateRange(actionType, startDate, endDate);
+    }
 }

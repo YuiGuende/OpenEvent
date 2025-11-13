@@ -75,15 +75,14 @@ public class HostApiController {
 
         try {
             User user = userService.getCurrentUser(session);
-            Customer customer = user.getCustomer();
 
             // Kiểm tra xem đã là host chưa
-            if (hostService.isUserHost(customer.getCustomerId())) {
+            if (hostService.isUserHost(user.getUserId())) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Customer is already a host"));
+                        .body(Map.of("error", "User is already a host"));
             }
             // Đăng ký host (sẽ update customer name và account role, và save cả customer và account)
-            hostService.registerHost(customer, request);
+            hostService.registerHost(user, request);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Host registration successful");

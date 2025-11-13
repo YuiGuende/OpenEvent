@@ -12,4 +12,5 @@ public interface AuditLogService {
     Page<AuditLog> getAuditLogsByActionType(String actionType, Pageable pageable);
     List<AuditLog> getRecentAuditLogs(int days);
     Long countAuditLogsByActionTypeInDays(String actionType, int days);
+    Long countAuditLogsByActionTypeAndDateRange(String actionType, LocalDateTime startDate, LocalDateTime endDate);
 }

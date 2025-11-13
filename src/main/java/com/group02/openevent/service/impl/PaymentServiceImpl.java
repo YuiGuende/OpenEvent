@@ -6,13 +6,16 @@ import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.repository.IPaymentRepo;
 import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.event.PaymentCompletedEvent;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.EventAttendanceService;
+import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
 import com.group02.openevent.dto.payment.PaymentResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.payos.PayOS;
@@ -35,15 +38,19 @@ public class PaymentServiceImpl implements PaymentService {
     private final IPaymentRepo paymentRepo;
     private final IOrderRepo orderRepo;
     private final OrderService orderService;
+    private final TicketTypeService ticketTypeService;
     private final PayOS payOS;
     private final EventAttendanceService attendanceService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public PaymentServiceImpl(IPaymentRepo paymentRepo, IOrderRepo orderRepo, OrderService orderService, PayOS payOS, EventAttendanceService attendanceService) {
+    public PaymentServiceImpl(IPaymentRepo paymentRepo, IOrderRepo orderRepo, OrderService orderService, TicketTypeService ticketTypeService, PayOS payOS, EventAttendanceService attendanceService, ApplicationEventPublisher eventPublisher) {
         this.paymentRepo = paymentRepo;
         this.orderRepo = orderRepo;
         this.orderService = orderService;
+        this.ticketTypeService = ticketTypeService;
         this.payOS = payOS;
         this.attendanceService = attendanceService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -186,6 +193,18 @@ public class PaymentServiceImpl implements PaymentService {
                 // Don't fail the webhook if attendance creation fails - log and continue
             }
 
+            // Publish PaymentCompletedEvent for audit log
+            try {
+                Long actorId = order.getCustomer() != null && order.getCustomer().getUser() != null
+                        ? order.getCustomer().getUser().getUserId()
+                        : null;
+                if (actorId != null) {
+                    eventPublisher.publishEvent(new PaymentCompletedEvent(this, payment, actorId));
+                }
+            } catch (Exception e) {
+                logger.error("Error publishing PaymentCompletedEvent: {}", e.getMessage(), e);
+            }
+
             logger.info("Payment webhook processed successfully for order: {}", order.getOrderId());
             return PaymentResult.success("Payment processed successfully");
 
@@ -283,14 +302,31 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             payment.setStatus(PaymentStatus.CANCELLED);
+            payment.setCancelledAt(LocalDateTime.now());
             payment.setUpdatedAt(LocalDateTime.now());
             paymentRepo.save(payment);
 
-            // Also cancel the order
+            // Also cancel the order and release tickets
             Order order = payment.getOrder();
-            order.setStatus(OrderStatus.CANCELLED);
-            order.setUpdatedAt(LocalDateTime.now());
-            orderRepo.save(order);
+            if (order.getStatus() == OrderStatus.PENDING) {
+                // Release reserved tickets if order is still pending
+                if (order.getTicketType() != null && order.getQuantity() != null) {
+                    try {
+                        ticketTypeService.releaseTickets(
+                            order.getTicketType().getTicketTypeId(), 
+                            order.getQuantity()
+                        );
+                        logger.debug("Released {} tickets for cancelled payment order", order.getQuantity());
+                    } catch (Exception e) {
+                        logger.warn("Failed to release tickets for order {}: {}", 
+                            order.getOrderId(), e.getMessage());
+                    }
+                }
+                
+                order.setStatus(OrderStatus.CANCELLED);
+                order.setUpdatedAt(LocalDateTime.now());
+                orderRepo.save(order);
+            }
 
             logger.info("Payment cancelled: {}", payment.getPaymentId());
             return true;

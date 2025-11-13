@@ -12,7 +12,7 @@ public interface IDepartmentRepo extends JpaRepository<Department, Long> {
     
     Optional<Department> findByUserId(Long userId);
     
-    Optional<Department> findByUser_Account_AccountId(Long accountId); // For backward compatibility
+    Optional<Department> findByUser_Account_AccountId(Long accountId);
     
     Optional<Department> findByDepartmentName(String departmentName);
 }

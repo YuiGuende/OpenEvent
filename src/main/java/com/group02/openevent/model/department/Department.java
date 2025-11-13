@@ -21,7 +21,6 @@ public class Department {
     @Id
     @Column(name = "department_id")
     private Long id;
-    
     @OneToOne
     @MapsId
     @JoinColumn(name = "user_id")

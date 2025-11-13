@@ -112,6 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         {
+            path: `/manage/event/${eventId}/statis-forms`,
+            fragment: `/fragments/statis-forms?id=${eventId}`,
+            title: 'Thống kê Form',
+            initializer: function() {
+                console.log('Initializing create forms page...');
+            }
+        },
+        {
             path: `/manage/event/${eventId}/create-forms`,
             fragment: `/fragments/create-forms?id=${eventId}`,
             title: 'Tạo Form',

@@ -449,22 +449,37 @@ class TicketManager {
             if (t && t.id && !isNaN(parseInt(t.id))) {
                 fetch(`/api/events/ticket/${parseInt(t.id)}`, { method: 'DELETE' })
                     .then(async (res) => {
+                        // Đọc text một lần, sau đó cố parse JSON từ text
+                        const text = await res.text()
+                        
                         if (!res.ok) {
-                            // Try to parse backend error
+                            // Try to parse JSON từ text
                             try {
-                                const data = await res.json()
+                                const data = JSON.parse(text)
                                 const msg = data?.error || data?.message || 'Không thể xóa vé'
                                 throw new Error(msg)
-                            } catch (_) {
-                                const text = await res.text()
+                            } catch (parseError) {
+                                // Nếu không parse được JSON, dùng text hoặc message mặc định
                                 throw new Error(text || 'Không thể xóa vé')
                             }
                         }
-                        // Server confirmed deletion → remove locally
-                        this.tickets = this.tickets.filter(x => x.id !== id)
-                        this.renderTickets()
-                        if (typeof this.showNotification === 'function') {
-                            this.showNotification('Đã xóa vé', 'success')
+                        
+                        // Parse success response từ text
+                        try {
+                            const data = JSON.parse(text)
+                            // Server confirmed deletion → remove locally
+                            this.tickets = this.tickets.filter(x => x.id !== id)
+                            this.renderTickets()
+                            if (typeof this.showNotification === 'function') {
+                                this.showNotification(data?.message || 'Đã xóa vé', 'success')
+                            }
+                        } catch (parseError) {
+                            // Nếu không parse được JSON, vẫn coi như thành công nếu status OK
+                            this.tickets = this.tickets.filter(x => x.id !== id)
+                            this.renderTickets()
+                            if (typeof this.showNotification === 'function') {
+                                this.showNotification('Đã xóa vé', 'success')
+                            }
                         }
                     })
                     .catch(err => {

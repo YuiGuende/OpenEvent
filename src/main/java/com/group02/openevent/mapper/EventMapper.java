@@ -61,6 +61,33 @@ public interface EventMapper {
     @Mapping(target = "places", ignore = true)
     @Mapping(target = "eventImages", ignore = true)
     EventUpdateRequest toUpdateRequest(Event event);
+    
+    // Default method to handle subclass-specific fields
+    default EventUpdateRequest toUpdateRequestWithSubclassFields(Event event) {
+        EventUpdateRequest request = toUpdateRequest(event);
+        
+        // Map subclass-specific fields based on event type
+        if (event instanceof WorkshopEvent workshopEvent) {
+            request.setTopic(workshopEvent.getTopic());
+            request.setMaterialsLink(workshopEvent.getMaterialsLink());
+            request.setMaxParticipants(workshopEvent.getMaxParticipants());
+            request.setSkillLevel(workshopEvent.getSkillLevel());
+            request.setPrerequisites(workshopEvent.getPrerequisites());
+        } else if (event instanceof MusicEvent musicEvent) {
+            request.setMusicType(musicEvent.getMusicType());
+            request.setGenre(musicEvent.getGenre());
+            request.setPerformerCount(musicEvent.getPerformerCount());
+        } else if (event instanceof CompetitionEvent competitionEvent) {
+            request.setCompetitionType(competitionEvent.getCompetitionType());
+            request.setRules(competitionEvent.getRules());
+            request.setPrizePool(competitionEvent.getPrizePool());
+        } else if (event instanceof FestivalEvent festivalEvent) {
+            request.setCulture(festivalEvent.getCulture());
+            request.setHighlight(festivalEvent.getHighlight());
+        }
+        
+        return request;
+    }
 
 
     // ===================== UTILITIES =====================

@@ -1,6 +1,7 @@
 package com.group02.openevent.model.voucher;
 
 import com.group02.openevent.model.account.Account;
+import com.group02.openevent.model.user.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,12 +38,12 @@ public class Voucher {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
-    private Account createdBy;
+    private User createdBy;
 
     public Voucher() {
     }
 
-    public Voucher(String code, BigDecimal discountAmount, Integer quantity, String description, LocalDateTime expiresAt, Account createdBy) {
+    public Voucher(String code, BigDecimal discountAmount, Integer quantity, String description, LocalDateTime expiresAt, User createdBy) {
         this.code = code;
         this.discountAmount = discountAmount;
         this.quantity = quantity;
@@ -118,11 +119,11 @@ public class Voucher {
         this.description = description;
     }
 
-    public Account getCreatedBy() {
+    public User getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(Account createdBy) {
+    public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
     }
 

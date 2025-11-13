@@ -48,7 +48,7 @@ class EnhancedAIControllerTest {
 		MockitoAnnotations.openMocks(this);
 		mockMvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(controller).build();
 		session = new MockHttpSession();
-		session.setAttribute("ACCOUNT_ID", 123L);
+		session.setAttribute("USER_ID", 123L);
 		session.setAttribute("ACCOUNT_ROLE", "USER");
 	}
 

@@ -103,12 +103,42 @@ function initializeRequestForm() {
                 try {
                     const errorText = await response.text();
                     console.error('Error response:', errorText);
-                    if (response.status === 403) {
-                        errorMessage = 'Access denied. You may not have permission to create this request.';
-                    } else if (response.status === 400) {
-                        errorMessage = 'Invalid request. Please check your input.';
-                    } else if (response.status === 500) {
-                        errorMessage = 'Server error. Please try again later.';
+                    
+                    // Try to parse error message from response
+                    if (errorText) {
+                        // Check if response contains validation error message
+                        if (errorText.includes('Cannot send request:')) {
+                            // Extract the error message
+                            const match = errorText.match(/Cannot send request: ([^<]+)/);
+                            if (match && match[1]) {
+                                errorMessage = match[1].trim();
+                            } else {
+                                errorMessage = errorText.substring(0, 200); // Use first 200 chars
+                            }
+                        } else if (response.status === 403) {
+                            errorMessage = 'Access denied. You may not have permission to create this request.';
+                        } else if (response.status === 400) {
+                            // Try to extract meaningful error message
+                            if (errorText.includes('already been approved')) {
+                                errorMessage = 'Không thể gửi yêu cầu: Sự kiện đã được duyệt.';
+                            } else if (errorText.includes('already a pending request')) {
+                                errorMessage = 'Không thể gửi yêu cầu: Đã có yêu cầu đang chờ duyệt cho sự kiện này.';
+                            } else {
+                                errorMessage = 'Yêu cầu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
+                            }
+                        } else if (response.status === 500) {
+                            // Try to extract error message from server response
+                            if (errorText.includes('Cannot send request:')) {
+                                const match = errorText.match(/Cannot send request: ([^<]+)/);
+                                if (match && match[1]) {
+                                    errorMessage = match[1].trim();
+                                } else {
+                                    errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+                                }
+                            } else {
+                                errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+                            }
+                        }
                     }
                 } catch (e) {
                     console.error('Error reading response:', e);

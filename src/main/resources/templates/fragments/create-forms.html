@@ -198,6 +198,11 @@
                                                    class="btn btn-sm btn-outline-primary flex-fill">
                                                     <i class="bi bi-eye"></i> Xem
                                                 </a>
+                                                <a th:href="@{'/manage/event/' + ${eventId} + '/statis-forms?formId=' + ${form.formId}}"
+                                                   class="btn btn-sm btn-outline-info flex-fill"
+                                                   data-link>
+                                                    <i class="bi bi-bar-chart"></i> Thống kê
+                                                </a>
                                             </div>
                                             <div class="mt-2">
                                                 <form th:action="@{'/forms/' + ${form.formId} + '/delete'}" 

@@ -125,7 +125,7 @@
             .catch(err => console.error(err));
     }
     
-    // Load and display user name
+    // Load and display user name and avatar
     function loadUserName() {
         fetch('/api/current-user')
             .then(response => response.json())
@@ -140,9 +140,18 @@
                     }
                     
                     if (userAvatarEl) {
-                        // Get first letter of name for avatar
-                        const initial = data.name.charAt(0).toUpperCase();
-                        userAvatarEl.textContent = initial;
+                        // If avatar URL exists, display image; otherwise show initial letter
+                        if (data.avatar && data.avatar.trim() !== '') {
+                            userAvatarEl.style.backgroundImage = `url(${data.avatar})`;
+                            userAvatarEl.style.backgroundSize = 'cover';
+                            userAvatarEl.style.backgroundPosition = 'center';
+                            userAvatarEl.textContent = '';
+                        } else {
+                            // Get first letter of name for avatar
+                            const initial = data.name.charAt(0).toUpperCase();
+                            userAvatarEl.textContent = initial;
+                            userAvatarEl.style.backgroundImage = '';
+                        }
                     }
                 }
             })

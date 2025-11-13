@@ -98,7 +98,7 @@ class HomeControllerIntegrationTest {
         @DisplayName("HOME-002: Khi đăng nhập, build myEvents từ orders và events")
         void whenLoggedIn_thenPopulateMyEvents() throws Exception {
             MockHttpSession session = new MockHttpSession();
-            session.setAttribute("ACCOUNT_ID", 1L);
+            session.setAttribute("USER_ID", 1L);
 
             Customer customer = new Customer();
             when(customerRepo.findByUser_Account_AccountId(1L)).thenReturn(Optional.of(customer));
@@ -137,7 +137,7 @@ class HomeControllerIntegrationTest {
         @DisplayName("HOME-003: Khi đăng nhập nhưng không tìm thấy Customer, myEvents rỗng")
         void whenLoggedInButNoCustomer_thenMyEventsEmpty() throws Exception {
             MockHttpSession session = new MockHttpSession();
-            session.setAttribute("ACCOUNT_ID", 1L);
+            session.setAttribute("USER_ID", 1L);
 
             when(customerRepo.findByUser_Account_AccountId(1L)).thenReturn(Optional.empty());
 
@@ -157,7 +157,7 @@ class HomeControllerIntegrationTest {
         @DisplayName("HOME-004: Khi có Customer nhưng không có orders, myEvents rỗng")
         void whenCustomerExistsButNoOrders_thenMyEventsEmpty() throws Exception {
             MockHttpSession session = new MockHttpSession();
-            session.setAttribute("ACCOUNT_ID", 1L);
+            session.setAttribute("USER_ID", 1L);
 
             Customer customer = new Customer();
             when(customerRepo.findByUser_Account_AccountId(1L)).thenReturn(Optional.of(customer));
@@ -236,7 +236,7 @@ class HomeControllerIntegrationTest {
         @DisplayName("USER-002: Khi Account không tồn tại, trả về authenticated=false")
         void whenAccountNotFound_thenReturnAuthenticatedFalse() throws Exception {
             MockHttpSession session = new MockHttpSession();
-            session.setAttribute("ACCOUNT_ID", 1L);
+            session.setAttribute("USER_ID", 1L);
             when(accountRepo.findById(1L)).thenReturn(Optional.empty());
 
             mockMvc.perform(get("/api/current-user").session(session))
@@ -249,7 +249,7 @@ class HomeControllerIntegrationTest {
         @DisplayName("USER-003: Khi Account tồn tại, trả về authenticated=true với thông tin user")
         void whenAccountExists_thenReturnAuthenticatedTrueWithUserInfo() throws Exception {
             MockHttpSession session = new MockHttpSession();
-            session.setAttribute("ACCOUNT_ID", 2L);
+            session.setAttribute("USER_ID", 2L);
             Account acc = new Account();
             acc.setAccountId(2L);
             acc.setEmail("user@example.com");
@@ -286,14 +286,14 @@ class HomeControllerIntegrationTest {
         @DisplayName("LOGOUT-001: Invalidate session và trả về 200 OK")
         void whenLogout_thenInvalidateSessionAndReturnOk() throws Exception {
             MockHttpSession session = new MockHttpSession();
-            session.setAttribute("ACCOUNT_ID", 123L);
+            session.setAttribute("USER_ID", 123L);
 
             mockMvc.perform(post("/api/logout").session(session))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().string("Logged out successfully"));
 
-            assertThrows(IllegalStateException.class, () -> session.getAttribute("ACCOUNT_ID"));
+            assertThrows(IllegalStateException.class, () -> session.getAttribute("USER_ID"));
         }
     }
 }

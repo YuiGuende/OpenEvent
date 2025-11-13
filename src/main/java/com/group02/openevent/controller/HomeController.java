@@ -6,6 +6,7 @@ import com.group02.openevent.dto.home.TopStudentDTO;
 import com.group02.openevent.dto.user.UserOrderDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.Host;
 import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
@@ -13,6 +14,7 @@ import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.HostService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.TopStudentService;
 import com.group02.openevent.service.UserService;
@@ -40,6 +42,7 @@ public class HomeController {
     private final IOrderRepo orderRepo;
     private final IUserRepo userRepo;
     private final UserService userService;
+    private final HostService hostService;
     @Autowired
     private EventService eventService;
     @Autowired
@@ -47,13 +50,14 @@ public class HomeController {
     @Autowired
     private TopStudentService topStudentService;
 
-    public HomeController(IAccountRepo accountRepo, ICustomerRepo customerRepo, IEventRepo eventRepo, IOrderRepo orderRepo, IUserRepo userRepo, UserService userService) {
+    public HomeController(IAccountRepo accountRepo, ICustomerRepo customerRepo, IEventRepo eventRepo, IOrderRepo orderRepo, IUserRepo userRepo, UserService userService, HostService hostService) {
         this.accountRepo = accountRepo;
         this.customerRepo = customerRepo;
         this.eventRepo = eventRepo;
         this.orderRepo = orderRepo;
         this.userRepo = userRepo;
         this.userService = userService;
+        this.hostService = hostService;
     }
 
     @GetMapping("/")
@@ -77,11 +81,7 @@ public class HomeController {
             // Get your events from user's orders - fetch complete event data from DB
             List<EventCardDTO> myEvents = List.of();
             try {
-                Long accountId = userService.getCurrentUser(session).getUserId();
-                System.out.println("DEBUG: Account ID from session: " + accountId);
-                
-                if (accountId != null) {
-                    Customer customer = customerRepo.findByUser_UserId(accountId).orElse(null);
+                    Customer customer = userService.getCurrentUser(session).getCustomer();
                     System.out.println("DEBUG: Customer found: " + (customer != null ? customer.getCustomerId() : "null"));
                     
                     if (customer != null) {
@@ -109,7 +109,7 @@ public class HomeController {
                                     .collect(Collectors.toList());
                             System.out.println("DEBUG: Converted to EventCardDTO count: " + myEvents.size());
                         }
-                    }
+
                 } else {
                     System.out.println("DEBUG: User not logged in");
                 }
@@ -224,12 +224,39 @@ public class HomeController {
     @GetMapping("/api/current-user")
     public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession session) {
         log.info("API: Getting current user");
-        User user = userService.getCurrentUser(session);
-        Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("authenticated", true);
-        userInfo.put("accountId", user.getAccount().getAccountId());
-        userInfo.put("email", user.getAccount().getEmail());
-        return ResponseEntity.ok(userInfo);
+        try {
+            User user = userService.getCurrentUser(session);
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("authenticated", true);
+            userInfo.put("accountId", user.getAccount().getAccountId());
+            userInfo.put("email", user.getAccount().getEmail());
+            
+            // Get name: if user is host, use Host.getHostName(), otherwise use User.getName() or email
+            String name = null;
+            if (user.hasHostRole() && user.getHost() != null) {
+                try {
+                    // Load host with user relationship to avoid LazyInitializationException
+                    Host host = hostService.findHostByUserId(user.getUserId());
+                    name = host.getHostName();
+                } catch (Exception e) {
+                    log.warn("Could not get host name, falling back to user name: {}", e.getMessage());
+                    name = user.getName() != null ? user.getName() : user.getAccount().getEmail();
+                }
+            } else {
+                name = user.getName() != null ? user.getName() : user.getAccount().getEmail();
+            }
+            userInfo.put("name", name);
+            
+            // Get avatar from User entity
+            userInfo.put("avatar", user.getAvatar());
+            
+            return ResponseEntity.ok(userInfo);
+        } catch (Exception e) {
+            log.error("Error getting current user: {}", e.getMessage(), e);
+            Map<String, Object> errorInfo = new HashMap<>();
+            errorInfo.put("authenticated", false);
+            return ResponseEntity.ok(errorInfo);
+        }
     }
 
     @PostMapping("/api/logout")

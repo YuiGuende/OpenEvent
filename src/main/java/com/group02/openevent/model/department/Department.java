@@ -19,7 +19,7 @@ import java.util.List;
 public class Department {
     
     @Id
-    @Column(name = "user_id")
+    @Column(name = "department_id")
     private Long userId;
     
     @OneToOne

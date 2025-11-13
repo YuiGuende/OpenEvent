@@ -172,8 +172,10 @@ public class EventServiceImpl implements EventService {
             case "WORKSHOP" -> {
                 WorkshopEvent ws = (WorkshopEvent) existing;
                 ws.setTopic(request.getTopic());
-                ws.setSkillLevel(request.getSkillLevel());
+                ws.setMaterialsLink(request.getMaterialsLink());
                 ws.setMaxParticipants(request.getMaxParticipants());
+                ws.setSkillLevel(request.getSkillLevel());
+                ws.setPrerequisites(request.getPrerequisites());
             }
             case "FESTIVAL" -> {
                 FestivalEvent fe = (FestivalEvent) existing;

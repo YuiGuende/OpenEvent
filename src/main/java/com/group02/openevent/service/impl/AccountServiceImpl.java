@@ -22,7 +22,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getCurrentAccount(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Long accountId = (Long) session.getAttribute("USER_ID");
         if (accountId == null) {
             throw new RuntimeException("User not logged in");
         }

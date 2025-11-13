@@ -1,0 +1,589 @@
+<div th:fragment="content" class="statis-form-container">
+    <style>
+        .statis-form-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #e65100;
+        }
+        
+        .stat-card h6 {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #212529;
+        }
+        
+        .question-stats-section {
+            margin-top: 2rem;
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+        
+        .question-meta {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-container {
+            margin-top: 1rem;
+            min-height: 300px;
+        }
+        
+        .text-responses-list {
+            margin-top: 1rem;
+        }
+        
+        .text-response-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #e65100;
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .form-selection-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-select-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .form-select-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            border-color: #007bff;
+        }
+        
+        .form-select-card .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+    </style>
+    
+    <div class="page-header">
+        <h1 class="page-title" id="formTitle">Thống kê Form</h1>
+        <p class="text-muted" id="formType">Đang tải...</p>
+        <!-- Debug: Show formId if available -->
+        <p th:if="${formId != null}" class="text-muted small">
+            Form ID: <span th:text="${formId}"></span>
+        </p>
+        <p th:if="${error != null}" class="text-danger">
+            <strong>Lỗi:</strong> <span th:text="${error}"></span>
+        </p>
+    </div>
+    
+    <!-- Form Selection (when no formId) -->
+    <div th:if="${showFormSelection != null and showFormSelection}" id="formSelectionSection" class="form-selection-section">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-bar-chart-fill text-primary" style="font-size: 3rem;"></i>
+                    <h3 class="mt-3">Chọn Form để xem thống kê</h3>
+                    <p class="text-muted">Vui lòng chọn một form từ danh sách bên dưới để xem thống kê câu trả lời</p>
+                </div>
+                
+                <div th:if="${forms != null and !#lists.isEmpty(forms)}" class="forms-list">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-4" th:each="form : ${forms}">
+                            <div class="card form-select-card h-100" style="cursor: pointer;" 
+                                 th:onclick="'loadFormStats(' + ${form.formId} + ')'">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0" th:text="${form.formTitle}">Form Title</h6>
+                                        <span class="badge" 
+                                              th:classappend="${form.formType.name() == 'REGISTER'} ? 'bg-primary' : 
+                                                              (${form.formType.name() == 'CHECKIN'} ? 'bg-success' : 'bg-warning')"
+                                              th:text="${form.formType.name()}">TYPE</span>
+                                    </div>
+                                    <p class="card-text small text-muted mb-2" 
+                                       th:text="${form.formDescription != null ? form.formDescription : 'Không có mô tả'}">
+                                        Form description
+                                    </p>
+                                    <div class="form-meta">
+                                        <small class="text-muted">
+                                            <i class="bi bi-question-circle"></i>
+                                            <span th:text="${form.questions != null ? form.questions.size() : 0}">0</span> câu hỏi
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${forms == null or #lists.isEmpty(forms)}" class="empty-state text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <p class="text-muted mt-3">Chưa có form nào được tạo cho sự kiện này.</p>
+                    <a th:href="@{'/manage/event/' + ${eventId} + '/create-forms'}" 
+                       class="btn btn-primary mt-2"
+                       data-link>
+                        <i class="bi bi-plus-circle"></i> Tạo Form
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Đang tải dữ liệu thống kê...</p>
+    </div>
+    
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <i class="bi bi-inbox"></i>
+        <p>Chưa có dữ liệu thống kê cho form này.</p>
+    </div>
+    
+    <!-- Stats Content -->
+    <div id="statsContent" style="display: none;">
+        <!-- Summary Cards -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <h6>Tổng số câu trả lời</h6>
+                <div class="stat-value" id="totalResponses">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #28a745;">
+                <h6>Số lượt gửi</h6>
+                <div class="stat-value" id="totalSubmissions">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #17a2b8;">
+                <h6>Số câu hỏi</h6>
+                <div class="stat-value" id="totalQuestions">0</div>
+            </div>
+        </div>
+        
+        <!-- Question Statistics -->
+        <div class="question-stats-section">
+            <h3 class="mb-4">Thống kê theo câu hỏi</h3>
+            <div id="questionStatsContainer"></div>
+        </div>
+    </div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Get eventId and formId from Thymeleaf variables
+    let eventId = /*[[${eventId}]]*/ null;
+    let formId = /*[[${formId}]]*/ null;
+    let showFormSelection = /*[[${showFormSelection}]]*/ false;
+    
+    console.log('EventId from Thymeleaf:', eventId);
+    console.log('FormId from Thymeleaf:', formId);
+    console.log('ShowFormSelection:', showFormSelection);
+    
+    // Function to load form statistics (called when user selects a form)
+    window.loadFormStats = function(selectedFormId) {
+        console.log('Loading statistics for formId:', selectedFormId);
+        formId = selectedFormId;
+        
+        // Hide form selection, show loading
+        const formSelectionSection = document.getElementById('formSelectionSection');
+        if (formSelectionSection) {
+            formSelectionSection.style.display = 'none';
+        }
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('statsContent').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        
+        // Update URL with formId
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('formId', selectedFormId);
+        history.pushState({}, '', currentUrl.toString());
+        
+        // Load statistics
+        loadFormStats();
+    };
+    
+    // Fallback: try to get from URL
+    if (!formId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log('URL params:', urlParams.toString());
+        if (urlParams.has('formId')) {
+            formId = urlParams.get('formId');
+            console.log('FormId from URL params:', formId);
+        } else {
+            const pathMatch = window.location.pathname.match(/\/forms\/stats\/(\d+)/);
+            if (pathMatch) {
+                formId = pathMatch[1];
+                console.log('FormId from path:', formId);
+            }
+        }
+    }
+    
+    // If showFormSelection is true, don't try to load stats
+    if (showFormSelection) {
+        console.log('Showing form selection, not loading stats');
+        return;
+    }
+    
+    if (!formId) {
+        console.error('Form ID not found. URL:', window.location.href);
+        console.error('Pathname:', window.location.pathname);
+        console.error('Search:', window.location.search);
+        // If we have eventId, show form selection instead of error
+        if (eventId) {
+            console.log('EventId found, should show form selection');
+            // Form selection should already be visible from Thymeleaf
+            return;
+        }
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+    }
+    
+    // Convert to number if it's a string
+    formId = Number(formId);
+    console.log('Final formId (number):', formId, typeof formId);
+    
+    // Load statistics
+    function loadFormStats() {
+        console.log('Loading form statistics for formId:', formId);
+        const apiUrl = `/forms/${formId}/stats`;
+        console.log('API URL:', apiUrl);
+        
+        fetch(apiUrl)
+            .then(response => {
+                console.log('Response status:', response.status, response.statusText);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Error response body:', text);
+                        throw new Error(`Failed to load statistics: ${response.status} ${response.statusText}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Statistics data received:', data);
+                if (!data) {
+                    throw new Error('No data received from API');
+                }
+                renderStatistics(data);
+            })
+            .catch(error => {
+                console.error('Error loading statistics:', error);
+                console.error('Error stack:', error.stack);
+                document.getElementById('loadingState').style.display = 'none';
+                const emptyState = document.getElementById('emptyState');
+                emptyState.style.display = 'block';
+                // Show error message
+                const errorMsg = document.createElement('p');
+                errorMsg.className = 'text-danger mt-2';
+                errorMsg.textContent = 'Lỗi: ' + error.message;
+                emptyState.appendChild(errorMsg);
+            });
+    }
+    
+    function renderStatistics(stats) {
+        // Hide loading, show content
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('statsContent').style.display = 'block';
+        
+        // Update header
+        document.getElementById('formTitle').textContent = `Thống kê: ${stats.formTitle || 'Form'}`;
+        document.getElementById('formType').textContent = `Loại: ${stats.formType || 'N/A'}`;
+        
+        // Update summary
+        document.getElementById('totalResponses').textContent = stats.totalResponses || 0;
+        document.getElementById('totalSubmissions').textContent = stats.totalSubmissions || 0;
+        document.getElementById('totalQuestions').textContent = stats.questionStats ? stats.questionStats.length : 0;
+        
+        // Render question statistics
+        const container = document.getElementById('questionStatsContainer');
+        container.innerHTML = '';
+        
+        if (!stats.questionStats || stats.questionStats.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p>Chưa có câu hỏi nào trong form này.</p></div>';
+            return;
+        }
+        
+        stats.questionStats.forEach((questionStat, index) => {
+            const questionCard = createQuestionCard(questionStat, index);
+            container.appendChild(questionCard);
+        });
+    }
+    
+    function createQuestionCard(questionStat, index) {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        
+        const title = document.createElement('div');
+        title.className = 'question-title';
+        title.textContent = `${index + 1}. ${questionStat.questionText}`;
+        card.appendChild(title);
+        
+        const meta = document.createElement('div');
+        meta.className = 'question-meta';
+        meta.innerHTML = `
+            <span class="badge bg-secondary">${questionStat.questionType}</span>
+            <span class="ms-2">Số câu trả lời: <strong>${questionStat.responseCount || 0}</strong></span>
+        `;
+        card.appendChild(meta);
+        
+        // Add chart or text responses based on question type
+        if (questionStat.questionType === 'RADIO' || questionStat.questionType === 'SELECT' || questionStat.questionType === 'CHECKBOX') {
+            if (questionStat.optionCounts && questionStat.optionCounts.length > 0) {
+                const chartContainer = document.createElement('div');
+                chartContainer.id = `chart-${questionStat.questionId}`;
+                chartContainer.className = 'chart-container';
+                card.appendChild(chartContainer);
+                
+                // Wait a bit for DOM to be ready, then render ApexChart
+                setTimeout(() => {
+                    renderOptionChart(questionStat.questionId, questionStat.optionCounts, questionStat.questionType);
+                }, 100);
+            } else {
+                const noData = document.createElement('div');
+                noData.className = 'text-muted';
+                noData.textContent = 'Chưa có dữ liệu';
+                card.appendChild(noData);
+            }
+        } else {
+            // For TEXT, EMAIL, PHONE, TEXTAREA
+            if (questionStat.textResponses && questionStat.textResponses.length > 0) {
+                const responsesList = document.createElement('div');
+                responsesList.className = 'text-responses-list';
+                
+                questionStat.textResponses.forEach(response => {
+                    const item = document.createElement('div');
+                    item.className = 'text-response-item';
+                    item.textContent = response;
+                    responsesList.appendChild(item);
+                });
+                
+                if (questionStat.responseCount > questionStat.textResponses.length) {
+                    const more = document.createElement('div');
+                    more.className = 'text-muted mt-2';
+                    more.textContent = `... và ${questionStat.responseCount - questionStat.textResponses.length} câu trả lời khác`;
+                    responsesList.appendChild(more);
+                }
+                
+                card.appendChild(responsesList);
+            } else {
+                const noData = document.createElement('div');
+                noData.className = 'text-muted';
+                noData.textContent = 'Chưa có câu trả lời';
+                card.appendChild(noData);
+            }
+        }
+        
+        return card;
+    }
+    
+    function renderOptionChart(questionId, optionCounts, questionType) {
+        const chartId = `chart-${questionId}`;
+        const chartElement = document.querySelector(`#${chartId}`);
+        
+        if (!chartElement) {
+            console.error(`Chart container not found: #${chartId}`);
+            return;
+        }
+        
+        // Check if ApexCharts is loaded
+        if (typeof ApexCharts === 'undefined') {
+            console.error('ApexCharts is not loaded. Waiting for it...');
+            // Wait for ApexCharts to load
+            let retries = 0;
+            const maxRetries = 10;
+            const checkApexCharts = setInterval(() => {
+                if (typeof ApexCharts !== 'undefined') {
+                    clearInterval(checkApexCharts);
+                    renderChart();
+                } else {
+                    retries++;
+                    if (retries >= maxRetries) {
+                        clearInterval(checkApexCharts);
+                        console.error('ApexCharts failed to load after retries');
+                        chartElement.innerHTML = '<p class="text-danger">Không thể tải thư viện biểu đồ. Vui lòng tải lại trang.</p>';
+                    }
+                }
+            }, 100);
+            return;
+        }
+        
+        renderChart();
+        
+        function renderChart() {
+            // Prepare data for ApexChart
+            const labels = optionCounts.map(item => item.option);
+            const series = optionCounts.map(item => Number(item.count)); // Ensure numbers
+            
+            console.log(`Rendering chart for question ${questionId}:`, { labels, series, questionType });
+            
+            // Determine chart type
+            const chartType = questionType === 'CHECKBOX' ? 'bar' : 'pie';
+            
+            const options = {
+                chart: {
+                    type: chartType,
+                    height: 350,
+                    toolbar: {
+                        show: true
+                    }
+                },
+                dataLabels: {
+                    enabled: true
+                },
+                colors: ['#e65100', '#28a745', '#17a2b8', '#ffc107', '#dc3545', '#6f42c1', '#20c997', '#fd7e14'],
+                title: {
+                    text: 'Phân bố câu trả lời',
+                    align: 'left',
+                    style: {
+                        fontSize: '16px',
+                        fontWeight: 600
+                    }
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            };
+            
+            if (chartType === 'pie') {
+                options.series = series;
+                options.labels = labels;
+            } else {
+                // Bar chart
+                options.series = [{
+                    name: 'Số lượng',
+                    data: series
+                }];
+                options.xaxis = {
+                    categories: labels,
+                    title: {
+                        text: 'Tùy chọn'
+                    }
+                };
+                options.yaxis = {
+                    title: {
+                        text: 'Số lượng'
+                    }
+                };
+                options.plotOptions = {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        endingShape: 'rounded'
+                    }
+                };
+            }
+            
+            try {
+                const chart = new ApexCharts(chartElement, options);
+                chart.render();
+                console.log(`Chart rendered successfully for question ${questionId}`);
+            } catch (error) {
+                console.error(`Error rendering chart for question ${questionId}:`, error);
+                chartElement.innerHTML = '<p class="text-danger">Lỗi khi vẽ biểu đồ: ' + error.message + '</p>';
+            }
+        }
+    }
+    
+    // Initialize when DOM is ready
+    // Since this script is in a fragment that gets injected, we need to run it immediately
+    // But also wait a bit to ensure the DOM elements exist
+    function init() {
+        console.log('Initializing form statistics page...');
+        console.log('Document ready state:', document.readyState);
+        
+        // Check if required elements exist
+        const loadingState = document.getElementById('loadingState');
+        const statsContent = document.getElementById('statsContent');
+        const emptyState = document.getElementById('emptyState');
+        
+        console.log('Elements found:', {
+            loadingState: !!loadingState,
+            statsContent: !!statsContent,
+            emptyState: !!emptyState
+        });
+        
+        if (!loadingState || !statsContent || !emptyState) {
+            console.error('Required DOM elements not found, retrying...');
+            setTimeout(init, 100);
+            return;
+        }
+        
+        // Load statistics
+        loadFormStats();
+    }
+    
+    // Try to initialize immediately
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        // DOM already loaded, but wait a bit for fragment injection
+        setTimeout(init, 50);
+    }
+})();
+</script>
+</div>

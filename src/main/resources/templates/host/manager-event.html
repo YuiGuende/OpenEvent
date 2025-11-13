@@ -136,6 +136,12 @@
                     <div class="nav-section-title">QUẢN LÝ FORM</div>
                     <ul class="nav-list">
                         <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/statis-forms'}" class="nav-link" data-link>
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Thống kê Form</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/create-forms'}" class="nav-link" data-link>
                                 <i class="bi bi-file-earmark-plus"></i>
                                 <span>Tạo Form</span>
@@ -209,10 +215,6 @@
                         Quay lại trang Host
                     </a>
 
-                    <button class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-share"></i>
-                        Chia sẻ sự kiện
-                    </button>
 
                     <div class="dropdown">
                         <button class="btn btn-icon" data-bs-toggle="dropdown" id="userDropdownBtn">
@@ -277,7 +279,7 @@
     <script src="/js/event-attendees.js"></script>
 
     <script>
-        // Load and display user name in header
+        // Load and display user name and avatar in header
         function loadUserName() {
             fetch('/api/current-user')
                 .then(response => response.json())
@@ -285,6 +287,8 @@
                     if (data && data.authenticated && data.name) {
                         const userDisplayNameEl = document.getElementById('userDisplayName');
                         const userNameHeaderEl = document.getElementById('userNameHeader');
+                        const userDropdownBtn = document.getElementById('userDropdownBtn');
+                        const userIcon = userDropdownBtn ? userDropdownBtn.querySelector('i') : null;
 
                         if (userDisplayNameEl) {
                             // Display name, limit to 15 characters for display
@@ -294,6 +298,33 @@
 
                         if (userNameHeaderEl) {
                             userNameHeaderEl.textContent = data.name;
+                        }
+                        
+                        // Update avatar: if avatar URL exists, replace icon with image; otherwise show initial letter
+                        if (userDropdownBtn && data.avatar && data.avatar.trim() !== '') {
+                            // Remove icon and add avatar image
+                            if (userIcon) {
+                                userIcon.style.display = 'none';
+                            }
+                            // Create or update avatar image
+                            let avatarImg = userDropdownBtn.querySelector('img.avatar-img');
+                            if (!avatarImg) {
+                                avatarImg = document.createElement('img');
+                                avatarImg.className = 'avatar-img';
+                                avatarImg.style.width = '32px';
+                                avatarImg.style.height = '32px';
+                                avatarImg.style.borderRadius = '50%';
+                                avatarImg.style.objectFit = 'cover';
+                                userDropdownBtn.insertBefore(avatarImg, userIcon);
+                            }
+                            avatarImg.src = data.avatar;
+                            avatarImg.alt = data.name;
+                        } else if (userDisplayNameEl) {
+                            // Show initial letter if no avatar
+                            if (!userDisplayNameEl.textContent || userDisplayNameEl.textContent.length === 0) {
+                                const initial = data.name.charAt(0).toUpperCase();
+                                userDisplayNameEl.textContent = initial;
+                            }
                         }
                     }
                 })

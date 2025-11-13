@@ -1,4 +1,4 @@
-package com.group02.openevent.controller.api;
+package com.group02.openevent.controller.host;
 
 import com.group02.openevent.dto.request.HostRegistrationRequest;
 import com.group02.openevent.model.organization.Organization;

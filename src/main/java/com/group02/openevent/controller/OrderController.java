@@ -4,9 +4,6 @@ import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.model.account.Account;
-import com.group02.openevent.repository.ICustomerRepo;
-import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.UserService;
 import com.group02.openevent.service.VoucherService;
@@ -19,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,17 +24,15 @@ import java.util.Optional;
 public class OrderController {
 
     private final OrderService orderService;
-    private final ICustomerRepo customerRepo;
-    private final IAccountRepo accountRepo;
     private final VoucherService voucherService;
     private final UserService userService;
+    private final com.group02.openevent.service.VolunteerService volunteerService;
 
-    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, VoucherService voucherService, UserService userService) {
+    public OrderController(OrderService orderService, VoucherService voucherService, UserService userService, com.group02.openevent.service.VolunteerService volunteerService) {
         this.orderService = orderService;
-        this.customerRepo = customerRepo;
-        this.accountRepo = accountRepo;
         this.voucherService = voucherService;
         this.userService = userService;
+        this.volunteerService = volunteerService;
     }
 
     @PostMapping
@@ -76,6 +70,13 @@ public class OrderController {
 
 
             Customer customer = userService.getCurrentUser(httpSession).getCustomer();
+            // Block if user has applied as volunteer for this event (pending/approved)
+            if (volunteerService.hasCustomerAppliedAsVolunteer(customer.getCustomerId(), request.getEventId())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Bạn đã apply tình nguyện viên cho sự kiện này, không thể mua vé"
+                ));
+            }
             // Check if customer already registered (paid) for this event
             if (orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
                 return ResponseEntity.badRequest().body(Map.of(

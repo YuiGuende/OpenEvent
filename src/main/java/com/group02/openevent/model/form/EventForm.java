@@ -32,7 +32,7 @@ public class EventForm {
     @Column(name = "form_description", columnDefinition = "TEXT")
     private String formDescription;
 
-    public enum FormType { REGISTER, CHECKIN, FEEDBACK }
+    public enum FormType { REGISTER, CHECKIN, FEEDBACK, VOLUNTEER }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "form_type", nullable = false, length = 20)

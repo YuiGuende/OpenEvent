@@ -77,6 +77,8 @@ public class EventManageController {
     private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
     @Autowired
     private UserService userService;
+    @Autowired
+    private VolunteerService volunteerService;
 
     private Long getCustomerAccountId(HttpSession session) {
 //        (Long) session.getAttribute("ACCOUNT_ID");
@@ -358,6 +360,17 @@ public class EventManageController {
 
         log.info("Notification fragment loaded for event: {}", event.getTitle());
         return "fragments/notification :: content";
+    }
+
+    @GetMapping("/fragments/volunteers")
+    public String volunteers(@RequestParam Long id, Model model) {
+        Event event = eventService.getEventResponseById(id);
+        model.addAttribute("event", event);
+        model.addAttribute("eventId", id);
+        // Load approved volunteers for this event
+        var approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, com.group02.openevent.model.volunteer.VolunteerStatus.APPROVED);
+        model.addAttribute("volunteers", approved);
+        return "host/volunteers :: content";
     }
 
 

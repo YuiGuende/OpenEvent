@@ -5,6 +5,7 @@ import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.payment.Payment;
+import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.ICustomerRepo;
@@ -225,27 +226,41 @@ public class OrderAIService {
             log.info("🔍 DEBUG: Order created successfully - orderId: {}, status: {}",
                     order.getOrderId(), order.getStatus());
 
-            // Create payment link
+            // Create payment link (or free payment if amount = 0)
             log.info("🔍 DEBUG: Creating payment link...");
             String returnUrl = "http://localhost:8080/payment/success?orderId=" + order.getOrderId();
             String cancelUrl = "http://localhost:8080/payment/cancel?orderId=" + order.getOrderId();
             Payment payment = paymentService.createPaymentLinkForOrder(order, returnUrl, cancelUrl);
-            log.info("🔍 DEBUG: Payment created successfully - paymentId: {}, checkoutUrl: {}",
-                    payment.getPaymentId(), payment.getCheckoutUrl());
+            log.info("🔍 DEBUG: Payment created successfully - paymentId: {}, status: {}",
+                    payment.getPaymentId(), payment.getStatus());
 
             // Clear pending order
             pendingOrders.remove(userId);
             log.info("🔍 DEBUG: Pending order cleared for userId: {}", userId);
 
+            // Check if this is a free event
+            boolean isFreeEvent = payment.getStatus() == PaymentStatus.PAID && 
+                                  payment.getAmount().compareTo(java.math.BigDecimal.ZERO) == 0;
+
             // Return success
             result.put("success", true);
             result.put("orderId", order.getOrderId());
-            result.put("paymentUrl", payment.getCheckoutUrl());
-            result.put("qrCode", payment.getQrCode());
             result.put("amount", payment.getAmount());
-            result.put("message", "✅ Đã tạo đơn hàng thành công!\n" +
-                    "🔗 Link thanh toán: " + payment.getCheckoutUrl() + "\n\n" +
-                    "💡 Vui lòng thanh toán để hoàn tất đăng ký.");
+            result.put("isFreeEvent", isFreeEvent);
+            
+            if (isFreeEvent) {
+                // Free event - registration completed immediately
+                result.put("message", "✅ Đăng ký sự kiện miễn phí thành công!\n\n" +
+                        "🎉 Bạn đã được đăng ký tham gia sự kiện này.\n" +
+                        "📧 Thông tin chi tiết sẽ được gửi qua email.");
+            } else {
+                // Paid event - need payment
+                result.put("paymentUrl", payment.getCheckoutUrl());
+                result.put("qrCode", payment.getQrCode());
+                result.put("message", "✅ Đã tạo đơn hàng thành công!\n" +
+                        "🔗 Link thanh toán: " + payment.getCheckoutUrl() + "\n\n" +
+                        "💡 Vui lòng thanh toán để hoàn tất đăng ký.");
+            }
 
             log.info("✅ DEBUG: Order creation completed successfully - orderId={}, userId={}, paymentId={}",
                     order.getOrderId(), userId, payment.getPaymentId());

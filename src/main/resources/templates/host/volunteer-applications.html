@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Applications</title>
+</head>
+<body>
+<div class="container" style="max-width: 1100px; margin: 24px auto;">
+    <h2>Volunteer applications</h2>
+    <div th:if="${param.success != null}">
+        <div th:if="${param.success[0] == 'approved'}">Đã accept user</div>
+        <div th:if="${param.success[0] == 'rejected'}">Đã reject user</div>
+    </div>
+    <table class="table" th:if="${applications != null}">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Event</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="app, i : ${applications}">
+            <td th:text="${i.index + 1}">1</td>
+            <td th:text="${app.customer.user.name != null ? app.customer.user.name : app.customer.user.account.email}">name</td>
+            <td th:text="${app.event.title}">event</td>
+            <td th:text="${app.status}">status</td>
+            <td>
+                <form th:action="@{'/manage/volunteers/' + ${app.volunteerApplicationId} + '/approve'}" method="post" style="display:inline;">
+                    <input type="hidden" name="eventId" th:value="${eventId}">
+                    <button type="submit">Accept</button>
+                </form>
+                <form th:action="@{'/manage/volunteers/' + ${app.volunteerApplicationId} + '/reject'}" method="post" style="display:inline;">
+                    <input type="hidden" name="eventId" th:value="${eventId}">
+                    <button type="submit">Reject</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+<style>
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+</style>
+</html>
+
+

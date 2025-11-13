@@ -98,6 +98,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteers'}" class="nav-link" data-link>
+                                <i class="bi bi-people-fill"></i>
+                                <span>Tình nguyện viên</span>
+                            </a>
+                        </li>
+                       
+                        <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/orders'}" class="nav-link" data-link>
                                 <i class="bi bi-receipt"></i>
                                 <span>Đơn hàng</span>

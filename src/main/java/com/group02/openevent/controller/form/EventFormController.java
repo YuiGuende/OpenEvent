@@ -8,6 +8,7 @@ import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IAccountRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -38,7 +40,9 @@ public class EventFormController {
     private final EventAttendanceService attendanceService;
     private final ICustomerRepo customerRepo;
     private final IAccountRepo accountRepo;
+    private final IUserRepo userRepo;
     private final UserService userService;
+    private final com.group02.openevent.service.VolunteerService volunteerService;
 
     // Host: Create form for event
     @GetMapping("/create/{eventId}")
@@ -60,6 +64,7 @@ public class EventFormController {
             switch (request.getFormType()) {
                 case REGISTER -> pageTitle = "Create Register Form";
                 case CHECKIN -> pageTitle = "Create Check-in Form";
+                case VOLUNTEER -> pageTitle = "Create Volunteer Apply Form";
                 default -> pageTitle = "Create Feedback Form";
             }
         }
@@ -131,6 +136,23 @@ public class EventFormController {
         }
     }
 
+    // User: View volunteer apply form
+    @GetMapping("/volunteer/{eventId}")
+    public String showVolunteerForm(@PathVariable Long eventId, Model model) {
+        try {
+            EventFormDTO form = eventFormService.getActiveFormByEventIdAndType(eventId, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
+            model.addAttribute("form", form);
+            model.addAttribute("eventId", eventId);
+            model.addAttribute("submitResponseRequest", new SubmitResponseRequest());
+            return "user/feedback-form"; // reuse generic form template UI
+        } catch (Exception e) {
+            model.addAttribute("eventId", eventId);
+            model.addAttribute("noFormMessage", "Chưa có form tình nguyện viên cho sự kiện này.");
+            model.addAttribute("form", null);
+            return "user/feedback-form";
+        }
+    }
+
     // User: View check-in form (after login and QR)
     @GetMapping("/checkin/{eventId}")
     public String showCheckinForm(@PathVariable Long eventId, Model model) {
@@ -165,18 +187,83 @@ public class EventFormController {
             }
             
             // Lấy customerId từ session thay vì từ form
-            Long accountIdFromAttr = (Long) httpRequest.getAttribute("currentUserId");
-            Long accountId = accountIdFromAttr;
+            // Note: currentUserId có thể là userId (từ OAuth) hoặc accountId (từ form login)
+            Long userIdOrAccountId = (Long) httpRequest.getAttribute("currentUserId");
+            Long accountId = null;
             
+            if (userIdOrAccountId != null) {
+                // Kiểm tra xem đây là userId hay accountId
+                // Thử tìm User bằng userId trước
+                Optional<com.group02.openevent.model.user.User> userOpt = userRepo.findById(userIdOrAccountId);
+                if (userOpt.isPresent()) {
+                    // Đây là userId, lấy accountId từ User
+                    accountId = userOpt.get().getAccount().getAccountId();
+                    log.info("Found userId {}, converted to accountId {}", userIdOrAccountId, accountId);
+                } else {
+                    // Có thể là accountId, thử tìm Account
+                    Optional<Account> accountOpt = accountRepo.findById(userIdOrAccountId);
+                    if (accountOpt.isPresent()) {
+                        accountId = userIdOrAccountId;
+                        log.info("Using accountId directly: {}", accountId);
+                    }
+                }
+            }
+            
+            // Fallback: Kiểm tra session attributes
             if (accountId == null) {
                 HttpSession session = httpRequest.getSession(false);
                 if (session != null) {
-                    accountId = (Long) session.getAttribute("ACCOUNT_ID");
+                    // Thử lấy ACCOUNT_ID trước
+                    Long sessionAccountId = (Long) session.getAttribute("ACCOUNT_ID");
+                    if (sessionAccountId != null) {
+                        accountId = sessionAccountId;
+                        log.info("Got accountId from session ACCOUNT_ID: {}", accountId);
+                    } else {
+                        // Thử lấy USER_ID và convert
+                        Long sessionUserId = (Long) session.getAttribute("USER_ID");
+                        if (sessionUserId != null) {
+                            Optional<com.group02.openevent.model.user.User> userOpt = userRepo.findById(sessionUserId);
+                            if (userOpt.isPresent()) {
+                                accountId = userOpt.get().getAccount().getAccountId();
+                                log.info("Found USER_ID {} in session, converted to accountId {}", sessionUserId, accountId);
+                            }
+                        }
+                    }
                 }
             }
             
             if (accountId == null) {
-                throw new RuntimeException("User not logged in");
+                // Redirect to login page with return URL to feedback form
+                String currentUri = httpRequest.getRequestURI();
+                String queryString = httpRequest.getQueryString();
+                String fullUrl = currentUri;
+                if (queryString != null) {
+                    fullUrl += "?" + queryString;
+                }
+                
+                // Try to get eventId to construct feedback form URL
+                Long feedbackEventId = eventId;
+                if (feedbackEventId == null && request.getFormId() != null) {
+                    try {
+                        EventFormDTO formDto = eventFormService.getFormById(request.getFormId());
+                        feedbackEventId = formDto.getEventId();
+                    } catch (Exception ex) {
+                        log.error("Could not get eventId from form: {}", ex.getMessage());
+                    }
+                }
+                
+                // Redirect to login with return URL
+                if (feedbackEventId != null) {
+                    String feedbackFormUrl = "/forms/feedback/" + feedbackEventId;
+                    String loginUrl = "/login?redirect=" + UriUtils.encode(feedbackFormUrl, StandardCharsets.UTF_8);
+                    log.info("User not logged in, redirecting to login: {}", loginUrl);
+                    return "redirect:" + loginUrl;
+                } else {
+                    // Fallback: redirect to login with current URL
+                    String loginUrl = "/login?redirect=" + UriUtils.encode(fullUrl, StandardCharsets.UTF_8);
+                    log.info("User not logged in, redirecting to login: {}", loginUrl);
+                    return "redirect:" + loginUrl;
+                }
             }
             
             final Long finalAccountId = accountId;
@@ -275,6 +362,15 @@ public class EventFormController {
                 }
                 // Redirect to event detail page after successful feedback submission
                 String redirectUrl = "/events/" + eventId + "?success=feedback_submitted";
+                log.info("Redirecting to: {}", redirectUrl);
+                return "redirect:" + redirectUrl;
+            }
+
+            if (formType == com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER) {
+                // Ensure customer exists (already created above)
+                // Create volunteer application after submitting the form answers
+                volunteerService.createVolunteerApplication(customer.getCustomerId(), eventId, null);
+                String redirectUrl = "/events/" + eventId + "?success=volunteer_applied";
                 log.info("Redirecting to: {}", redirectUrl);
                 return "redirect:" + redirectUrl;
             }
@@ -402,6 +498,7 @@ public class EventFormController {
                 case REGISTER -> groupedRegisterResponses = groupedResponses;
                 case CHECKIN -> groupedCheckinResponses = groupedResponses;
                 case FEEDBACK -> groupedFeedbackResponses = groupedResponses;
+                case VOLUNTEER -> groupedRegisterResponses = groupedResponses;
             }
             
             model.addAttribute("form", form);

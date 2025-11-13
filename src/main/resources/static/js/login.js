@@ -74,6 +74,22 @@ async function handleLogin(e) {
             // Handle success response
             try {
                 const json = await res.json();
+                
+                // Priority 1: Check for redirect parameter in URL (from query string)
+                const redirectUrl = getQueryParam('redirect') || getQueryParam('redirectUrl');
+                
+                if (redirectUrl) {
+                    if (resultEl) {
+                        resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
+                        resultEl.style.color = 'green';
+                    }
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 1000);
+                    return;
+                }
+                
+                // Priority 2: Use redirectPath from API response
                 if (json.redirectPath) {
                     if (resultEl) {
                         resultEl.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
@@ -84,6 +100,15 @@ async function handleLogin(e) {
                     }, 1000);
                     return;
                 }
+                
+                // Fallback: redirect to home
+                if (resultEl) {
+                    resultEl.textContent = 'Đăng nhập thành công!';
+                    resultEl.style.color = 'green';
+                }
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
             } catch (parseError) {
                 if (resultEl) {
                     resultEl.textContent = 'Đăng nhập thành công!';

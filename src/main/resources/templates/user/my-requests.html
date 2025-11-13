@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Requests - OpenEvent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            background-color: white;
+            color: #333;
+            padding: 30px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .requests-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .container.mb-5 {
+            flex: 1;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .requests-table thead {
+            background: #f9fafb;
+        }
+
+        .requests-table thead th {
+            padding: 16px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .requests-table tbody tr {
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .requests-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .requests-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .requests-table tbody td {
+            padding: 16px 20px;
+            vertical-align: middle;
+            color: #374151;
+            font-size: 15px;
+        }
+
+        .request-number {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .request-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f3f4f6;
+            color: #374151;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .request-type i {
+            font-size: 14px;
+        }
+
+        .event-name {
+            font-weight: 600;
+            color: #111827;
+            font-size: 18px;
+        }
+
+        .event-name:hover {
+            color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-accept {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-reject {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .request-date {
+            color: #6b7280;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .request-date i {
+            color: #9ca3af;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: #d1d5db;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .empty-state p {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        /* Disable blinking animation for user button */
+        .user-button,
+        .user-name,
+        .user-avatar {
+            animation: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .requests-table {
+                font-size: 0.85rem;
+            }
+
+            .requests-table thead th,
+            .requests-table tbody td {
+                padding: 12px 16px;
+            }
+
+            .page-header h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
+
+<div class="page-header">
+    <div class="container">
+        <h2><i class="bi bi-inbox"></i> My Requests</h2>
+        <p class="mb-0 text-muted">Quản lý và theo dõi các yêu cầu của bạn</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="requests-card">
+        <div th:if="${sentRequests == null || #lists.isEmpty(sentRequests)}" class="empty-state">
+            <i class="bi bi-inbox empty-state-icon"></i>
+            <h3>Chưa có yêu cầu nào</h3>
+            <p>Bạn chưa gửi yêu cầu nào. Hãy apply volunteer cho các sự kiện để bắt đầu!</p>
+        </div>
+
+        <table th:unless="${sentRequests == null || #lists.isEmpty(sentRequests)}" class="requests-table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Loại yêu cầu</th>
+                <th>Sự kiện</th>
+                <th>Trạng thái</th>
+                <th>Cập nhật</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="req, i : ${sentRequests}">
+                <td>
+                    <span class="request-number" th:text="${i.index + 1}">1</span>
+                </td>
+                <td>
+                    <span class="request-type">
+                        <i class="bi bi-person-check"></i>
+                        Apply Volunteer
+                    </span>
+                </td>
+                <td>
+                    <span class="event-name" th:text="${req.event.title}">Event name</span>
+                </td>
+                <td>
+                    <span th:switch="${req.status?.name()}" class="status-badge">
+                        <span th:case="'PENDING'" class="status-pending">
+                            <i class="bi bi-clock"></i> Đang chờ
+                        </span>
+                        <span th:case="'APPROVED'" class="status-accept">
+                            <i class="bi bi-check-circle"></i> Đã chấp nhận
+                        </span>
+                        <span th:case="'REJECTED'" class="status-reject">
+                            <i class="bi bi-x-circle"></i> Đã từ chối
+                        </span>
+                        <span th:case="*" class="status-pending">-</span>
+                    </span>
+                </td>
+                <td>
+                    <span class="request-date">
+                        <i class="bi bi-calendar3"></i>
+                        <span th:text="${#temporals.format(req.updatedAt != null ? req.updatedAt : req.createdAt, 'dd/MM/yyyy HH:mm')}">time</span>
+                    </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
+
+

@@ -46,6 +46,8 @@
                         <span>Notifications</span>
                         <span id="notificationBadge" class="notification-badge" style="display:none;">0</span>
                     </a>
+                    <a href="/my/requests" class="dropdown-item"
+                       style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My requests</a>
                     <div style="border-top:1px solid #f1f5f9;"></div>
                     <a href="#" id="logoutAction" class="dropdown-item"
                        style="display:block; padding:10px 12px; text-decoration:none; color:#ef4444; font-weight:600;">Sign
@@ -611,6 +613,17 @@
 
             .notification-menu-item:hover {
                 background: #f9fafb;
+            }
+
+            /* Disable all animations for user button to prevent blinking */
+            .user-button,
+            .user-name,
+            .user-avatar,
+            .user-button * {
+                animation: none !important;
+                -webkit-animation: none !important;
+                -moz-animation: none !important;
+                -o-animation: none !important;
             }
         </style>
 

@@ -11,6 +11,7 @@ import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.service.TicketTypeService;
+import com.group02.openevent.service.IHostWalletService;
 import com.group02.openevent.dto.payment.PayOSWebhookData;
 import com.group02.openevent.dto.payment.PaymentResult;
 import org.slf4j.Logger;
@@ -42,8 +43,9 @@ public class PaymentServiceImpl implements PaymentService {
     private final PayOS payOS;
     private final EventAttendanceService attendanceService;
     private final ApplicationEventPublisher eventPublisher;
+    private final IHostWalletService hostWalletService;
 
-    public PaymentServiceImpl(IPaymentRepo paymentRepo, IOrderRepo orderRepo, OrderService orderService, TicketTypeService ticketTypeService, PayOS payOS, EventAttendanceService attendanceService, ApplicationEventPublisher eventPublisher) {
+    public PaymentServiceImpl(IPaymentRepo paymentRepo, IOrderRepo orderRepo, OrderService orderService, TicketTypeService ticketTypeService, PayOS payOS, EventAttendanceService attendanceService, ApplicationEventPublisher eventPublisher, IHostWalletService hostWalletService) {
         this.paymentRepo = paymentRepo;
         this.orderRepo = orderRepo;
         this.orderService = orderService;
@@ -51,11 +53,18 @@ public class PaymentServiceImpl implements PaymentService {
         this.payOS = payOS;
         this.attendanceService = attendanceService;
         this.eventPublisher = eventPublisher;
+        this.hostWalletService = hostWalletService;
     }
 
     @Override
     public Payment createPaymentLinkForOrder(Order order, String returnUrl, String cancelUrl) {
         try {
+            // Check if this is a free event (totalAmount == 0)
+            if (order.getTotalAmount() != null && order.getTotalAmount().compareTo(BigDecimal.ZERO) == 0) {
+                logger.info("Free event detected for order: {}. Auto-completing payment without PayOS", order.getOrderId());
+                return createFreePaymentForOrder(order, returnUrl, cancelUrl);
+            }
+
             // Prepare PayOS payment request using SDK
             long orderCode = System.currentTimeMillis() / 1000; // Use timestamp as order code
             
@@ -115,6 +124,78 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (Exception e) {
             logger.error("Error creating payment link: ", e);
             throw new RuntimeException("Error creating payment link: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Tạo payment cho free event (totalAmount = 0)
+     * Tự động set status = PAID, không cần PayOS
+     */
+    private Payment createFreePaymentForOrder(Order order, String returnUrl, String cancelUrl) {
+        try {
+            logger.info("Creating free payment for order: {}", order.getOrderId());
+
+            // Update order status to PAID immediately
+            order.setStatus(com.group02.openevent.model.order.OrderStatus.PAID);
+            order.setUpdatedAt(LocalDateTime.now());
+            order = orderRepo.save(order);
+            logger.info("Order {} status updated to PAID", order.getOrderId());
+
+            // Create payment record with PAID status (no PayOS needed)
+            Payment payment = new Payment();
+            payment.setOrder(order);
+            payment.setPaymentLinkId(null); // No PayOS payment link for free events
+            payment.setAmount(BigDecimal.ZERO);
+            payment.setDescription("Free Event - Order #" + order.getOrderId());
+            payment.setCheckoutUrl(null);
+            payment.setQrCode(null);
+            payment.setStatus(PaymentStatus.PAID); // Set to PAID immediately
+            payment.setExpiredAt(null); // No expiration for free events
+            payment.setCreatedAt(LocalDateTime.now());
+            payment.setUpdatedAt(LocalDateTime.now());
+            payment.setReturnUrl(returnUrl);
+            payment.setCancelUrl(cancelUrl);
+
+            payment = paymentRepo.save(payment);
+            logger.info("Free payment {} created with PAID status", payment.getPaymentId());
+
+            // Create EventAttendance when order is paid
+            try {
+                attendanceService.createAttendanceFromOrder(order);
+                logger.info("EventAttendance created successfully for free order: {}", order.getOrderId());
+            } catch (Exception e) {
+                logger.error("Error creating EventAttendance for free order {}: {}", order.getOrderId(), e.getMessage(), e);
+                // Don't fail the payment creation if attendance creation fails
+            }
+
+            // Credit host wallet when order is paid successfully (even for free events, we track it)
+            // This will automatically create wallet if it doesn't exist
+            try {
+                if (order.getEvent() != null && order.getEvent().getHost() != null && order.getEvent().getHost().getId() != null) {
+                    Long hostId = order.getEvent().getHost().getId();
+
+                    // Ensure wallet exists (getWalletByHostId will create if not exists)
+                    hostWalletService.getWalletByHostId(hostId);
+
+                    // For free events, we still track the registration (amount = 0)
+                    BigDecimal amountToCredit = BigDecimal.ZERO;
+                    String balanceDescription = "Đăng ký miễn phí từ đơn hàng #" + order.getOrderId();
+
+                    hostWalletService.addBalance(hostId, amountToCredit, String.valueOf(order.getOrderId()), balanceDescription);
+                    logger.info("Free event registration tracked for host {} wallet for order {}", hostId, order.getOrderId());
+                } else {
+                    logger.warn("Warning: Order {} has no associated host, skipping wallet tracking", order.getOrderId());
+                }
+            } catch (Exception e) {
+                logger.error("Error tracking free event in host wallet: {}", e.getMessage(), e);
+                // Don't fail the payment creation if wallet credit fails
+            }
+
+            return payment;
+
+        } catch (Exception e) {
+            logger.error("Error creating free payment: ", e);
+            throw new RuntimeException("Error creating free payment: " + e.getMessage());
         }
     }
 
@@ -313,16 +394,16 @@ public class PaymentServiceImpl implements PaymentService {
                 if (order.getTicketType() != null && order.getQuantity() != null) {
                     try {
                         ticketTypeService.releaseTickets(
-                            order.getTicketType().getTicketTypeId(), 
+                            order.getTicketType().getTicketTypeId(),
                             order.getQuantity()
                         );
                         logger.debug("Released {} tickets for cancelled payment order", order.getQuantity());
                     } catch (Exception e) {
-                        logger.warn("Failed to release tickets for order {}: {}", 
+                        logger.warn("Failed to release tickets for order {}: {}",
                             order.getOrderId(), e.getMessage());
                     }
                 }
-                
+
                 order.setStatus(OrderStatus.CANCELLED);
                 order.setUpdatedAt(LocalDateTime.now());
                 orderRepo.save(order);

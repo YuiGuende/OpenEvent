@@ -11,6 +11,7 @@ import com.group02.openevent.model.department.Department;
 import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.user.Host;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IHostRepo;
 import com.group02.openevent.model.enums.EventStatus;

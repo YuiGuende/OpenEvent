@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -47,15 +46,15 @@ class OrderControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private IOrderRepo orderRepo;
-    @MockBean
+    @MockitoBean
     private SessionInterceptor sessionInterceptor;
-    @MockBean
+    @MockitoBean
     private OrderService orderService;
-    @MockBean
+    @MockitoBean
     private ICustomerRepo customerRepo;
-    @MockBean
+    @MockitoBean
     private VoucherService voucherService;
 
     @Autowired
@@ -83,7 +82,6 @@ class OrderControllerIntegrationTest {
         User user = new User();
         user.setAccount(account);
         user.setUserId(1L);
-        user.setEmail("test@example.com");
         user.setName("Test Customer");
         customer = new Customer();
         customer.setCustomerId(CUSTOMER_ID);

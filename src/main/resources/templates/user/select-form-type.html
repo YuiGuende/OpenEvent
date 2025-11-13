@@ -72,6 +72,15 @@
             transform: scale(1.05);
             color: white;
         }
+        .btn-volunteer {
+            background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%);
+            border: none;
+            color: white;
+        }
+        .btn-volunteer:hover {
+            transform: scale(1.05);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -80,6 +89,20 @@
             <div class="form-header">
                 <h2><i class="fas fa-file-alt"></i> Submit Form</h2>
                 <p>Vui lòng chọn loại form bạn muốn điền</p>
+            </div>
+
+            <!-- Volunteer Apply Form Card -->
+            <div class="form-type-card">
+                <div class="text-center">
+                    <div class="form-type-icon">
+                        <i class="fas fa-people-carry" style="color: #00bcd4;"></i>
+                    </div>
+                    <h4>Volunteer Application</h4>
+                    <p class="text-muted mb-3">Đăng ký làm tình nguyện viên cho sự kiện</p>
+                    <a th:href="@{'/forms/volunteer/' + ${eventId}}" class="btn btn-volunteer btn-form-type">
+                        <i class="fas fa-arrow-right"></i> Apply as Volunteer
+                    </a>
+                </div>
             </div>
 
             <!-- Register Form Card -->

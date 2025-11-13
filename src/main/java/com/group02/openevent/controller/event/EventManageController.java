@@ -77,6 +77,8 @@ public class EventManageController {
     private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
     @Autowired
     private UserService userService;
+    @Autowired
+    private VolunteerService volunteerService;
 
     private Long getCustomerAccountId(HttpSession session) {
 //        (Long) session.getAttribute("ACCOUNT_ID");
@@ -264,7 +266,7 @@ public class EventManageController {
         model.addAttribute("orders", orders);
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("selectedStatus", status);
-        model.addAttribute("eventId", id); // ← THÊM DÒNG NÀY
+
         return "fragments/orders :: content";
     }
 
@@ -363,7 +365,7 @@ public class EventManageController {
     @GetMapping("/fragments/statis-forms")
     public String statisForms(
             @RequestParam(required = false) Long id, // eventId
-            @RequestParam(required = false) Long formId, 
+            @RequestParam(required = false) Long formId,
             Model model) {
         try {
             // If formId is provided, load statistics for that form
@@ -376,23 +378,23 @@ public class EventManageController {
                 log.info("✅ Form statistics fragment loaded for form ID: {}", formId);
                 return "fragments/statis-form :: content";
             }
-            
+
             // If no formId, show form selection (need eventId)
             if (id == null) {
                 log.error("⚠️ Missing event ID parameter for statis-forms fragment");
                 model.addAttribute("error", "Missing event ID");
                 return "fragments/statis-form :: content";
             }
-            
+
             // Load event and forms list
             Event event = eventService.getEventResponseById(id);
             List<EventFormDTO> forms = eventFormService.getAllFormsByEventId(id);
-            
+
             model.addAttribute("eventId", id);
             model.addAttribute("event", event);
             model.addAttribute("forms", forms);
             model.addAttribute("showFormSelection", true);
-            
+
             log.info("✅ Form selection loaded for event ID: {} with {} forms", id, forms.size());
             return "fragments/statis-form :: content";
         } catch (Exception e) {
@@ -400,6 +402,17 @@ public class EventManageController {
             model.addAttribute("error", "Không thể tải thống kê: " + e.getMessage());
             return "fragments/statis-form :: content";
         }
+    }
+
+    @GetMapping("/fragments/volunteers")
+    public String volunteers(@RequestParam Long id, Model model) {
+        Event event = eventService.getEventResponseById(id);
+        model.addAttribute("event", event);
+        model.addAttribute("eventId", id);
+        // Load approved volunteers for this event
+        var approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, com.group02.openevent.model.volunteer.VolunteerStatus.APPROVED);
+        model.addAttribute("volunteers", approved);
+        return "host/volunteers :: content";
     }
 
 

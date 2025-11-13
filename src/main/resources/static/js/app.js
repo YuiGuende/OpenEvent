@@ -120,6 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         {
+            path: `/manage/event/${eventId}/volunteers`,
+            fragment: `/fragments/volunteers?id=${eventId}`,
+            title: `Tình nguyện viên`,
+            initializer: function () {
+                console.log('Initializing volunteers page...');
+            }
+        },
+        {
             path: `/manage/event/${eventId}/create-forms`,
             fragment: `/fragments/create-forms?id=${eventId}`,
             title: 'Tạo Form',

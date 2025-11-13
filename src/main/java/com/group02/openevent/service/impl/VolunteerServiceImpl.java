@@ -28,6 +28,7 @@ public class VolunteerServiceImpl implements VolunteerService {
     private final ICustomerRepo customerRepo;
     private final IEventRepo eventRepo;
     private final IAccountRepo accountRepo;
+    private final com.group02.openevent.repository.IOrderRepo orderRepo;
 
     @Override
     @Transactional
@@ -37,6 +38,12 @@ public class VolunteerServiceImpl implements VolunteerService {
         // Kiểm tra customer đã apply chưa
         if (volunteerApplicationRepo.existsByCustomer_CustomerIdAndEvent_Id(customerId, eventId)) {
             throw new IllegalStateException("Customer đã đăng ký làm volunteer cho event này rồi");
+        }
+
+        // Không cho apply nếu đã có order PAID (đăng ký làm customer)
+        boolean hasPaidOrder = orderRepo.existsPaidByEventIdAndCustomerId(eventId, customerId);
+        if (hasPaidOrder) {
+            throw new IllegalStateException("Bạn đã đăng ký tham gia sự kiện này với tư cách khách hàng");
         }
 
         Customer customer = customerRepo.findById(customerId)

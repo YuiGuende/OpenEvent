@@ -398,12 +398,13 @@
                       data-available=${ticket.availableQuantity}">
             <h3 th:text="${ticket.name}">Gold Entry - Saturday 15th November</h3>
 
-            <div th:if="${ticket.hasSale}">
+            <div th:if="${ticket.hasSale and ticket.finalPrice > 0}">
                 <span class="original-price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</span>
                 <span class="price" th:text="${ticket.formattedFinalPrice} + ' VNĐ'">23.00 VNĐ</span>
                 <span class="sale-badge" th:text="'-' + ${ticket.salePercentage} + '%'">-20%</span>
             </div>
-            <p th:unless="${ticket.hasSale}" class="price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</p>
+            <p th:if="${!ticket.hasSale and ticket.price > 0}" class="price" th:text="${ticket.formattedPrice} + ' VNĐ'">29.00 VNĐ</p>
+            <p th:if="${ticket.price == 0 or (ticket.hasSale and ticket.finalPrice == 0)}" class="price" style="color: #4CAF50; font-weight: 700;">FREE</p>
 
             <p class="desc" th:text="${ticket.description}">
                 Full-day access for adults (18+), including all main halls, workshops...
@@ -513,8 +514,12 @@
 
     function updateSummary(selectedTicket) {
         orderList.innerHTML = "";
+        const checkoutBtn = document.getElementById("checkoutBtn");
+        const btnText = checkoutBtn.querySelector('.btn-text');
+        
         if (selectedTicket) {
             const originalPrice = parseFloat(selectedTicket.dataset.price);
+            const isFreeEvent = originalPrice === 0;
 
             // Calculate host discount
             const hostDiscountAmount = originalPrice * (hostDiscountPercent / 100);
@@ -528,23 +533,44 @@
             const vat = priceAfterVoucherDiscount * 0.10;
             const finalPrice = priceAfterVoucherDiscount + vat;
 
+            // Update button text for free events
+            if (isFreeEvent) {
+                btnText.textContent = "Join for Free";
+                checkoutBtn.style.background = "#4CAF50";
+            } else {
+                btnText.textContent = "Place Order";
+                checkoutBtn.style.background = "#2196F3";
+            }
+
             // Build order summary
-            orderList.innerHTML += `<li><span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>${originalPrice} VNĐ</span></li>`;
+            if (isFreeEvent) {
+                orderList.innerHTML += `<li><span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span style="color: #4CAF50; font-weight: 700;">FREE</span></li>`;
+                orderList.innerHTML += `<li><span>Subtotal</span><span>FREE</span></li>`;
+                orderList.innerHTML += `<li><span>VAT (10%)</span><span>FREE</span></li>`;
+                totalDisplay.textContent = "Total FREE";
+                totalDisplay.style.color = "#4CAF50";
+            } else {
+                orderList.innerHTML += `<li><span>1 x ${capitalize(selectedTicket.dataset.type)} Entry</span><span>${originalPrice} VNĐ</span></li>`;
 
-            if (hostDiscountPercent > 0) {
-                orderList.innerHTML += `<li><span>Host Discount (${hostDiscountPercent}%)</span><span>-${hostDiscountAmount} VNĐ</span></li>`;
+                if (hostDiscountPercent > 0) {
+                    orderList.innerHTML += `<li><span>Host Discount (${hostDiscountPercent}%)</span><span>-${hostDiscountAmount} VNĐ</span></li>`;
+                }
+
+                if (appliedVoucher) {
+                    orderList.innerHTML += `<li><span>Voucher Discount (${appliedVoucher.code})</span><span>-${voucherDiscountAmount} VNĐ</span></li>`;
+                }
+
+                orderList.innerHTML += `<li><span>Subtotal</span><span>${priceAfterVoucherDiscount} VNĐ</span></li>`;
+                orderList.innerHTML += `<li><span>VAT (10%)</span><span>${vat} VNĐ</span></li>`;
+                totalDisplay.textContent = `Total ${finalPrice} VNĐ`;
+                totalDisplay.style.color = "";
             }
-
-            if (appliedVoucher) {
-                orderList.innerHTML += `<li><span>Voucher Discount (${appliedVoucher.code})</span><span>-${voucherDiscountAmount} VNĐ</span></li>`;
-            }
-
-            orderList.innerHTML += `<li><span>Subtotal</span><span>${priceAfterVoucherDiscount} VNĐ</span></li>`;
-            orderList.innerHTML += `<li><span>VAT (10%)</span><span>${vat} VNĐ</span></li>`;
-            totalDisplay.textContent = `Total ${finalPrice} VNĐ`;
         } else {
             orderList.innerHTML = `<li><span>No tickets selected</span><span>0 VNĐ</span></li>`;
             totalDisplay.textContent = "Total 0 VNĐ";
+            totalDisplay.style.color = "";
+            btnText.textContent = "Place Order";
+            checkoutBtn.style.background = "#2196F3";
         }
     }
 
@@ -607,7 +633,12 @@
             alert("Please select a ticket first!");
             return;
         }
-        if (!selectedMethod) {
+
+        const originalPrice = parseFloat(selectedTicket.dataset.price);
+        const isFreeEvent = originalPrice === 0;
+
+        // For free events, skip payment method selection
+        if (!isFreeEvent && !selectedMethod) {
             alert("Please select a payment method!");
             return;
         }
@@ -615,8 +646,6 @@
         // --- BẮT ĐẦU LOADING ---
         checkoutBtn.disabled = true;
         checkoutBtn.classList.add("loading");
-        // Nếu bạn ẩn text, bạn có thể thay đổi text ở đây
-        // checkoutBtn.querySelector('.btn-text').textContent = 'Placing...';
 
         try {
             const orderData = {
@@ -640,23 +669,44 @@
                 credentials: "include"
             });
             const paymentResult = await paymentResponse.json();
-            if (paymentResult.success && paymentResult.checkoutUrl) {
-                window.location.href = paymentResult.checkoutUrl;
-                // Lưu ý: Trang sẽ chuyển hướng, việc reset nút có thể không cần thiết
-                // nhưng vẫn nên có phòng trường hợp chuyển hướng thất bại
+            
+            if (paymentResult.success) {
+                if (paymentResult.isFreeEvent) {
+                    // Free event - show success message
+                    const successMessage = `
+                        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                    background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                                    z-index: 10000; max-width: 500px; text-align: center;">
+                            <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+                            <h2 style="color: #4CAF50; margin-bottom: 15px;">Đăng ký thành công!</h2>
+                            <p style="color: #666; margin-bottom: 25px; font-size: 16px;">
+                                Bạn đã đăng ký tham gia sự kiện này thành công.<br>
+                                Thông tin chi tiết sẽ được gửi qua email.
+                            </p>
+                            <button onclick="window.location.href='/user/my-orders'" 
+                                    style="background: #4CAF50; color: white; border: none; padding: 12px 30px; 
+                                           border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                Xem đơn hàng của tôi
+                            </button>
+                        </div>
+                        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                                    background: rgba(0,0,0,0.5); z-index: 9999;" onclick="this.parentElement.remove()"></div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', successMessage);
+                } else if (paymentResult.checkoutUrl) {
+                    // Paid event - redirect to PayOS
+                    window.location.href = paymentResult.checkoutUrl;
+                } else {
+                    throw new Error(paymentResult.message || "Payment creation failed");
+                }
             } else {
                 throw new Error(paymentResult.message || "Payment creation failed");
             }
         } catch (err) {
             console.error(err);
             alert("Error during checkout: " + err.message);
-        } finally {
-            // --- DỪNG LOADING ---
-            // Khối finally này sẽ *luôn luôn* chạy sau try/catch
-            // (trừ khi đã chuyển hướng trang thành công)
             checkoutBtn.disabled = false;
             checkoutBtn.classList.remove("loading");
-            // checkoutBtn.querySelector('.btn-text').textContent = 'Place Order';
         }
     });
 </script>

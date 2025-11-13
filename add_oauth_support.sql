@@ -21,3 +21,4 @@ CREATE INDEX idx_account_oauth_provider_id ON account(oauth_provider_id);
 -- Tạo composite index cho provider và provider_id
 CREATE INDEX idx_account_oauth_provider ON account(oauth_provider, oauth_provider_id);
 
+

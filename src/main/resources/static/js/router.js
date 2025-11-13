@@ -78,6 +78,15 @@ class SpaRouter {
         if (!route) {
             console.error(`[SpaRouter] Không tìm thấy route cho path: ${normalizedPath}`);
             console.error(`[SpaRouter] Available routes:`, this.routes.map(r => r.path));
+            console.error(`[SpaRouter] Normalized path: "${normalizedPath}"`);
+            console.error(`[SpaRouter] Trying to match with each route...`);
+            
+            // Debug: Try to find why route is not matching
+            this.routes.forEach((r, idx) => {
+                const routePath = r.path.split('?')[0].replace(/\/$/, '');
+                console.log(`  Route ${idx}: "${routePath}" === "${normalizedPath}"? ${routePath === normalizedPath}`);
+            });
+            
             console.error(`[SpaRouter] Chuyển về trang mặc định.`);
 
             const defaultRoute = this.routes[0]; // Lấy route đầu tiên làm mặc định

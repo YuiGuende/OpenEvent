@@ -42,8 +42,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -413,6 +416,107 @@ public class EventManageController {
         var approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, com.group02.openevent.model.volunteer.VolunteerStatus.APPROVED);
         model.addAttribute("volunteers", approved);
         return "host/volunteers :: content";
+    }
+
+    @GetMapping("/fragments/volunteer-create-form")
+    public String volunteerCreateForm(@RequestParam(required = false) Long id, Model model) {
+        if (id == null) {
+            log.error("⚠️ Missing event ID parameter for volunteer-create-form fragment");
+            model.addAttribute("error", "Missing event ID");
+            return "fragments/volunteer-create-form :: content";
+        }
+
+        log.info("🔍 Loading volunteer create form fragment for event ID: {}", id);
+
+        try {
+            Event event = eventService.getEventResponseById(id);
+            model.addAttribute("event", event);
+            model.addAttribute("eventId", id);
+
+            // Load volunteer form if exists
+            try {
+                var volunteerForm = eventFormService.getActiveFormByEventIdAndType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
+                model.addAttribute("volunteerForm", volunteerForm);
+                log.info("📋 Found existing volunteer form for event {}", id);
+            } catch (Exception e) {
+                log.info("📋 No existing volunteer form for event {}", id);
+                model.addAttribute("volunteerForm", null);
+            }
+
+            // Load all forms for this event to show in list
+            List<EventFormDTO> forms = eventFormService.getAllFormsByEventId(id);
+            // Filter only volunteer forms
+            List<EventFormDTO> volunteerForms = forms.stream()
+                    .filter(f -> f.getFormType() == com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER)
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("forms", volunteerForms);
+            log.info("📋 Loaded {} volunteer forms for event {}", volunteerForms.size(), id);
+
+            log.info("✅ Volunteer create form fragment loaded successfully for event: {}", event.getTitle());
+        } catch (Exception e) {
+            log.error("❌ Error loading volunteer create form fragment for event ID: {}", id, e);
+            model.addAttribute("error", "Không thể tải form cho sự kiện này: " + e.getMessage());
+            model.addAttribute("eventId", id);
+        }
+
+        return "fragments/volunteer-create-form :: content";
+    }
+
+    @GetMapping("/fragments/volunteer-requests")
+    public String volunteerRequests(@RequestParam(required = false) Long id, 
+                                    @RequestParam(required = false) Long formId,
+                                    Model model) {
+        if (id == null) {
+            log.error("⚠️ Missing event ID parameter for volunteer-requests fragment");
+            model.addAttribute("error", "Missing event ID");
+            return "fragments/volunteer-requests :: content";
+        }
+
+        log.info("🔍 Loading volunteer requests fragment for event ID: {}", id);
+
+        try {
+            Event event = eventService.getEventResponseById(id);
+            model.addAttribute("event", event);
+            model.addAttribute("eventId", id);
+
+            // Get volunteer form responses
+            List<com.group02.openevent.dto.form.FormResponseDTO> volunteerResponses = 
+                eventFormService.getResponsesByEventIdAndFormType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
+            
+            if (volunteerResponses == null) {
+                volunteerResponses = new ArrayList<>();
+            }
+
+            // Group responses by customerId
+            Map<Long, List<com.group02.openevent.dto.form.FormResponseDTO>> groupedResponses = volunteerResponses.stream()
+                .collect(Collectors.groupingBy(
+                    com.group02.openevent.dto.form.FormResponseDTO::getCustomerId,
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+
+            // Get volunteer form if exists
+            try {
+                var volunteerForm = eventFormService.getActiveFormByEventIdAndType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
+                model.addAttribute("form", volunteerForm);
+                if (formId == null && volunteerForm != null) {
+                    formId = volunteerForm.getFormId();
+                }
+            } catch (Exception e) {
+                log.info("📋 No volunteer form found for event {}", id);
+            }
+
+            model.addAttribute("groupedResponses", groupedResponses);
+            model.addAttribute("formId", formId);
+
+            log.info("✅ Loaded {} volunteer request groups for event {}", groupedResponses.size(), id);
+        } catch (Exception e) {
+            log.error("❌ Error loading volunteer requests fragment for event ID: {}", id, e);
+            model.addAttribute("error", "Không thể tải yêu cầu duyệt: " + e.getMessage());
+            model.addAttribute("eventId", id);
+        }
+
+        return "fragments/volunteer-requests :: content";
     }
 
 

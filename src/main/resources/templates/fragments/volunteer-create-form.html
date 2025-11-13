@@ -1,0 +1,242 @@
+<!-- Main Content -->
+<div class="container" th:fragment="content">
+    <!-- Error when missing event ID -->
+    <div th:if="${error != null and error == 'Missing event ID'}" class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>Lỗi:</strong> Thiếu thông tin event ID. Vui lòng truy cập từ trang quản lý sự kiện.
+    </div>
+    
+    <div class="row" th:if="${error == null or error != 'Missing event ID'}">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="page-header mb-4">
+                        <h2 class="card-title mb-2">
+                            <i class="bi bi-people"></i> Tạo Form Tình nguyện viên
+                        </h2>
+                        <p class="text-muted" th:if="${event != null}">
+                            Sự kiện: <strong th:text="${event.title}">Event Name</strong>
+                        </p>
+                        <p class="text-muted" th:if="${event == null and error != null}">
+                            <strong th:text="${error}">Error</strong>
+                        </p>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div th:if="${param.success != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill"></i> 
+                        <span th:if="${param.success[0] == 'form_created'}">Form đã được tạo thành công!</span>
+                        <span th:if="${param.success[0] == 'form_deleted'}">Form đã được xóa thành công!</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div th:if="${param.error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                        <span th:if="${param.error[0] == 'form_creation_failed'}">
+                            Lỗi khi tạo form: <span th:text="${param.message != null ? param.message[0] : 'Không xác định'}"></span>
+                        </span>
+                        <span th:if="${param.error[0] == 'delete_failed'}">Lỗi khi xóa form!</span>
+                        <span th:if="${param.error[0] == 'missing_event_id'}">Thiếu thông tin event ID!</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Hướng dẫn
+                        </h6>
+                        <p class="mb-0 small">
+                            Tạo form để ứng viên đăng ký làm tình nguyện viên cho sự kiện. Form này sẽ được hiển thị trên trang sự kiện và cho phép người dùng nộp đơn mà không cần mua vé.
+                        </p>
+                    </div>
+
+                    <!-- Volunteer Form Creation Card -->
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-6 offset-md-3">
+                            <div class="card h-100 shadow-sm form-type-card">
+                                <div class="card-body text-center">
+                                    <div class="form-icon-wrapper mb-3">
+                                        <div class="form-icon bg-info bg-opacity-10 text-info mx-auto">
+                                            <i class="bi bi-people"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="card-title mb-3">Form Tình nguyện viên</h4>
+                                    <p class="card-text text-muted small mb-4">
+                                        Tạo form để ứng viên đăng ký làm tình nguyện viên cho sự kiện. Không yêu cầu mua vé.
+                                    </p>
+                                    <div class="form-features mb-4">
+                                        <ul class="list-unstyled small text-start">
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Thu thập thông tin ứng viên
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Gửi yêu cầu tới Host để duyệt
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="bi bi-check-circle text-success"></i> Quản lý trạng thái duyệt
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <a th:href="@{'/forms/create/' + ${eventId} + '?type=VOLUNTEER'}"
+                                       class="btn btn-info w-100">
+                                        <i class="bi bi-plus-circle"></i> Tạo Form Tình nguyện viên
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Existing Volunteer Forms Info -->
+                    <div class="mt-5">
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-ul"></i> Forms Tình nguyện viên đã tạo
+                            </h5>
+                            <small class="text-muted">Quản lý và xem các form đã tạo</small>
+                        </div>
+                        
+                        <!-- Forms List -->
+                        <div th:if="${forms != null and !#lists.isEmpty(forms)}" class="forms-list">
+                            <div class="row g-3">
+                                <div class="col-md-6 col-lg-4" th:each="form : ${forms}">
+                                    <div class="card form-item-card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="card-title mb-0" th:text="${form.formTitle}">Form Title</h6>
+                                                <span class="badge bg-info" th:text="${form.formType.name()}">VOLUNTEER</span>
+                                            </div>
+                                            <p class="card-text small text-muted mb-2" 
+                                               th:text="${form.formDescription != null ? form.formDescription : 'Không có mô tả'}">
+                                                Form description
+                                            </p>
+                                            <div class="form-meta mb-3">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-question-circle"></i>
+                                                    <span th:text="${form.questions != null ? form.questions.size() : 0}">0</span> câu hỏi
+                                                </small>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar"></i>
+                                                    Tạo: <span th:text="${#temporals.format(form.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                                </small>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-requests?formId=' + ${form.formId}}"
+                                                   class="btn btn-sm btn-outline-primary flex-fill"
+                                                   data-link>
+                                                    <i class="bi bi-clipboard-check"></i> Xem yêu cầu
+                                                </a>
+                                                <a th:href="@{'/manage/event/' + ${eventId} + '/statis-forms?formId=' + ${form.formId}}"
+                                                   class="btn btn-sm btn-outline-info flex-fill"
+                                                   data-link>
+                                                    <i class="bi bi-bar-chart"></i> Thống kê
+                                                </a>
+                                            </div>
+                                            <div class="mt-2">
+                                                <form th:action="@{'/forms/' + ${form.formId} + '/delete'}" 
+                                                      method="post" 
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa form này?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                                        <i class="bi bi-trash"></i> Xóa
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div th:if="${forms == null or #lists.isEmpty(forms)}" class="empty-state">
+                            <div class="alert alert-secondary" role="alert">
+                                <i class="bi bi-info-circle"></i>
+                                <small>
+                                    Chưa có form tình nguyện viên nào được tạo. Bạn có thể tạo form bằng cách nhấn nút "Tạo Form Tình nguyện viên" phía trên.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-icon-wrapper {
+        margin-top: 10px;
+    }
+    
+    .form-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+    }
+    
+    .form-type-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 2px solid transparent;
+    }
+    
+    .form-type-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+        border-color: #e9ecef;
+    }
+    
+    .page-header {
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 15px;
+    }
+    
+    .form-features {
+        min-height: 120px;
+    }
+    
+    .card-title {
+        font-weight: 600;
+    }
+    
+    /* Form Item Card Styling */
+    .form-item-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .form-item-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        border-color: #17a2b8;
+    }
+    
+    .form-item-card .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #343a40;
+    }
+    
+    .form-item-card .badge {
+        font-size: 0.7rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    .form-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .form-meta i {
+        margin-right: 5px;
+    }
+    
+    .empty-state {
+        padding: 20px 0;
+    }
+</style>
+

@@ -1,5 +1,6 @@
 package com.group02.openevent.model.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.admin.Admin;
@@ -56,6 +57,7 @@ public class User {
     
     // Role entities - optional relationships
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Customer customer;
     
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

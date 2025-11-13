@@ -16,6 +16,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.enableSimpleBroker("/topic", "/queue");
         // Prefix for messages bound to methods annotated with @MessageMapping
         config.setApplicationDestinationPrefixes("/app");
+        config.setUserDestinationPrefix("/user");
     }
 
     @Override
@@ -23,7 +24,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Register STOMP endpoint
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
-                .addInterceptors(new org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor())
+                .addInterceptors(new HttpSessionWebSocketInterceptor())
+                .setHandshakeHandler(new UserIdHandshakeHandler())
                 .withSockJS();
     }
 }

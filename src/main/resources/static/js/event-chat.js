@@ -3,6 +3,8 @@ let currentRoomId = null;
 let currentRecipientId = null;
 let currentEventId = null;
 let currentUserId = null;
+let currentRoomType = null; // 'HOST_DEPARTMENT' or 'HOST_VOLUNTEERS'
+let currentRoomSubscription = null; // Track current room subscription
 
 let roomListEl;
 let messageListEl;
@@ -10,6 +12,7 @@ let roomTitleEl;
 let messageInputEl;
 let sendBtnEl;
 let emptyStateEl;
+let createRoomBtnEl;
 
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('event-chat');
@@ -19,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentEventId = parseInt(container.dataset.eventId, 10);
     currentUserId = parseInt(container.dataset.currentUserId, 10);
+    const isHost = container.dataset.isHost === 'true';
 
     roomListEl = document.getElementById('chat-room-list');
     messageListEl = document.getElementById('chat-message-list');
@@ -26,12 +30,25 @@ document.addEventListener('DOMContentLoaded', () => {
     messageInputEl = document.getElementById('chat-input');
     sendBtnEl = document.getElementById('chat-send-btn');
     emptyStateEl = document.getElementById('chat-empty-state');
+    createRoomBtnEl = document.getElementById('create-volunteer-room-btn');
 
-    if (!Number.isFinite(currentEventId) || !Number.isFinite(currentUserId)) {
-        console.warn('Event chat requires both eventId and currentUserId.');
+    // Allow eventId = 0 for department chat (HOST_DEPARTMENT rooms)
+    if (!Number.isFinite(currentUserId) || (currentEventId !== 0 && !Number.isFinite(currentEventId))) {
+        console.warn('Event chat requires valid currentUserId and eventId (can be 0 for department chat).');
         return;
     }
+    
+    // Hide create room button if not host
+    if (createRoomBtnEl && !isHost) {
+        createRoomBtnEl.style.display = 'none';
+    }
 
+    console.log('Event chat initializing:', {
+        eventId: currentEventId,
+        userId: currentUserId,
+        container: !!container
+    });
+    
     connectToChat();
     loadRooms();
 
@@ -46,42 +63,135 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    if (createRoomBtnEl) {
+        createRoomBtnEl.addEventListener('click', createVolunteerRoom);
+    }
 });
 
 function connectToChat() {
     const socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, () => {
-        stompClient.subscribe(`/queue/event-chat/${currentUserId}`, (frame) => {
-            const payload = JSON.parse(frame.body);
-            handleIncomingMessage(payload);
-        });
+        console.log('Connected to event chat WebSocket');
+        // Room subscriptions will be set up when a room is selected
     }, (error) => {
         console.error('STOMP connection error', error);
     });
 }
 
-function loadRooms() {
-    fetch(`/api/event-chat/rooms/${currentEventId}`, {credentials: 'include'})
-        .then((res) => {
-            if (!res.ok) {
-                throw new Error(`Failed to load rooms: ${res.status}`);
+function subscribeToRoom(roomId) {
+    if (!roomId) {
+        console.warn('subscribeToRoom called with invalid roomId:', roomId);
+        return;
+    }
+
+    if (!stompClient) {
+        console.warn('STOMP client not initialized, cannot subscribe to room');
+        // Retry after a short delay
+        setTimeout(() => subscribeToRoom(roomId), 500);
+        return;
+    }
+
+    if (!stompClient.connected) {
+        console.warn('STOMP client not connected, will retry subscription to room:', roomId);
+        // Wait for connection, then retry
+        const checkConnection = setInterval(() => {
+            if (stompClient && stompClient.connected) {
+                clearInterval(checkConnection);
+                subscribeToRoom(roomId);
             }
-            return res.json();
-        })
-        .then((rooms) => {
-            renderRoomList(Array.isArray(rooms) ? rooms : []);
-        })
-        .catch((err) => {
-            console.error(err);
-        });
+        }, 200);
+        // Stop retrying after 5 seconds
+        setTimeout(() => clearInterval(checkConnection), 5000);
+        return;
+    }
+
+    // Unsubscribe from previous room if exists
+    if (currentRoomSubscription) {
+        console.log('Unsubscribing from previous room');
+        currentRoomSubscription.unsubscribe();
+        currentRoomSubscription = null;
+    }
+
+    // Subscribe to room-specific destination
+    const destination = `/queue/event-chat/rooms/${roomId}`;
+    console.log('Subscribing to room:', destination, 'roomId:', roomId);
+    
+    try {
+        currentRoomSubscription = stompClient.subscribe(destination, (frame) => {
+        try {
+            if (!frame || !frame.body) {
+                console.warn('Received empty frame from WebSocket');
+                return;
+            }
+            
+            // Validate that this is a chat message (should have roomId, body, etc.)
+            const bodyStr = frame.body.toString().trim();
+            
+            // Skip if body doesn't look like JSON
+            if (!bodyStr.startsWith('{') || !bodyStr.endsWith('}')) {
+                console.warn('Received non-JSON message, skipping:', bodyStr.substring(0, 100));
+                return;
+            }
+            
+            console.log('Received WebSocket message:', bodyStr);
+            const payload = JSON.parse(bodyStr);
+            
+            // Validate payload structure
+            if (!payload.roomId || !payload.body) {
+                console.warn('Invalid chat message format:', payload);
+                return;
+            }
+            
+            handleIncomingMessage(payload);
+        } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+            console.error('Raw message body:', frame.body);
+            // Don't crash, just log the error
+        }
+    });
+        console.log('Successfully subscribed to room:', destination);
+    } catch (error) {
+        console.error('Error subscribing to room:', error);
+    }
+}
+
+async function loadRooms() {
+    const url = `/api/event-chat/rooms/${currentEventId}`;
+    try {
+        const res = await fetch(url, { credentials: 'include' });
+        const text = await res.text();
+
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} @ ${url}\nBody: ${text.slice(0,200)}`);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON from ${url}\nBody: ${text.slice(0,200)}`);
+        }
+
+        const rooms = Array.isArray(data) ? data : (data && data.content ? data.content : []);
+        console.log('rooms length =', rooms.length, rooms);
+        if (rooms.length > 0) {
+            console.log('First room data:', rooms[0]);
+        }
+
+        try {
+            renderRoomList(rooms);
+        } catch (e) {
+            console.error('renderRoomList failed:', e, rooms);
+        }
+    } catch (err) {
+        console.error('loadRooms failed:', err);
+    }
 }
 
 function renderRoomList(rooms) {
     if (!roomListEl) return;
     roomListEl.innerHTML = '';
 
-    if (!rooms.length) {
+    if (!Array.isArray(rooms) || rooms.length === 0) {
         const li = document.createElement('li');
         li.className = 'chat-room-empty';
         li.textContent = 'Chưa có cuộc trò chuyện nào.';
@@ -90,39 +200,88 @@ function renderRoomList(rooms) {
     }
 
     rooms.forEach((room, index) => {
+        if (!room || room.id == null) return; // guard
+
         const li = document.createElement('li');
         li.className = 'chat-room-item';
         li.dataset.roomId = room.id;
+        li.dataset.roomType = room.roomType || 'HOST_VOLUNTEERS';
 
-        const counterpart = resolveCounterpart(room);
-        li.dataset.recipientId = counterpart?.userId || '';
-        li.dataset.recipientName = counterpart?.name || counterpart?.displayName || counterpart?.email || `User ${counterpart?.userId}`;
+        let roomName = '';
+        let roomSubtext = '';
+        
+        if (room.roomType === 'HOST_DEPARTMENT') {
+            // Room với Department
+            // Backend trả về: host trong field host, department trong field volunteer
+            const host = room.host;
+            const department = room.volunteer; // Backend trả về department trong field volunteer
+            
+            // Xác định đối tác: nếu current user là host thì hiển thị department, ngược lại hiển thị host
+            let counterpart = null;
+            if (host && host.userId === currentUserId) {
+                // Current user là host → hiển thị department
+                counterpart = department;
+                roomName = department ? (department.name || department.email || 'Department') : 'Department';
+                roomSubtext = 'Chat với Department';
+                // Fallback về userId = 2 nếu department null (vì chỉ có 1 department)
+                li.dataset.recipientId = (department && department.userId) ? department.userId.toString() : '2';
+            } else {
+                // Current user là department → hiển thị host
+                counterpart = host;
+                roomName = host ? (host.name || host.email || 'Host') : 'Host';
+                roomSubtext = 'Chat với Host';
+                li.dataset.recipientId = (host && host.userId) ? host.userId.toString() : '';
+            }
+        } else if (room.roomType === 'HOST_VOLUNTEERS') {
+            // Group chat với Volunteers
+            roomName = room.eventTitle || `Sự kiện #${room.eventId || ''}`;
+            roomSubtext = 'Group chat với Volunteers';
+            li.dataset.recipientId = ''; // Group chat không có single recipient
+        }
+
+        li.dataset.recipientName = roomName;
 
         li.innerHTML = `
-            <div class="chat-room-name">${li.dataset.recipientName}</div>
-            <div class="chat-room-subtext">${room.createdAt ? formatDate(room.createdAt) : ''}</div>
+            <div class="chat-room-name">${roomName}</div>
+            <div class="chat-room-subtext">${roomSubtext}</div>
+            ${room.roomType === 'HOST_VOLUNTEERS' ? '<span class="badge badge-group">Group</span>' : ''}
         `;
 
-        li.addEventListener('click', () => {
-            selectRoom(li);
-        });
-
+        li.addEventListener('click', () => selectRoom(li));
         roomListEl.appendChild(li);
 
-        if (index === 0) {
-            selectRoom(li);
-        }
+        if (index === 0) selectRoom(li);
     });
 }
 
 function selectRoom(li) {
-    if (!li) return;
+    if (!li) {
+        console.warn('selectRoom called with null/undefined li');
+        return;
+    }
+
+    const roomId = parseInt(li.dataset.roomId, 10);
+    const recipientId = li.dataset.recipientId ? parseInt(li.dataset.recipientId, 10) : null;
+    const roomType = li.dataset.roomType || 'HOST_VOLUNTEERS';
+    
+    console.log('selectRoom called:', {
+        roomId: roomId,
+        recipientId: recipientId,
+        roomType: roomType,
+        recipientName: li.dataset.recipientName
+    });
+
+    if (!Number.isFinite(roomId)) {
+        console.error('Invalid roomId:', li.dataset.roomId);
+        return;
+    }
 
     Array.from(roomListEl.children).forEach((child) => child.classList.remove('active'));
     li.classList.add('active');
 
-    currentRoomId = parseInt(li.dataset.roomId, 10);
-    currentRecipientId = parseInt(li.dataset.recipientId, 10);
+    currentRoomId = roomId;
+    currentRecipientId = recipientId;
+    currentRoomType = roomType;
 
     if (roomTitleEl) {
         roomTitleEl.textContent = li.dataset.recipientName || 'Chat';
@@ -135,6 +294,9 @@ function selectRoom(li) {
         messageListEl.innerHTML = '';
     }
 
+    // Subscribe to room-specific WebSocket destination
+    subscribeToRoom(currentRoomId);
+    
     loadHistory(currentRoomId);
 }
 
@@ -176,14 +338,19 @@ function sendMessage() {
         return;
     }
 
-    if (!Number.isFinite(currentRecipientId)) {
+    // For HOST_VOLUNTEERS (group chat), recipientUserId is not required
+    // For HOST_DEPARTMENT, we need recipientUserId (the counterpart: host or department)
+    if (currentRoomType === 'HOST_DEPARTMENT' && !Number.isFinite(currentRecipientId)) {
         alert('Không xác định được đối tượng nhận tin.');
         return;
     }
 
+    // For group chat, we still send recipientUserId (can be any participant or null)
+    // Backend will handle group chat logic
+    // For department chat (eventId = 0), recipientUserId is required (host or department)
     const payload = {
-        eventId: currentEventId,
-        recipientUserId: currentRecipientId,
+        eventId: currentEventId || 0, // Use 0 for department chat
+        recipientUserId: currentRecipientId || (currentRoomType === 'HOST_VOLUNTEERS' ? currentUserId : null),
         content: content
     };
 
@@ -235,29 +402,60 @@ function markRoomUnread(roomId) {
 }
 
 function resolveCounterpart(room) {
-    if (!room) return null;
-
-    const host = room.host;
-    const volunteer = room.volunteer;
-
-    const normalizeUser = (user) => {
-        if (!user) return null;
-        const accountEmail = user.account?.email;
-        return {
-            userId: user.userId,
-            name: user.name,
-            email: accountEmail,
-            displayName: user.name || accountEmail || `User ${user.userId}`
-        };
-    };
-
-    const normalizedHost = normalizeUser(host);
-    const normalizedVolunteer = normalizeUser(volunteer);
-
-    if (normalizedHost && normalizedHost.userId !== currentUserId) {
-        return normalizedHost;
+    if (!room) {
+        console.warn('resolveCounterpart called with null/undefined room');
+        return null;
     }
-    return normalizedVolunteer;
+
+    // For HOST_DEPARTMENT: volunteer field contains department
+    // For HOST_VOLUNTEERS: volunteer is null (group chat)
+    if (room.roomType === 'HOST_DEPARTMENT') {
+        return room.volunteer; // Department user
+    }
+    
+    // For group chat, no single counterpart
+    return null;
+}
+
+async function createVolunteerRoom() {
+    if (!currentEventId) {
+        alert('Không xác định được sự kiện.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/event-chat/rooms/create-volunteer-room?eventId=${currentEventId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to create room: ${response.status} ${errorText}`);
+        }
+
+        const newRoom = await response.json();
+        console.log('Created volunteer room:', newRoom);
+        
+        // Reload rooms to show the new room
+        await loadRooms();
+        
+        // Select the newly created room
+        setTimeout(() => {
+            const roomItem = Array.from(roomListEl.children).find(
+                li => parseInt(li.dataset.roomId, 10) === newRoom.id
+            );
+            if (roomItem) {
+                selectRoom(roomItem);
+            }
+        }, 100);
+    } catch (error) {
+        console.error('Error creating volunteer room:', error);
+        alert('Không thể tạo phòng chat. ' + error.message);
+    }
 }
 
 function scrollMessagesToBottom() {
@@ -282,5 +480,14 @@ window.connectToChat = connectToChat;
 window.sendMessage = sendMessage;
 window.loadHistory = loadHistory;
 window.loadRooms = loadRooms;
+window.createVolunteerRoom = createVolunteerRoom;
+
+window.addEventListener('error',  e => {
+    console.error('[window.error]', e.message, e.error?.stack || '');
+});
+
+window.addEventListener('unhandledrejection', e => {
+    console.error('[unhandledrejection]', e.reason?.message || e.reason, e.reason?.stack || '');
+});
 
 

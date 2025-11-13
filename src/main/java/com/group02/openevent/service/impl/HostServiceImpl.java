@@ -8,9 +8,11 @@ import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IHostRepo;
+import com.group02.openevent.service.EventChatService;
 import com.group02.openevent.service.HostService;
 import com.group02.openevent.service.OrganizationService;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,18 +22,22 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class HostServiceImpl implements HostService {
     private final IHostRepo hostRepo;
     private final OrganizationService organizationService;
     private final IAccountRepo accountRepo;
     private final ICustomerRepo customerRepo;
+    private final EventChatService eventChatService;
 
     public HostServiceImpl(IHostRepo hostRepo, OrganizationService organizationService,
-                           IAccountRepo accountRepo, ICustomerRepo customerRepo) {
+                           IAccountRepo accountRepo, ICustomerRepo customerRepo,
+                           EventChatService eventChatService) {
         this.hostRepo = hostRepo;
         this.organizationService = organizationService;
         this.accountRepo = accountRepo;
         this.customerRepo = customerRepo;
+        this.eventChatService = eventChatService;
     }
     
     @Override
@@ -116,6 +122,17 @@ public class HostServiceImpl implements HostService {
         customerRepo.save(customer);
 
         // Lưu host
-        return hostRepo.save(host);
+        Host savedHost = hostRepo.save(host);
+        
+        // Tự động tạo room chat với department
+        try {
+            eventChatService.createHostDepartmentRoom(savedHost.getUser().getUserId());
+            log.info("Successfully created Host-Department chat room for host: {}", savedHost.getUser().getUserId());
+        } catch (Exception e) {
+            log.warn("Failed to create host-department chat room: {}", e.getMessage());
+            // Không throw exception, chỉ log warning để không ảnh hưởng đến quá trình register host
+        }
+        
+        return savedHost;
     }
 }

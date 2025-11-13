@@ -1,5 +1,6 @@
 package com.group02.openevent.model.chat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.group02.openevent.model.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class EventChatMessage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_chat_message_room"))
+    @JsonIgnore
     private EventChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)

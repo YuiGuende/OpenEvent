@@ -159,6 +159,12 @@
                                 <span>Thông báo</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a th:href="@{'/event-chat?eventId=' + ${eventId}}" class="nav-link">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Chat với Volunteer</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
@@ -232,9 +238,6 @@
             <!-- Main Content Fragment -->
             <main id="main-content" class="main-content">
                 <div th:replace="~{__${content}__}"></div>
-                <div class="main-widget mt-4">
-                    <div th:replace="~{fragments/event-chat :: eventChat(${eventId}, ${uid})}"></div>
-                </div>
                 <!-- Content will be loaded dynamically by SPA router -->
             </main>
 

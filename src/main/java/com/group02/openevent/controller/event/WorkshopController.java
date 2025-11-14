@@ -3,8 +3,12 @@ package com.group02.openevent.controller.event;
 import com.group02.openevent.dto.event.WorkshopEventDetailDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.service.IWorkshopService;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,14 +19,18 @@ public class WorkshopController {
 
     private final IWorkshopService workshopService;
     private final EventService eventService;
+    private final OrderService orderService;
+    private final UserService userService;
 
-    public WorkshopController(IWorkshopService workshopService, EventService eventService) {
+    public WorkshopController(IWorkshopService workshopService, EventService eventService, OrderService orderService, UserService userService) {
         this.workshopService = workshopService;
         this.eventService = eventService;
+        this.orderService = orderService;
+        this.userService = userService;
     }
 
     @GetMapping("/workshop/{id}")
-    public String getWorkshopEventDetail(@PathVariable("id") Long id, Model model) {
+    public String getWorkshopEventDetail(@PathVariable("id") Long id, Model model, HttpSession session) {
         try {
             // 1. Kiểm tra event type trước
             Event event = eventService.getEventById(id)
@@ -34,12 +42,25 @@ public class WorkshopController {
                 return "redirect:/events/" + id;
             }
             
+            // Check if user has already purchased a ticket for this event
+            boolean hasPurchasedTicket = false;
+            try {
+                Customer customer = userService.getCurrentUser(session).getCustomer();
+                if (customer != null) {
+                    hasPurchasedTicket = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), id);
+                }
+            } catch (Exception e) {
+                // User not logged in or not a customer - allow access
+                hasPurchasedTicket = false;
+            }
+            
             // 3. Lấy ra DTO duy nhất, đã chứa ĐẦY ĐỦ thông tin
             WorkshopEventDetailDTO eventDetail = workshopService.getWorkshopEventById(id);
 
             // 4. Truyền DUY NHẤT DTO này sang view với tên là "eventDetail"
             model.addAttribute("eventDetail", eventDetail);
             model.addAttribute("error", null);
+            model.addAttribute("hasPurchasedTicket", hasPurchasedTicket);
 
         } catch (Exception e) {
             // Xử lý lỗi nếu không tìm thấy sự kiện

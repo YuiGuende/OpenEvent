@@ -562,11 +562,16 @@
         }
 
         /* ==========================================================================
-           Apply Volunteer Section CSS - Đồng bộ với Event Guidelines
+           Apply Volunteer Section CSS - Đồng bộ với Event Guidelines Section
            ========================================================================== */
-        #apply-volunteer {
+        section#apply-volunteer,
+        #apply-volunteer.section,
+        #apply-volunteer.section-padding {
             background: linear-gradient(135deg, #FFF8F5 0%, #FFE8DC 100%) !important;
+            background-image: linear-gradient(135deg, #FFF8F5 0%, #FFE8DC 100%) !important;
             padding: 60px 0 !important;
+            border: none !important;
+            box-shadow: none !important;
         }
 
         #apply-volunteer .section-title {
@@ -1668,25 +1673,33 @@
                         </ul>
                     </div>
 
-                    <!-- Buy button: purchasable whenever not sold out -->
-                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut() and ticket.price > 0}"
+                    <!-- Đã mua vé: hiển thị nếu user đã mua vé -->
+                    <a th:if="${hasPurchasedTicket}"
+                       href="#"
+                       class="btn btn-common disabled"
+                       style="background-color: #4CAF50; cursor: not-allowed; color: white;">
+                        Đã mua vé
+                    </a>
+                    
+                    <!-- Buy button: purchasable whenever not sold out and not purchased -->
+                    <a th:if="${!hasPurchasedTicket and ticket.isSaleActive() and !ticket.isSoldOut() and ticket.price > 0}"
                        th:href="@{/ticket/{eventId}(eventId=${eventDetail.getId()}, selectedTicketId=${ticket.ticketTypeId})}"
                        class="btn btn-common">Buy Ticket</a>
-                    <!-- Join for Free button: for free events -->
-                    <button th:if="${ticket.isSaleActive() and !ticket.isSoldOut() and (ticket.price == 0 or (ticket.isSaleActive() and ticket.finalPrice == 0))}"
+                    <!-- Join for Free button: for free events and not purchased -->
+                    <button th:if="${!hasPurchasedTicket and ticket.isSaleActive() and !ticket.isSoldOut() and (ticket.price == 0 or (ticket.isSaleActive() and ticket.finalPrice == 0))}"
                             class="btn btn-common join-free-btn" 
                             style="background: #4CAF50; border: none; cursor: pointer;"
                             th:attr="data-event-id=${eventDetail.getId()}, data-ticket-id=${ticket.ticketTypeId}">
                         Join for Free
                     </button>
 
-                    <a th:if="${ticket.isSoldOut()}" 
+                    <a th:if="${!hasPurchasedTicket and ticket.isSoldOut()}" 
                        href="#" 
                        class="btn btn-common disabled" 
                        style="background-color: #ccc; cursor: not-allowed;">
                         Sold Out
                     </a>
-                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}"
+                    <a th:if="${!hasPurchasedTicket and !ticket.isSaleActive() and !ticket.isSoldOut()}"
                        href="#"
                        class="btn btn-common disabled"
                        style="background-color: #999; cursor: not-allowed;">

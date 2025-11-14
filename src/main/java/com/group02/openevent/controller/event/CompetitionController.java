@@ -3,8 +3,12 @@ package com.group02.openevent.controller.event;
 import com.group02.openevent.dto.event.CompetitionEventDetailDTO;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.enums.EventType;
+import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.service.ICompetitionService;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,14 +19,18 @@ public class CompetitionController {
 
     private final ICompetitionService competitionService;
     private final EventService eventService;
+    private final OrderService orderService;
+    private final UserService userService;
 
-    public CompetitionController(ICompetitionService competitionService, EventService eventService) {
+    public CompetitionController(ICompetitionService competitionService, EventService eventService, OrderService orderService, UserService userService) {
         this.competitionService = competitionService;
         this.eventService = eventService;
+        this.orderService = orderService;
+        this.userService = userService;
     }
 
     @GetMapping("/competition/{id}")
-    public String getCompetitionEventDetail(@PathVariable("id") Long id, Model model) {
+    public String getCompetitionEventDetail(@PathVariable("id") Long id, Model model, HttpSession session) {
         try {
             // 1. Kiểm tra event type trước
             Event event = eventService.getEventById(id)
@@ -34,12 +42,25 @@ public class CompetitionController {
                 return "redirect:/events/" + id;
             }
             
+            // Check if user has already purchased a ticket for this event
+            boolean hasPurchasedTicket = false;
+            try {
+                Customer customer = userService.getCurrentUser(session).getCustomer();
+                if (customer != null) {
+                    hasPurchasedTicket = orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), id);
+                }
+            } catch (Exception e) {
+                // User not logged in or not a customer - allow access
+                hasPurchasedTicket = false;
+            }
+            
             // 3. Lấy ra DTO duy nhất, đã chứa ĐẦY ĐỦ thông tin
             CompetitionEventDetailDTO eventDetail = competitionService.getCompetitionEventById(id);
 
             // 4. Truyền DUY NHẤT DTO này sang view với tên là "eventDetail"
             model.addAttribute("eventDetail", eventDetail);
             model.addAttribute("error", null);
+            model.addAttribute("hasPurchasedTicket", hasPurchasedTicket);
 
         } catch (Exception e) {
             // Xử lý lỗi nếu không tìm thấy sự kiện

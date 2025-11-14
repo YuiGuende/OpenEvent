@@ -1,5 +1,5 @@
 # Sử dụng một ảnh Java (OpenJDK 17) làm nền
-FROM openjdk:21
+FROM eclipse-temurin:21-jdk
 
 # Tạo thư mục làm việc
 WORKDIR /app

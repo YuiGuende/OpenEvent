@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy các file build của Maven (để tối ưu cache)
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
-
+RUN chmod +x mvnw
 # Chạy build để tải dependencies
 RUN ./mvnw dependency:go-offline
 

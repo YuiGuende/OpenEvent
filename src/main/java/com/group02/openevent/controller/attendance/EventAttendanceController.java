@@ -5,27 +5,32 @@ import com.group02.openevent.dto.attendance.AttendanceRequest;
 import com.group02.openevent.dto.attendance.AttendanceStatsDTO;
 import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.event.Event;
+import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
+import com.group02.openevent.service.CustomerService;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.service.EventService;
+import com.group02.openevent.service.FaceCheckinService;
 import com.group02.openevent.service.QRCodeService;
+import com.group02.openevent.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.ByteArrayOutputStream;
+import org.apache.poi.ss.usermodel.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
+
 
 @Controller
 @RequestMapping("/events")
@@ -40,6 +45,15 @@ public class EventAttendanceController {
     
     @Autowired
     private QRCodeService qrCodeService;
+    
+    @Autowired
+    private FaceCheckinService faceCheckinService;
+    
+    @Autowired
+    private CustomerService customerService;
+    
+    @Autowired
+    private UserService userService;
     
     /**
      * Trang hiển thị 2 QR codes (check-in & check-out)
@@ -255,6 +269,110 @@ public class EventAttendanceController {
         model.addAttribute("stats", stats);
         
         return "host/manage-attendance";
+    }
+    
+    /**
+     * Face check-in page
+     * GET: /events/{eventId}/face-checkin
+     * Requires login and customer must have avatarUrl and faceRegistered = true
+     */
+    @GetMapping("/{eventId}/face-checkin")
+    public String showFaceCheckinPage(
+            @PathVariable Long eventId,
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        
+        try {
+            // Check if user is logged in and get customer
+            Customer customer = customerService.getCurrentCustomer(session);
+            
+            // Check if customer has avatarUrl
+            if (customer.getAvatarUrl() == null || customer.getAvatarUrl().trim().isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                    "Bạn chưa có ảnh đại diện. Vui lòng cập nhật ảnh đại diện trong hồ sơ.");
+                return "redirect:/profile";
+            }
+            
+            // Check if face is registered
+            if (customer.getFaceRegistered() == null || !customer.getFaceRegistered()) {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                    "Bạn chưa đăng ký khuôn mặt. Vui lòng đăng ký khuôn mặt trong hồ sơ.");
+                return "redirect:/profile";
+            }
+            
+            Event event = eventService.getEventById(eventId)
+                    .orElseThrow(() -> new RuntimeException("Event not found"));
+            
+            model.addAttribute("event", event);
+            model.addAttribute("attendanceRequest", new AttendanceRequest());
+            
+            return "event/face-checkin";
+            
+        } catch (RuntimeException e) {
+            // User not logged in or not a customer
+            log.warn("Access denied to face check-in page: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Vui lòng đăng nhập và đảm bảo bạn đã có ảnh đại diện và đã đăng ký khuôn mặt.");
+            return "redirect:/profile";
+        }
+    }
+    
+    /**
+     * Face check-in API endpoint
+     * POST: /api/events/{eventId}/face-checkin
+     * Accepts JSON: { "imageBase64": "..." }
+     */
+    @PostMapping("/api/{eventId}/face-checkin")
+    @ResponseBody
+    public ResponseEntity<?> processFaceCheckin(
+            @PathVariable Long eventId,
+            @RequestBody java.util.Map<String, String> requestBody,
+            HttpSession session) {
+        
+        try {
+            // Get current customer
+            Customer currentCustomer = customerService.getCurrentCustomer(session);
+            
+            // Decode base64 image
+            String imageBase64 = requestBody.get("imageBase64");
+            if (imageBase64 == null || imageBase64.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("success", false, "error", "Không tìm thấy ảnh"));
+            }
+            
+            // Remove data URL prefix if present (data:image/jpeg;base64,...)
+            if (imageBase64.contains(",")) {
+                imageBase64 = imageBase64.substring(imageBase64.indexOf(",") + 1);
+            }
+            
+            byte[] imageBytes;
+            try {
+                imageBytes = java.util.Base64.getDecoder().decode(imageBase64);
+            } catch (IllegalArgumentException e) {
+                log.error("Invalid base64 image data", e);
+                return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("success", false, "error", "Ảnh không hợp lệ"));
+            }
+            
+            // Process face check-in
+            EventAttendance attendance = faceCheckinService.faceCheckIn(eventId, imageBytes, currentCustomer);
+            
+            return ResponseEntity.ok(java.util.Map.of(
+                "success", true,
+                "message", "Check-in thành công! Chào mừng " + attendance.getFullName() + " đến với sự kiện!",
+                "checkInTime", attendance.getCheckInTime().toString()
+            ));
+            
+        } catch (RuntimeException e) {
+            log.error("Error during face check-in for event {}", eventId, e);
+            return ResponseEntity.badRequest()
+                .body(java.util.Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Unexpected error during face check-in", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Map.of("success", false, "error", "Lỗi hệ thống. Vui lòng thử lại."));
+        }
     }
 
 

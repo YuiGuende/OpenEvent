@@ -13,5 +13,6 @@ public interface CustomerService {
     Customer save(Customer customer);
     Customer getOrCreateByUserId(Long userId);
     Customer getCustomerByAccountId(Long id);
+    Customer getCurrentCustomer(jakarta.servlet.http.HttpSession session);
     Page<OrderDTO> getOrdersByEvent(Long eventId, OrderStatus status, Pageable pageable);
 }

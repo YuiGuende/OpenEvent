@@ -205,6 +205,22 @@
                                 av.textContent = initial.toUpperCase();
                             }
                             
+                            // PATCH: Lưu userId và accountId vào body attribute và window object để chatbot có thể đọc
+                            // Ưu tiên dùng userId (nếu có), nếu không thì dùng accountId
+                            var userIdToUse = data.userId || data.accountId;
+                            if (userIdToUse) {
+                                var userIdStr = String(userIdToUse);
+                                if (document.body) {
+                                    document.body.setAttribute('data-user-id', userIdStr);
+                                }
+                                // Lưu vào window object để chatbot có thể đọc
+                                window.__CURRENT_USER_ACCOUNT_ID = userIdStr;
+                                window.__CURRENT_USER_ID = userIdStr;
+                                // Lưu vào localStorage để dùng lại
+                                localStorage.setItem('oe_user_id', userIdStr);
+                                console.log('✅ User ID saved to body attribute and window object:', userIdStr, '(userId:', data.userId, ', accountId:', data.accountId, ')');
+                            }
+                            
                             // Load notification count and init WebSocket
                             loadNotificationCount();
                             initWebSocket();
@@ -214,6 +230,12 @@
                         } else {
                             if (login) login.style.display = '';
                             if (menu) menu.style.display = 'none';
+                            // Xóa user ID nếu không authenticated
+                            if (document.body) {
+                                document.body.removeAttribute('data-user-id');
+                            }
+                            window.__CURRENT_USER_ACCOUNT_ID = undefined;
+                            localStorage.removeItem('oe_user_id');
                         }
                     })
                     .catch(function () { /* ignore */

@@ -90,13 +90,23 @@ public class EventManageController {
     }
 
     @RequestMapping(value = "/manage/event/{eventId:\\d+}/{path:[^\\.]*}")
-    public String showManagerPage(@PathVariable Long eventId, Model model) throws JsonProcessingException {
+    public String showManagerPage(@PathVariable Long eventId, Model model, HttpSession session) throws JsonProcessingException {
 
         Event event = eventService.getEventResponseById(eventId);
 
         // 2. Đưa dữ liệu Event vào Model để toàn bộ trang có thể sử dụng
         // (ví dụ: hiển thị tên sự kiện ở header)
         model.addAttribute("event", event);
+        model.addAttribute("eventId", eventId);
+
+        // Add userId for chat fragment
+        try {
+            Long userId = userService.getCurrentUser(session).getUserId();
+            model.addAttribute("uid", userId);
+        } catch (Exception e) {
+            log.warn("Could not get current user for chat: {}", e.getMessage());
+            // uid will be null, chat fragment will handle it
+        }
 
         // 3. Chỉ định fragment mặc định cần tải cho lần đầu tiên
         model.addAttribute("content", "fragments/getting-started :: content");

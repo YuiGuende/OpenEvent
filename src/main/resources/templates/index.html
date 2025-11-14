@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head th:replace="~{fragments/head :: head('Trang chủ')}"></head>
+<head th:replace="~{fragments/head :: head(${pageTitle})}"></head>
 
-<body class="page-bg" th:data-user-id="${session.ACCOUNT_ID ?: 2}">
-<div th:replace="~{fragments/header :: siteHeader('home')}"></div>
+<body class="page-bg"
+      th:with="
+  pageTitle='Trang chủ',
+  activeMenu='home',
+  uid=${#authorization.expression('isAuthenticated()')} ? #authentication.principal?.id : null
+"
+      th:replace="~{layout :: layout(~{::main}, ${activeMenu}, ${uid})}">
+
+<!-- CHỈ GIỮ NỘI DUNG MAIN -->
 <main>
     <section class="hero hero--slider">
         <div class="hero-track" id="heroTrack">
@@ -28,7 +35,7 @@
     <!-- Search bar positioned like Booking.com -->
     <div class="search-center-position">
         <div class="container">
-            <div th:replace="~{fragments/searchbar :: searchBar}"></div>
+            <div th:replace="fragments/searchbar :: searchBar"></div>
             <div class="chip-row" style="margin-bottom: 0.5rem;">
                 <a class="chip is-active" th:href="@{/events(reco='for-you')}">For you</a>
                 <a class="chip" th:href="@{/events(reco='near-you')}">Near you</a>
@@ -554,16 +561,5 @@
 
 
 </main>
-
-
-<div th:replace="~{fragments/footer :: siteFooter()}"></div>
-<div id="openevent-chatbot-container"></div>
-<script th:src="@{/js/chatbot.js}"></script>
-
-<!-- Chatbot Fragment - Only for authenticated users -->
-<div th:if="${#authorization.expression('isAuthenticated()')}"
-     th:replace="~{fragments/chatbot :: chatbot(2)}">
-</div>
-<script th:src="@{/js/main.js}"></script>
 </body>
 </html>

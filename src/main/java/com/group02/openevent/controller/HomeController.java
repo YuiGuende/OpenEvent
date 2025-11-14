@@ -27,7 +27,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,7 +229,8 @@ public class HomeController {
             userInfo.put("authenticated", true);
             userInfo.put("accountId", user.getAccount().getAccountId());
             userInfo.put("email", user.getAccount().getEmail());
-            
+            userInfo.put("userId", user.getUserId()); // PATCH: Thêm userId để frontend có thể dùng
+
             // Get name: if user is host, use Host.getHostName(), otherwise use User.getName() or email
             String name = null;
             if (user.hasHostRole() && user.getHost() != null) {
@@ -246,10 +246,10 @@ public class HomeController {
                 name = user.getName() != null ? user.getName() : user.getAccount().getEmail();
             }
             userInfo.put("name", name);
-            
+
             // Get avatar from User entity
             userInfo.put("avatar", user.getAvatar());
-            
+
             return ResponseEntity.ok(userInfo);
         } catch (Exception e) {
             log.error("Error getting current user: {}", e.getMessage(), e);
@@ -261,6 +261,7 @@ public class HomeController {
 
     @PostMapping("/api/logout")
     public ResponseEntity<String> logout(HttpSession session) {
+        log.info("logout");
         session.invalidate();
         return ResponseEntity.ok("Logged out successfully");
     }

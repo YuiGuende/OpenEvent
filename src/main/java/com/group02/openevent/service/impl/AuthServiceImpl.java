@@ -129,6 +129,8 @@ public class AuthServiceImpl implements AuthService {
         log.info("set user id:{}", user.getUserId());
 		httpSession.setAttribute("USER_ID", user.getUserId());
 		httpSession.setAttribute("USER_ROLE", role.name());
+		// Set CURRENT_USER_ID as String for WebSocket Principal mapping
+		httpSession.setAttribute("CURRENT_USER_ID", String.valueOf(user.getUserId()));
 
 		return new AuthResponse(account.getAccountId(), account.getEmail(), role, redirectFor(role));
 	}
@@ -164,6 +166,8 @@ public class AuthServiceImpl implements AuthService {
 		httpSession.setAttribute("SESSION_TOKEN", session.getSessionToken());
 		httpSession.setAttribute("USER_ID", account.getAccountId());
 		httpSession.setAttribute("ACCOUNT_ROLE", role.name());
+		// Set CURRENT_USER_ID as String for WebSocket Principal mapping
+		httpSession.setAttribute("CURRENT_USER_ID", String.valueOf(user.getUserId()));
 
 		return new AuthResponse(account.getAccountId(), account.getEmail(), role, redirectFor(role));
 	}

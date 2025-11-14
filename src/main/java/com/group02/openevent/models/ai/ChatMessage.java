@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * Entity for chat messages
  */
 @Entity
-@Table(name = "chat_message")
+@Table(name = "chat_messages")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -9,9 +9,11 @@ import com.group02.openevent.event.UserCreatedEvent;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IHostRepo;
+import com.group02.openevent.service.EventChatService;
 import com.group02.openevent.service.HostService;
 import com.group02.openevent.service.OrganizationService;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,20 +24,23 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class HostServiceImpl implements HostService {
     private final IHostRepo hostRepo;
     private final OrganizationService organizationService;
     private final IAccountRepo accountRepo;
     private final ICustomerRepo customerRepo;
     private final ApplicationEventPublisher eventPublisher;
+    private final EventChatService eventChatService;
 
     public HostServiceImpl(IHostRepo hostRepo, OrganizationService organizationService,
-                           IAccountRepo accountRepo, ICustomerRepo customerRepo, ApplicationEventPublisher eventPublisher) {
+                           IAccountRepo accountRepo, ICustomerRepo customerRepo, ApplicationEventPublisher eventPublisher, EventChatService eventChatService) {
         this.hostRepo = hostRepo;
         this.organizationService = organizationService;
         this.accountRepo = accountRepo;
         this.customerRepo = customerRepo;
         this.eventPublisher = eventPublisher;
+        this.eventChatService = eventChatService;
     }
     
     @Override
@@ -84,42 +89,15 @@ public class HostServiceImpl implements HostService {
             throw new RuntimeException("User is already a host");
         }
 
-        // Set host name vào Customer.name nếu có
-//        if (request.getHostName() != null && !request.getHostName().trim().isEmpty()) {
-//            user.setName(request.getHostName().trim());
-//        } else if (user.getName() == null || user.getName().trim().isEmpty()) {
-//            // Nếu không có hostName và user chưa có name, dùng email username
-//            if (user.getAccount() != null && user.getAccount().getEmail() != null) {
-//                String email = user.getAccount().getEmail();
-//                String username = email.contains("@") ? email.split("@")[0] : email;
-//                user.setName(username);
-//            }
-//        }
-
         // Tạo host mới
         Host host = new Host();
         host.setCreatedAt(LocalDateTime.now());
         host.setUser(user);
-        // Set organization nếu có
-//        if (request.getOrganizationId() != null) {
-//            Optional<Organization> organization = organizationService.findById(request.getOrganizationId());
-//            organization.ifPresent(host::setOrganization);
-//        }
-
-        // Set discount percent (default 0 nếu null)
-//        if (request.getHostDiscountPercent() != null) {
-//            host.setHostDiscountPercent(request.getHostDiscountPercent());
-//        } else {
-//            host.setHostDiscountPercent(BigDecimal.ZERO);
-//        }
-        // Set description
         host.setDescription(request.getDescription());
-        // Lưu user (với name đã được update) trước khi save host
-//        customerRepo.save(user);
 
         // Lưu host
         Host savedHost = hostRepo.save(host);
-        
+
         // Publish UserCreatedEvent for audit log (user registered as HOST)
         try {
             Long actorId = user != null
@@ -131,7 +109,17 @@ public class HostServiceImpl implements HostService {
         } catch (Exception e) {
             System.err.println("Error publishing UserCreatedEvent for HOST: " + e.getMessage());
         }
-        
+
+        try {
+            eventChatService.createHostDepartmentRoom(savedHost.getUser().getUserId());
+            log.info("Successfully created Host-Department chat room for host: {}", savedHost.getUser().getUserId());
+        } catch (Exception e) {
+            log.warn("Failed to create host-department chat room: {}", e.getMessage());
+            // Không throw exception, chỉ log warning để không ảnh hưởng đến quá trình register host
+        }
+
+
+
         return savedHost;
     }
 }

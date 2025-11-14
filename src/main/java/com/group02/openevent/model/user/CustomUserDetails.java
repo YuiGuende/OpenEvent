@@ -27,6 +27,7 @@ public class CustomUserDetails extends User {
         return accountId;
     }
 
+
     public String getRole() {
         return role;
     }

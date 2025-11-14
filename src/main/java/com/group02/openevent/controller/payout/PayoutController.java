@@ -8,6 +8,7 @@ import com.group02.openevent.model.payment.PayoutRequest;
 import com.group02.openevent.service.IPayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/payout")
+@ConditionalOnProperty(name = "payos.payout-client-id", matchIfMissing = false)
 public class PayoutController {
 
     private static final Logger logger = LoggerFactory.getLogger(PayoutController.class);

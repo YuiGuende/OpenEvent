@@ -1018,16 +1018,114 @@
                 const messageInputInline = document.querySelector('.message-input');
                 
                 function trySendMessage() {
-                    if (window.sendMessage && typeof window.sendMessage === 'function') {
+                    // Check if chatbot.js is fully loaded (not just placeholder)
+                    // IMPORTANT: Use strict equality checks
+                    if (window.chatbotJsLoaded === true && 
+                        window.sendMessage && 
+                        typeof window.sendMessage === 'function' &&
+                        window.__sendMessagePlaceholderActive !== true) {
                         console.log('📤 Calling sendMessage function');
-                        window.sendMessage();
-                        return true;
-                    } else if (window.OpenEventAI && window.OpenEventAI.sendMessage && typeof window.OpenEventAI.sendMessage === 'function') {
+                        try {
+                            window.sendMessage();
+                            return true;
+                        } catch (error) {
+                            console.error('❌ Error calling sendMessage:', error);
+                            return false;
+                        }
+                    }
+                    // Try OpenEventAI.sendMessage as fallback
+                    if (window.OpenEventAI && 
+                        window.OpenEventAI.sendMessage && 
+                        typeof window.OpenEventAI.sendMessage === 'function') {
                         console.log('📤 Calling OpenEventAI.sendMessage function');
-                        window.OpenEventAI.sendMessage();
-                        return true;
+                        try {
+                            window.OpenEventAI.sendMessage();
+                            return true;
+                        } catch (error) {
+                            console.error('❌ Error calling OpenEventAI.sendMessage:', error);
+                            return false;
+                        }
                     }
                     return false;
+                }
+                
+                // Function to wait for chatbot.js to load
+                function waitForChatbotJs(callback, maxRetries = 50, delay = 100) {
+                    let retries = 0;
+                    const checkInterval = setInterval(function() {
+                        retries++;
+                        
+                        // Debug logging every 10 retries
+                        if (retries % 10 === 0) {
+                            console.log('⏳ Waiting for chatbot.js...', {
+                                retries: retries,
+                                chatbotJsLoaded: window.chatbotJsLoaded,
+                                hasSendMessage: !!window.sendMessage,
+                                isPlaceholder: window.__sendMessagePlaceholderActive,
+                                hasOpenEventAI: !!(window.OpenEventAI && window.OpenEventAI.sendMessage)
+                            });
+                        }
+                        
+                        // Check if fully loaded
+                        // IMPORTANT: chatbotJsLoaded must be true AND sendMessage must exist AND not be placeholder
+                        if (window.chatbotJsLoaded === true && 
+                            window.sendMessage && 
+                            typeof window.sendMessage === 'function' && 
+                            window.__sendMessagePlaceholderActive !== true) {
+                            clearInterval(checkInterval);
+                            console.log('✅ chatbot.js is ready, sendMessage function available');
+                            if (callback) callback();
+                            return;
+                        }
+                        
+                        // Fallback: Check OpenEventAI.sendMessage (might be available earlier)
+                        if (window.OpenEventAI && window.OpenEventAI.sendMessage && typeof window.OpenEventAI.sendMessage === 'function') {
+                            clearInterval(checkInterval);
+                            console.log('✅ OpenEventAI.sendMessage is available (fallback)');
+                            if (callback) callback();
+                            return;
+                        }
+                        
+                        // Check if script tag exists and is loaded
+                        const scriptTag = document.querySelector('script[src*="chatbot.js"]');
+                        if (scriptTag) {
+                            // Check if script has errors
+                            if (retries > 20 && !window.chatbotJsLoaded) {
+                                // Script tag exists but chatbotJsLoaded is still undefined after 2 seconds
+                                // This likely means the script has JavaScript errors
+                                console.error('❌ chatbot.js script tag exists but script did not execute. Check for JavaScript errors in chatbot.js');
+                                console.error('   Script src:', scriptTag.src);
+                                console.error('   Has defer:', scriptTag.hasAttribute('defer'));
+                                console.error('   ReadyState:', scriptTag.readyState);
+                                
+                                // Try to check if there are any console errors
+                                // Note: We can't directly access console errors, but we can suggest checking
+                                if (retries === 21) {
+                                    console.error('💡 Suggestion: Open Console tab and check for JavaScript errors in chatbot.js');
+                                }
+                            }
+                            
+                            // If script has no defer and is complete, but chatbotJsLoaded is false, there might be an error
+                            if (!scriptTag.hasAttribute('defer') && (scriptTag.readyState === 'complete' || scriptTag.readyState === 'loaded')) {
+                                if (!window.chatbotJsLoaded && retries > 10) {
+                                    console.warn('⚠️ Script tag loaded but chatbotJsLoaded is false. Script might have errors.');
+                                }
+                            }
+                        } else if (retries > 5) {
+                            console.warn('⚠️ chatbot.js script tag not found in DOM');
+                        }
+                        
+                        if (retries >= maxRetries) {
+                            clearInterval(checkInterval);
+                            console.error('❌ chatbot.js did not load within expected time', {
+                                chatbotJsLoaded: window.chatbotJsLoaded,
+                                hasSendMessage: !!window.sendMessage,
+                                isPlaceholder: window.__sendMessagePlaceholderActive,
+                                scriptTagExists: !!document.querySelector('script[src*="chatbot.js"]')
+                            });
+                            if (callback) callback();
+                        }
+                    }, delay);
                 }
                 
                 if (sendBtnInline && !sendBtnInline.hasAttribute('data-handler-attached')) {
@@ -1038,18 +1136,13 @@
                         console.log('📤 Send button clicked (inline)');
                         
                         if (!trySendMessage()) {
-                            // Retry after a short delay in case script is still loading
-                            setTimeout(function() {
+                            console.warn('⚠️ sendMessage function not ready. Waiting for chatbot.js to load...');
+                            // Wait for chatbot.js to fully load
+                            waitForChatbotJs(function() {
                                 if (!trySendMessage()) {
-                                    console.warn('⚠️ sendMessage function not found after retry. Waiting for chatbot.js to load...');
-                                    // Try one more time after longer delay
-                                    setTimeout(function() {
-                                        if (!trySendMessage()) {
-                                            console.error('❌ sendMessage function still not found. Please check if chatbot.js is loaded.');
-                                        }
-                                    }, 500);
+                                    console.error('❌ sendMessage function still not found after waiting. Please check if chatbot.js is loaded.');
                                 }
-                            }, 100);
+                            });
                         }
                     });
                     console.log('✅ Send button handler attached (inline)');
@@ -1064,18 +1157,13 @@
                             console.log('📤 Enter key pressed (inline)');
                             
                             if (!trySendMessage()) {
-                                // Retry after a short delay in case script is still loading
-                                setTimeout(function() {
+                                console.warn('⚠️ sendMessage function not ready. Waiting for chatbot.js to load...');
+                                // Wait for chatbot.js to fully load
+                                waitForChatbotJs(function() {
                                     if (!trySendMessage()) {
-                                        console.warn('⚠️ sendMessage function not found after retry. Waiting for chatbot.js to load...');
-                                        // Try one more time after longer delay
-                                        setTimeout(function() {
-                                            if (!trySendMessage()) {
-                                                console.error('❌ sendMessage function still not found. Please check if chatbot.js is loaded.');
-                                            }
-                                        }, 500);
+                                        console.error('❌ sendMessage function still not found after waiting. Please check if chatbot.js is loaded.');
                                     }
-                                }, 100);
+                                });
                             }
                         }
                     });
@@ -1098,20 +1186,103 @@
     <script th:inline="javascript">
         (function() {
             // Check if chatbot.js is already loaded by checking for a function it defines
-            if (!window.sendMessage && !window.chatbotJsLoaded) {
-                window.chatbotJsLoaded = true;
-                var script = document.createElement('script');
-                script.src = /*[[@{/js/chatbot.js}]]*/ '/js/chatbot.js';
-                script.async = true;
-                script.onload = function() {
-                    console.log('✅ chatbot.js loaded from fragment');
-                };
-                script.onerror = function() {
-                    console.error('❌ Failed to load chatbot.js from fragment');
-                };
-                document.head.appendChild(script);
+            // Also check if script tag already exists in DOM
+            const existingScript = document.querySelector('script[src*="chatbot.js"]');
+            if (existingScript) {
+                console.log('✅ chatbot.js script tag already exists in DOM', {
+                    hasDefer: existingScript.hasAttribute('defer'),
+                    readyState: existingScript.readyState,
+                    src: existingScript.src
+                });
+                
+                // Wait for it to load if it has defer attribute
+                if (existingScript.hasAttribute('defer')) {
+                    // For deferred scripts, readyState might not work reliably
+                    // Instead, wait for DOMContentLoaded or check periodically
+                    if (document.readyState === 'complete') {
+                        // Page already loaded, check if script executed
+                        setTimeout(function() {
+                            if (window.chatbotJsLoaded) {
+                                console.log('✅ chatbot.js loaded (deferred script, page already complete)');
+                            } else {
+                                console.warn('⚠️ chatbot.js script tag exists but chatbotJsLoaded is false');
+                            }
+                        }, 100);
+                    } else {
+                        // Page still loading, wait for load event
+                        window.addEventListener('DOMContentLoaded', function() {
+                            setTimeout(function() {
+                                if (window.chatbotJsLoaded) {
+                                    console.log('✅ chatbot.js loaded (deferred script, after DOMContentLoaded)');
+                                } else {
+                                    console.warn('⚠️ chatbot.js script tag exists but chatbotJsLoaded is false after DOMContentLoaded');
+                                }
+                            }, 100);
+                        });
+                    }
+                    
+                    // Also listen for load event on the script itself (if supported)
+                    existingScript.addEventListener('load', function() {
+                        console.log('✅ chatbot.js script load event fired (deferred script)');
+                        // Wait a bit longer for deferred scripts to execute
+                        setTimeout(function() {
+                            if (!window.chatbotJsLoaded) {
+                                console.error('❌ Script load event fired but chatbotJsLoaded is still false after 1 second.');
+                                console.error('   This indicates chatbot.js has JavaScript errors. Check Console tab for errors.');
+                                console.error('   Script src:', existingScript.src);
+                            } else {
+                                console.log('✅ chatbot.js executed successfully');
+                            }
+                        }, 1000); // Wait 1 second for deferred script to execute
+                    });
+                    existingScript.addEventListener('error', function(e) {
+                        console.error('❌ Failed to load chatbot.js (deferred script)', e);
+                        console.error('   Check Network tab to see if script file exists and is accessible');
+                    });
+                } else {
+                    // Script without defer - might already be loaded
+                    if (existingScript.readyState === 'complete' || existingScript.readyState === 'loaded') {
+                        console.log('✅ chatbot.js already loaded (non-deferred script)');
+                        // Give it a moment to execute
+                        setTimeout(function() {
+                            if (!window.chatbotJsLoaded) {
+                                console.warn('⚠️ Script readyState is complete but chatbotJsLoaded is false. Check for JavaScript errors.');
+                            }
+                        }, 100);
+                    }
+                }
+                return;
+            }
+            
+            // Check if chatbot.js is already fully loaded (not just placeholder)
+            if (window.chatbotJsLoaded && window.sendMessage && typeof window.sendMessage === 'function' && !window.__sendMessagePlaceholderActive) {
+                console.log('✅ chatbot.js already fully loaded');
+                return;
+            }
+            
+            // Only create new script if not already loading/loaded
+            // DO NOT set chatbotJsLoaded here - let the script itself set it when it finishes loading
+            if (!window.chatbotJsLoaded) {
+                // Use a loading flag to prevent duplicate loads, but don't set chatbotJsLoaded yet
+                if (!window.__chatbotJsLoading) {
+                    window.__chatbotJsLoading = true; // Temporary flag to prevent duplicate loads
+                    var script = document.createElement('script');
+                    script.src = /*[[@{/js/chatbot.js}]]*/ '/js/chatbot.js';
+                    script.defer = true; // Use defer to match host/layout.html
+                    script.onload = function() {
+                        console.log('✅ chatbot.js script tag loaded from fragment');
+                        // Note: chatbotJsLoaded will be set by the script itself when it finishes executing
+                    };
+                    script.onerror = function() {
+                        console.error('❌ Failed to load chatbot.js from fragment');
+                        window.__chatbotJsLoading = false; // Reset loading flag on error
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    console.log('✅ chatbot.js already loading (waiting for it to finish)');
+                }
             } else {
-                console.log('✅ chatbot.js already loaded or placeholder exists');
+                console.log('✅ chatbot.js already fully loaded');
             }
         })();
     </script>

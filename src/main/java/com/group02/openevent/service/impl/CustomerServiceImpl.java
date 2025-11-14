@@ -12,6 +12,7 @@ import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.CustomerService;
 import com.group02.openevent.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -67,6 +68,13 @@ public class CustomerServiceImpl implements CustomerService {
     public Customer getCustomerByAccountId(Long accountId) {
         return customerRepo.findByUser_Account_AccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("Customer not found for account ID: " + accountId));
+    }
+
+    @Override
+    public Customer getCurrentCustomer(HttpSession session) {
+        User currentUser = userService.getCurrentUser(session);
+        return findByUserId(currentUser.getUserId())
+                .orElseThrow(() -> new RuntimeException("Customer not found for current user"));
     }
 
     @Override

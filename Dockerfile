@@ -1,5 +1,5 @@
 # Sử dụng một ảnh Java (OpenJDK 17) làm nền
-FROM openjdk:17-jdk-slim
+FROM openjdk:21-jdk-slim
 
 # Tạo thư mục làm việc
 WORKDIR /app

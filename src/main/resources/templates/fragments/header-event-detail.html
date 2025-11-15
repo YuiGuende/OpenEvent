@@ -1,0 +1,430 @@
+<header class="site-header event-detail-header" th:fragment="eventDetailHeader(eventId, isVolunteerApproved, customerId)">
+    <style>
+        /* Event Detail Header Styles - Override dark themes */
+        .event-detail-header {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1000 !important;
+            background: #fff !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .event-detail-header .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .event-detail-header .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            gap: 24px;
+        }
+
+        .event-detail-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #ff6b35 !important;
+            font-size: 18px;
+        }
+
+        .event-detail-header .logo img {
+            height: 56px;
+        }
+
+        .event-detail-header .logo span {
+            color: #ff6b35 !important;
+        }
+
+        .event-detail-header .nav {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .event-detail-header .nav-link {
+            text-decoration: none;
+            color: #374151 !important;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .event-detail-header .nav-link:hover {
+            background: #f3f4f6;
+            color: #ff6b35 !important;
+        }
+
+        .event-detail-header .nav-link.is-active {
+            color: #ff6b35 !important;
+            background: #fff5f2;
+        }
+
+        .event-detail-header .customer-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .event-detail-header .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .event-detail-header .btn-ghost {
+            background: #fff !important;
+            border-color: #e5e7eb !important;
+            color: #374151 !important;
+        }
+
+        .event-detail-header .btn-ghost:hover {
+            background: #f9fafb !important;
+            border-color: #ff6b35 !important;
+            color: #ff6b35 !important;
+        }
+
+        .event-detail-header .btn-primary {
+            background: #ff6b35 !important;
+            border-color: #ff6b35 !important;
+            color: #fff !important;
+        }
+
+        .event-detail-header .btn-primary:hover {
+            background: #ff5722 !important;
+            border-color: #ff5722 !important;
+        }
+
+        .event-detail-header .user-menu {
+            position: relative;
+        }
+
+        .event-detail-header .user-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-detail-header .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #ff6b35;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .event-detail-header .user-name {
+            color: #fff !important;
+        }
+
+        .event-detail-header .notification-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .event-detail-header .dropdown {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            min-width: 220px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .event-detail-header .dropdown-item {
+            display: block;
+            padding: 10px 12px;
+            text-decoration: none;
+            color: #111827;
+            transition: background 0.2s ease;
+        }
+
+        .event-detail-header .dropdown-item:hover {
+            background: #f9fafb;
+        }
+
+        .event-detail-header .notification-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            background: #ef4444;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .event-detail-header .nav {
+                display: none;
+            }
+
+            .event-detail-header .header-inner {
+                gap: 12px;
+            }
+
+            .event-detail-header .btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+
+            .event-detail-header .user-name {
+                display: none;
+            }
+        }
+    </style>
+    <div class="container header-inner">
+        <!-- Logo -->
+        <a class="logo" href="index.html" th:href="@{/}">
+            <img th:src="@{/img/logo1.png}" alt="OpenEvent"/>
+            <span>OpenEvent</span>
+        </a>
+        <!-- Navigation -->
+        <nav class="nav">
+            <a href="index.html" th:href="@{/}" class="nav-link">Home</a>
+            <a href="about.html" th:href="@{/about}" class="nav-link">About</a>
+            <a href="speakers.html" th:href="@{/speakers}" class="nav-link">Speakers</a>
+            <a href="faq.html" th:href="@{/faq}" class="nav-link">FAQ</a>
+            <a href="sponsors.html" th:href="@{/sponsors}" class="nav-link">Sponsors</a>
+            <a href="pricing.html" th:href="@{/pricing}" class="nav-link">Pricing</a>
+            <a href="contact.html" th:href="@{/contact}" class="nav-link">Contact</a>
+        </nav>
+        <!-- Actions -->
+        <div class="customer-actions" style="display:flex; align-items:center; gap:12px;">
+<!--            <button id="createEventBtn" class="btn btn-ghost" type="button" style="cursor: pointer;">Create Event</button>-->
+            
+            <!-- Volunteer Actions (only show if user is logged in) -->
+            <div th:if="${customerId != null}" style="display:flex; align-items:center; gap:8px;">
+                <!-- Become a Volunteer Button (show if not approved yet) -->
+                <button th:if="${isVolunteerApproved == null || !isVolunteerApproved}" 
+                        id="becomeVolunteerBtn" 
+                        class="btn btn-ghost" 
+                        type="button" 
+                        style="cursor: pointer; border-color: #ff6b35; color: #ff6b35;"
+                        th:attr="data-event-id=${eventId}">
+                    Become a Volunteer
+                </button>
+                
+                <!-- Chat with Host Button (show if volunteer is approved) -->
+                <a th:if="${isVolunteerApproved != null && isVolunteerApproved}"
+                   th:href="@{/event-chat(eventId=${eventId})}"
+                   class="btn btn-primary"
+                   style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" 
+                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Chat with Host
+                </a>
+            </div>
+            
+            <a id="loginLink" class="btn btn-primary" href="login.html" th:href="@{/login}" th:if="${customerId == null}">Log in</a>
+            <div id="userMenu" class="user-menu" style="display:none; position: relative;" th:if="${customerId != null}">
+                <button id="userBtn" class="btn btn-primary user-trigger user-button" type="button">
+                    <span id="userAvatar" class="avatar user-avatar">U</span>
+                    <span id="userName" class="user-name">User</span>
+                    <span id="notificationDot" class="notification-dot" style="display:none;"></span>
+                </button>
+                <div id="userDropdown" class="dropdown"
+                     style="display:none; position:absolute; right:0; top:50px; min-width:220px; background:#fff; border:1px solid #e5e7eb; box-shadow:0 8px 24px rgba(0,0,0,0.12); border-radius:12px; overflow:hidden; z-index:1000;">
+                    <div style="padding:10px 12px; font-size:13px; color:#6b7280; border-bottom:1px solid #f1f5f9;">
+                        Account
+                    </div>
+                    <a href="/orders" class="dropdown-item"
+                       style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My orders</a>
+                    <a href="/profile" class="dropdown-item"
+                       style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My profile</a>
+                    <a href="/notifications" id="notificationMenuItem" class="dropdown-item notification-menu-item"
+                       style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; text-decoration:none; color:#111827;">
+                        <span>Notifications</span>
+                        <span id="notificationBadge" class="notification-badge" style="display:none;">0</span>
+                    </a>
+                    <a href="/my/requests" class="dropdown-item"
+                       style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My requests</a>
+                    <div style="border-top:1px solid #f1f5f9;"></div>
+                    <a href="#" id="logoutAction" class="dropdown-item"
+                       style="display:block; padding:10px 12px; text-decoration:none; color:#ef4444; font-weight:600;">Sign
+                        out</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var login = document.getElementById('loginLink');
+            var menu = document.getElementById('userMenu');
+            var btn = document.getElementById('userBtn');
+            var dd = document.getElementById('userDropdown');
+            var nameEl = document.getElementById('userName');
+            var av = document.getElementById('userAvatar');
+            var logout = document.getElementById('logoutAction');
+            var becomeVolunteerBtn = document.getElementById('becomeVolunteerBtn');
+
+            function closeDropdown() {
+                if (dd) dd.style.display = 'none';
+            }
+
+            function toggleDropdown(e) {
+                e.preventDefault();
+                if (!dd) return;
+                dd.style.display = (dd.style.display === 'none' || dd.style.display === '') ? 'block' : 'none';
+            }
+
+            function outside(e) {
+                if (!menu) return;
+                if (!menu.contains(e.target)) closeDropdown();
+            }
+
+            // Bind events
+            if (btn) btn.addEventListener('click', toggleDropdown);
+            document.addEventListener('click', outside);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeDropdown();
+            });
+
+            if (logout) {
+                logout.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    closeDropdown();
+                    fetch('/api/logout', {method: 'POST'})
+                        .then(function () {
+                            window.location.reload();
+                        })
+                        .catch(function () {
+                            window.location.reload();
+                        });
+                });
+            }
+
+            // Function to format user display name
+            function formatUserDisplay(email, accountId) {
+                if (email) {
+                    // Extract username part (before @) and limit to 6 characters
+                    var username = email.split('@')[0];
+                    var shortName = username.length > 6 ? username.substring(0, 6) : username;
+                    return 'Hello, ' + shortName;
+                }
+                return 'User #' + (accountId || '');
+            }
+
+            // Load notification count
+            function loadNotificationCount() {
+                fetch('/api/notifications/unread-count', {credentials: 'include'})
+                    .then(function (r) {
+                        return r.ok ? r.json() : {count: 0};
+                    })
+                    .then(function (data) {
+                        var count = data.count || 0;
+                        var dot = document.getElementById('notificationDot');
+                        var badge = document.getElementById('notificationBadge');
+                        
+                        if (count > 0) {
+                            if (dot) dot.style.display = 'block';
+                            if (badge) {
+                                badge.style.display = 'inline-flex';
+                                badge.textContent = count > 99 ? '99+' : count;
+                            }
+                        } else {
+                            if (dot) dot.style.display = 'none';
+                            if (badge) badge.style.display = 'none';
+                        }
+                    })
+                    .catch(function () { /* ignore */ });
+            }
+
+            // Load user info
+            fetch('/api/current-user', {credentials: 'include'})
+                .then(function (r) {
+                    return r.ok ? r.json() : null;
+                })
+                .then(function (user) {
+                    if (user && user.id) {
+                        if (login) login.style.display = 'none';
+                        if (menu) menu.style.display = 'block';
+                        if (nameEl) nameEl.textContent = formatUserDisplay(user.email, user.id);
+                        if (av) {
+                            var initial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+                            av.textContent = initial;
+                        }
+                        loadNotificationCount();
+                    } else {
+                        if (login) login.style.display = 'inline-block';
+                        if (menu) menu.style.display = 'none';
+                    }
+                })
+                .catch(function () { /* ignore */ });
+
+            // Become a Volunteer button handler
+            if (becomeVolunteerBtn) {
+                becomeVolunteerBtn.addEventListener('click', function() {
+                    var eventId = becomeVolunteerBtn.getAttribute('data-event-id');
+                    if (!eventId) {
+                        alert('Event ID not found');
+                        return;
+                    }
+                    
+                    // Redirect to volunteer form page or show modal
+                    // You can customize this based on your volunteer application flow
+                    window.location.href = '/forms/' + eventId + '?type=VOLUNTEER';
+                });
+            }
+
+            // Create Event button handler
+            var createEventBtn = document.getElementById('createEventBtn');
+            if (createEventBtn) {
+                createEventBtn.addEventListener('click', function() {
+                    fetch('/api/current-user', {credentials: 'include'})
+                        .then(function(r) { return r.ok ? r.json() : null; })
+                        .then(function(user) {
+                            if (user && user.id) {
+                                window.location.href = '/manage/event/create';
+                            } else {
+                                window.location.href = '/login?redirectUrl=/manage/event/create';
+                            }
+                        })
+                        .catch(function() {
+                            window.location.href = '/login?redirectUrl=/manage/event/create';
+                        });
+                });
+            }
+        });
+    </script>
+</header>
+

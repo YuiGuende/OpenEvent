@@ -2197,8 +2197,9 @@
         }
     </style>
 </head>
-<body>
-
+<body th:with="eventId=${eventId != null ? eventId : 0}, isVolunteerApproved=${isVolunteerApproved != null ? isVolunteerApproved : false}, customerId=${customerId}">
+<!-- Event Detail Header -->
+<div th:replace="~{fragments/header-event-detail :: eventDetailHeader(${eventId}, ${isVolunteerApproved}, ${customerId})}"></div>
 
 <script th:inline="javascript">
     /*<![CDATA[*/

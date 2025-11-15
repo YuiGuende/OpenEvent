@@ -181,13 +181,6 @@
 
 <header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
 
-<div class="page-header">
-    <div class="container">
-        <h2><i class="bi bi-person-circle"></i> Hồ sơ của tôi</h2>
-        <p class="mb-0">Quản lý thông tin cá nhân và đăng ký check-in bằng khuôn mặt</p>
-    </div>
-</div>
-
 <div class="container mb-5">
     <!-- Alert Messages -->
     <div id="alertContainer"></div>
@@ -368,26 +361,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // CSRF helper
-    function getCsrfToken() {
-        const meta = document.querySelector('meta[name="_csrf"]');
-        return meta ? meta.getAttribute('content') : null;
-    }
-
-    function getCsrfHeaderName() {
-        const meta = document.querySelector('meta[name="_csrf_header"]');
-        return meta ? meta.getAttribute('content') : 'X-CSRF-TOKEN';
-    }
-
-    function withCsrf(headers = {}) {
-        const token = getCsrfToken();
-        const headerName = getCsrfHeaderName();
-        if (token && headerName) {
-            headers[headerName] = token;
-        }
-        return headers;
-    }
-
     let selectedFile = null;
 
     // Handle file selection
@@ -457,7 +430,6 @@
 
             const response = await fetch('/api/profile/upload-avatar', {
                 method: 'POST',
-                headers: withCsrf(),
                 body: formData
             });
 
@@ -498,9 +470,9 @@
         try {
             const response = await fetch('/api/profile/register-face', {
                 method: 'POST',
-                headers: withCsrf({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
 
             const data = await response.json();
@@ -528,9 +500,9 @@
         try {
             const response = await fetch('/api/profile/unregister-face', {
                 method: 'POST',
-                headers: withCsrf({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
 
             const data = await response.json();

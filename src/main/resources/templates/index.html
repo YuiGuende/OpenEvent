@@ -92,6 +92,26 @@
                             </div>
                         </div>
                     </a>
+                    <!-- Check-in buttons section -->
+                    <div class="checkin-section" th:attr="data-event-id=${ev.id}" style="padding: 10px; border-top: 1px solid #eee; margin-top: 10px;">
+                        <div class="checkin-status" th:attr="id=${'checkin-status-' + ev.id}" style="margin-bottom: 8px; font-size: 0.9em;">
+                            <span class="checkin-badge" style="display: none; padding: 4px 8px; border-radius: 4px; background: #28a745; color: white;">
+                                ✓ Đã check-in
+                            </span>
+                        </div>
+                        <div class="checkin-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <a th:href="@{'/events/' + ${ev.id} + '/checkin-form'}" 
+                               class="checkin-btn-manual" 
+                               style="flex: 1; min-width: 120px; padding: 8px 12px; background: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-size: 0.9em; display: inline-block;">
+                                📝 Check-in thủ công
+                            </a>
+                            <a th:href="@{'/events/' + ${ev.id} + '/face-checkin'}" 
+                               class="checkin-btn-face" 
+                               style="flex: 1; min-width: 120px; padding: 8px 12px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-size: 0.9em; display: inline-block;">
+                                📷 Check-in khuôn mặt
+                            </a>
+                        </div>
+                    </div>
                 </article>
             </div>
 
@@ -590,5 +610,58 @@
 
 
 </main>
+
+<script>
+    // Check check-in status for all events when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkinSections = document.querySelectorAll('.checkin-section');
+        
+        checkinSections.forEach(function(section) {
+            const eventId = section.getAttribute('data-event-id');
+            if (!eventId) return;
+            
+            // Check check-in status
+            fetch('/api/events/' + eventId + '/checkin-status', {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                const statusDiv = document.getElementById('checkin-status-' + eventId);
+                const badge = statusDiv.querySelector('.checkin-badge');
+                const buttons = section.querySelector('.checkin-buttons');
+                
+                if (data.checkedIn) {
+                    // Show checked-in badge
+                    badge.style.display = 'inline-block';
+                    badge.textContent = '✓ Đã check-in';
+                    if (data.checkInTime) {
+                        badge.textContent += ' (' + new Date(data.checkInTime).toLocaleString('vi-VN') + ')';
+                    }
+                    // Hide or disable check-in buttons
+                    if (buttons) {
+                        buttons.style.opacity = '0.5';
+                        buttons.querySelectorAll('a').forEach(btn => {
+                            btn.style.pointerEvents = 'none';
+                            btn.style.cursor = 'not-allowed';
+                        });
+                    }
+                } else {
+                    // Hide badge, show buttons normally
+                    badge.style.display = 'none';
+                    if (buttons) {
+                        buttons.style.opacity = '1';
+                        buttons.querySelectorAll('a').forEach(btn => {
+                            btn.style.pointerEvents = 'auto';
+                            btn.style.cursor = 'pointer';
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error checking check-in status for event ' + eventId + ':', error);
+            });
+        });
+    });
+</script>
 </body>
 </html>

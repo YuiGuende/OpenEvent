@@ -14,6 +14,33 @@ let sendBtnEl;
 let emptyStateEl;
 let createRoomBtnEl;
 
+// Cache để lưu messages trong memory và sessionStorage
+let messagesCache = new Map(); // roomId -> messages array
+
+// Functions để save/load messages từ sessionStorage
+function saveMessagesToStorage(roomId) {
+    try {
+        const messages = messagesCache.get(roomId) || [];
+        const key = `event-chat-messages-${roomId}`;
+        sessionStorage.setItem(key, JSON.stringify(messages));
+    } catch (e) {
+        console.warn('Failed to save messages to sessionStorage:', e);
+    }
+}
+
+function loadMessagesFromStorage(roomId) {
+    try {
+        const key = `event-chat-messages-${roomId}`;
+        const stored = sessionStorage.getItem(key);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch (e) {
+        console.warn('Failed to load messages from sessionStorage:', e);
+    }
+    return [];
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('event-chat');
     if (!container) {
@@ -236,6 +263,9 @@ function renderRoomList(rooms) {
             // Group chat với Volunteers
             roomName = room.eventTitle || `Sự kiện #${room.eventId || ''}`;
             roomSubtext = 'Group chat với Volunteers';
+            if (room.participantCount != null && room.participantCount > 0) {
+                roomSubtext += ` (${room.participantCount} người)`;
+            }
             li.dataset.recipientId = ''; // Group chat không có single recipient
         }
 
@@ -290,19 +320,38 @@ function selectRoom(li) {
     if (emptyStateEl) {
         emptyStateEl.style.display = 'none';
     }
-    if (messageListEl) {
-        messageListEl.innerHTML = '';
-    }
+    
+    // KHÔNG clear ngay, để loadHistory() xử lý việc hiển thị từ cache trước
+    // if (messageListEl) {
+    //     messageListEl.innerHTML = '';
+    // }
 
     // Subscribe to room-specific WebSocket destination
     subscribeToRoom(currentRoomId);
     
+    // Load history (sẽ hiển thị cached messages ngay, sau đó update từ API)
     loadHistory(currentRoomId);
 }
 
 function loadHistory(roomId) {
     if (!roomId || !messageListEl) return;
 
+    // Load từ cache/storage trước (hiển thị ngay để tránh mất tin nhắn khi quay lại trang)
+    const cachedMessages = messagesCache.get(roomId) || loadMessagesFromStorage(roomId);
+    if (cachedMessages.length > 0) {
+        messageListEl.innerHTML = '';
+        cachedMessages.forEach((message) => {
+            // Render message mà không lưu vào cache (đã có trong cache rồi)
+            renderMessageToDOM(message);
+        });
+        scrollMessagesToBottom();
+        console.log('Loaded', cachedMessages.length, 'cached messages for room', roomId);
+    } else {
+        // Nếu không có cache, clear để tránh hiển thị tin nhắn cũ
+        messageListEl.innerHTML = '';
+    }
+
+    // Sau đó fetch từ API để cập nhật (có thể có tin nhắn mới)
     fetch(`/api/event-chat/rooms/${roomId}/messages?page=0&size=50`, {credentials: 'include'})
         .then((res) => {
             if (!res.ok) {
@@ -312,19 +361,32 @@ function loadHistory(roomId) {
         })
         .then((page) => {
             const messages = page && page.content ? page.content : [];
-            messageListEl.innerHTML = '';
-            messages.forEach((message) => {
-                appendMessage({
-                    roomId: roomId,
-                    senderUserId: message.sender?.userId,
-                    body: message.body,
-                    timestamp: message.timestamp
+            
+            // Cập nhật cache với messages từ API
+            const apiMessages = messages.map((message) => ({
+                roomId: roomId,
+                senderUserId: message.sender?.userId,
+                senderName: message.sender?.name || message.sender?.email || 'Người dùng',
+                body: message.body,
+                timestamp: message.timestamp
+            }));
+            
+            messagesCache.set(roomId, apiMessages);
+            saveMessagesToStorage(roomId);
+            
+            // Chỉ update UI nếu đang ở room này
+            if (currentRoomId === roomId) {
+                messageListEl.innerHTML = '';
+                apiMessages.forEach((message) => {
+                    renderMessageToDOM(message);
                 });
-            });
-            scrollMessagesToBottom();
+                scrollMessagesToBottom();
+                console.log('Updated with', apiMessages.length, 'messages from API for room', roomId);
+            }
         })
         .catch((err) => {
-            console.error(err);
+            console.error('Error loading history from API:', err);
+            // Nếu API fail, giữ lại cached messages (đã hiển thị ở trên)
         });
 }
 
@@ -367,11 +429,19 @@ function handleIncomingMessage(message) {
         return;
     }
 
-    appendMessage(message);
+    // Đảm bảo có senderName từ WebSocket message
+    appendMessage({
+        roomId: message.roomId,
+        senderUserId: message.senderUserId,
+        senderName: message.senderName || 'Người dùng',
+        body: message.body,
+        timestamp: message.timestamp
+    });
     scrollMessagesToBottom();
 }
 
-function appendMessage(message) {
+// Render message vào DOM (không lưu vào cache)
+function renderMessageToDOM(message) {
     if (!messageListEl) return;
 
     const wrapper = document.createElement('div');
@@ -379,6 +449,14 @@ function appendMessage(message) {
 
     const outgoing = message.senderUserId === currentUserId;
     wrapper.classList.add(outgoing ? 'from-me' : 'from-them');
+
+    // Thêm tên người gửi cho tin nhắn của người khác
+    if (!outgoing && message.senderName) {
+        const sender = document.createElement('div');
+        sender.className = 'chat-message-sender';
+        sender.textContent = message.senderName;
+        wrapper.appendChild(sender);
+    }
 
     const body = document.createElement('div');
     body.className = 'chat-message-body';
@@ -391,6 +469,32 @@ function appendMessage(message) {
     wrapper.appendChild(body);
     wrapper.appendChild(meta);
     messageListEl.appendChild(wrapper);
+}
+
+// Append message và lưu vào cache
+function appendMessage(message) {
+    if (!messageListEl) return;
+
+    // Render message vào DOM
+    renderMessageToDOM(message);
+    
+    // Lưu message vào cache
+    if (!messagesCache.has(message.roomId)) {
+        messagesCache.set(message.roomId, []);
+    }
+    
+    // Kiểm tra xem message đã tồn tại chưa (tránh duplicate)
+    const roomMessages = messagesCache.get(message.roomId);
+    const isDuplicate = roomMessages.some(msg => 
+        msg.body === message.body && 
+        msg.senderUserId === message.senderUserId &&
+        msg.timestamp === message.timestamp
+    );
+    
+    if (!isDuplicate) {
+        roomMessages.push(message);
+        saveMessagesToStorage(message.roomId);
+    }
 }
 
 function markRoomUnread(roomId) {

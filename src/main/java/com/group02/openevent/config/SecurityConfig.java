@@ -67,7 +67,11 @@ public class SecurityConfig {
                                 "/img/**", "/images/**", "/",
                                 "/api/payments/webhook", "/api/payments/webhook/test",
                                 "/api/payments/webhook/test-data",
-                                "/api/ekyc/file-service/v1/addFile").permitAll()
+                                "/api/current-user",
+                                "/api/ekyc/file-service/v1/addFile",
+                                "/api/ai/chat/enhanced/health",
+                                "/api/**",
+                                "/profile").permitAll()
                         .anyRequest().authenticated()
                 )
 

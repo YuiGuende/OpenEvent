@@ -16,6 +16,7 @@ import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Host;
 import com.group02.openevent.repository.*;
+import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
 import com.group02.openevent.service.EventService;
@@ -64,6 +65,7 @@ public class EventServiceImpl implements EventService {
     IOrganizationRepo organizationRepo;
     IHostRepo hostRepo;
     IPlaceRepo placeRepo;
+    ITicketTypeRepo ticketTypeRepo;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -561,6 +563,33 @@ public class EventServiceImpl implements EventService {
                 .poster(event.isPoster())
                 .benefits(event.getBenefits())
                 .build();
+    }
+
+    @Override
+    public boolean isFreeEvent(Long eventId) {
+        log.info("Checking if event {} is free", eventId);
+        
+        // Validate event exists
+        if (!eventRepo.existsById(eventId)) {
+            throw new RuntimeException("Event not found: " + eventId);
+        }
+        
+        // Lấy tất cả ticket types của event từ repository (tránh LazyInitializationException)
+        List<TicketType> ticketTypes = ticketTypeRepo.findByEventId(eventId);
+        
+        // Nếu không có ticket type → event miễn phí
+        if (ticketTypes == null || ticketTypes.isEmpty()) {
+            log.info("Event {} has no ticket types, considered as free", eventId);
+            return true;
+        }
+        
+        // Kiểm tra tất cả ticket types có price = 0 không
+        boolean allFree = ticketTypes.stream()
+                .allMatch(tt -> tt.getPrice() != null && 
+                        tt.getPrice().compareTo(java.math.BigDecimal.ZERO) == 0);
+        
+        log.info("Event {} isFree: {} (checked {} ticket types)", eventId, allFree, ticketTypes.size());
+        return allFree;
     }
 
 

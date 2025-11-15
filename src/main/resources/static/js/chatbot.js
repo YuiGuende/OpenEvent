@@ -91,6 +91,39 @@
     // ===== CHAT HISTORY MANAGEMENT =====
     const chatHistory = new Map();
 
+    // Lưu chatHistory vào sessionStorage
+    function saveChatHistoryToStorage() {
+        try {
+            const historyData = {};
+            chatHistory.forEach((value, key) => {
+                historyData[key] = value;
+            });
+            sessionStorage.setItem('chatbot_history', JSON.stringify(historyData));
+            console.log('✅ Saved chat history to sessionStorage:', Object.keys(historyData).length, 'sessions');
+        } catch (e) {
+            console.warn('Failed to save chat history to sessionStorage:', e);
+        }
+    }
+
+    // Load chatHistory từ sessionStorage
+    function loadChatHistoryFromStorage() {
+        try {
+            const stored = sessionStorage.getItem('chatbot_history');
+            if (stored) {
+                const historyData = JSON.parse(stored);
+                // Load vào Map
+                Object.keys(historyData).forEach(sessionId => {
+                    chatHistory.set(sessionId, historyData[sessionId]);
+                });
+                console.log('✅ Loaded chat history from sessionStorage:', Object.keys(historyData).length, 'sessions');
+                return true;
+            }
+        } catch (e) {
+            console.warn('Failed to load chat history from sessionStorage:', e);
+        }
+        return false;
+    }
+
     function saveChatHistory(sessionId) {
     if (!chatMessages || !sessionId) return;
 
@@ -103,11 +136,20 @@
 });
 
     chatHistory.set(sessionId, messages);
-    console.log(`Saved chat history for session ${sessionId}:`, messages);
+    
+    // LƯU VÀO SESSIONSTORAGE
+    saveChatHistoryToStorage();
+    
+    console.log(`Saved chat history for session ${sessionId}:`, messages.length, 'messages');
 }
 
     function restoreChatHistory(sessionId) {
     if (!chatMessages) return;
+
+    // Đảm bảo đã load từ sessionStorage
+    if (chatHistory.size === 0) {
+        loadChatHistoryFromStorage();
+    }
 
     const history = chatHistory.get(sessionId);
 
@@ -126,7 +168,7 @@
     displayMessage(msg.type, msg.content);
 });
 
-    console.log(`Restored chat history for session ${sessionId}:`, history);
+    console.log(`Restored chat history for session ${sessionId}:`, history.length, 'messages');
 }
 
     // ===== INITIALIZATION =====
@@ -136,6 +178,9 @@
 
     try {
     console.log("🚀 Starting chatbot initialization...");
+
+    // LOAD LỊCH SỬ TỪ SESSIONSTORAGE NGAY TỪ ĐẦU
+    loadChatHistoryFromStorage();
 
     const contextPathMeta = document.querySelector('meta[name="context-path"]');
 
@@ -211,9 +256,12 @@
 
     initializeChatbot();
 
+    // Restore history cho current session sau khi load HTML
     setTimeout(() => {
-    checkAndRestoreFromChatWeb();
-}, 500);
+        const currentSessionId = getCurrentSessionId();
+        restoreChatHistory(currentSessionId);
+        checkAndRestoreFromChatWeb();
+    }, 500);
 
     adjustChatbotPosition();
     window.addEventListener("resize", adjustChatbotPosition);
@@ -962,6 +1010,9 @@
     const cur = chatHistory.get(sessionId) || [];
     cur.push({ type: "user", content: message, timestamp: new Date().toISOString() });
     chatHistory.set(sessionId, cur);
+    
+    // LƯU VÀO SESSIONSTORAGE NGAY
+    saveChatHistoryToStorage();
 
     showTyping(true);
 

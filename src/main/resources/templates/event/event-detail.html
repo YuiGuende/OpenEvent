@@ -17,6 +17,26 @@
     
     <button id="joinEventBtn" onclick="joinEvent()">Join Event</button>
     
+    <!-- Customer Check-in Section -->
+    <div id="checkinSection" style="display: none; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+        <h3 style="margin-bottom: 15px; color: #28a745;">Check-in cho sự kiện</h3>
+        <div id="checkinStatus" style="margin-bottom: 15px;">
+            <span id="checkinBadge" style="display: none; padding: 6px 12px; border-radius: 4px; background: #28a745; color: white; font-weight: bold;">
+                ✓ Đã check-in
+            </span>
+        </div>
+        <div id="checkinButtons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a id="manualCheckinBtn" href="#" 
+               style="flex: 1; min-width: 150px; padding: 12px 20px; background: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                📝 Check-in thủ công
+            </a>
+            <a id="faceCheckinBtn" href="#" 
+               style="flex: 1; min-width: 150px; padding: 12px 20px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                📷 Check-in bằng khuôn mặt
+            </a>
+        </div>
+    </div>
+    
     <!-- Feedback Form Buttons -->
     <div class="mt-3">
         <!-- Host: Create Feedback Form Button -->
@@ -196,6 +216,8 @@
                     if (data.authenticated) {
                         currentUser = data;
                         document.getElementById('joinEventBtn').textContent = 'Join Event';
+                        // Check check-in status if user is authenticated
+                        checkCheckinStatus();
                     } else {
                         document.getElementById('joinEventBtn').textContent = 'Login to Join';
                     }
@@ -204,6 +226,70 @@
                     console.error('Error checking authentication:', error);
                     document.getElementById('joinEventBtn').textContent = 'Login to Join';
                 });
+        }
+        
+        // Check check-in status for current event
+        function checkCheckinStatus() {
+            if (!eventId) return;
+            
+            fetch('/api/events/' + eventId + '/checkin-status', {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                const checkinSection = document.getElementById('checkinSection');
+                const checkinBadge = document.getElementById('checkinBadge');
+                const checkinButtons = document.getElementById('checkinButtons');
+                const manualBtn = document.getElementById('manualCheckinBtn');
+                const faceBtn = document.getElementById('faceCheckinBtn');
+                
+                // Show check-in section if user is authenticated
+                if (checkinSection) {
+                    checkinSection.style.display = 'block';
+                }
+                
+                // Set button URLs
+                if (manualBtn) {
+                    manualBtn.href = '/events/' + eventId + '/checkin-form';
+                }
+                if (faceBtn) {
+                    faceBtn.href = '/events/' + eventId + '/face-checkin';
+                }
+                
+                if (data.checkedIn) {
+                    // Show checked-in badge
+                    if (checkinBadge) {
+                        checkinBadge.style.display = 'inline-block';
+                        checkinBadge.textContent = '✓ Đã check-in';
+                        if (data.checkInTime) {
+                            checkinBadge.textContent += ' (' + new Date(data.checkInTime).toLocaleString('vi-VN') + ')';
+                        }
+                    }
+                    // Disable check-in buttons
+                    if (checkinButtons) {
+                        checkinButtons.style.opacity = '0.5';
+                        checkinButtons.querySelectorAll('a').forEach(btn => {
+                            btn.style.pointerEvents = 'none';
+                            btn.style.cursor = 'not-allowed';
+                        });
+                    }
+                } else {
+                    // Hide badge, enable buttons
+                    if (checkinBadge) {
+                        checkinBadge.style.display = 'none';
+                    }
+                    if (checkinButtons) {
+                        checkinButtons.style.opacity = '1';
+                        checkinButtons.querySelectorAll('a').forEach(btn => {
+                            btn.style.pointerEvents = 'auto';
+                            btn.style.cursor = 'pointer';
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error checking check-in status:', error);
+            });
         }
 
         // Handle join event button click

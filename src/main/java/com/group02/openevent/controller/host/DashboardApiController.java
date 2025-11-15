@@ -1,4 +1,4 @@
-package com.group02.openevent.controller.api;
+package com.group02.openevent.controller.host;
 
 import com.group02.openevent.dto.department.OrderDTO;
 import com.group02.openevent.dto.response.DashboardStatsResponse;

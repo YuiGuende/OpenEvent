@@ -3,6 +3,7 @@ package com.group02.openevent.controller.attendance;
 import com.google.zxing.WriterException;
 import com.group02.openevent.dto.attendance.AttendanceRequest;
 import com.group02.openevent.dto.attendance.AttendanceStatsDTO;
+import com.group02.openevent.dto.attendance.CheckInListDTO;
 import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
@@ -236,9 +237,52 @@ public class EventAttendanceController {
      */
     @GetMapping("/{eventId}/attendances")
     @ResponseBody
-    public ResponseEntity<List<EventAttendance>> getAttendances(@PathVariable Long eventId) {
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public ResponseEntity<List<CheckInListDTO>> getAttendances(@PathVariable Long eventId) {
         List<EventAttendance> attendances = attendanceService.getAttendancesByEventId(eventId);
-        return ResponseEntity.ok(attendances);
+        
+        // Convert to DTO to avoid circular reference and nested depth issues
+        // Process within transaction to allow lazy loading of orderId if needed
+        List<CheckInListDTO> dtos = attendances.stream()
+            .map(attendance -> {
+                CheckInListDTO dto = new CheckInListDTO();
+                dto.setAttendanceId(attendance.getAttendanceId());
+                
+                // Get orderId safely - Hibernate proxy allows accessing ID without full load
+                // But we need to be in a transaction context
+                Long orderId = null;
+                try {
+                    // Check if order proxy is initialized
+                    if (attendance.getOrder() != null) {
+                        // Use Hibernate's getIdentifier() if available, or just getOrderId()
+                        // This should work within transaction context
+                        orderId = attendance.getOrder().getOrderId();
+                    }
+                } catch (org.hibernate.LazyInitializationException e) {
+                    // Should not happen if we're in transaction, but handle gracefully
+                    log.debug("Could not get orderId for attendance {} (lazy load failed): {}", 
+                        attendance.getAttendanceId(), e.getMessage());
+                    orderId = null;
+                } catch (Exception e) {
+                    log.warn("Could not get orderId for attendance {}: {}", 
+                        attendance.getAttendanceId(), e.getMessage());
+                    orderId = null;
+                }
+                
+                dto.setOrderId(orderId);
+                dto.setFullName(attendance.getFullName());
+                dto.setEmail(attendance.getEmail());
+                dto.setPhone(attendance.getPhone());
+                dto.setOrganization(attendance.getOrganization());
+                dto.setCheckInTime(attendance.getCheckInTime());
+                dto.setCheckOutTime(attendance.getCheckOutTime());
+                dto.setStatus(attendance.getStatus() != null ? attendance.getStatus().name() : null);
+                dto.setCreatedAt(attendance.getCreatedAt());
+                return dto;
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(dtos);
     }
     
     /**

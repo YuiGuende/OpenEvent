@@ -3,33 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thông báo - OpenEvent</title>
+    <title>Notifications - OpenEvent</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <!-- Modal CSS for host registration modal -->
+    <link rel="stylesheet" th:href="@{/css/modal.css}"/>
 </head>
 <body>
     <header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
 
     <div class="page-header">
         <div class="container">
-            <h2><i class="bi bi-bell"></i> Thông báo của tôi</h2>
-            <p class="mb-0 text-muted">Xem và quản lý thông báo từ các sự kiện</p>
+            <h2><i class="bi bi-bell"></i> My Notifications</h2>
+            <p class="mb-0 text-muted">View and manage notifications from events</p>
         </div>
     </div>
 
     <div class="container mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">Danh sách thông báo</h4>
+            <h4 class="mb-0">Notifications List</h4>
             <button id="markAllReadBtn" class="btn btn-secondary" style="display:none;">
-                <i class="bi bi-check-all"></i> Đánh dấu tất cả đã đọc
+                <i class="bi bi-check-all"></i> Mark all as read
             </button>
         </div>
 
         <div id="notificationsList" class="notifications-list">
             <div class="text-center text-muted py-5">
                 <i class="bi bi-hourglass-split" style="font-size: 3rem;"></i>
-                <p class="mt-2">Đang tải thông báo...</p>
+                <p class="mt-2">Loading notifications...</p>
             </div>
         </div>
     </div>
@@ -50,7 +52,7 @@
                 } catch (error) {
                     console.error('Error loading notifications:', error);
                     document.getElementById('notificationsList').innerHTML = 
-                        '<div class="text-center text-danger py-5"><p>Lỗi khi tải thông báo</p></div>';
+                        '<div class="text-center text-danger py-5"><p>Error loading notifications</p></div>';
                 }
             }
 
@@ -62,7 +64,7 @@
                     listDiv.innerHTML = 
                         '<div class="text-center text-muted py-5">' +
                         '<i class="bi bi-inbox" style="font-size: 3rem;"></i>' +
-                        '<p class="mt-2">Chưa có thông báo nào</p>' +
+                        '<p class="mt-2">No notifications yet</p>' +
                         '</div>';
                     markAllBtn.style.display = 'none';
                     return;
@@ -81,14 +83,14 @@
                             <div class="notification-content">
                                 ${readBadge}
                                 <div class="notification-header">
-                                    <h4 class="notification-title">${notif.title || '(Không có tiêu đề)'}</h4>
+                                    <h4 class="notification-title">${notif.title || '(No title)'}</h4>
                                     <span class="notification-time">${date}</span>
                                 </div>
                                 <p class="notification-message">${notif.message}</p>
                                 <div class="notification-meta">
                                     <span class="meta-item">
                                         <i class="bi bi-calendar-event"></i>
-                                        <strong>Sự kiện:</strong> ${notif.eventTitle || 'N/A'}
+                                        <strong>Event:</strong> ${notif.eventTitle || 'N/A'}
                                     </span>
                                     <span class="meta-item">
                                         <i class="bi bi-person"></i>
@@ -96,13 +98,13 @@
                                     </span>
                                     ${notif.fileURL ? `
                                         <a href="${notif.fileURL}" target="_blank" class="file-link">
-                                            <i class="bi bi-paperclip"></i> Xem file đính kèm
+                                            <i class="bi bi-paperclip"></i> View attached file
                                         </a>
                                     ` : ''}
                                 </div>
                                 ${notif.eventId ? `
                                     <a href="/event/${notif.eventId}" class="btn btn-sm btn-primary mt-2">
-                                        <i class="bi bi-eye"></i> Xem sự kiện
+                                        <i class="bi bi-eye"></i> View Event
                                     </a>
                                 ` : ''}
                             </div>
@@ -133,7 +135,7 @@
                     }
                 } catch (error) {
                     console.error('Error marking as read:', error);
-                    alert('Lỗi khi đánh dấu đã đọc');
+                    alert('Error marking as read');
                 }
             }
 
@@ -155,7 +157,7 @@
                     }
                 } catch (error) {
                     console.error('Error marking all as read:', error);
-                    alert('Lỗi khi đánh dấu tất cả đã đọc');
+                    alert('Error marking all as read');
                 }
             });
 

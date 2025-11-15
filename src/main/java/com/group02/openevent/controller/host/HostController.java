@@ -9,6 +9,7 @@ import com.group02.openevent.service.*;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import com.group02.openevent.service.RequestService;
+import com.group02.openevent.service.TicketTypeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -34,15 +35,17 @@ public class HostController {
     private final CustomerService customerService;
     private final UserService userService;
     private final RequestService requestService;
+    private final TicketTypeService ticketTypeService;
 
     @Autowired
-    public HostController(EventService eventService, IImageService imageService, HostService hostService, CustomerService customerService, UserService userService, RequestService requestService) {
+    public HostController(EventService eventService, IImageService imageService, HostService hostService, CustomerService customerService, UserService userService, RequestService requestService, TicketTypeService ticketTypeService) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.hostService = hostService;
         this.customerService = customerService;
         this.userService = userService;
         this.requestService = requestService;
+        this.ticketTypeService = ticketTypeService;
     }
 
     @GetMapping("/organizer")
@@ -51,8 +54,9 @@ public class HostController {
         return "host/host";
     }
 
-    // Khi người dùng gõ /dashboard, /events, /requests, /settings trực tiếp — ta vẫn trả về host layout
-    @GetMapping({"/dashboard", "/events", "/requests", "/settings"})
+    // Khi người dùng gõ /dashboard, /events, /settings trực tiếp — ta vẫn trả về host layout
+    // Lưu ý: /requests được xử lý riêng bởi requestsDirect()
+    @GetMapping({"/dashboard", "/events", "/settings"})
     public String directAccess(Model model) {
         // Mặc định load dashboard (JS sẽ tự fetch fragment đúng sau)
         model.addAttribute("content", "fragments/dashboard :: content");
@@ -66,6 +70,15 @@ public class HostController {
             List<Event> eventResponses = eventService.getEventByHostId(hostId);
             model.addAttribute("events", eventResponses);
             log.info("Events: " + eventResponses);
+            
+            // Calculate tickets sold for each event
+            java.util.Map<Long, Integer> ticketsSoldMap = new java.util.HashMap<>();
+            for (Event event : eventResponses) {
+                Integer ticketsSold = ticketTypeService.getTotalSoldTickets(event.getId());
+                ticketsSoldMap.put(event.getId(), ticketsSold != null ? ticketsSold : 0);
+            }
+            model.addAttribute("ticketsSoldMap", ticketsSoldMap);
+            
             java.time.LocalDateTime currentTime = java.time.LocalDateTime.now();
             model.addAttribute("currentTime", currentTime);
             return "fragments/dashboard :: content";
@@ -164,6 +177,14 @@ public class HostController {
         List<EventType> listTypeEvent = Arrays.asList(EventType.MUSIC, EventType.FESTIVAL, EventType.WORKSHOP, EventType.COMPETITION, EventType.OTHERS);
         model.addAttribute("listTypeEvent", listTypeEvent);
         model.addAttribute("events", filteredEvents);
+
+        // Calculate tickets sold for each event
+        java.util.Map<Long, Integer> ticketsSoldMap = new java.util.HashMap<>();
+        for (Event event : filteredEvents) {
+            Integer ticketsSold = ticketTypeService.getTotalSoldTickets(event.getId());
+            ticketsSoldMap.put(event.getId(), ticketsSold != null ? ticketsSold : 0);
+        }
+        model.addAttribute("ticketsSoldMap", ticketsSoldMap);
 
         // Add current time for status calculation
         model.addAttribute("currentTime", currentTime);

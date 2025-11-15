@@ -10,7 +10,7 @@ public interface HostService {
     Host findByCustomerId(Long customerId);
     Host save(Host host);
     boolean isUserHost(Long userId);
-    Host registerHost(User user, HostRegistrationRequest request);
+    Host registerHost(User user, HostRegistrationRequest request); // Đổi từ Customer sang User
     Host findHostByUserId(Long userId);
 
     Host getHostFromSession(HttpSession session);

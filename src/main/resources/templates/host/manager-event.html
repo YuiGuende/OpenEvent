@@ -48,34 +48,28 @@
                 </button>
             </div>
 
-            <div class="sidebar-status">
-                <div class="status-badge">
-                    <i class="bi bi-broadcast"></i>
-                    <span>Trực tiếp</span>
-                    <small>Nhập để gỡ bỏ</small>
-                </div>
-            </div>
+<!--            <div class="sidebar-status">-->
+<!--                <div class="status-badge">-->
+<!--                    <i class="bi bi-broadcast"></i>-->
+<!--                    <span>Live</span>-->
+<!--                    <small>Enter to remove</small>-->
+<!--                </div>-->
+<!--            </div>-->
 
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="nav-section-title">TỔNG QUAN</div>
+                    <div class="nav-section-title">OVERVIEW</div>
                     <ul class="nav-list">
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/getting-started'}" class="nav-link" data-link>
                                 <i class="bi bi-star"></i>
-                                <span>Bắt đầu</span>
+                                <span>Started</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/dashboard-event'}" class="nav-link" data-link>
                                 <i class="bi bi-grid"></i>
-                                <span>Bảng điều khiển</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a th:href="@{'/manage/event/' + ${eventId} + '/reports'}" class="nav-link" data-link>
-                                <i class="bi bi-clock-history"></i>
-                                <span>Báo cáo</span>
+                                <span>Control panel</span>
                             </a>
                         </li>
                     </ul>
@@ -87,71 +81,64 @@
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/settings'}" class="nav-link" data-link>
                                 <i class="bi bi-gear"></i>
-                                <span>Cài đặt</span>
+                                <span>MANAGE</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/attendees'}" class="nav-link" data-link>
                                 <i class="bi bi-people"></i>
-                                <span>Người tham dự</span>
+                                <span>Participants</span>
                                 <span class="badge">0</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteers'}" class="nav-link" data-link>
-                                <i class="bi bi-people-fill"></i>
-                                <span>Tình nguyện viên</span>
-                            </a>
-                        </li>
-                       
-                        <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/orders'}" class="nav-link" data-link>
                                 <i class="bi bi-receipt"></i>
-                                <span>Đơn hàng</span>
+                                <span>Order</span>
                                 <span class="badge">0</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/ticket'}" class="nav-link" data-link>
                                 <i class="bi bi-ticket-perforated"></i>
-                                <span>Vé</span>
+                                <span>Ticket</span>
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/request-form'}" class="nav-link" data-link>
                                 <i class="fas fa-paper-plane"></i>
-                                <span>Yêu cầu duyệt</span>
+                                <span>Request approval</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="/manage/event/check-in" class="nav-link" data-link>
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/check-in-list'}" class="nav-link" data-link>
                                 <i class="bi bi-list-check"></i>
-                                <span>Danh sách Check-In</span>
+                                <span>Check-In List</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="bi bi-tag"></i>
-                                <span>Mã khuyến mãi</span>
-                            </a>
-                        </li>
+<!--                        <li class="nav-item">-->
+<!--                            <a href="#" class="nav-link">-->
+<!--                                <i class="bi bi-tag"></i>-->
+<!--                                <span>Mã khuyến mãi</span>-->
+<!--                            </a>-->
+<!--                        </li>-->
                     </ul>
                 </div>
 
                 <div class="nav-section">
-                    <div class="nav-section-title">QUẢN LÝ FORM</div>
+                    <div class="nav-section-title">FORM MANAGEMENT</div>
                     <ul class="nav-list">
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/statis-forms'}" class="nav-link" data-link>
                                 <i class="bi bi-bar-chart"></i>
-                                <span>Thống kê Form</span>
+                                <span>Form Statistics</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/create-forms'}" class="nav-link" data-link>
                                 <i class="bi bi-file-earmark-plus"></i>
-                                <span>Tạo Form</span>
+                                <span>Create Form</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -164,29 +151,12 @@
                 </div>
 
                 <div class="nav-section">
-                    <div class="nav-section-title">TÌNH NGUYỆN VIÊN</div>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-create-form'}" class="nav-link" data-link>
-                                <i class="bi bi-file-earmark-plus"></i>
-                                <span>Tạo Form</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-requests'}" class="nav-link" data-link>
-                                <i class="bi bi-clipboard-check"></i>
-                                <span>Xem yêu cầu duyệt</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">THÔNG BÁO</div>
+                    <div class="nav-section-title">NOTIFICATION</div>
                     <ul class="nav-list">
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/notification'}" class="nav-link" data-link>
                                 <i class="bi bi-bell"></i>
+                                <span>Notification</span>
                                 <span>Thông báo</span>
                             </a>
                         </li>
@@ -199,17 +169,17 @@
                     </ul>
                 </div>
 
-                <div class="nav-section">
-                    <div class="nav-section-title">CÔNG CỤ</div>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="/manage/events/homepage-designer" class="nav-link">
-                                <i class="bi bi-palette"></i>
-                                <span>Thiết kế trang sự kiện</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+<!--                <div class="nav-section">-->
+<!--                    <div class="nav-section-title">CÔNG CỤ</div>-->
+<!--                    <ul class="nav-list">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a href="/manage/events/homepage-designer" class="nav-link">-->
+<!--                                <i class="bi bi-palette"></i>-->
+<!--                                <span>Thiết kế trang sự kiện</span>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </div>-->
             </nav>
 
             <button class="btn-collapse-sidebar d-none d-lg-flex" id="sidebarCollapse" title="Thu gọn/Mở rộng sidebar">
@@ -229,21 +199,18 @@
                             <li class="breadcrumb-item">
                                 <a href="#"><i class="bi bi-house-door"></i> Trang chủ</a>
                             </li>
-                            <li class="breadcrumb-item">
-                                <a href="#">duc le</a>
-                            </li>
                             <li class="breadcrumb-item active">edqd</li>
                         </ol>
                     </nav>
                 </div>
                 <a th:href="@{/}" class="btn btn-homepage">
                     <i class="fas fa-home"></i>
-                    Về trang chủ
+                    Back to home page
                 </a>
                 <div class="header-right">
                     <a th:href="@{/organizer}" class="btn btn-outline-light btn-sm">
                         <i class="bi bi-box-arrow-up-right"></i>
-                        Quay lại trang Host
+                        Back to Host page
                     </a>
 
 
@@ -304,7 +271,7 @@
     <script src="/js/sidebar-manager.js"></script>
     <script src="/js/update-event.js"></script>
     <script src="/js/router.js"></script>
-    <script src="/js/app.js?v=2"></script>
+    <script src="/js/app.js"></script>
     <script src="/js/update-ticket.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="/js/event-attendees.js"></script>

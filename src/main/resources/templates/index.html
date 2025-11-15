@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head th:replace="~{fragments/head :: head(${pageTitle})}"></head>
+<head th:replace="~{fragments/head :: head('Trang chủ')}"></head>
 
 <body class="page-bg"
       th:with="
@@ -35,7 +35,7 @@
     <!-- Search bar positioned like Booking.com -->
     <div class="search-center-position">
         <div class="container">
-            <div th:replace="fragments/searchbar :: searchBar"></div>
+            <div th:replace="~{fragments/searchbar :: searchBar}"></div>
             <div class="chip-row" style="margin-bottom: 0.5rem;">
                 <a class="chip is-active" th:href="@{/events(reco='for-you')}">For you</a>
                 <a class="chip" th:href="@{/events(reco='near-you')}">Near you</a>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="grid grid-3" th:if="${!#lists.isEmpty(myEvents)}">
-                <article class="event-card-simple" th:each="ev, iter : ${myEvents}" th:if="${iter.index < 3}">
+                <article class="event-card-simple" th:each="ev : ${myEvents}">
                     <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
                        style="text-decoration: none; color: inherit;">
                         <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
@@ -77,6 +77,9 @@
                                     <span th:text="${'Registered: ' + ev.registered + ' / ' + ev.capacity}">Registered: 0 / 0</span>
                                     <span class="capacity-mini"
                                           th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
+                                </div>
+                                <div class="bar">
+                                    <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
                                 </div>
                             </div>
 
@@ -95,13 +98,13 @@
                             </span>
                         </div>
                         <div class="checkin-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <a th:href="@{'/events/' + ${ev.id} + '/checkin-form'}" 
-                               class="checkin-btn-manual" 
+                            <a th:href="@{'/events/' + ${ev.id} + '/checkin-form'}"
+                               class="checkin-btn-manual"
                                style="flex: 1; min-width: 120px; padding: 8px 12px; background: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-size: 0.9em; display: inline-block;">
                                 📝 Check-in thủ công
                             </a>
-                            <a th:href="@{'/events/' + ${ev.id} + '/face-checkin'}" 
-                               class="checkin-btn-face" 
+                            <a th:href="@{'/events/' + ${ev.id} + '/face-checkin'}"
+                               class="checkin-btn-face"
                                style="flex: 1; min-width: 120px; padding: 8px 12px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-size: 0.9em; display: inline-block;">
                                 📷 Check-in khuôn mặt
                             </a>
@@ -178,6 +181,7 @@
                                               th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                     </div>
                                 </div>
+                            </div>
 
                                 <div class="event-tags">
                                     <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
@@ -205,6 +209,7 @@
                     <button class="chip is-active" data-filter="all">All</button>
                     <button class="chip" data-filter="Music">Music</button>
                     <button class="chip" data-filter="Workshop">Workshop</button>
+                    <button class="chip" data-filter="Conference">Conference</button>
                     <button class="chip" data-filter="Festival">Festival</button>
                     <button class="chip" data-filter="Competition">Competition</button>
                     <button class="chip" data-filter="Other">Other</button>
@@ -356,8 +361,8 @@
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{${topStudents[1]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
-                                     th:alt="${topStudents[1]?.name ?: 'Student'}" 
+                                <img th:src="@{${topStudents[1]?.imageUrl ?: '/img/sinhvien2.jpg'}}"
+                                     th:alt="${topStudents[1]?.name ?: 'Student'}"
                                      class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
@@ -388,8 +393,8 @@
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{${topStudents[0]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
-                                     th:alt="${topStudents[0]?.name ?: 'Student'}" 
+                                <img th:src="@{${topStudents[0]?.imageUrl ?: '/img/sinhvien2.jpg'}}"
+                                     th:alt="${topStudents[0]?.name ?: 'Student'}"
                                      class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
@@ -420,8 +425,8 @@
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{${topStudents[2]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
-                                     th:alt="${topStudents[2]?.name ?: 'Student'}" 
+                                <img th:src="@{${topStudents[2]?.imageUrl ?: '/img/sinhvien2.jpg'}}"
+                                     th:alt="${topStudents[2]?.name ?: 'Student'}"
                                      class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
@@ -574,11 +579,11 @@
     // Check check-in status for all events when page loads
     document.addEventListener('DOMContentLoaded', function() {
         const checkinSections = document.querySelectorAll('.checkin-section');
-        
+
         checkinSections.forEach(function(section) {
             const eventId = section.getAttribute('data-event-id');
             if (!eventId) return;
-            
+
             // Check check-in status
             fetch('/api/events/' + eventId + '/checkin-status', {
                 credentials: 'include'
@@ -588,7 +593,7 @@
                 const statusDiv = document.getElementById('checkin-status-' + eventId);
                 const badge = statusDiv.querySelector('.checkin-badge');
                 const buttons = section.querySelector('.checkin-buttons');
-                
+
                 if (data.checkedIn) {
                     // Show checked-in badge
                     badge.style.display = 'inline-block';

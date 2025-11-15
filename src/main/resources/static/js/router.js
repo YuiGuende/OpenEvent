@@ -58,8 +58,6 @@ class SpaRouter {
             queryParams = '?' + path.split('?')[1];
         }
         
-        console.log(`[Router] Bắt đầu điều hướng đến: ${path} (normalized: ${normalizedPath}, query: ${queryParams})`);
-        
         // Try to find route by matching path
         let route = this.findRoute(normalizedPath);
         
@@ -77,27 +75,12 @@ class SpaRouter {
         
         if (!route) {
             console.error(`[SpaRouter] Không tìm thấy route cho path: ${normalizedPath}`);
-            console.error(`[SpaRouter] Available routes:`, this.routes.map(r => r.path));
-            console.error(`[SpaRouter] Normalized path: "${normalizedPath}"`);
-            console.error(`[SpaRouter] Trying to match with each route...`);
-            
-            // Debug: Try to find why route is not matching
-            this.routes.forEach((r, idx) => {
-                const routePath = r.path.split('?')[0].replace(/\/$/, '');
-                console.log(`  Route ${idx}: "${routePath}" === "${normalizedPath}"? ${routePath === normalizedPath}`);
-            });
-            
-            console.error(`[SpaRouter] Chuyển về trang mặc định.`);
-
             const defaultRoute = this.routes[0]; // Lấy route đầu tiên làm mặc định
             if (defaultRoute && defaultRoute.path !== normalizedPath) { // Tránh lặp vô hạn nếu chính route mặc định bị lỗi
-                console.log(`[SpaRouter] Redirecting to default route: ${defaultRoute.path}`);
                 this.navigateTo(defaultRoute.path);
             }
             return;
         }
-
-        console.log(`[Router] ✅ Route found, navigating to: ${route.path}`);
         
         // Store query params for renderContent (only if route doesn't already have them in fragment)
         if (!route.isDynamic) {
@@ -160,7 +143,6 @@ class SpaRouter {
                 }
             }
 
-            console.log(`[Router] Bắt đầu fetch fragment từ: ${fragmentUrl}`); // <-- LOG 4 (QUAN TRỌNG NHẤT)
             const response = await fetch(fragmentUrl);
             if (!response.ok) {
                 throw new Error(`Không thể tải fragment: ${response.statusText}`);
@@ -207,7 +189,6 @@ class SpaRouter {
      */
     loadInitialRoute() {
         const path = window.location.pathname;
-        console.log(`[Router] Tải route ban đầu cho path: ${path}`); // <-- LOG 7
         const route = this.findRoute(path);
         if (route) {
             this.renderContent(route);
@@ -231,21 +212,10 @@ class SpaRouter {
         // Normalize path (remove trailing slashes, handle query params)
         const normalizedPath = path.split('?')[0].replace(/\/$/, '');
         
-        console.log(`[Router] Finding route for path: ${path} (normalized: ${normalizedPath})`);
-        console.log(`[Router] Available routes:`, this.routes.map(r => r.path));
-        
         const route = this.routes.find(route => {
             const routePath = route.path.split('?')[0].replace(/\/$/, '');
-            const match = routePath === normalizedPath;
-            if (match) {
-                console.log(`[Router] ✅ Found matching route: ${route.path}`);
-            }
-            return match;
+            return routePath === normalizedPath;
         });
-        
-        if (!route) {
-            console.warn(`[Router] ❌ No route found for: ${normalizedPath}`);
-        }
         
         return route || null;
     }

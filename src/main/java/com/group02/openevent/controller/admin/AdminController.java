@@ -7,6 +7,8 @@ import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.payment.PaymentStatus;
+import com.group02.openevent.model.enums.Role;
+import com.group02.openevent.security.annotation.RequireRole;
 import com.group02.openevent.service.AdminService;
 import com.group02.openevent.service.AuditLogService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import java.util.Map;
 @Slf4j
 @Controller
 @RequestMapping("/admin")
+@RequireRole({Role.ADMIN}) // Chỉ ADMIN mới truy cập được
 public class AdminController {
 
     @Autowired

@@ -9,6 +9,8 @@ import com.group02.openevent.service.*;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.IImageService;
 import com.group02.openevent.service.RequestService;
+import com.group02.openevent.model.enums.Role;
+import com.group02.openevent.security.annotation.RequireRole;
 import com.group02.openevent.service.TicketTypeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +29,7 @@ import java.util.List;
 @Controller
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
+@RequireRole({Role.HOST, Role.ADMIN}) // HOST hoặc ADMIN mới truy cập được
 public class HostController {
 
     private final EventService eventService;

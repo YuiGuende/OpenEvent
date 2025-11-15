@@ -8,12 +8,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
     @Autowired
     private CustomAuthenticationSuccessHandler successHandler;
@@ -65,15 +67,37 @@ public class SecurityConfig {
                                 "/api/ekyc/**",
                                 "/web-sdk-version-3.2.0.0.js",
                                 "/login", "/login/**", "/oauth2/**",
-                                "/api/auth/register", "/css/**", "/js/**",
-                                "/img/**", "/images/**", "/",
+                                "/api/auth/register", "/api/auth/login",
+                                "/css/**", "/js/**", "/img/**", "/images/**",
+                                "/music/**", "/competition/**", "/festival/**", "/workshop/**",
+                                "/events/**", "/api/events/public/**",
                                 "/api/payments/webhook", "/api/payments/webhook/test",
                                 "/api/payments/webhook/test-data",
                                 "/api/current-user",
                                 "/api/ekyc/file-service/v1/addFile",
                                 "/api/ai/chat/enhanced/health",
-                                "/api/**",
-                                "/profile").permitAll()
+                                "/api/speakers/**",
+                                "/api/schedules/**",
+                                "/api/event-images/**",
+                                "/",
+                                "/profile"
+                        ).permitAll()
+                        
+                        // Admin only endpoints
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        
+                        // Host endpoints - chỉ cần authenticated, aspect sẽ kiểm tra ownership
+                        .requestMatchers("/host/**").hasAnyRole("HOST", "ADMIN")
+                        
+                        // Manage event endpoints - chỉ cần authenticated, aspect sẽ kiểm tra event ownership
+                        .requestMatchers("/manage/**").authenticated()
+                        
+                        // Department only endpoints (DEPARTMENT hoặc ADMIN)
+                        .requestMatchers("/department/**").hasAnyRole("DEPARTMENT", "ADMIN")
+                        
+                        // Authenticated users only (các API còn lại)
+                        .requestMatchers("/api/**").authenticated()
+                        
                         .anyRequest().authenticated()
                 )
 

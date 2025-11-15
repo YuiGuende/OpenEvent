@@ -15,7 +15,6 @@ import com.group02.openevent.event.UserCreatedEvent;
 import com.group02.openevent.service.AuthService;
 import com.group02.openevent.service.SessionService;
 import com.group02.openevent.service.UserService;
-import com.group02.openevent.service.impl.CustomUserDetailsService;
 import com.group02.openevent.model.user.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -55,8 +54,22 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private String redirectFor(Role role) {
-		// All users redirect to home page
-		return "/";
+		// Redirect based on user role
+		if (role == null) {
+			return "/";
+		}
+		switch (role) {
+			case DEPARTMENT:
+				return "/department/dashboard";
+			case ADMIN:
+				return "/admin/dashboard";
+			case HOST:
+				return "/events";
+			case CUSTOMER:
+			case VOLUNTEER:
+			default:
+				return "/";
+		}
 	}
 
 	@Override
@@ -96,6 +109,8 @@ public class AuthServiceImpl implements AuthService {
 		customer.setUser(user);
 		customer.setPoints(0);
 		customerRepo.save(customer);
+		// Set role cho user
+		user = userRepo.save(user);
 
 		// Publish UserCreatedEvent for audit log (self-registration, actorId = null)
 		try {
@@ -150,7 +165,7 @@ public class AuthServiceImpl implements AuthService {
 			account.getEmail(),
 			account.getPasswordHash(),
 			role.name(),
-			Collections.singletonList(new SimpleGrantedAuthority(role.name()))
+			Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()))
 		);
 		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 			userDetails,

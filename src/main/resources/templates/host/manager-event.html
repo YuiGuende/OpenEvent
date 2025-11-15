@@ -155,6 +155,23 @@
                         </li>
                     </ul>
                 </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">TÌNH NGUYỆN VIÊN</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-create-form'}" class="nav-link" data-link>
+                                <i class="bi bi-file-earmark-plus"></i>
+                                <span>Tạo Form</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-requests'}" class="nav-link" data-link>
+                                <i class="bi bi-clipboard-check"></i>
+                                <span>Xem yêu cầu duyệt</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">NOTIFICATION</div>

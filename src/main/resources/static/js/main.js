@@ -381,10 +381,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function getCardsPerView() {
-        const cardWidth = getCardWidth();
-        if (cardWidth === 0) return 1;
+        // Always show 3 cards per view on desktop
         const containerWidth = latestContainer.offsetWidth;
-        return Math.max(1, Math.floor(containerWidth / cardWidth));
+        if (containerWidth <= 768) return 1; // Mobile: 1 card
+        return 3; // Desktop: 3 cards
     }
     
     function getTotalPages() {
@@ -400,12 +400,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalPages = getTotalPages();
         const cardsPerView = getCardsPerView();
         const scrollLeft = latestContainer.scrollLeft;
-        const containerWidth = latestContainer.offsetWidth;
+        const cardWidth = getCardWidth();
         
-        // Calculate current page based on scroll position
-        // Use a threshold to handle rounding errors and ensure we're on the right page
-        if (containerWidth > 0) {
-            const pageFromScroll = Math.round(scrollLeft / containerWidth);
+        // Calculate current page based on number of cards scrolled
+        // Each page shows 3 cards (on desktop)
+        if (cardWidth > 0) {
+            // Calculate how many cards we've scrolled past
+            const cardsScrolled = Math.round(scrollLeft / cardWidth);
+            // Each page = 3 cards, so divide by cardsPerView
+            const pageFromScroll = Math.floor(cardsScrolled / cardsPerView);
             currentPage = Math.min(Math.max(1, pageFromScroll + 1), totalPages);
         } else {
             currentPage = 1;
@@ -421,8 +424,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalPages = getTotalPages();
         if (page < 1 || page > totalPages) return;
         
-        const containerWidth = latestContainer.offsetWidth;
-        const targetScroll = (page - 1) * containerWidth;
+        currentPage = page;
+        const cardsPerView = getCardsPerView();
+        const cardWidth = getCardWidth();
+        
+        // Calculate scroll position: (page - 1) * number of cards per page * card width
+        const targetScroll = (page - 1) * cardsPerView * cardWidth;
         
         // Try scrollTo first, fallback to scrollLeft
         if (latestContainer.scrollTo) {
@@ -434,7 +441,8 @@ document.addEventListener('DOMContentLoaded', function() {
             latestContainer.scrollLeft = targetScroll;
         }
         
-        // Update after scroll completes
+        // Update immediately and after scroll completes
+        updatePagination();
         setTimeout(() => {
             updatePagination();
         }, 350);
@@ -495,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(updatePagination, 500);
 })();
 
-// Live Events Horizontal Scroll - Copy exact logic from Latest Events
+// Live Events Horizontal Scroll - Same as Latest Events
 (function(){
     const liveContainer = document.querySelector('.live-events-container');
     const prevBtn = document.getElementById('prevLiveBtn');
@@ -503,6 +511,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const paginationInfo = document.getElementById('livePaginationInfo');
     
     if (!liveContainer || !prevBtn || !nextBtn || !paginationInfo) return;
+    
+    // LIVE filter by tag (similar to Latest Events)
+    document.querySelectorAll('.live-events-header .chip[data-filter]').forEach(ch=>{
+        ch.addEventListener('click', ()=>{
+            document.querySelectorAll('.live-events-header .chip[data-filter]').forEach(x=>x.classList.remove('is-active'));
+            ch.classList.add('is-active');
+            const filter = ch.dataset.filter;
+            liveContainer.querySelectorAll('.event-card-simple').forEach(card=>{
+                const tags = (card.dataset.tags || '').toLowerCase();
+                const ok = filter==='all' || tags.includes(filter.toLowerCase());
+                card.style.display = ok ? '' : 'none';
+            });
+            // Reset scroll position and trigger pagination update after filter
+            setTimeout(() => {
+                if (liveContainer) {
+                    liveContainer.scrollLeft = 0;
+                    currentPage = 1;
+                    updatePagination();
+                    // Also trigger update manually after a short delay
+                    setTimeout(() => {
+                        updatePagination();
+                    }, 100);
+                }
+            }, 150);
+        });
+    });
     
     // Get all cards (including hidden ones for filter)
     const cards = Array.from(liveContainer.querySelectorAll('.event-card-simple'));
@@ -521,10 +555,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function getCardsPerView() {
-        const cardWidth = getCardWidth();
-        if (cardWidth === 0) return 1;
+        // Always show 3 cards per view on desktop
         const containerWidth = liveContainer.offsetWidth;
-        return Math.max(1, Math.floor(containerWidth / cardWidth));
+        if (containerWidth <= 768) return 1; // Mobile: 1 card
+        return 3; // Desktop: 3 cards
     }
     
     function getTotalPages() {
@@ -540,12 +574,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalPages = getTotalPages();
         const cardsPerView = getCardsPerView();
         const scrollLeft = liveContainer.scrollLeft;
-        const containerWidth = liveContainer.offsetWidth;
+        const cardWidth = getCardWidth();
         
-        // Calculate current page based on scroll position
-        // Use a threshold to handle rounding errors and ensure we're on the right page
-        if (containerWidth > 0) {
-            const pageFromScroll = Math.round(scrollLeft / containerWidth);
+        // Calculate current page based on number of cards scrolled
+        // Each page shows 3 cards (on desktop)
+        if (cardWidth > 0) {
+            // Calculate how many cards we've scrolled past
+            const cardsScrolled = Math.round(scrollLeft / cardWidth);
+            // Each page = 3 cards, so divide by cardsPerView
+            const pageFromScroll = Math.floor(cardsScrolled / cardsPerView);
             currentPage = Math.min(Math.max(1, pageFromScroll + 1), totalPages);
         } else {
             currentPage = 1;
@@ -561,12 +598,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalPages = getTotalPages();
         if (page < 1 || page > totalPages) return;
         
-        const containerWidth = liveContainer.offsetWidth;
-        const targetScroll = (page - 1) * containerWidth;
-        
-        // Update currentPage immediately for button states
         currentPage = page;
-        updatePagination();
+        const cardsPerView = getCardsPerView();
+        const cardWidth = getCardWidth();
+        
+        // Calculate scroll position: (page - 1) * number of cards per page * card width
+        const targetScroll = (page - 1) * cardsPerView * cardWidth;
         
         // Try scrollTo first, fallback to scrollLeft
         if (liveContainer.scrollTo) {
@@ -578,7 +615,8 @@ document.addEventListener('DOMContentLoaded', function() {
             liveContainer.scrollLeft = targetScroll;
         }
         
-        // Update after scroll completes
+        // Update immediately and after scroll completes
+        updatePagination();
         setTimeout(() => {
             updatePagination();
         }, 350);

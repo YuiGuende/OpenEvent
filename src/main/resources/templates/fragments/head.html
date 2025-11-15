@@ -252,15 +252,22 @@
         }
 
         .latest-events-container .event-card-simple {
-            flex: 0 0 calc(33.333% - 11px);
-            min-width: 280px;
+            flex: 0 0 380px !important;
+            min-width: 380px !important;
+            max-width: 380px !important;
+            width: 380px !important;
             scroll-snap-align: start;
+            flex-shrink: 0 !important;
+            flex-grow: 0 !important;
+            box-sizing: border-box;
         }
 
         @media (max-width: 768px) {
             .latest-events-container .event-card-simple {
-                flex: 0 0 calc(100% - 8px);
-                min-width: 260px;
+                flex: 0 0 calc(100% - 8px) !important;
+                min-width: 260px !important;
+                max-width: 260px !important;
+                width: 260px !important;
             }
         }
 

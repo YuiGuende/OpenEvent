@@ -18,6 +18,8 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthenticationSuccessHandler successHandler;
     @Autowired
+    private CustomAuthenticationFailureHandler failureHandler;
+    @Autowired
     private CustomUserDetailsService userDetailsService;
     @Autowired
     private CustomOAuth2UserService oauth2UserService;
@@ -67,7 +69,11 @@ public class SecurityConfig {
                                 "/img/**", "/images/**", "/",
                                 "/api/payments/webhook", "/api/payments/webhook/test",
                                 "/api/payments/webhook/test-data",
-                                "/api/ekyc/file-service/v1/addFile").permitAll()
+                                "/api/current-user",
+                                "/api/ekyc/file-service/v1/addFile",
+                                "/api/ai/chat/enhanced/health",
+                                "/api/**",
+                                "/profile").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -76,7 +82,7 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/perform_login")
                         .successHandler(successHandler) // Handler tùy chỉnh để lưu ACCOUNT_ID
-                        .failureUrl("/login?error")
+                        .failureHandler(failureHandler) // Handler tùy chỉnh để xử lý lỗi
                         .permitAll()
                 )
 

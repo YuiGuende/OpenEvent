@@ -244,4 +244,30 @@ public class Event {
         return minTicketPice;
 
     }
+
+    public String getImageUrl() {
+        if (this.imageUrl != null && !this.imageUrl.isEmpty()) {
+            return this.imageUrl;
+        }
+
+        if (this.eventImages != null && !this.eventImages.isEmpty()) {
+            EventImage firstImageFromGallery = this.eventImages.iterator().next();
+            return firstImageFromGallery.getUrl();
+        }
+        return null;
+    }
+
+    public Organization getOrganization() {
+        if (this.organization != null ) {
+            return this.organization;
+        }
+        else {
+            Organization organizationTemp = new Organization();
+            if(this.host.getHostName().isEmpty() || this.host.getHostName() == null) {
+                organizationTemp.setOrgName(this.host.getUser().getName());
+            }
+            organizationTemp.setOrgName(this.host.getHostName());
+            return organizationTemp;
+        }
+    }
 }

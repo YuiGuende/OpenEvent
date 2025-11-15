@@ -111,7 +111,7 @@ public class EventServiceImpl implements EventService {
         }
         event.setHost(hostRepo.getHostById(hostId));
         Event savedEvent = eventRepo.save(event);
-        
+
         // Publish EventCreatedEvent for audit log
         try {
             Long userId = savedEvent.getHost() != null && savedEvent.getHost().getUser() != null
@@ -123,7 +123,7 @@ public class EventServiceImpl implements EventService {
         } catch (Exception e) {
             log.error("Error publishing EventCreatedEvent: {}", e.getMessage(), e);
         }
-        
+
         return eventMapper.toEventResponse(savedEvent);
     }
 
@@ -200,8 +200,8 @@ public class EventServiceImpl implements EventService {
                 if (placeUpdateRequest.getId() != null) {
                     place = placeRepo.findById(placeUpdateRequest.getId())
                             .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeUpdateRequest.getId()));
-                    if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) || 
-                        !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {
+                    if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) ||
+                            !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {
                         place.setPlaceName(placeUpdateRequest.getPlaceName());
                         place.setBuilding(placeUpdateRequest.getBuilding());
                         place = placeRepo.save(place);
@@ -241,7 +241,7 @@ public class EventServiceImpl implements EventService {
         // ✅ Save cuối cùng
         log.info("Saving event with {} places to database", event.getPlaces().size());
         Event saved = eventRepo.saveAndFlush(event);
-        
+
         // Publish EventUpdatedEvent for audit log
         try {
             Long userId = saved.getHost() != null && saved.getHost().getUser() != null
@@ -349,7 +349,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public long countUniqueParticipantsByEventId(Long id) {
-      return  orderService.countUniqueParticipantsByEventId(id);
+        return  orderService.countUniqueParticipantsByEventId(id);
     }
 
 
@@ -472,7 +472,7 @@ public class EventServiceImpl implements EventService {
         }
         return Optional.of(events.get(0)); // trả về sự kiện PUBLIC đầu tiên
     }
-//    @Override
+    //    @Override
 //    public Optional<Event> getNextUpcomingEventByUserId(int userId) {
 //        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
 //    }
@@ -507,7 +507,7 @@ public class EventServiceImpl implements EventService {
     public Event updateEventStatus(Long eventId, EventStatus status) {
         return updateEventStatus(eventId, status, null);
     }
-    
+
     // Overload method với userId parameter
     public Event updateEventStatus(Long eventId, EventStatus status, Long userId) {
         Optional<Event> eventOpt = eventRepo.findById(eventId);
@@ -516,7 +516,7 @@ public class EventServiceImpl implements EventService {
             EventStatus oldStatus = event.getStatus();
             event.setStatus(status);
             Event savedEvent = eventRepo.save(event);
-            
+
             // Publish events for audit log
             try {
                 // Determine userId: use parameter if provided, otherwise try to get from event host
@@ -524,7 +524,7 @@ public class EventServiceImpl implements EventService {
                 if (actorId == null && savedEvent.getHost() != null && savedEvent.getHost().getUser() != null) {
                     actorId = savedEvent.getHost().getUser().getUserId();
                 }
-                
+
                 if (actorId != null) {
                     // Publish EventCancelledEvent if status changed to CANCEL
                     if (status == EventStatus.CANCEL) {
@@ -535,7 +535,7 @@ public class EventServiceImpl implements EventService {
             } catch (Exception e) {
                 log.error("Error publishing event status change event: {}", e.getMessage(), e);
             }
-            
+
             return savedEvent;
         }
         throw new RuntimeException("Event not found with id: " + eventId);

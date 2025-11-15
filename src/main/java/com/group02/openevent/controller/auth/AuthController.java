@@ -4,6 +4,7 @@ import com.group02.openevent.dto.response.AuthResponse;
 import com.group02.openevent.dto.request.LoginRequest;
 import com.group02.openevent.dto.request.RegisterRequest;
 import com.group02.openevent.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +39,9 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+	public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
 		try {
-			AuthResponse response = authService.login(request);
+			AuthResponse response = authService.login(request, httpRequest);
 			return ResponseEntity.ok(response);
 		} catch (IllegalArgumentException e) {
 			Map<String, String> error = new HashMap<>();

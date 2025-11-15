@@ -375,6 +375,69 @@ public class EventAttendanceController {
         }
     }
 
+    /**
+     * API endpoint to check customer's check-in status for an event
+     * GET: /api/events/{eventId}/checkin-status
+     */
+    @GetMapping("/api/{eventId}/checkin-status")
+    @ResponseBody
+    public ResponseEntity<?> getCheckinStatus(
+            @PathVariable Long eventId,
+            HttpSession session) {
+        try {
+            Customer customer = customerService.getCurrentCustomer(session);
+            User user = customer.getUser();
+            
+            if (user == null || user.getAccount() == null) {
+                return ResponseEntity.ok(java.util.Map.of(
+                    "checkedIn", false,
+                    "message", "User information not found"
+                ));
+            }
+            
+            String email = user.getAccount().getEmail();
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.ok(java.util.Map.of(
+                    "checkedIn", false,
+                    "message", "Email not found"
+                ));
+            }
+            
+            // Check if customer has checked in
+            java.util.Optional<com.group02.openevent.model.attendance.EventAttendance> attendanceOpt = 
+                attendanceService.getAttendanceByEventAndEmail(eventId, email);
+            
+            boolean checkedIn = false;
+            String checkInTime = null;
+            
+            if (attendanceOpt.isPresent()) {
+                com.group02.openevent.model.attendance.EventAttendance attendance = attendanceOpt.get();
+                checkedIn = attendance.getCheckInTime() != null;
+                if (checkedIn) {
+                    checkInTime = attendance.getCheckInTime().toString();
+                }
+            }
+            
+            return ResponseEntity.ok(java.util.Map.of(
+                "checkedIn", checkedIn,
+                "checkInTime", checkInTime != null ? checkInTime : "",
+                "canCheckIn", !checkedIn // Can check in if not already checked in
+            ));
+            
+        } catch (RuntimeException e) {
+            // Customer not found or not logged in
+            return ResponseEntity.ok(java.util.Map.of(
+                "checkedIn", false,
+                "canCheckIn", false,
+                "message", "Please login to check-in"
+            ));
+        } catch (Exception e) {
+            log.error("Error checking check-in status", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Map.of("error", "Error checking check-in status"));
+        }
+    }
+
 
 }
 

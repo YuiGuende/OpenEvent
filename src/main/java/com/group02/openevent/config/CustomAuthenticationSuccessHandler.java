@@ -67,7 +67,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 if (userOptional.isPresent()) {
                     User user = userOptional.get();
                     session.setAttribute("USER_ID", user.getUserId());
-                    session.setAttribute("ACCOUNT_ID", accountId); // Set ACCOUNT_ID for backward compatibility
                     session.setAttribute("USER_ROLE", role);
                     log.info("OAuth2 login successful - Account ID: {}, User ID: {}, Role: {}", accountId, user.getUserId(), role);
                 } else {

@@ -181,16 +181,7 @@
 
 <header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
 
-<div class="page-header">
-    <div class="container">
-        <h2><i class="bi bi-person-circle"></i> Hồ sơ của tôi</h2>
-        <p class="mb-0">Quản lý thông tin cá nhân và đăng ký check-in bằng khuôn mặt</p>
-    </div>
-</div>
-
 <div class="container mb-5">
-    <!-- Alert Messages -->
-    <div id="alertContainer"></div>
 
     <!-- Profile Information Card -->
     <div class="profile-card">
@@ -247,45 +238,132 @@
             <!-- Information Section -->
             <div class="col-md-8">
                 <div class="info-section">
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="bi bi-person"></i> Họ và tên
+                    <form id="profileForm">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-person"></i> Họ và tên
+                            </div>
+                            <div class="info-value">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="nameInput"
+                                       th:value="${user.name != null ? user.name : ''}"
+                                       placeholder="Nhập họ và tên"
+                                       style="max-width: 400px;">
+                            </div>
                         </div>
-                        <div class="info-value" th:text="${user.name != null ? user.name : 'Chưa cập nhật'}">
-                            Chưa cập nhật
-                        </div>
-                    </div>
 
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="bi bi-envelope"></i> Email
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-envelope"></i> Email
+                            </div>
+                            <div class="info-value">
+                                <input type="email" 
+                                       class="form-control" 
+                                       th:value="${user.account != null ? user.account.email : ''}"
+                                       disabled
+                                       style="max-width: 400px; background-color: #e9ecef; cursor: not-allowed;"
+                                       title="Email không thể thay đổi">
+                                <small class="text-muted">Email không thể thay đổi</small>
+                            </div>
                         </div>
-                        <div class="info-value" th:text="${user.account != null ? user.account.email : 'N/A'}">
-                            N/A
-                        </div>
-                    </div>
 
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="bi bi-telephone"></i> Số điện thoại
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-telephone"></i> Số điện thoại
+                            </div>
+                            <div class="info-value">
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phoneInput"
+                                       th:value="${user.phoneNumber != null ? user.phoneNumber : ''}"
+                                       placeholder="Nhập số điện thoại"
+                                       style="max-width: 400px;">
+                            </div>
                         </div>
-                        <div class="info-value" th:text="${user.phoneNumber != null ? user.phoneNumber : 'Chưa cập nhật'}">
-                            Chưa cập nhật
-                        </div>
-                    </div>
 
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="bi bi-star"></i> Điểm tích lũy
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-star"></i> Điểm tích lũy
+                            </div>
+                            <div class="info-value">
+                                <span class="badge bg-warning text-dark" style="font-size: 1rem; padding: 8px 12px;">
+                                    <i class="bi bi-star-fill"></i> 
+                                    <span th:text="${customer.points != null ? customer.points : 0}">0</span> điểm
+                                </span>
+                            </div>
                         </div>
-                        <div class="info-value">
-                            <span class="badge bg-warning text-dark" style="font-size: 1rem; padding: 8px 12px;">
-                                <i class="bi bi-star-fill"></i> 
-                                <span th:text="${customer.points != null ? customer.points : 0}">0</span> điểm
-                            </span>
+
+                        <div class="mt-3">
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    onclick="updateProfile()">
+                                <i class="bi bi-save"></i> Lưu thay đổi
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Section -->
+    <div class="profile-card">
+        <h4 class="section-title">
+            <i class="bi bi-shield-lock"></i> Bảo mật
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <p class="mb-3">
+                    Thay đổi mật khẩu để bảo vệ tài khoản của bạn.
+                </p>
+                
+                <form id="passwordForm">
+                    <div class="mb-3">
+                        <label for="oldPassword" class="form-label">
+                            <i class="bi bi-key"></i> Mật khẩu cũ <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="oldPassword"
+                               placeholder="Nhập mật khẩu cũ"
+                               required>
+                        <div class="invalid-feedback" id="oldPasswordError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">
+                            <i class="bi bi-key-fill"></i> Mật khẩu mới <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="newPassword"
+                               placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                               required
+                               minlength="6">
+                        <div class="invalid-feedback" id="newPasswordError"></div>
+                        <small class="text-muted">Mật khẩu phải có ít nhất 6 ký tự</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">
+                            <i class="bi bi-key-fill"></i> Xác nhận mật khẩu mới <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="confirmPassword"
+                               placeholder="Nhập lại mật khẩu mới"
+                               required>
+                        <div class="invalid-feedback" id="confirmPasswordError"></div>
+                    </div>
+
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            onclick="changePassword()">
+                        <i class="bi bi-shield-check"></i> Đổi mật khẩu
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -368,26 +446,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // CSRF helper
-    function getCsrfToken() {
-        const meta = document.querySelector('meta[name="_csrf"]');
-        return meta ? meta.getAttribute('content') : null;
-    }
-
-    function getCsrfHeaderName() {
-        const meta = document.querySelector('meta[name="_csrf_header"]');
-        return meta ? meta.getAttribute('content') : 'X-CSRF-TOKEN';
-    }
-
-    function withCsrf(headers = {}) {
-        const token = getCsrfToken();
-        const headerName = getCsrfHeaderName();
-        if (token && headerName) {
-            headers[headerName] = token;
-        }
-        return headers;
-    }
-
     let selectedFile = null;
 
     // Handle file selection
@@ -457,7 +515,6 @@
 
             const response = await fetch('/api/profile/upload-avatar', {
                 method: 'POST',
-                headers: withCsrf(),
                 body: formData
             });
 
@@ -498,9 +555,9 @@
         try {
             const response = await fetch('/api/profile/register-face', {
                 method: 'POST',
-                headers: withCsrf({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
 
             const data = await response.json();
@@ -528,9 +585,9 @@
         try {
             const response = await fetch('/api/profile/unregister-face', {
                 method: 'POST',
-                headers: withCsrf({
+                headers: {
                     'Content-Type': 'application/json'
-                })
+                }
             });
 
             const data = await response.json();
@@ -549,21 +606,18 @@
         }
     }
 
-    // Show alert message
+    // Show alert message using JavaScript alert
     function showAlert(message, type) {
-        const alertContainer = document.getElementById('alertContainer');
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        alertContainer.appendChild(alertDiv);
-
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 5000);
+        // Use JavaScript alert for all notifications
+        if (type === 'success') {
+            alert('✓ ' + message);
+        } else if (type === 'danger' || type === 'error') {
+            alert('✗ ' + message);
+        } else if (type === 'warning') {
+            alert('⚠ ' + message);
+        } else {
+            alert(message);
+        }
     }
 
     // Drag and drop support
@@ -603,6 +657,130 @@
     uploadArea.addEventListener('click', () => {
         document.getElementById('avatarFileInput').click();
     });
+
+    // Update profile information
+    async function updateProfile() {
+        const nameInput = document.getElementById('nameInput');
+        const phoneInput = document.getElementById('phoneInput');
+        
+        const name = nameInput.value.trim();
+        const phoneNumber = phoneInput.value.trim();
+        
+        // Validate name
+        if (name.length === 0) {
+            showAlert('Vui lòng nhập họ và tên!', 'warning');
+            nameInput.focus();
+            return;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('phoneNumber', phoneNumber);
+            
+            const response = await fetch('/api/profile/update', {
+                method: 'PUT',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Cập nhật thông tin thành công!', 'success');
+                // Optionally reload page after 1 second to show updated data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showAlert(data.error || 'Cập nhật thất bại!', 'danger');
+            }
+        } catch (error) {
+            console.error('Update profile error:', error);
+            showAlert('Lỗi khi cập nhật thông tin. Vui lòng thử lại!', 'danger');
+        }
+    }
+
+    // Change password
+    async function changePassword() {
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        // Clear previous errors
+        document.getElementById('oldPasswordError').textContent = '';
+        document.getElementById('newPasswordError').textContent = '';
+        document.getElementById('confirmPasswordError').textContent = '';
+        document.getElementById('oldPassword').classList.remove('is-invalid');
+        document.getElementById('newPassword').classList.remove('is-invalid');
+        document.getElementById('confirmPassword').classList.remove('is-invalid');
+        
+        // Frontend validation
+        let hasError = false;
+        
+        if (!oldPassword || oldPassword.trim().length === 0) {
+            document.getElementById('oldPasswordError').textContent = 'Vui lòng nhập mật khẩu cũ';
+            document.getElementById('oldPassword').classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (!newPassword || newPassword.trim().length === 0) {
+            document.getElementById('newPasswordError').textContent = 'Vui lòng nhập mật khẩu mới';
+            document.getElementById('newPassword').classList.add('is-invalid');
+            hasError = true;
+        } else if (newPassword.length < 6) {
+            document.getElementById('newPasswordError').textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
+            document.getElementById('newPassword').classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (!confirmPassword || confirmPassword.trim().length === 0) {
+            document.getElementById('confirmPasswordError').textContent = 'Vui lòng xác nhận mật khẩu mới';
+            document.getElementById('confirmPassword').classList.add('is-invalid');
+            hasError = true;
+        } else if (newPassword !== confirmPassword) {
+            document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
+            document.getElementById('confirmPassword').classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (hasError) {
+            return;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('oldPassword', oldPassword);
+            formData.append('newPassword', newPassword);
+            formData.append('confirmPassword', confirmPassword);
+            
+            const response = await fetch('/api/profile/change-password', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Đổi mật khẩu thành công!', 'success');
+                // Clear form
+                document.getElementById('passwordForm').reset();
+                // Clear any error states
+                document.getElementById('oldPassword').classList.remove('is-invalid');
+                document.getElementById('newPassword').classList.remove('is-invalid');
+                document.getElementById('confirmPassword').classList.remove('is-invalid');
+            } else {
+                showAlert(data.error || 'Đổi mật khẩu thất bại!', 'danger');
+                // Show specific error on old password field if it's wrong
+                if (data.error && data.error.includes('Mật khẩu cũ')) {
+                    document.getElementById('oldPasswordError').textContent = data.error;
+                    document.getElementById('oldPassword').classList.add('is-invalid');
+                }
+            }
+        } catch (error) {
+            console.error('Change password error:', error);
+            showAlert('Lỗi khi đổi mật khẩu. Vui lòng thử lại!', 'danger');
+        }
+    }
 </script>
 </body>
 </html>

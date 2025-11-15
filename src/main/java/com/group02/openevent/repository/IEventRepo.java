@@ -115,6 +115,21 @@ public interface IEventRepo extends JpaRepository<Event, Long> {
     Optional<Event> findByIdWithHostAccount(@Param("eventId") Long eventId);
 
     /**
+     * Find events that should be updated to ONGOING status:
+     * - startsAt <= now (event has started or starts today)
+     * - status is PUBLIC or DRAFT (not already ONGOING, FINISH, or CANCEL)
+     * - endsAt > now (event hasn't finished yet)
+     */
+    @EntityGraph(attributePaths = {"host", "organization", "department"})
+    @Query("""
+        SELECT e FROM Event e
+        WHERE e.startsAt <= :now
+          AND (e.status = 'PUBLIC')
+          AND e.endsAt > :now
+    """)
+    List<Event> findEventsToUpdateToOngoing(@Param("now") LocalDateTime now);
+
+    /**
      * Filter events by host ID with search, status, and time filters
      */
 

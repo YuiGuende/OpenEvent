@@ -62,6 +62,11 @@ public class DepartmentController {
         model.addAttribute("pendingRequests", stats.getPendingRequests());
         model.addAttribute("ongoingEvents", stats.getOngoingEvents());
         model.addAttribute("totalParticipants", stats.getTotalParticipants());
+        
+        // Add userId for chatbot (from department user)
+        Long userId = department.getUser() != null && department.getUser().getUserId() != null 
+            ? department.getUser().getUserId() : null;
+        model.addAttribute("uid", userId);
 
         return "department/dashboard";
     }

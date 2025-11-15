@@ -15,6 +15,8 @@ import com.group02.openevent.event.UserCreatedEvent;
 import com.group02.openevent.service.AuthService;
 import com.group02.openevent.service.SessionService;
 import com.group02.openevent.service.UserService;
+import com.group02.openevent.service.impl.CustomUserDetailsService;
+import com.group02.openevent.model.user.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
@@ -22,6 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.Collections;
 
 
 
@@ -32,18 +39,16 @@ public class AuthServiceImpl implements AuthService {
 	private final ICustomerRepo customerRepo;
 	private final IUserRepo userRepo;
 	private final PasswordEncoder passwordEncoder;
-	private final HttpSession httpSession;
 	private final SessionService sessionService;
 	private final UserService userService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	public AuthServiceImpl(IAccountRepo accountRepo, ICustomerRepo customerRepo, IUserRepo userRepo,
-			PasswordEncoder passwordEncoder, HttpSession httpSession, SessionService sessionService, UserService userService, ApplicationEventPublisher eventPublisher) {
+			PasswordEncoder passwordEncoder, SessionService sessionService, UserService userService, ApplicationEventPublisher eventPublisher) {
 		this.accountRepo = accountRepo;
 		this.customerRepo = customerRepo;
 		this.userRepo = userRepo;
 		this.passwordEncoder = passwordEncoder;
-		this.httpSession = httpSession;
 		this.sessionService = sessionService;
 		this.userService = userService;
 		this.eventPublisher = eventPublisher;
@@ -104,7 +109,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public AuthResponse login(LoginRequest request) {
+	public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
 		// Validate input
 		if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
 			throw new IllegalArgumentException("Email không được để trống");
@@ -125,12 +130,40 @@ public class AuthServiceImpl implements AuthService {
 				.orElseThrow(() -> new IllegalArgumentException("User not found for account"));
 		Role role = user.getRole();
 
+		// Get session from request (not injected) to ensure we use the correct session
+		HttpSession httpSession = httpRequest.getSession(true);
+		
 		// Set HTTP session attributes for backward compatibility
-        log.info("set user id:{}", user.getUserId());
+		log.info("Login successful - Setting USER_ID: {} in session ID: {}", user.getUserId(), httpSession.getId());
 		httpSession.setAttribute("USER_ID", user.getUserId());
 		httpSession.setAttribute("USER_ROLE", role.name());
 		// Set CURRENT_USER_ID as String for WebSocket Principal mapping
 		httpSession.setAttribute("CURRENT_USER_ID", String.valueOf(user.getUserId()));
+		
+		// Set SecurityContext so Spring Security recognizes the user as authenticated
+		// This is crucial for AJAX login to work with Spring Security
+		CustomUserDetails userDetails = new CustomUserDetails(
+			account.getAccountId(),
+			account.getEmail(),
+			account.getPasswordHash(),
+			role.name(),
+			Collections.singletonList(new SimpleGrantedAuthority(role.name()))
+		);
+		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+			userDetails,
+			null,
+			userDetails.getAuthorities()
+		);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		
+		// Save SecurityContext to session so it persists across requests
+		HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+		securityContextRepository.saveContext(SecurityContextHolder.getContext(), httpRequest, null);
+		log.info("SecurityContext set and saved to session for user: {} with role: {}", account.getEmail(), role.name());
+		
+		// Verify session was set correctly
+		Long verifyUserId = (Long) httpSession.getAttribute("USER_ID");
+		log.info("Verification - USER_ID in session: {}, Session ID: {}", verifyUserId, httpSession.getId());
 
 		return new AuthResponse(account.getAccountId(), account.getEmail(), role, redirectFor(role));
 	}
@@ -162,10 +195,13 @@ public class AuthServiceImpl implements AuthService {
 		// Create custom session
 		Session session = sessionService.createSession(account, httpRequest);
 
+		// Get session from request (not injected) to ensure we use the correct session
+		HttpSession httpSession = httpRequest.getSession(true);
+
 		// Set session token in HTTP session for backward compatibility
 		httpSession.setAttribute("SESSION_TOKEN", session.getSessionToken());
-		httpSession.setAttribute("USER_ID", account.getAccountId());
-		httpSession.setAttribute("ACCOUNT_ROLE", role.name());
+		httpSession.setAttribute("USER_ID", user.getUserId()); // Use user.getUserId() instead of account.getAccountId()
+		httpSession.setAttribute("USER_ROLE", role.name());
 		// Set CURRENT_USER_ID as String for WebSocket Principal mapping
 		httpSession.setAttribute("CURRENT_USER_ID", String.valueOf(user.getUserId()));
 

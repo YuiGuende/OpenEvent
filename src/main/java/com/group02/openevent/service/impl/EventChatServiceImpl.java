@@ -95,8 +95,11 @@ public class EventChatServiceImpl implements EventChatService {
         }
         
         // Check if this is HOST_DEPARTMENT room (1-1 chat)
+        // IMPORTANT: Only use HOST_DEPARTMENT room if it has a valid department
         Optional<EventChatRoom> existingDeptRoom = roomRepo.findByHostAndRoomType(hostUser.getUserId());
-        if (existingDeptRoom.isPresent() && existingDeptRoom.get().getRoomType() == ChatRoomType.HOST_DEPARTMENT) {
+        if (existingDeptRoom.isPresent() 
+                && existingDeptRoom.get().getRoomType() == ChatRoomType.HOST_DEPARTMENT
+                && existingDeptRoom.get().getDepartment() != null) {
             // 1-1 CHAT with Department
             return saveOneOnOneChatMessage(eventId, recipientUserId, content, currentUserId, hostUser, existingDeptRoom.get());
         }
@@ -151,11 +154,16 @@ public class EventChatServiceImpl implements EventChatService {
         message.setBody(content.trim());
         EventChatMessage saved = messageRepo.save(message);
 
+        String senderName = currentUser.getName() != null ? currentUser.getName() : 
+                            (currentUser.getAccount() != null && currentUser.getAccount().getEmail() != null ? 
+                             currentUser.getAccount().getEmail() : "Người dùng");
+        
         ChatMessageDTO dto = new ChatMessageDTO(
                 room.getId(),
                 0L, // No event for department chat
                 saved.getId(),
                 currentUserId,
+                senderName,
                 recipientUserId,
                 saved.getBody(),
                 saved.getTimestamp()
@@ -215,11 +223,16 @@ public class EventChatServiceImpl implements EventChatService {
         message.setBody(content.trim());
         EventChatMessage saved = messageRepo.save(message);
 
+        String senderName = currentUser.getName() != null ? currentUser.getName() : 
+                            (currentUser.getAccount() != null && currentUser.getAccount().getEmail() != null ? 
+                             currentUser.getAccount().getEmail() : "Người dùng");
+        
         ChatMessageDTO dto = new ChatMessageDTO(
                 room.getId(),
                 eventId,
                 saved.getId(),
                 currentUserId,
+                senderName,
                 null, // No specific recipient in group chat
                 saved.getBody(),
                 saved.getTimestamp()
@@ -262,8 +275,16 @@ public class EventChatServiceImpl implements EventChatService {
         User currentUser = userService.getUserById(currentUserId);
 
         // For HOST_DEPARTMENT room, recipient should be department
-        if (room.getDepartment() == null || !room.getDepartment().getUserId().equals(recipientUserId)) {
-            throw new IllegalArgumentException("Invalid recipient for department chat");
+        if (room.getDepartment() == null) {
+            throw new IllegalStateException(
+                "Cannot send message: Department chat room is not properly configured. " +
+                "Please contact administrator to set up department for this host.");
+        }
+        
+        if (!room.getDepartment().getUserId().equals(recipientUserId)) {
+            throw new IllegalArgumentException(
+                String.format("Invalid recipient for department chat. Expected department user ID: %d, Got: %d", 
+                    room.getDepartment().getUserId(), recipientUserId));
         }
 
         // Persist message
@@ -273,11 +294,16 @@ public class EventChatServiceImpl implements EventChatService {
         message.setBody(content.trim());
         EventChatMessage saved = messageRepo.save(message);
 
+        String senderName = currentUser.getName() != null ? currentUser.getName() : 
+                            (currentUser.getAccount() != null && currentUser.getAccount().getEmail() != null ? 
+                             currentUser.getAccount().getEmail() : "Người dùng");
+        
         ChatMessageDTO dto = new ChatMessageDTO(
                 room.getId(),
                 eventId,
                 saved.getId(),
                 currentUserId,
+                senderName,
                 recipientUserId,
                 saved.getBody(),
                 saved.getTimestamp()

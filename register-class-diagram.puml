@@ -1,0 +1,133 @@
+@startuml Register_Class_Diagram
+
+class AuthController {
+    - AuthService authService
+    + register(RegisterRequest): ResponseEntity<?>
+}
+
+interface AuthService {
+    + register(RegisterRequest): AuthResponse
+}
+
+class AuthServiceImpl {
+    - IAccountRepo accountRepo
+    - ICustomerRepo customerRepo
+    - IUserRepo userRepo
+    - PasswordEncoder passwordEncoder
+    - UserService userService
+    - ApplicationEventPublisher eventPublisher
+    + register(RegisterRequest): AuthResponse
+}
+
+class UserService {
+    + getOrCreateUser(Account): User
+    + createUserFromAccount(Account): User
+    + getUserByAccountId(Long): Optional<User>
+}
+
+interface IAccountRepo {
+    + findByEmail(String): Optional<Account>
+    + existsByEmail(String): boolean
+    + save(Account): Account
+}
+
+interface ICustomerRepo {
+    + save(Customer): Customer
+    + findByUser_Account_AccountId(Long): Optional<Customer>
+}
+
+interface IUserRepo {
+    + findByAccount(Account): Optional<User>
+    + findByAccount_AccountId(Long): Optional<User>
+    + save(User): User
+}
+
+class Account {
+    - Long accountId
+    - String email
+    - String passwordHash
+    - String oauthProvider
+    - String oauthProviderId
+    - User user
+}
+
+class User {
+    - Long userId
+    - Account account
+    - String name
+    - String phoneNumber
+    - String avatar
+    - LocalDateTime dateOfBirth
+    - String address
+    - Customer customer
+    - Host host
+    - Admin admin
+    - Department department
+    + getRole(): Role
+}
+
+class Customer {
+    - Long customerId
+    - User user
+    - Integer points
+}
+
+enum Role {
+    ADMIN
+    CUSTOMER
+    HOST
+    DEPARTMENT
+    VOLUNTEER
+}
+
+class RegisterRequest {
+    - String email
+    - String password
+    - String phoneNumber
+}
+
+class AuthResponse {
+    - Long accountId
+    - String email
+    - Role role
+    - String redirectPath
+}
+
+class UserCreatedEvent {
+    - User user
+    - Long actorId
+    - String roleType
+}
+
+' Relationships
+AuthController --> AuthService
+AuthService <|.. AuthServiceImpl
+AuthServiceImpl --> IAccountRepo
+AuthServiceImpl --> ICustomerRepo
+AuthServiceImpl --> IUserRepo
+AuthServiceImpl --> PasswordEncoder
+AuthServiceImpl --> UserService
+AuthServiceImpl --> ApplicationEventPublisher
+
+UserService --> IUserRepo
+UserService --> ICustomerRepo
+
+IAccountRepo --> Account
+ICustomerRepo --> Customer
+IUserRepo --> User
+
+Account "1" --> "1" User
+User "1" --> "0..1" Customer
+User --> Role
+
+AuthServiceImpl ..> RegisterRequest
+AuthServiceImpl ..> AuthResponse
+AuthController ..> RegisterRequest
+AuthController ..> AuthResponse
+
+AuthServiceImpl ..> UserCreatedEvent
+ApplicationEventPublisher ..> UserCreatedEvent
+
+@enduml
+
+

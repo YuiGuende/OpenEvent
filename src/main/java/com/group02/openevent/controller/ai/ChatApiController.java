@@ -20,7 +20,7 @@ public class ChatApiController {
     }
 
     private Long getCurrentUserId(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Long accountId = (Long) session.getAttribute("USER_ID");
         if (accountId == null) {
             throw new org.springframework.security.access.AccessDeniedException("NOT_AUTHENTICATED");
         }

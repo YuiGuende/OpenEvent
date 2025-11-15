@@ -42,8 +42,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -77,6 +80,8 @@ public class EventManageController {
     private static final Logger logger = LoggerFactory.getLogger(RequestController.class);
     @Autowired
     private UserService userService;
+    @Autowired
+    private VolunteerService volunteerService;
 
     private Long getCustomerAccountId(HttpSession session) {
 //        (Long) session.getAttribute("ACCOUNT_ID");
@@ -137,7 +142,7 @@ public class EventManageController {
         log.info("🔍 Loading update-event fragment for event ID: {}", id);
 
         Event event = eventService.getEventResponseById(id);
-        EventUpdateRequest request = eventMapper.toUpdateRequest(event);
+        EventUpdateRequest request = eventMapper.toUpdateRequestWithSubclassFields(event);
         model.addAttribute("request", request);
 
         // Load places
@@ -279,11 +284,19 @@ public class EventManageController {
     }
 
 
-    @GetMapping("/fragments/check-in")
-    public String checkIn(@RequestParam Long id, Model model) {
+//    @GetMapping("/fragments/check-in")
+//    public String checkIn(@RequestParam Long id, Model model) {
+//        Event event = eventService.getEventResponseById(id);
+//        model.addAttribute("event", event);
+//        return "fragments/check-in :: content";
+//    }
+
+    @GetMapping("/fragments/check-in-list")
+    public String checkInList(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
-        return "fragments/check-in :: content";
+        model.addAttribute("eventId", id);
+        return "fragments/check-in-list :: content";
     }
 
     @GetMapping("/fragments/create-forms")
@@ -368,6 +381,160 @@ public class EventManageController {
 
         log.info("Notification fragment loaded for event: {}", event.getTitle());
         return "fragments/notification :: content";
+    }
+
+    @GetMapping("/fragments/statis-forms")
+    public String statisForms(
+            @RequestParam(required = false) Long id, // eventId
+            @RequestParam(required = false) Long formId,
+            Model model) {
+        try {
+            // If formId is provided, load statistics for that form
+            if (formId != null) {
+                EventFormDTO form = eventFormService.getFormById(formId);
+                model.addAttribute("formId", formId);
+                model.addAttribute("formTitle", form.getFormTitle());
+                model.addAttribute("formType", form.getFormType());
+                model.addAttribute("eventId", form.getEventId());
+                log.info("✅ Form statistics fragment loaded for form ID: {}", formId);
+                return "fragments/statis-form :: content";
+            }
+
+            // If no formId, show form selection (need eventId)
+            if (id == null) {
+                log.error("⚠️ Missing event ID parameter for statis-forms fragment");
+                model.addAttribute("error", "Missing event ID");
+                return "fragments/statis-form :: content";
+            }
+
+            // Load event and forms list
+            Event event = eventService.getEventResponseById(id);
+            List<EventFormDTO> forms = eventFormService.getAllFormsByEventId(id);
+
+            model.addAttribute("eventId", id);
+            model.addAttribute("event", event);
+            model.addAttribute("forms", forms);
+            model.addAttribute("showFormSelection", true);
+
+            log.info("✅ Form selection loaded for event ID: {} with {} forms", id, forms.size());
+            return "fragments/statis-form :: content";
+        } catch (Exception e) {
+            log.error("❌ Error loading form statistics fragment: {}", e.getMessage(), e);
+            model.addAttribute("error", "Không thể tải thống kê: " + e.getMessage());
+            return "fragments/statis-form :: content";
+        }
+    }
+
+    @GetMapping("/fragments/volunteers")
+    public String volunteers(@RequestParam Long id, Model model) {
+        Event event = eventService.getEventResponseById(id);
+        model.addAttribute("event", event);
+        model.addAttribute("eventId", id);
+        // Load approved volunteers for this event
+        var approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, com.group02.openevent.model.volunteer.VolunteerStatus.APPROVED);
+        model.addAttribute("volunteers", approved);
+        return "host/volunteers :: content";
+    }
+
+    @GetMapping("/fragments/volunteer-create-form")
+    public String volunteerCreateForm(@RequestParam(required = false) Long id, Model model) {
+        if (id == null) {
+            log.error("⚠️ Missing event ID parameter for volunteer-create-form fragment");
+            model.addAttribute("error", "Missing event ID");
+            return "fragments/volunteer-create-form :: content";
+        }
+
+        log.info("🔍 Loading volunteer create form fragment for event ID: {}", id);
+
+        try {
+            Event event = eventService.getEventResponseById(id);
+            model.addAttribute("event", event);
+            model.addAttribute("eventId", id);
+
+            // Load volunteer form if exists
+            try {
+                var volunteerForm = eventFormService.getActiveFormByEventIdAndType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
+                model.addAttribute("volunteerForm", volunteerForm);
+                log.info("📋 Found existing volunteer form for event {}", id);
+            } catch (Exception e) {
+                log.info("📋 No existing volunteer form for event {}", id);
+                model.addAttribute("volunteerForm", null);
+            }
+
+            // Load all forms for this event to show in list
+            List<EventFormDTO> forms = eventFormService.getAllFormsByEventId(id);
+            // Filter only volunteer forms
+            List<EventFormDTO> volunteerForms = forms.stream()
+                    .filter(f -> f.getFormType() == com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER)
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("forms", volunteerForms);
+            log.info("📋 Loaded {} volunteer forms for event {}", volunteerForms.size(), id);
+
+            log.info("✅ Volunteer create form fragment loaded successfully for event: {}", event.getTitle());
+        } catch (Exception e) {
+            log.error("❌ Error loading volunteer create form fragment for event ID: {}", id, e);
+            model.addAttribute("error", "Không thể tải form cho sự kiện này: " + e.getMessage());
+            model.addAttribute("eventId", id);
+        }
+
+        return "fragments/volunteer-create-form :: content";
+    }
+
+    @GetMapping("/fragments/volunteer-requests")
+    public String volunteerRequests(@RequestParam(required = false) Long id, 
+                                    @RequestParam(required = false) Long formId,
+                                    Model model) {
+        if (id == null) {
+            log.error("⚠️ Missing event ID parameter for volunteer-requests fragment");
+            model.addAttribute("error", "Missing event ID");
+            return "fragments/volunteer-requests :: content";
+        }
+
+        log.info("🔍 Loading volunteer requests fragment for event ID: {}", id);
+
+        try {
+            Event event = eventService.getEventResponseById(id);
+            model.addAttribute("event", event);
+            model.addAttribute("eventId", id);
+
+            // Get volunteer form responses
+            List<com.group02.openevent.dto.form.FormResponseDTO> volunteerResponses = 
+                eventFormService.getResponsesByEventIdAndFormType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
+            
+            if (volunteerResponses == null) {
+                volunteerResponses = new ArrayList<>();
+            }
+
+            // Group responses by customerId
+            Map<Long, List<com.group02.openevent.dto.form.FormResponseDTO>> groupedResponses = volunteerResponses.stream()
+                .collect(Collectors.groupingBy(
+                    com.group02.openevent.dto.form.FormResponseDTO::getCustomerId,
+                    LinkedHashMap::new,
+                    Collectors.toList()
+                ));
+
+            // Get volunteer form if exists
+            try {
+                var volunteerForm = eventFormService.getActiveFormByEventIdAndType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
+                model.addAttribute("form", volunteerForm);
+                if (formId == null && volunteerForm != null) {
+                    formId = volunteerForm.getFormId();
+                }
+            } catch (Exception e) {
+                log.info("📋 No volunteer form found for event {}", id);
+            }
+
+            model.addAttribute("groupedResponses", groupedResponses);
+            model.addAttribute("formId", formId);
+
+            log.info("✅ Loaded {} volunteer request groups for event {}", groupedResponses.size(), id);
+        } catch (Exception e) {
+            log.error("❌ Error loading volunteer requests fragment for event ID: {}", id, e);
+            model.addAttribute("error", "Không thể tải yêu cầu duyệt: " + e.getMessage());
+            model.addAttribute("eventId", id);
+        }
+
+        return "fragments/volunteer-requests :: content";
     }
 
 

@@ -1,6 +1,7 @@
 package com.group02.openevent.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.organization.Organization;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,11 +29,14 @@ public class Customer {
             foreignKey = @ForeignKey(name = "fk_user_org"))
     private Organization organization;
 
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "points", nullable = false)
     private Integer points = 0;
-
-//    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Host host;
 
     @Column(unique = true, length = 100)
     private String memberID;
@@ -46,36 +50,4 @@ public class Customer {
     public Customer() {
     }
 
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Integer getPoints() {
-        return points;
-    }
-
-    public void setPoints(Integer points) {
-        this.points = points;
-    }
-
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }
 } 

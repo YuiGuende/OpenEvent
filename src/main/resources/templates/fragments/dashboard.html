@@ -3,60 +3,55 @@
 <div th:fragment="content">
     <div class="page-header">
         <div class="breadcrumbs">
-            <span>Sự kiện</span>
+            <span>Events</span>
             <i class="fas fa-chevron-right"></i>
-            <span>duc le</span>
-            <i class="fas fa-chevron-right"></i>
-            <span>Tạo sự kiện</span>
+            <span>DashBoard</span>
         </div>
         <div class="header-content">
-            <h1 class="page-title" id="userName" > Bảng điều khiển</h1>
-            <button class="btn-share">
-                <i class="fas fa-share"></i>
-                Chia sẻ trang nhà tổ chức
-            </button>
+            <h1 class="page-title" id="userName" > Dashboard</h1>
+
         </div>
     </div>
 
     <!-- Metrics Cards -->
     <div class="metrics-grid">
         <div class="metric-card">
-            <div class="metric-icon purple">
+            <div class="metric-icon blue">
                 <i class="fas fa-video"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value" id="metric-total-sales">$0.00</div>
-                <div class="metric-label">Tổng doanh số</div>
+                <div class="metric-value" id="metric-total-sales">0 ₫</div>
+                <div class="metric-label">Total Sales</div>
             </div>
         </div>
 
         <div class="metric-card">
-            <div class="metric-icon blue">
+            <div class="metric-icon green">
                 <i class="fas fa-shopping-bag"></i>
             </div>
             <div class="metric-content">
                 <div class="metric-value" id="metric-products-sold">0</div>
-                <div class="metric-label">Sản phẩm đã bán</div>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon red">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="metric-content">
-                <div class="metric-value" id="metric-attendees">0</div>
-                <div class="metric-label">Người tham dự</div>
+                <div class="metric-label">Products Sold</div>
             </div>
         </div>
 
         <div class="metric-card">
             <div class="metric-icon orange">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value" id="metric-attendees">0</div>
+                <div class="metric-label">Attendees</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon blue">
                 <i class="fas fa-store"></i>
             </div>
             <div class="metric-content">
                 <div class="metric-value" id="metric-total-orders">0</div>
-                <div class="metric-label">Tổng số đơn hàng</div>
+                <div class="metric-label">Total Orders</div>
             </div>
         </div>
 
@@ -65,18 +60,18 @@
                 <i class="fas fa-file-invoice"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value" id="metric-total-tax">$0.00</div>
-                <div class="metric-label">Tổng thuế</div>
+                <div class="metric-value" id="metric-total-tax">0 ₫</div>
+                <div class="metric-label">Total Tax</div>
             </div>
         </div>
 
         <div class="metric-card">
-            <div class="metric-icon light-green">
+            <div class="metric-icon orange">
                 <i class="fas fa-dollar-sign"></i>
             </div>
             <div class="metric-content">
-                <div class="metric-value" id="metric-total-fees">$0.00</div>
-                <div class="metric-label">Tổng phí</div>
+                <div class="metric-value" id="metric-total-fees">0 ₫</div>
+                <div class="metric-label">Total Fees</div>
             </div>
         </div>
     </div>
@@ -85,12 +80,12 @@
     <div class="content-sections">
         <!-- Recent Orders -->
         <div class="section">
-            <h2 class="section-title">Đơn hàng gần đây</h2>
+            <h2 class="section-title">Recent Orders</h2>
             <div class="orders-card" id="orders-container">
                 <div class="empty-state" id="orders-empty-state">
                     <i class="fas fa-shopping-cart"></i>
-                    <h3>Chưa có đơn hàng nào</h3>
-                    <p>Khi khách hàng mua vé, đơn hàng sẽ hiển thị tại đây</p>
+                    <h3>No orders yet</h3>
+                    <p>When customers purchase tickets, orders will appear here</p>
                 </div>
                 <div id="orders-list" style="display: none;"></div>
             </div>
@@ -98,7 +93,7 @@
 
         <!-- Upcoming Events -->
         <div class="section">
-            <h2 class="section-title">Các sự kiện sắp tới</h2>
+            <h2 class="section-title">Upcoming Events</h2>
             <div class="events-list">
                 <div class="event-card" th:each="event : ${events}">
                     <div class="event-image">
@@ -107,8 +102,8 @@
                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='100%25' height='100%25' fill='%236f42c1'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Segoe UI' font-size='12'%3EEvent%3C/text%3E%3C/svg%3E">
                     </div>
                     <div class="event-details">
-                        <h3 class="event-title" th:text="${event.title}">Tên Sự Kiện</h3>
-                        <p class="event-subtitle" th:text="${event.eventType}">Loại Sự Kiện</p>
+                        <h3 class="event-title" th:text="${event.title}">Event Name</h3>
+                        <p class="event-subtitle" th:text="${event.eventType}">Event Type</p>
                         <div class="event-info">
                             <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
                             <span class="time" th:text="|${#temporals.format(event.startsAt, 'h:mm a')} - ${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
@@ -117,11 +112,11 @@
                             <!-- CANCEL và FINISH: Luôn hiển thị trạng thái từ DB (không phụ thuộc thời gian) -->
                             <span th:if="${event.status.name() == 'CANCEL'}" 
                                   class="status-badge cancel"
-                                  th:text="'ĐÃ HỦY'">ĐÃ HỦY</span>
+                                  th:text="'CANCELLED'">CANCELLED</span>
                             
                             <span th:if="${event.status.name() == 'FINISH'}" 
                                   class="status-badge finished"
-                                  th:text="'KẾT THÚC'">KẾT THÚC</span>
+                                  th:text="'FINISHED'">FINISHED</span>
                             
                             <!-- Với các status khác (DRAFT, PUBLIC, ONGOING): So sánh với thời gian thực -->
                             <th:block th:if="${event.status.name() != 'CANCEL' && event.status.name() != 'FINISH'}">
@@ -130,35 +125,35 @@
                                     <!-- Event đã kết thúc: endsAt < currentTime -->
                                     <span th:if="${event.endsAt.isBefore(currentTime)}" 
                                           class="status-badge finished"
-                                          th:text="'KẾT THÚC'">KẾT THÚC</span>
+                                          th:text="'FINISHED'">FINISHED</span>
                                     
                                     <!-- Event sắp diễn ra: startsAt > currentTime -->
                                     <span th:if="${(event.endsAt.isAfter(currentTime) or event.endsAt.isEqual(currentTime)) and event.startsAt.isAfter(currentTime)}" 
                                           class="status-badge upcoming"
                                           th:text="${event.status.name() == 'PUBLIC' 
-                                                     ? 'PUBLIC • SẮP TỚI' 
-                                                     : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                                                     ? 'PUBLIC • UPCOMING' 
+                                                     : 'DRAFT • UPCOMING'}">UPCOMING</span>
                                     
                                     <!-- Event đang diễn ra: startsAt <= currentTime <= endsAt -->
                                     <span th:if="${(event.endsAt.isAfter(currentTime) or event.endsAt.isEqual(currentTime)) 
                                                    and (event.startsAt.isBefore(currentTime) or event.startsAt.isEqual(currentTime))}" 
                                           class="status-badge live"
                                           th:text="${event.status.name() == 'PUBLIC' || event.status.name() == 'ONGOING' 
-                                                     ? 'LIVE • ĐANG DIỄN RA' 
-                                                     : 'DRAFT • ĐANG DIỄN RA'}">ĐANG DIỄN RA</span>
+                                                     ? 'LIVE • ONGOING' 
+                                                     : 'DRAFT • ONGOING'}">ONGOING</span>
                                 </th:block>
                                 
                                 <!-- Fallback: Nếu thiếu thông tin thời gian, hiển thị dựa vào status từ DB -->
                                 <span th:if="${event.startsAt == null or event.endsAt == null}" 
                                       class="status-badge draft"
                                       th:text="${event.status.name() == 'PUBLIC' 
-                                                 ? 'PUBLIC • SẮP TỚI' 
-                                                 : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                                                 ? 'PUBLIC • UPCOMING' 
+                                                 : 'DRAFT • UPCOMING'}">UPCOMING</span>
                             </th:block>
                         </div>
                         <div class="event-sales">
                             <i class="fas fa-users"></i>
-                            <span th:text="|0 đã bán|">0 đã bán</span>
+                            <span th:text="|${ticketsSoldMap != null && ticketsSoldMap.containsKey(event.id) ? ticketsSoldMap.get(event.id) : 0} sold|">0 sold</span>
                         </div>
                     </div>
                     <button class="action-btn">
@@ -193,14 +188,14 @@
             }
             
             function updateMetrics(stats) {
-                // Format currency
+                // Format currency for VND
                 function formatCurrency(amount) {
-                    if (amount == null) return '$0.00';
-                    return new Intl.NumberFormat('en-US', {
+                    if (amount == null || amount === 0) return '0 ₫';
+                    return new Intl.NumberFormat('vi-VN', {
                         style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                        currency: 'VND',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
                     }).format(amount);
                 }
                 
@@ -244,8 +239,8 @@
                             emptyState.style.display = 'block';
                             emptyState.innerHTML = `
                                 <i class="fas fa-exclamation-triangle"></i>
-                                <h3>Lỗi tải đơn hàng</h3>
-                                <p>Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.</p>
+                                <h3>Error loading orders</h3>
+                                <p>Unable to load order list. Please try again later.</p>
                             `;
                             ordersList.style.display = 'none';
                         }
@@ -271,14 +266,14 @@
                 emptyState.style.display = 'none';
                 ordersList.style.display = 'block';
                 
-                // Format currency
+                // Format currency for VND
                 function formatCurrency(amount) {
-                    if (amount == null) return '$0.00';
-                    return new Intl.NumberFormat('en-US', {
+                    if (amount == null || amount === 0) return '0 ₫';
+                    return new Intl.NumberFormat('vi-VN', {
                         style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                        currency: 'VND',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
                     }).format(amount);
                 }
                 
@@ -356,11 +351,11 @@
                 // Get status text
                 function getStatusText(status) {
                     switch (status) {
-                        case 'PAID': return 'Đã thanh toán';
-                        case 'PENDING': return 'Chờ thanh toán';
-                        case 'CANCELLED': return 'Đã hủy';
-                        case 'EXPIRED': return 'Hết hạn';
-                        case 'REFUNDED': return 'Đã hoàn tiền';
+                        case 'PAID': return 'Paid';
+                        case 'PENDING': return 'Pending';
+                        case 'CANCELLED': return 'Cancelled';
+                        case 'EXPIRED': return 'Expired';
+                        case 'REFUNDED': return 'Refunded';
                         default: return status;
                     }
                 }
@@ -379,7 +374,7 @@
                                         ${order.eventTitle || 'N/A'}
                                     </div>
                                     <div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">
-                                        ${order.participantName || order.customerName || 'Khách hàng'} • ${order.ticketTypeName || 'N/A'}
+                                        ${order.participantName || order.customerName || 'Customer'} • ${order.ticketTypeName || 'N/A'}
                                     </div>
                                     <div style="font-size: 12px; color: #9ca3af;">
                                         ${formatDate(order.createdAt)}
@@ -390,7 +385,7 @@
                                         <div style="font-weight: 600; color: #111827; margin-bottom: 4px;">
                                             ${formatCurrency(order.totalAmount)}
                                         </div>
-                                        <span class="${getStatusBadgeClass(statusStr)}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white;">
+                                        <span class="${getStatusBadgeClass(statusStr)}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; color: black;">
                                             ${getStatusText(statusStr)}
                                         </span>
                                     </div>

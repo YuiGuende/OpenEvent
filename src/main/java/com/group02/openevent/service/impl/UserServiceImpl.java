@@ -60,9 +60,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getCurrentUser(HttpSession session) {
+        if (session == null) {
+            log.warn("getCurrentUser called with null session");
+            throw new RuntimeException("User not logged in - session is null");
+        }
+        
+        log.info("getCurrentUser - Session ID: {}", session.getId());
         Long userId = (Long) session.getAttribute("USER_ID");
+        log.info("getCurrentUser - USER_ID from session: {}", userId);
+        
         if (userId == null) {
-            throw new RuntimeException("User not logged in");
+            // Log all session attributes for debugging
+            log.warn("getCurrentUser - USER_ID is null. Session attributes:");
+            java.util.Enumeration<String> attrNames = session.getAttributeNames();
+            while (attrNames.hasMoreElements()) {
+                String attrName = attrNames.nextElement();
+                log.warn("  - {}: {}", attrName, session.getAttribute(attrName));
+            }
+            throw new RuntimeException("User not logged in - USER_ID not found in session");
         }
         return getUserById(userId);
     }

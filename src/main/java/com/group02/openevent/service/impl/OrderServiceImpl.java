@@ -11,9 +11,11 @@ import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.repository.ITicketTypeRepo;
+import com.group02.openevent.event.OrderCreatedEvent;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.VoucherService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,15 +34,17 @@ public class OrderServiceImpl implements OrderService {
     private final ITicketTypeRepo ticketTypeRepo;
     private final TicketTypeService ticketTypeService;
     private final VoucherService voucherService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public OrderServiceImpl(IOrderRepo orderRepo, IEventRepo eventRepo, 
                            ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService,
-                           VoucherService voucherService) {
+                           VoucherService voucherService, ApplicationEventPublisher eventPublisher) {
         this.orderRepo = orderRepo;
         this.eventRepo = eventRepo;
         this.ticketTypeRepo = ticketTypeRepo;
         this.ticketTypeService = ticketTypeService;
         this.voucherService = voucherService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -132,6 +136,18 @@ public class OrderServiceImpl implements OrderService {
                     e.printStackTrace();
                     // Continue without voucher if it fails
                 }
+            }
+            
+            // Publish OrderCreatedEvent for audit log
+            try {
+                Long actorId = customer.getUser() != null 
+                        ? customer.getUser().getUserId() 
+                        : null;
+                if (actorId != null) {
+                    eventPublisher.publishEvent(new OrderCreatedEvent(this, savedOrder, actorId));
+                }
+            } catch (Exception e) {
+                System.err.println("Error publishing OrderCreatedEvent: " + e.getMessage());
             }
             
             return savedOrder;

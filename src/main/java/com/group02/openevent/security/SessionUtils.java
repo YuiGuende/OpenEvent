@@ -56,7 +56,7 @@ public class SessionUtils {
         }
         
         // Fallback: check for ACCOUNT_ID and ACCOUNT_ROLE (from login controller)
-        Long accountId = (Long) httpSession.getAttribute("ACCOUNT_ID");
+        Long accountId = (Long) httpSession.getAttribute("USER_ID");
         String role = (String) httpSession.getAttribute("ACCOUNT_ROLE");
         
         if (accountId == null || role == null) {

@@ -64,9 +64,14 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             
             if (accountId != null && role != null) {
                 Optional<User> userOptional= userService.getUserByAccountId(accountId);
-                session.setAttribute("USER_ID", userOptional.get().getUserId());
-                session.setAttribute("USER_ROLE", role);
-                log.info("OAuth2 login successful - Account ID: {}, Role: {}", accountId, role);
+                if (userOptional.isPresent()) {
+                    User user = userOptional.get();
+                    session.setAttribute("USER_ID", user.getUserId());
+                    session.setAttribute("USER_ROLE", role);
+                    log.info("OAuth2 login successful - Account ID: {}, User ID: {}, Role: {}", accountId, user.getUserId(), role);
+                } else {
+                    log.warn("OAuth2 user not found for accountId: {}", accountId);
+                }
             } else {
                 log.warn("OAuth2 user missing accountId or role in attributes. accountId: {}, role: {}", accountIdObj, role);
             }
@@ -74,12 +79,15 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         // 2. Xử lý chuyển hướng sau khi đăng nhập thành công
         
-        // PRIORITY 1: Kiểm tra custom redirectUrl từ form (dùng cho QR check-in)
-        String customRedirectUrl = request.getParameter("redirectUrl");
-        log.info("Login success - redirectUrl from form: {}", customRedirectUrl);
+        // PRIORITY 1: Kiểm tra redirect parameter từ query string (từ URL như /login?redirect=/forms/feedback/1)
+        String redirectParam = request.getParameter("redirect");
+        String redirectUrlParam = request.getParameter("redirectUrl");
+        String customRedirectUrl = redirectUrlParam != null ? redirectUrlParam : redirectParam;
+        log.info("Login success - redirect from query: {}, redirectUrl from query: {}, final: {}", 
+                 redirectParam, redirectUrlParam, customRedirectUrl);
         
         if (customRedirectUrl != null && !customRedirectUrl.isEmpty()) {
-            log.info("Redirecting to custom URL: {}", customRedirectUrl);
+            log.info("Redirecting to custom URL from query parameter: {}", customRedirectUrl);
             response.sendRedirect(customRedirectUrl);
             return;
         }

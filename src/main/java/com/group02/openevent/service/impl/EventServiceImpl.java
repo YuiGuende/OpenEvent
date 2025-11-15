@@ -16,9 +16,11 @@ import com.group02.openevent.model.organization.Organization;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Host;
 import com.group02.openevent.repository.*;
-import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IMusicEventRepo;
+import com.group02.openevent.event.EventCancelledEvent;
+import com.group02.openevent.event.EventCreatedEvent;
+import com.group02.openevent.event.EventUpdatedEvent;
 import com.group02.openevent.service.EventService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.jpa.repository.Query;
@@ -30,6 +32,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.AccessLevel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +68,8 @@ public class EventServiceImpl implements EventService {
     IOrganizationRepo organizationRepo;
     IHostRepo hostRepo;
     IPlaceRepo placeRepo;
-    ITicketTypeRepo ticketTypeRepo;
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -106,7 +110,21 @@ public class EventServiceImpl implements EventService {
             event.getSubEvents().forEach(sub -> sub.setParentEvent(finalEvent));
         }
         event.setHost(hostRepo.getHostById(hostId));
-        return eventMapper.toEventResponse(eventRepo.save(event));
+        Event savedEvent = eventRepo.save(event);
+
+        // Publish EventCreatedEvent for audit log
+        try {
+            Long userId = savedEvent.getHost() != null && savedEvent.getHost().getUser() != null
+                    ? savedEvent.getHost().getUser().getUserId()
+                    : null;
+            if (userId != null) {
+                eventPublisher.publishEvent(new EventCreatedEvent(this, savedEvent, userId));
+            }
+        } catch (Exception e) {
+            log.error("Error publishing EventCreatedEvent: {}", e.getMessage(), e);
+        }
+
+        return eventMapper.toEventResponse(savedEvent);
     }
 
     @Override
@@ -154,8 +172,10 @@ public class EventServiceImpl implements EventService {
             case "WORKSHOP" -> {
                 WorkshopEvent ws = (WorkshopEvent) existing;
                 ws.setTopic(request.getTopic());
-                ws.setSkillLevel(request.getSkillLevel());
+                ws.setMaterialsLink(request.getMaterialsLink());
                 ws.setMaxParticipants(request.getMaxParticipants());
+                ws.setSkillLevel(request.getSkillLevel());
+                ws.setPrerequisites(request.getPrerequisites());
             }
             case "FESTIVAL" -> {
                 FestivalEvent fe = (FestivalEvent) existing;
@@ -180,8 +200,8 @@ public class EventServiceImpl implements EventService {
                 if (placeUpdateRequest.getId() != null) {
                     place = placeRepo.findById(placeUpdateRequest.getId())
                             .orElseThrow(() -> new EntityNotFoundException("Place not found with id " + placeUpdateRequest.getId()));
-                    if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) || 
-                        !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {
+                    if (!place.getPlaceName().equals(placeUpdateRequest.getPlaceName()) ||
+                            !place.getBuilding().equals(placeUpdateRequest.getBuilding())) {
                         place.setPlaceName(placeUpdateRequest.getPlaceName());
                         place.setBuilding(placeUpdateRequest.getBuilding());
                         place = placeRepo.save(place);
@@ -221,6 +241,18 @@ public class EventServiceImpl implements EventService {
         // ✅ Save cuối cùng
         log.info("Saving event with {} places to database", event.getPlaces().size());
         Event saved = eventRepo.saveAndFlush(event);
+
+        // Publish EventUpdatedEvent for audit log
+        try {
+            Long userId = saved.getHost() != null && saved.getHost().getUser() != null
+                    ? saved.getHost().getUser().getUserId()
+                    : null;
+            if (userId != null) {
+                eventPublisher.publishEvent(new EventUpdatedEvent(this, saved, userId));
+            }
+        } catch (Exception e) {
+            log.error("Error publishing EventUpdatedEvent: {}", e.getMessage(), e);
+        }
 
         return eventMapper.toEventResponse(saved);
     }
@@ -317,7 +349,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public long countUniqueParticipantsByEventId(Long id) {
-      return  orderService.countUniqueParticipantsByEventId(id);
+        return  orderService.countUniqueParticipantsByEventId(id);
     }
 
 
@@ -440,7 +472,7 @@ public class EventServiceImpl implements EventService {
         }
         return Optional.of(events.get(0)); // trả về sự kiện PUBLIC đầu tiên
     }
-//    @Override
+    //    @Override
 //    public Optional<Event> getNextUpcomingEventByUserId(int userId) {
 //        return eventRepo.findNextUpcomingEventByUserId(userId, LocalDateTime.now());
 //    }
@@ -473,11 +505,38 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event updateEventStatus(Long eventId, EventStatus status) {
+        return updateEventStatus(eventId, status, null);
+    }
+
+    // Overload method với userId parameter
+    public Event updateEventStatus(Long eventId, EventStatus status, Long userId) {
         Optional<Event> eventOpt = eventRepo.findById(eventId);
         if (eventOpt.isPresent()) {
             Event event = eventOpt.get();
+            EventStatus oldStatus = event.getStatus();
             event.setStatus(status);
-            return eventRepo.save(event);
+            Event savedEvent = eventRepo.save(event);
+
+            // Publish events for audit log
+            try {
+                // Determine userId: use parameter if provided, otherwise try to get from event host
+                Long actorId = userId;
+                if (actorId == null && savedEvent.getHost() != null && savedEvent.getHost().getUser() != null) {
+                    actorId = savedEvent.getHost().getUser().getUserId();
+                }
+
+                if (actorId != null) {
+                    // Publish EventCancelledEvent if status changed to CANCEL
+                    if (status == EventStatus.CANCEL) {
+                        eventPublisher.publishEvent(new EventCancelledEvent(this, savedEvent, actorId));
+                    }
+                    // Note: EventApprovedEvent is published from RequestServiceImpl when request is approved
+                }
+            } catch (Exception e) {
+                log.error("Error publishing event status change event: {}", e.getMessage(), e);
+            }
+
+            return savedEvent;
         }
         throw new RuntimeException("Event not found with id: " + eventId);
     }
@@ -504,8 +563,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> getRecentEvents(int limit) {
-        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdDate"));
-        return eventRepo.findAll(PageRequest.of(0, limit)).getContent();
+        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return eventRepo.findRecommendedEvents(EventStatus.PUBLIC, pageRequest);
     }
 
     @Override
@@ -563,33 +622,6 @@ public class EventServiceImpl implements EventService {
                 .poster(event.isPoster())
                 .benefits(event.getBenefits())
                 .build();
-    }
-
-    @Override
-    public boolean isFreeEvent(Long eventId) {
-        log.info("Checking if event {} is free", eventId);
-        
-        // Validate event exists
-        if (!eventRepo.existsById(eventId)) {
-            throw new RuntimeException("Event not found: " + eventId);
-        }
-        
-        // Lấy tất cả ticket types của event từ repository (tránh LazyInitializationException)
-        List<TicketType> ticketTypes = ticketTypeRepo.findByEventId(eventId);
-        
-        // Nếu không có ticket type → event miễn phí
-        if (ticketTypes == null || ticketTypes.isEmpty()) {
-            log.info("Event {} has no ticket types, considered as free", eventId);
-            return true;
-        }
-        
-        // Kiểm tra tất cả ticket types có price = 0 không
-        boolean allFree = ticketTypes.stream()
-                .allMatch(tt -> tt.getPrice() != null && 
-                        tt.getPrice().compareTo(java.math.BigDecimal.ZERO) == 0);
-        
-        log.info("Event {} isFree: {} (checked {} ticket types)", eventId, allFree, ticketTypes.size());
-        return allFree;
     }
 
 

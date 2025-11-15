@@ -378,6 +378,19 @@ public class PaymentController {
                     response.put("checkoutUrl", payment.getCheckoutUrl());
                     response.put("qrCode", payment.getQrCode());
                     response.put("amount", payment.getAmount());
+                    response.put("paymentStatus", payment.getStatus().name());
+                    response.put("isFreeEvent", false);
+                    return ResponseEntity.ok(response);
+                } else if (payment.getStatus() == PaymentStatus.PAID) {
+                    // Payment already completed (likely free event)
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", true);
+                    response.put("orderId", orderId);
+                    response.put("paymentId", payment.getPaymentId());
+                    response.put("paymentStatus", payment.getStatus().name());
+                    response.put("orderStatus", order.getStatus().name());
+                    response.put("isFreeEvent", payment.getAmount().compareTo(java.math.BigDecimal.ZERO) == 0);
+                    response.put("message", "Payment already completed");
                     return ResponseEntity.ok(response);
                 }
             }
@@ -386,16 +399,29 @@ public class PaymentController {
             String returnUrl = "http://localhost:8080/payment/success?orderId=" + orderId;
             String cancelUrl = "http://localhost:8080/payment/cancel?orderId=" + orderId;
 
-            // Create payment record and PayOS link
+            // Create payment record and PayOS link (or free payment if amount = 0)
             Payment payment = paymentService.createPaymentLinkForOrder(order, returnUrl, cancelUrl);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("orderId", orderId);
             response.put("paymentId", payment.getPaymentId());
-            response.put("checkoutUrl", payment.getCheckoutUrl());
-            response.put("qrCode", payment.getQrCode());
+            response.put("paymentStatus", payment.getStatus().name());
+            response.put("orderStatus", order.getStatus().name());
             response.put("amount", payment.getAmount());
+            
+            // Check if this is a free event
+            boolean isFreeEvent = payment.getStatus() == PaymentStatus.PAID && 
+                                  payment.getAmount().compareTo(java.math.BigDecimal.ZERO) == 0;
+            response.put("isFreeEvent", isFreeEvent);
+            
+            // Only include checkoutUrl and qrCode if payment is PENDING (not free event)
+            if (payment.getStatus() == PaymentStatus.PENDING) {
+                response.put("checkoutUrl", payment.getCheckoutUrl());
+                response.put("qrCode", payment.getQrCode());
+            } else if (isFreeEvent) {
+                response.put("message", "Free event - Registration completed successfully");
+            }
 
             return ResponseEntity.ok(response);
 

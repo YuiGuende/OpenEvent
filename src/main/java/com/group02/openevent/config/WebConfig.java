@@ -13,6 +13,8 @@ public class WebConfig implements WebMvcConfigurer {
     private SessionInterceptor sessionInterceptor;
     @Autowired
     private CurrentUriInterceptor currentUriInterceptor;
+    @Autowired
+    private NetworkGuardInterceptor networkGuardInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -30,5 +32,18 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(currentUriInterceptor)
                 .addPathPatterns("/**")     // áp dụng cho tất cả
                 .excludePathPatterns("/api/**");
+        
+        // NetworkGuardInterceptor: Chỉ áp dụng cho check-in endpoints
+        // Note: Endpoint thực tế là /events/api/{eventId}/face-checkin (từ @RequestMapping("/events") + @PostMapping("/api/{eventId}/face-checkin"))
+        registry.addInterceptor(networkGuardInterceptor)
+                .addPathPatterns(
+                        "/api/attendance/**",
+                        "/events/api/**/face-checkin",      // Match /events/api/{eventId}/face-checkin
+                        "/events/api/**/checkin/**",         // Match các endpoint check-in khác
+                        "/events/api/**/checkin-status",     // Match checkin-status
+                        "/api/events/**/checkin/**",          // Giữ lại cho các endpoint khác nếu có
+                        "/api/events/**/face-checkin",        // Giữ lại cho các endpoint khác nếu có
+                        "/api/events/**/checkin-status"       // Giữ lại cho các endpoint khác nếu có
+                );
     }
 }

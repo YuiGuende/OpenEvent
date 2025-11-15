@@ -30,6 +30,10 @@
                 <input type="email" id="loginEmail" name="username" placeholder="Email" required>
                 <i class='bx bx-customer'></i>
             </div>
+            <!-- Error message display -->
+            <div th:if="${errorMessage != null}" id="loginError" style="color: red; font-size: 14px; margin-top: -10px; margin-bottom: 10px; padding-left: 5px;">
+                <i class='bx bx-error-circle'></i> <span th:text="${errorMessage}">Email hoặc mật khẩu không đúng</span>
+            </div>
             <div class="input-box">
                 <input type="password" id="loginPassword" name="password" placeholder="Mật khẩu" required>
                 <i class='bx bx-show' id="toggleLoginPw" style="cursor: pointer;"></i>
@@ -41,9 +45,8 @@
             <button type="submit" class="btn" id="loginBtn">Đăng nhập</button>
             <p>or login with social platforms</p>
             <div class="social-icons">
-                <a th:href="@{/oauth2/authorization/google}" title="Đăng nhập bằng Google"><i class='bx bxl-google'></i></a>
-                <!-- Facebook có thể thêm sau khi cấu hình -->
-                <!-- <a th:href="@{/oauth2/authorization/facebook}" title="Đăng nhập bằng Facebook"><i class='bx bxl-facebook'></i></a> -->
+                <a th:href="@{/oauth2/authorization/google}"><i class='bx bxl-google'></i></a>
+                <a href="#"><i class='bx bxl-facebook'></i></a>
             </div>
             <div id="notice" class="notice"></div>
             <div id="loginResult" style="color: red; margin-top: 10px;"></div>
@@ -146,15 +149,10 @@
             notice.style.color = 'green';
             notice.style.display = 'block';
         }
-        
-        // Show OAuth error if present
-        if (getQueryParam('error') === 'oauth') {
-            const notice = document.getElementById('notice');
-            notice.textContent = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.';
-            notice.style.color = 'red';
-            notice.style.display = 'block';
-        }
     })();
+    
+    // Error message is now displayed directly in HTML using Thymeleaf
+    // No need for JavaScript alert
 </script>
 </body>
 </html>

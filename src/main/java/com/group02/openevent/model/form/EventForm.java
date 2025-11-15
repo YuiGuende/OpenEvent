@@ -32,7 +32,7 @@ public class EventForm {
     @Column(name = "form_description", columnDefinition = "TEXT")
     private String formDescription;
 
-    public enum FormType { REGISTER, CHECKIN, FEEDBACK }
+    public enum FormType { REGISTER, CHECKIN, FEEDBACK, VOLUNTEER }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "form_type", nullable = false, length = 20)
@@ -45,10 +45,12 @@ public class EventForm {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "eventForm", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JsonManagedReference
     private List<FormQuestion> questions;
 
     @OneToMany(mappedBy = "eventForm", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JsonManagedReference
     private List<FormResponse> responses;
 }

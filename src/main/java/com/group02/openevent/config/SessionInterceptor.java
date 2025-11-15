@@ -23,12 +23,12 @@ public class SessionInterceptor implements HandlerInterceptor {
         String requestPath = request.getRequestURI();
         String method = request.getMethod();
 
-        // Log requests to /api/requests for debugging
-        if (requestPath.startsWith("/api/requests")) {
+        // Log requests to /api/requests and /profile for debugging
+        if (requestPath.startsWith("/api/requests") || requestPath.equals("/profile")) {
             System.out.println("=== SessionInterceptor: " + method + " " + requestPath + " ===");
             System.out.println("Is public path: " + isPublicPath(requestPath));
             if (request.getSession(false) != null) {
-                System.out.println("Session exists, ACCOUNT_ID: " + request.getSession(false).getAttribute("ACCOUNT_ID"));
+                System.out.println("Session exists, USER_ID: " + request.getSession(false).getAttribute("USER_ID"));
             } else {
                 System.out.println("No session found");
             }
@@ -43,22 +43,24 @@ public class SessionInterceptor implements HandlerInterceptor {
         jakarta.servlet.http.HttpSession httpSession = request.getSession(false);
         
         if (httpSession != null) {
+            // Log session info for debugging
+            System.out.println("=== SessionInterceptor: Session exists - ID: " + httpSession.getId() + " ===");
+            
             // Session stores USER_ID according to CustomAuthenticationSuccessHandler
             Long userId = (Long) httpSession.getAttribute("USER_ID");
             
-            // Also check ACCOUNT_ID for backward compatibility (if some legacy code sets it)
-            if (userId == null) {
-                userId = (Long) httpSession.getAttribute("ACCOUNT_ID");
+            // Log all session attributes for debugging
+            System.out.println("Session attributes:");
+            java.util.Enumeration<String> attrNames = httpSession.getAttributeNames();
+            while (attrNames.hasMoreElements()) {
+                String attrName = attrNames.nextElement();
+                System.out.println("  - " + attrName + ": " + httpSession.getAttribute(attrName));
             }
             
             if (userId != null) {
                 // User is logged in via HTTP session, allow access
                 request.setAttribute("currentUserId", userId);
                 request.setAttribute("HTTP_SESSION", true);
-                // Set USER_ID if not already set (for consistency)
-                if (httpSession.getAttribute("USER_ID") == null) {
-                    httpSession.setAttribute("USER_ID", userId);
-                }
                 System.out.println("=== SessionInterceptor: Allowing request with USER_ID: " + userId + " ===");
                 return true;
             } else {
@@ -67,10 +69,10 @@ public class SessionInterceptor implements HandlerInterceptor {
                     System.out.println("=== SessionInterceptor: /api/wallet request ===");
                     System.out.println("Session exists but USER_ID and ACCOUNT_ID are null");
                     System.out.println("Session ID: " + httpSession.getId());
-                    java.util.Enumeration<String> attrNames = httpSession.getAttributeNames();
+                    java.util.Enumeration<String> attrNamesWallet = httpSession.getAttributeNames();
                     System.out.println("Session attributes:");
-                    while (attrNames.hasMoreElements()) {
-                        String attrName = attrNames.nextElement();
+                    while (attrNamesWallet.hasMoreElements()) {
+                        String attrName = attrNamesWallet.nextElement();
                         System.out.println("  - " + attrName + ": " + httpSession.getAttribute(attrName));
                     }
                 }
@@ -134,7 +136,7 @@ public class SessionInterceptor implements HandlerInterceptor {
                    Long userId = (Long) request.getSession(false).getAttribute("USER_ID");
                    // Also check ACCOUNT_ID for backward compatibility
                    if (userId == null) {
-                       userId = (Long) request.getSession(false).getAttribute("ACCOUNT_ID");
+                       userId = (Long) request.getSession(false).getAttribute("USER_ID");
                    }
                    if (userId != null) {
                        // Set request attributes for HTTP session
@@ -195,7 +197,8 @@ public class SessionInterceptor implements HandlerInterceptor {
                 path.startsWith("/api/ai/") ||
                 path.startsWith("/api/ekyc") ||
                 path.startsWith("/api/debug/") ||
-                path.startsWith("/perform_login");
+                path.startsWith("/perform_login") ||
+                path.equals("/profile"); // Add /profile as public path
     }
 
     private String extractSessionToken(@NonNull HttpServletRequest request) {
@@ -224,7 +227,7 @@ public class SessionInterceptor implements HandlerInterceptor {
             Long userId = (Long) request.getSession(false).getAttribute("USER_ID");
             // Also check ACCOUNT_ID for backward compatibility
             if (userId == null) {
-                userId = (Long) request.getSession(false).getAttribute("ACCOUNT_ID");
+                userId = (Long) request.getSession(false).getAttribute("USER_ID");
             }
             if (userId != null) {
                 // User is logged in via HTTP session, allow access

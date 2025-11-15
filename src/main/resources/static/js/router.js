@@ -29,7 +29,13 @@ class SpaRouter {
             const link = e.target.closest('a[data-link]');
             if (link) {
                 e.preventDefault(); // Ngăn trình duyệt tải lại trang
-                this.navigateTo(link.getAttribute('href'));
+                const href = link.getAttribute('href');
+                // Extract query params from href
+                let queryParams = '';
+                if (href.includes('?')) {
+                    queryParams = '?' + href.split('?')[1];
+                }
+                this.navigateTo(href, queryParams);
             }
         });
 
@@ -40,31 +46,50 @@ class SpaRouter {
     /**
      * Điều hướng đến một đường dẫn (path) cụ thể.
      * @param {string} path - Đường dẫn cần điều hướng tới (ví dụ: '/host/setting').
+     * @param {string} queryParams - Query parameters từ URL (ví dụ: '?formId=1').
      */
     // Trong SpaRouter.js
-    navigateTo(path) {
-        // Normalize path first
+    navigateTo(path, queryParams = '') {
+        // Normalize path first (remove query params for route matching)
         const normalizedPath = path.split('?')[0].replace(/\/$/, '');
-        console.log(`[Router] Bắt đầu điều hướng đến: ${path} (normalized: ${normalizedPath})`);
         
-        const route = this.findRoute(normalizedPath);
+        // Extract query params from path if not provided
+        if (!queryParams && path.includes('?')) {
+            queryParams = '?' + path.split('?')[1];
+        }
+        
+        // Try to find route by matching path
+        let route = this.findRoute(normalizedPath);
+        
+        // If route not found and it's a fragment URL, create a dynamic route
+        if (!route && (normalizedPath.startsWith('/fragments/') || normalizedPath.startsWith('/forms/fragments/'))) {
+            // For fragment URLs, create a route object with the full fragment URL
+            route = {
+                path: normalizedPath,
+                fragment: normalizedPath + queryParams, // Include query params in fragment
+                title: 'Form Statistics',
+                isDynamic: true // Flag to indicate this is a dynamically created route
+            };
+            // Don't set queryParams since it's already in fragment
+        }
+        
         if (!route) {
             console.error(`[SpaRouter] Không tìm thấy route cho path: ${normalizedPath}`);
-            console.error(`[SpaRouter] Available routes:`, this.routes.map(r => r.path));
-            console.error(`[SpaRouter] Chuyển về trang mặc định.`);
-
             const defaultRoute = this.routes[0]; // Lấy route đầu tiên làm mặc định
             if (defaultRoute && defaultRoute.path !== normalizedPath) { // Tránh lặp vô hạn nếu chính route mặc định bị lỗi
-                console.log(`[SpaRouter] Redirecting to default route: ${defaultRoute.path}`);
                 this.navigateTo(defaultRoute.path);
             }
             return;
         }
-
-        console.log(`[Router] ✅ Route found, navigating to: ${route.path}`);
         
-        // Đẩy trạng thái mới vào history, cập nhật URL
-        history.pushState({ path: normalizedPath }, route.title, normalizedPath);
+        // Store query params for renderContent (only if route doesn't already have them in fragment)
+        if (!route.isDynamic) {
+            route.queryParams = queryParams;
+        }
+        
+        // Đẩy trạng thái mới vào history, cập nhật URL (include query params in URL)
+        const fullPath = normalizedPath + queryParams;
+        history.pushState({ path: fullPath }, route.title, fullPath);
         this.renderContent(route);
     }
 
@@ -76,18 +101,48 @@ class SpaRouter {
         this.mainContent.innerHTML = '<div class="loading-spinner"></div>'; // Hiển thị spinner
 
         try {
-                // Lấy eventId từ URL hiện tại
-            const pathParts = window.location.pathname.split('/');
-            const eventId = pathParts[3]; // phần tử thứ 3 là số id
+            // Fragment URL - use the fragment from route
+            let fragmentUrl = route.fragment;
             
-            if (!eventId || isNaN(eventId)) {
-                throw new Error("Không tìm thấy Event ID trong URL để tải fragment.");
+            // If route is dynamic (created on the fly), fragment already has query params
+            // Otherwise, append query params if available
+            if (!route.isDynamic && route.queryParams) {
+                // Check if fragment URL already has query params
+                if (fragmentUrl.includes('?')) {
+                    fragmentUrl += '&' + route.queryParams.substring(1); // Remove leading '?'
+                } else {
+                    fragmentUrl += route.queryParams;
+                }
             }
             
-            // Fragment URL đã có eventId trong app.js, không cần thêm nữa
-            const fragmentUrl = route.fragment;
+            // For routes that need eventId, try to get it from URL (only if not already in fragment)
+            // Also preserve formId from query params if it exists
+            const currentUrl = new URL(window.location.href);
+            const formIdParam = currentUrl.searchParams.get('formId');
+            
+            if (!fragmentUrl.includes('?id=') && !fragmentUrl.includes('&id=')) {
+                // Try to get eventId from current URL path
+                const pathParts = window.location.pathname.split('/');
+                const eventId = pathParts[3]; // phần tử thứ 3 là số id
+                
+                if (eventId && !isNaN(eventId)) {
+                    if (fragmentUrl.includes('?')) {
+                        fragmentUrl += '&id=' + eventId;
+                    } else {
+                        fragmentUrl += '?id=' + eventId;
+                    }
+                }
+            }
+            
+            // Add formId to fragment URL if it exists in query params and not already present
+            if (formIdParam && !fragmentUrl.includes('formId=')) {
+                if (fragmentUrl.includes('?')) {
+                    fragmentUrl += '&formId=' + formIdParam;
+                } else {
+                    fragmentUrl += '?formId=' + formIdParam;
+                }
+            }
 
-            console.log(`[Router] Bắt đầu fetch fragment từ: ${fragmentUrl}`); // <-- LOG 4 (QUAN TRỌNG NHẤT)
             const response = await fetch(fragmentUrl);
             if (!response.ok) {
                 throw new Error(`Không thể tải fragment: ${response.statusText}`);
@@ -134,7 +189,6 @@ class SpaRouter {
      */
     loadInitialRoute() {
         const path = window.location.pathname;
-        console.log(`[Router] Tải route ban đầu cho path: ${path}`); // <-- LOG 7
         const route = this.findRoute(path);
         if (route) {
             this.renderContent(route);
@@ -158,21 +212,10 @@ class SpaRouter {
         // Normalize path (remove trailing slashes, handle query params)
         const normalizedPath = path.split('?')[0].replace(/\/$/, '');
         
-        console.log(`[Router] Finding route for path: ${path} (normalized: ${normalizedPath})`);
-        console.log(`[Router] Available routes:`, this.routes.map(r => r.path));
-        
         const route = this.routes.find(route => {
             const routePath = route.path.split('?')[0].replace(/\/$/, '');
-            const match = routePath === normalizedPath;
-            if (match) {
-                console.log(`[Router] ✅ Found matching route: ${route.path}`);
-            }
-            return match;
+            return routePath === normalizedPath;
         });
-        
-        if (!route) {
-            console.warn(`[Router] ❌ No route found for: ${normalizedPath}`);
-        }
         
         return route || null;
     }

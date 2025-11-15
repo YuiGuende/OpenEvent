@@ -44,4 +44,11 @@ public interface IPaymentRepo extends JpaRepository<Payment, Long> {
     // Đếm số payments theo customer và status
     @Query("SELECT COUNT(p) FROM Payment p WHERE p.order.customer.customerId = :customerId AND p.status = :status")
     long countByCustomerIdAndStatus(@Param("customerId") Long customerId, @Param("status") PaymentStatus status);
+    
+    /**
+     * Find pending payments created before a specific time
+     */
+    @Query("SELECT p FROM Payment p WHERE p.status = com.group02.openevent.model.payment.PaymentStatus.PENDING " +
+            "AND p.createdAt < :beforeTime")
+    List<Payment> findPendingPaymentsCreatedBefore(@Param("beforeTime") java.time.LocalDateTime beforeTime);
 }

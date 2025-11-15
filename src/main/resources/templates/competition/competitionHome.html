@@ -2107,10 +2107,99 @@
                 transform: scale(1);
             }
         }
+
+        /* ==========================================================================
+           Apply Volunteer Section CSS - Đồng bộ với Event Guidelines Section
+           ========================================================================== */
+        section#apply-volunteer,
+        #apply-volunteer.section,
+        #apply-volunteer.section-padding {
+            background: linear-gradient(135deg, #FFF8F5 0%, #FFE8DC 100%) !important;
+            background-image: linear-gradient(135deg, #FFF8F5 0%, #FFE8DC 100%) !important;
+            padding: 60px 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        #apply-volunteer .section-title {
+            color: var(--orange-dark, #E55A2B) !important;
+            font-weight: 700 !important;
+            margin-bottom: 15px !important;
+            position: relative !important;
+        }
+
+        #apply-volunteer .section-title::after {
+            content: '' !important;
+            position: absolute !important;
+            bottom: -8px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: 50px !important;
+            height: 3px !important;
+            background: linear-gradient(135deg, #FF6B35, #FF8C42) !important;
+            border-radius: 2px !important;
+        }
+
+        #apply-volunteer .section-title-header p {
+            color: #6C757D !important;
+            font-size: 16px !important;
+            margin-bottom: 40px !important;
+        }
+
+        #apply-volunteer .intro-desc {
+            font-size: 18px !important;
+            line-height: 1.6 !important;
+            color: #495057 !important;
+            margin-bottom: 30px !important;
+        }
+
+        #apply-volunteer .btn-outline-info {
+            border: 2px solid #FF6B35 !important;
+            color: #FF6B35 !important;
+            background: transparent !important;
+            padding: 12px 25px !important;
+            border-radius: 25px !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+            text-decoration: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            font-size: 16px !important;
+        }
+
+        #apply-volunteer .btn-outline-info:hover {
+            background: #FF6B35 !important;
+            color: white !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3) !important;
+        }
+
+        #apply-volunteer .btn-outline-info i {
+            font-size: 18px !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #apply-volunteer {
+                padding: 40px 0 !important;
+            }
+
+            #apply-volunteer .intro-desc {
+                font-size: 16px !important;
+                padding: 0 15px !important;
+            }
+
+            #apply-volunteer .btn-outline-info {
+                padding: 10px 20px !important;
+                font-size: 14px !important;
+            }
+        }
     </style>
 </head>
-<body>
-
+<body th:with="eventId=${eventId != null ? eventId : 0}, isVolunteerApproved=${isVolunteerApproved != null ? isVolunteerApproved : false}, customerId=${customerId}">
+<!-- Event Detail Header -->
+<div th:replace="~{fragments/header-event-detail :: eventDetailHeader(${eventId}, ${isVolunteerApproved}, ${customerId})}"></div>
 
 <script th:inline="javascript">
     /*<![CDATA[*/
@@ -2885,7 +2974,7 @@
                         <h5 th:text="${ticket.name}">Ticket Name</h5>
                     </div>
                     <div class="price">
-                        <div th:if="${ticket.isSaleActive() and ticket.getSalePercentage() > 0}">
+                        <div th:if="${ticket.isSaleActive() and ticket.getSalePercentage() > 0 and ticket.finalPrice > 0}">
                             <span class="final-price"
                                   th:text="${#numbers.formatDecimal((ticket.finalPrice != null ? ticket.finalPrice : (ticket.getFinalPrice() != null ? ticket.getFinalPrice() : ticket.price)), 0, 'COMMA', 0, 'POINT')} + ' VND'">
                                 120,000 VND
@@ -2903,8 +2992,10 @@
                            class="sale-overdue" style="margin-top:6px;color:#e53935;font-weight:700;">
                             Sale Overdue
                         </p>
-                        <h2 th:if="${!ticket.isSaleActive() or ticket.getSalePercentage() == 0}"
+                        <h2 th:if="${(!ticket.isSaleActive() or ticket.getSalePercentage() == 0) and ticket.price > 0}"
                             th:text="${#numbers.formatDecimal(ticket.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">Price</h2>
+                        <h2 th:if="${ticket.price == 0 or (ticket.isSaleActive() and ticket.finalPrice == 0)}" 
+                            style="color: #4CAF50; font-weight: 700;">FREE</h2>
                         <p>
                             <span th:text="${ticket.availableQuantity}"></span> Tickets Available
                         </p>
@@ -2919,18 +3010,33 @@
                         </ul>
                     </div>
 
-                    <!-- Buy button: purchasable whenever not sold out -->
-                    <a th:if="${ticket.isSaleActive() and !ticket.isSoldOut()}"
+                    <!-- Đã mua vé: hiển thị nếu user đã mua vé -->
+                    <a th:if="${hasPurchasedTicket}"
+                       href="#"
+                       class="btn btn-common disabled"
+                       style="background-color: #4CAF50; cursor: not-allowed; color: white;">
+                        Đã mua vé
+                    </a>
+                    
+                    <!-- Buy button: purchasable whenever not sold out and not purchased -->
+                    <a th:if="${!hasPurchasedTicket and ticket.isSaleActive() and !ticket.isSoldOut() and ticket.price > 0}"
                        th:href="@{/ticket/{eventId}(eventId=${eventDetail.getId()}, selectedTicketId=${ticket.ticketTypeId})}"
                        class="btn btn-common">Buy Ticket</a>
+                    <!-- Join for Free button: for free events and not purchased -->
+                    <button th:if="${!hasPurchasedTicket and ticket.isSaleActive() and !ticket.isSoldOut() and (ticket.price == 0 or (ticket.isSaleActive() and ticket.finalPrice == 0))}"
+                            class="btn btn-common join-free-btn" 
+                            style="background: #4CAF50; border: none; cursor: pointer;"
+                            th:attr="data-event-id=${eventDetail.getId()}, data-ticket-id=${ticket.ticketTypeId}">
+                        Join for Free
+                    </button>
 
-                    <a th:if="${ticket.isSoldOut()}"
+                    <a th:if="${!hasPurchasedTicket and ticket.isSoldOut()}"
                        href="#"
                        class="btn btn-common disabled"
                        style="background-color: #ccc; cursor: not-allowed;">
                         Sold Out
                     </a>
-                    <a th:if="${!ticket.isSaleActive() and !ticket.isSoldOut()}"
+                    <a th:if="${!hasPurchasedTicket and !ticket.isSaleActive() and !ticket.isSoldOut()}"
                        href="#"
                        class="btn btn-common disabled"
                        style="background-color: #999; cursor: not-allowed;">
@@ -2944,6 +3050,36 @@
     </div>
 </section>
 <!-- Ticket Pricing Area End -->
+
+<!-- Apply Volunteer Section Start -->
+<section id="apply-volunteer" class="section-padding" th:if="${eventDetail != null}">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title-header text-center">
+                    <h1 class="section-title wow fadeInUp" data-wow-delay="0.2s">Become a Volunteer</h1>
+                    <p class="wow fadeInDown" data-wow-delay="0.2s">
+                        Join us as a volunteer and be part of this amazing event
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 col-xs-12">
+                <div class="text-center wow fadeInUp" data-wow-delay="0.3s">
+                    <p class="intro-desc mb-4">
+                        Help us make this event a success! Apply to become a volunteer and gain valuable experience while contributing to the community.
+                    </p>
+                    <a th:href="@{'/forms/volunteer/' + ${eventDetail.getId()}}"
+                       class="btn btn-outline-info btn-lg">
+                        <i class="lni-user"></i> Apply as Volunteer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Apply Volunteer Section End -->
 
 <!-- Event Guidelines Section Start -->
 <section id="event-slides" class="section-padding" th:if="${eventDetail != null}">
@@ -3268,6 +3404,140 @@
         setInterval(nextSlide, 5000); // Tự động chuyển slide mỗi 5 giây
         updateSlider(); // Khởi tạo vị trí đầu tiên
     });
+</script>
+
+<!-- Join for Free Modal -->
+<div id="joinFreeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; position: relative;">
+        <button onclick="closeJoinFreeModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        <h2 style="margin-bottom: 20px; color: #4CAF50;">Join for Free</h2>
+        <form id="joinFreeForm">
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Full Name *</label>
+                <input type="text" id="participantName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email *</label>
+                <input type="email" id="participantEmail" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone *</label>
+                <input type="tel" id="participantPhone" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Organization</label>
+                <input type="text" id="participantOrganization" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Notes</label>
+                <textarea id="participantNotes" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"></textarea>
+            </div>
+            <button type="submit" style="width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                Join Event
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentEventId = null;
+    let currentTicketId = null;
+
+    // Load user email if logged in
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/current-user')
+            .then(r => r.ok ? r.json() : {authenticated: false})
+            .then(data => {
+                if (data && data.authenticated && data.email) {
+                    document.getElementById('participantEmail').value = data.email;
+                }
+            })
+            .catch(() => {});
+    });
+
+    // Handle Join for Free button clicks
+    document.querySelectorAll('.join-free-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentEventId = this.getAttribute('data-event-id');
+            currentTicketId = this.getAttribute('data-ticket-id');
+            document.getElementById('joinFreeModal').style.display = 'flex';
+        });
+    });
+
+    function closeJoinFreeModal() {
+        document.getElementById('joinFreeModal').style.display = 'none';
+    }
+
+    // Handle form submission
+    document.getElementById('joinFreeForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+
+        try {
+            const orderData = {
+                eventId: parseInt(currentEventId),
+                ticketTypeId: parseInt(currentTicketId),
+                participantName: document.getElementById('participantName').value,
+                participantEmail: document.getElementById('participantEmail').value,
+                participantPhone: document.getElementById('participantPhone').value,
+                participantOrganization: document.getElementById('participantOrganization').value,
+                notes: document.getElementById('participantNotes').value
+            };
+
+            const orderResponse = await fetch("/api/orders/create-with-ticket-types", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(orderData)
+            });
+            const orderResult = await orderResponse.json();
+            if (!orderResult.success) throw new Error(orderResult.message || "Order creation failed");
+
+            const paymentResponse = await fetch(`/api/payments/create-for-order/${orderResult.orderId}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include"
+            });
+            const paymentResult = await paymentResponse.json();
+            
+            if (paymentResult.success && paymentResult.isFreeEvent) {
+                closeJoinFreeModal();
+                showSuccessMessage();
+            } else {
+                throw new Error(paymentResult.message || "Payment creation failed");
+            }
+        } catch (err) {
+            alert("Error: " + err.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Join Event';
+        }
+    });
+
+    function showSuccessMessage() {
+        const successMessage = `
+            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                        background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                        z-index: 10001; max-width: 500px; text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+                <h2 style="color: #4CAF50; margin-bottom: 15px;">Đăng ký thành công!</h2>
+                <p style="color: #666; margin-bottom: 25px; font-size: 16px;">
+                    Bạn đã đăng ký tham gia sự kiện này thành công.<br>
+                    Thông tin chi tiết sẽ được gửi qua email.
+                </p>
+                <button onclick="this.parentElement.parentElement.remove(); window.location.reload();" 
+                        style="background: #4CAF50; color: white; border: none; padding: 12px 30px; 
+                               border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                    Đóng
+                </button>
+            </div>
+            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                        background: rgba(0,0,0,0.5); z-index: 10000;" onclick="this.parentElement.remove()"></div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', successMessage);
+    }
 </script>
 
 </body>

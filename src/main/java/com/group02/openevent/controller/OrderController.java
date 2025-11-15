@@ -4,16 +4,9 @@ import com.group02.openevent.dto.order.CreateOrderRequest;
 import com.group02.openevent.dto.order.CreateOrderWithTicketTypeRequest;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.user.Customer;
-import com.group02.openevent.model.account.Account;
-import com.group02.openevent.repository.ICustomerRepo;
-import com.group02.openevent.repository.IAccountRepo;
-import com.group02.openevent.service.EventAttendanceService;
-import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.UserService;
 import com.group02.openevent.service.VoucherService;
-import com.group02.openevent.model.order.OrderStatus;
-import lombok.extern.slf4j.Slf4j;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -23,33 +16,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
-@Slf4j
 public class OrderController {
 
     private final OrderService orderService;
-    private final ICustomerRepo customerRepo;
-    private final IAccountRepo accountRepo;
     private final VoucherService voucherService;
     private final UserService userService;
-    private final EventService eventService;
-    private final EventAttendanceService attendanceService;
+    private final com.group02.openevent.service.VolunteerService volunteerService;
 
-    public OrderController(OrderService orderService, ICustomerRepo customerRepo, IAccountRepo accountRepo, 
-                          VoucherService voucherService, UserService userService, EventService eventService,
-                          EventAttendanceService attendanceService) {
+    public OrderController(OrderService orderService, VoucherService voucherService, UserService userService, com.group02.openevent.service.VolunteerService volunteerService) {
         this.orderService = orderService;
-        this.customerRepo = customerRepo;
-        this.accountRepo = accountRepo;
         this.voucherService = voucherService;
         this.userService = userService;
-        this.eventService = eventService;
-        this.attendanceService = attendanceService;
+        this.volunteerService = volunteerService;
     }
 
     @PostMapping
@@ -84,8 +67,16 @@ public class OrderController {
     @PostMapping("/create-with-ticket-types")
     public ResponseEntity<?> createWithTicketTypes(@Valid @RequestBody CreateOrderWithTicketTypeRequest request, HttpServletRequest httpRequest, HttpSession httpSession) {
         try {
+
+
             Customer customer = userService.getCurrentUser(httpSession).getCustomer();
-            
+            // Block if user has applied as volunteer for this event (pending/approved)
+            if (volunteerService.hasCustomerAppliedAsVolunteer(customer.getCustomerId(), request.getEventId())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Bạn đã apply tình nguyện viên cho sự kiện này, không thể mua vé"
+                ));
+            }
             // Check if customer already registered (paid) for this event
             if (orderService.hasCustomerRegisteredForEvent(customer.getCustomerId(), request.getEventId())) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -98,58 +89,32 @@ public class OrderController {
             Optional<Order> pendingOrder = orderService.getPendingOrderForEvent(customer.getCustomerId(), request.getEventId());
             if (pendingOrder.isPresent()) {
                 Order existingOrder = pendingOrder.get();
+
                 // Cancel the old pending order
                 orderService.cancelOrder(existingOrder.getOrderId());
+
+                // Log the cancellation
             }
 
-            // Kiểm tra event có miễn phí không
-            boolean isFree = eventService.isFreeEvent(request.getEventId());
-            
             Order order = orderService.createOrderWithTicketTypes(request, customer);
-            
-            if (isFree) {
-                // EVENT MIỄN PHÍ: Set status = PAID ngay và tạo EventAttendance
-                log.info("Event {} is free, setting order {} to PAID immediately", request.getEventId(), order.getOrderId());
-                order.setStatus(OrderStatus.PAID);
-                order = orderService.save(order);
-                
-                // Tự động tạo EventAttendance
-                try {
-                    attendanceService.createAttendanceFromOrder(order);
-                    log.info("EventAttendance created successfully for free event order {}", order.getOrderId());
-                } catch (Exception e) {
-                    log.error("Error creating EventAttendance for free event order {}: {}", order.getOrderId(), e.getMessage(), e);
-                    // Không fail request nếu tạo attendance thất bại
-                }
-                
-                // Return response cho free event
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "orderId", order.getOrderId(),
-                        "totalAmount", 0,
-                        "status", "PAID",
-                        "isFree", true,
-                        "message", "Đăng ký thành công! Event này miễn phí. Bạn có thể check-in khi event diễn ra."
-                ));
-            } else {
-                // EVENT CÓ PHÍ: Flow bình thường (tạo payment link)
-                Map<String, Object> response = Map.of(
-                        "success", true,
-                        "orderId", order.getOrderId(),
-                        "totalAmount", order.getTotalAmount(),
-                        "status", order.getStatus().toString(),
-                        "isFree", false
-                );
-                return ResponseEntity.ok(response);
-            }
+
+            // Return simplified response to avoid JSON serialization issues
+            Map<String, Object> response = Map.of(
+                    "success", true,
+                    "orderId", order.getOrderId(),
+                    "totalAmount", order.getTotalAmount(),
+                    "status", order.getStatus().toString()
+            );
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+
             String errorMessage = e.getMessage();
             if (errorMessage == null || errorMessage.trim().isEmpty()) {
                 errorMessage = "Order creation failed: " + e.getClass().getSimpleName();
             }
-            
-            log.error("Error creating order: {}", errorMessage, e);
+
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", errorMessage

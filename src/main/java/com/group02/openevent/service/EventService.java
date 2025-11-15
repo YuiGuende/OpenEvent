@@ -69,9 +69,4 @@ public interface EventService {
     List<EventCardDTO> searchEvents(String keyword, String type, LocalDate startDate, LocalDate endDate);
 
     long countUniqueParticipantsByEventId(Long id);
-    
-    /**
-     * Kiểm tra event có miễn phí không (tất cả ticket types có price = 0)
-     */
-    boolean isFreeEvent(Long eventId);
 }

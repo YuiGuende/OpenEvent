@@ -19,7 +19,7 @@ import java.util.List;
 public class Department {
     
     @Id
-    @Column(name = "user_id")
+    @Column(name = "department_id")
     private Long userId;
     
     @OneToOne
@@ -41,11 +41,13 @@ public class Department {
     
     // Department can create and manage events
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @Builder.Default
     private List<Event> events = new ArrayList<>();
     
     // Department can create and manage articles
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @Builder.Default
     private List<Article> articles = new ArrayList<>();
     

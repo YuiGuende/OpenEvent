@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,471 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-    <style>
-        :root {
-            --primary-orange: #ff6b35;
-            --light-orange: #fff5f2;
-            --dark-orange: #e85d2d;
-            --chart-blue: #2c7be5;
-            --sidebar-bg: #ffffff;
-            --text-dark: #1f2937;
-            --border-color: #e5e7eb;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: var(--text-dark);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 260px;
-            background: var(--sidebar-bg);
-            border-right: 2px solid var(--border-color);
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-
-        .sidebar-header {
-            padding: 24px 20px;
-            background: linear-gradient(135deg, var(--primary-orange), var(--dark-orange));
-            color: white;
-        }
-
-        .sidebar-header h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .sidebar-menu {
-            padding: 20px 0;
-        }
-
-        .menu-item {
-            padding: 12px 20px;
-            color: var(--text-dark);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border-left: 4px solid transparent;
-        }
-
-        .menu-item:hover {
-            background: var(--light-orange);
-            border-left-color: var(--primary-orange);
-        }
-
-        .menu-item.active {
-            background: var(--light-orange);
-            color: var(--primary-orange);
-            border-left-color: var(--primary-orange);
-            font-weight: 600;
-        }
-
-        .menu-item i {
-            width: 24px;
-            margin-right: 12px;
-            font-size: 18px;
-        }
-
-        .submenu {
-            display: none;
-            padding-left: 40px;
-        }
-
-        .submenu.show {
-            display: block;
-        }
-
-        .submenu-item {
-            padding: 10px 20px;
-            color: var(--text-dark);
-            text-decoration: none;
-            display: block;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .submenu-item:hover {
-            color: var(--primary-orange);
-            padding-left: 24px;
-        }
-
-        .submenu-item.active {
-            color: var(--primary-orange);
-            font-weight: 600;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 260px;
-            padding: 30px;
-            transition: margin-left 0.3s ease;
-        }
-
-        .page-header {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
-        }
-
-        .page-header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .page-header p {
-            color: #6b7280;
-            margin: 0;
-        }
-
-        /* KPI Cards */
-        .kpi-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid var(--border-color);
-            height: 100%;
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-        }
-
-        .kpi-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .kpi-card-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .kpi-card .kpi-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            background: var(--light-orange);
-            color: var(--primary-orange);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .kpi-card .kpi-title-text {
-            font-size: 14px;
-            color: #6b7280;
-            font-weight: 500;
-            line-height: 1.3;
-        }
-
-        .kpi-card h3 {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .kpi-card .kpi-subtitle {
-            color: #9ca3af;
-            font-size: 13px;
-            margin: 0;
-        }
-
-        .kpi-card .trend {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .trend.up {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .trend.down {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Chart Container */
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
-            position: relative;
-        }
-
-        .chart-container h2 {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 20px;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        .chart-wrapper.small {
-            height: 250px;
-        }
-
-        /* Chart Filters */
-        .chart-filters {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .chart-filter-btn {
-            padding: 6px 16px;
-            border: 2px solid var(--border-color);
-            background: white;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .chart-filter-btn:hover {
-            border-color: var(--primary-orange);
-            color: var(--primary-orange);
-        }
-
-        .chart-filter-btn.active {
-            background: var(--primary-orange);
-            border-color: var(--primary-orange);
-            color: white;
-        }
-
-        /* Tables */
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
-            overflow-x: auto;
-        }
-
-        .table-container h2 {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 20px;
-        }
-
-        .table {
-            margin: 0;
-        }
-
-        .table thead {
-            background: var(--light-orange);
-        }
-
-        .table thead th {
-            color: var(--text-dark);
-            font-weight: 600;
-            border: none;
-            padding: 12px;
-            border-right: 1px solid #dee2e6;
-        }
-
-        .table thead th:last-child {
-            border-right: none;
-        }
-
-        .table tbody tr {
-            transition: background 0.2s ease;
-        }
-
-        .table tbody tr:hover {
-            background: #f9fafb;
-        }
-
-        .badge {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .badge-warning {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-danger {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background: var(--primary-orange);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background: var(--dark-orange);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-        }
-
-        .btn-outline-primary {
-            color: var(--primary-orange);
-            border: 2px solid var(--primary-orange);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            background: transparent;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-primary:hover {
-            background: var(--primary-orange);
-            color: white;
-        }
-
-        /* Filters */
-        .filters {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
-
-        .filters .form-label {
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .filters .form-control, .filters .form-select {
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-        }
-
-        .filters .form-control:focus, .filters .form-select:focus {
-            border-color: var(--primary-orange);
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-        }
-
-        /* Page Navigation */
-        .page-section {
-            display: none;
-        }
-
-        .page-section.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .mobile-menu-toggle {
-                display: block;
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                z-index: 1001;
-                background: var(--primary-orange);
-                color: white;
-                border: none;
-                padding: 12px;
-                border-radius: 8px;
-                font-size: 20px;
-                cursor: pointer;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            }
-        }
-
-        .mobile-menu-toggle {
-            display: none;
-        }
-
-        /* Horizontal Rule */
-        hr {
-            border: none;
-            border-top: 2px solid var(--border-color);
-            margin: 30px 0;
-        }
-    </style>
+    <!-- Admin Dashboard CSS -->
+    <link rel="stylesheet" href="/css/admin-dashboard.css">
 </head>
 <body>
 <!-- Mobile Menu Toggle -->
@@ -518,8 +55,8 @@
     <!-- Dashboard Page -->
     <section id="dashboard" class="page-section active">
         <div class="page-header">
-            <h1>Dashboard Tổng Quan</h1>
-            <p>Theo dõi hiệu suất hoạt động của nền tảng OpenEvent</p>
+            <h1>Overview Dashboard</h1>
+            <p>Monitor OpenEvent platform performance and operations</p>
         </div>
 
         <!-- KPI Cards -->
@@ -531,11 +68,11 @@
                             <div class="kpi-icon">
                                 <i class="fas fa-dollar-sign"></i>
                             </div>
-                            <span class="kpi-title-text">Tổng Doanh Thu</span>
+                            <span class="kpi-title-text">Total Revenue</span>
                         </div>
                     </div>
                     <h3 id="totalRevenue">0</h3>
-                    <p class="kpi-subtitle">Tổng doanh thu hệ thống</p>
+                    <p class="kpi-subtitle">Total system revenue</p>
                     <span class="trend up" id="revenueTrend"><i class="fas fa-arrow-up"></i> 0%</span>
                 </div>
             </div>
@@ -546,11 +83,11 @@
                             <div class="kpi-icon">
                                 <i class="fas fa-calendar-check"></i>
                             </div>
-                            <span class="kpi-title-text">Sự Kiện Hoạt Động</span>
+                            <span class="kpi-title-text">Active Events</span>
                         </div>
                     </div>
                     <h3 id="activeEvents">0</h3>
-                    <p class="kpi-subtitle">Sự kiện đang hoạt động</p>
+                    <p class="kpi-subtitle">Currently active events</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
@@ -560,11 +97,11 @@
                             <div class="kpi-icon">
                                 <i class="fas fa-user-plus"></i>
                             </div>
-                            <span class="kpi-title-text">Người Dùng Mới</span>
+                            <span class="kpi-title-text">New Users</span>
                         </div>
                     </div>
                     <h3 id="newUsers">0</h3>
-                    <p class="kpi-subtitle">Người dùng mới (30 ngày)</p>
+                    <p class="kpi-subtitle">New users (30 days)</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
@@ -574,11 +111,11 @@
                             <div class="kpi-icon">
                                 <i class="fas fa-clock"></i>
                             </div>
-                            <span class="kpi-title-text">Yêu Cầu Chờ Duyệt</span>
+                            <span class="kpi-title-text">Pending Approval Requests</span>
                         </div>
                     </div>
                     <h3 id="pendingRequests">0</h3>
-                    <p class="kpi-subtitle">Yêu cầu chờ xử lý</p>
+                    <p class="kpi-subtitle">Requests awaiting approval</p>
                 </div>
             </div>
         </div>
@@ -590,12 +127,12 @@
             <div class="col-lg-8">
                 <div class="chart-container">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="mb-0">Xu Hướng Doanh Thu</h2>
+                        <h2 class="mb-0">Revenue Trend</h2>
                     </div>
                     <div class="chart-filters">
-                        <button class="chart-filter-btn active" onclick="filterChart('revenueOverview', 'day')">Ngày</button>
-                        <button class="chart-filter-btn" onclick="filterChart('revenueOverview', 'month')">Tháng</button>
-                        <button class="chart-filter-btn" onclick="filterChart('revenueOverview', 'year')">Năm</button>
+                        <button class="chart-filter-btn active" onclick="filterChart('revenueOverview', 'day')">Day</button>
+                        <button class="chart-filter-btn" onclick="filterChart('revenueOverview', 'month')">Month</button>
+                        <button class="chart-filter-btn" onclick="filterChart('revenueOverview', 'year')">Year</button>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="revenueOverviewChart"></canvas>
@@ -604,7 +141,7 @@
             </div>
             <div class="col-lg-4">
                 <div class="chart-container">
-                    <h2>Phân Bổ Sự Kiện Theo Loại</h2>
+                    <h2>Event Distribution by Type</h2>
                     <div class="chart-wrapper small">
                         <canvas id="eventTypeChart"></canvas>
                     </div>
@@ -615,20 +152,20 @@
         <!-- Recent Activity Table -->
         <div class="table-container">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>Hoạt Động Gần Đây</h2>
+                <h2>Recent Activity</h2>
             </div>
             <table class="table">
                 <thead>
                 <tr>
-                    <th>Thời Gian</th>
-                    <th>Người Dùng</th>
-                    <th>Hành Động</th>
-                    <th>Trạng Thái</th>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Status</th>
                 </tr>
                 </thead>
                 <tbody id="recentActivityBody">
                 <tr>
-                    <td colspan="4" class="text-center text-muted">Đang tải dữ liệu...</td>
+                    <td colspan="4" class="text-center text-muted">Loading data...</td>
                 </tr>
                 </tbody>
             </table>
@@ -638,181 +175,85 @@
     <!-- Financial Reports Page -->
     <section id="financial" class="page-section">
         <div class="page-header">
-            <h1>Báo Cáo Tài Chính</h1>
-            <p>Phân tích chi tiết doanh thu và phí dịch vụ</p>
+            <h1>Financial Reports</h1>
+            <p>Detailed analysis of revenue and service fees</p>
         </div>
 
         <hr>
 
-        <!-- Revenue Trend Chart -->
-        <div class="chart-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">Xu Hướng Doanh Thu & Phí Dịch Vụ</h2>
-                <button class="btn btn-outline-primary" onclick="exportToCSV('revenue-data')">
-                    <i class="fas fa-download"></i> Export CSV
-                </button>
+        <!-- Financial Summary KPI Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <span class="kpi-title-text">Total Revenue</span>
+                        </div>
+                    </div>
+                    <h3 id="financialTotalRevenue">0</h3>
+                    <p class="kpi-subtitle" id="financialRevenuePeriod">All time</p>
+                </div>
             </div>
-            <div class="chart-filters">
-                <button class="chart-filter-btn active" onclick="filterChart('revenueTrend', 'day')">Ngày</button>
-                <button class="chart-filter-btn" onclick="filterChart('revenueTrend', 'month')">Tháng</button>
-                <button class="chart-filter-btn" onclick="filterChart('revenueTrend', 'year')">Năm</button>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <span class="kpi-title-text">Total Orders</span>
+                        </div>
+                    </div>
+                    <h3 id="financialTotalOrders">0</h3>
+                    <p class="kpi-subtitle">Total number of orders</p>
+                </div>
             </div>
-            <div class="chart-wrapper">
-                <canvas id="revenueTrendChart"></canvas>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <span class="kpi-title-text">Average Order Value</span>
+                        </div>
+                    </div>
+                    <h3 id="financialAvgOrderValue">0</h3>
+                    <p class="kpi-subtitle">Average per order</p>
+                </div>
             </div>
-        </div>
-
-        <hr>
-
-        <!-- Host Payouts Table -->
-        <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>Thanh Toán Host Gần Đây</h2>
-                <button class="btn btn-outline-primary" onclick="exportToCSV('payout-data')">
-                    <i class="fas fa-download"></i> Export CSV
-                </button>
-            </div>
-            <table class="table" id="payout-data">
-                <thead>
-                <tr>
-                    <th>ID Host</th>
-                    <th>Tên Host</th>
-                    <th>Số Tiền</th>
-                    <th>Ngày Giao Dịch</th>
-                    <th>Trạng Thái</th>
-                </tr>
-                </thead>
-                <tbody id="payoutBody">
-                <tr>
-                    <td colspan="5" class="text-center text-muted">Đang tải dữ liệu...</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <hr>
-
-        <!-- Financial Summary Cards -->
-        <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="kpi-card">
                     <div class="kpi-card-header">
                         <div class="kpi-card-title">
                             <div class="kpi-icon">
                                 <i class="fas fa-chart-line"></i>
                             </div>
-                            <span class="kpi-title-text">Tổng Phí Dịch Vụ</span>
+                            <span class="kpi-title-text">Total Service Fees</span>
                         </div>
                     </div>
                     <h3 id="totalServiceFee">0</h3>
-                    <p class="kpi-subtitle">Tháng này</p>
+                    <p class="kpi-subtitle">Service fees collected</p>
                 </div>
             </div>
-            <div class="col-md-4">
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
                 <div class="kpi-card">
                     <div class="kpi-card-header">
                         <div class="kpi-card-title">
                             <div class="kpi-icon">
                                 <i class="fas fa-money-bill-wave"></i>
                             </div>
-                            <span class="kpi-title-text">Thanh Toán Host</span>
+                            <span class="kpi-title-text">Host Payouts</span>
                         </div>
                     </div>
                     <h3 id="totalHostPayment">0</h3>
-                    <p class="kpi-subtitle">Tổng thanh toán</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="kpi-card">
-                    <div class="kpi-card-header">
-                        <div class="kpi-card-title">
-                            <div class="kpi-icon">
-                                <i class="fas fa-percentage"></i>
-                            </div>
-                            <span class="kpi-title-text">Tỷ Lệ Phí TB</span>
-                        </div>
-                    </div>
-                    <h3 id="avgFeeRate">0%</h3>
-                    <p class="kpi-subtitle">Phí trung bình</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Event Operations Page -->
-    <section id="events" class="page-section">
-        <div class="page-header">
-            <h1>Báo Cáo Vận Hành Sự Kiện</h1>
-            <p>Phân tích hiệu suất và phân phối sự kiện</p>
-        </div>
-
-        <hr>
-
-        <!-- Event Distribution Chart -->
-        <div class="row g-4">
-            <div class="col-lg-5">
-                <div class="chart-container">
-                    <h2>Phân Phối Sự Kiện Theo Loại</h2>
-                    <div class="chart-wrapper small">
-                        <canvas id="eventDistributionChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7">
-                <div class="chart-container">
-                    <h2>Tỷ Lệ Duyệt Sự Kiện</h2>
-                    <div class="chart-wrapper">
-                        <canvas id="approvalRateChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <hr>
-
-        <!-- Top Performing Events -->
-        <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>Top 10 Sự Kiện Hiệu Suất Cao Nhất</h2>
-                <button class="btn btn-outline-primary" onclick="exportToCSV('top-events')">
-                    <i class="fas fa-download"></i> Export CSV
-                </button>
-            </div>
-            <table class="table" id="top-events">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Tên Sự Kiện</th>
-                    <th>Host</th>
-                    <th>Loại</th>
-                    <th>Vé Đã Bán</th>
-                    <th>Doanh Thu</th>
-                </tr>
-                </thead>
-                <tbody id="topEventsBody">
-                <tr>
-                    <td colspan="6" class="text-center text-muted">Đang tải dữ liệu...</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <hr>
-
-        <!-- Event Statistics -->
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="kpi-card">
-                    <div class="kpi-card-header">
-                        <div class="kpi-card-title">
-                            <div class="kpi-icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <span class="kpi-title-text">Sự Kiện Duyệt</span>
-                        </div>
-                    </div>
-                    <h3 id="approvedEvents">0</h3>
-                    <p class="kpi-subtitle">Tỷ lệ: <span id="approvedRate">0%</span></p>
+                    <p class="kpi-subtitle">Total payouts</p>
                 </div>
             </div>
             <div class="col-md-3">
@@ -820,180 +261,13 @@
                     <div class="kpi-card-header">
                         <div class="kpi-card-title">
                             <div class="kpi-icon">
-                                <i class="fas fa-times-circle"></i>
+                                <i class="fas fa-coins"></i>
                             </div>
-                            <span class="kpi-title-text">Sự Kiện Từ Chối</span>
+                            <span class="kpi-title-text">Net Profit</span>
                         </div>
                     </div>
-                    <h3 id="rejectedEvents">0</h3>
-                    <p class="kpi-subtitle">Tỷ lệ: <span id="rejectedRate">0%</span></p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="kpi-card">
-                    <div class="kpi-card-header">
-                        <div class="kpi-card-title">
-                            <div class="kpi-icon">
-                                <i class="fas fa-ticket-alt"></i>
-                            </div>
-                            <span class="kpi-title-text">Tổng Vé Bán</span>
-                        </div>
-                    </div>
-                    <h3 id="totalTicketsSold">0</h3>
-                    <p class="kpi-subtitle">Tổng vé đã bán</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="kpi-card">
-                    <div class="kpi-card-header">
-                        <div class="kpi-card-title">
-                            <div class="kpi-icon">
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <span class="kpi-title-text">Đánh Giá TB</span>
-                        </div>
-                    </div>
-                    <h3 id="avgRating">0/5.0</h3>
-                    <p class="kpi-subtitle">Đánh giá trung bình</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- User Activity Page -->
-    <section id="users" class="page-section">
-        <div class="page-header">
-            <h1>Báo Cáo Người Dùng & Hoạt Động</h1>
-            <p>Phân tích xu hướng đăng ký và lịch sử hoạt động</p>
-        </div>
-
-        <hr>
-
-        <!-- Registration Trend Chart -->
-        <div class="chart-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">Xu Hướng Đăng Ký Người Dùng</h2>
-            </div>
-            <div class="chart-filters">
-                <button class="chart-filter-btn active" onclick="filterChart('registrationTrend', 'day')">Ngày</button>
-                <button class="chart-filter-btn" onclick="filterChart('registrationTrend', 'month')">Tháng</button>
-                <button class="chart-filter-btn" onclick="filterChart('registrationTrend', 'year')">Năm</button>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="registrationTrendChart"></canvas>
-            </div>
-        </div>
-
-        <hr>
-
-        <!-- Audit Log Filters -->
-        <div class="filters">
-            <h2 class="mb-3">Bộ Lọc Audit Log</h2>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Loại Hành Động</label>
-                    <select class="form-select" id="actionTypeFilter" onchange="filterAuditLog()">
-                        <option value="">Tất cả</option>
-                        <option value="USER_CREATED">Tạo tài khoản</option>
-                        <option value="EVENT_CREATED">Tạo sự kiện</option>
-                        <option value="EVENT_APPROVED">Duyệt sự kiện</option>
-                        <option value="ORDER_CREATED">Đặt vé</option>
-                        <option value="REFUND_REQUESTED">Yêu cầu hoàn tiền</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">ID Người Dùng</label>
-                    <input type="text" class="form-control" id="userIdFilter" placeholder="Nhập ID..." onkeyup="filterAuditLog()">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Từ Ngày</label>
-                    <input type="date" class="form-control" id="fromDateFilter" onchange="filterAuditLog()">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Đến Ngày</label>
-                    <input type="date" class="form-control" id="toDateFilter" onchange="filterAuditLog()">
-                </div>
-            </div>
-            <div class="mt-3">
-                <button class="btn btn-primary" onclick="filterAuditLog()">
-                    <i class="fas fa-filter"></i> Áp Dụng Bộ Lọc
-                </button>
-                <button class="btn btn-outline-primary" onclick="resetFilters()">
-                    <i class="fas fa-redo"></i> Đặt Lại
-                </button>
-            </div>
-        </div>
-
-        <!-- Audit Log Table -->
-        <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>Lịch Sử Hoạt Động (Audit Log)</h2>
-                <button class="btn btn-outline-primary" onclick="exportToCSV('audit-log')">
-                    <i class="fas fa-download"></i> Export CSV
-                </button>
-            </div>
-            <table class="table" id="audit-log">
-                <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>ID Người Dùng</th>
-                    <th>Loại Hành Động</th>
-                    <th>Mô Tả</th>
-                    <th>IP Address</th>
-                </tr>
-                </thead>
-                <tbody id="auditLogBody">
-                <tr>
-                    <td colspan="5" class="text-center text-muted">Đang tải dữ liệu...</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <hr>
-
-        <!-- User Statistics -->
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="kpi-card">
-                    <div class="kpi-card-header">
-                        <div class="kpi-card-title">
-                            <div class="kpi-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <span class="kpi-title-text">Tổng Khách Hàng</span>
-                        </div>
-                    </div>
-                    <h3 id="totalCustomers">0</h3>
-                    <p class="kpi-subtitle">Tổng khách hàng</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="kpi-card">
-                    <div class="kpi-card-header">
-                        <div class="kpi-card-title">
-                            <div class="kpi-icon">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
-                            <span class="kpi-title-text">Tổng Host</span>
-                        </div>
-                    </div>
-                    <h3 id="totalHosts">0</h3>
-                    <p class="kpi-subtitle">Tổng host</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="kpi-card">
-                    <div class="kpi-card-header">
-                        <div class="kpi-card-title">
-                            <div class="kpi-icon">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <span class="kpi-title-text">Tỷ Lệ Giữ Chân</span>
-                        </div>
-                    </div>
-                    <h3 id="retentionRate">0%</h3>
-                    <p class="kpi-subtitle">Tỷ lệ giữ chân</p>
+                    <h3 id="financialNetProfit">0</h3>
+                    <p class="kpi-subtitle">After expenses</p>
                 </div>
             </div>
             <div class="col-md-3">
@@ -1003,420 +277,1072 @@
                             <div class="kpi-icon">
                                 <i class="fas fa-clock"></i>
                             </div>
-                            <span class="kpi-title-text">TG Hoạt Động TB</span>
+                            <span class="kpi-title-text">Pending Payments</span>
                         </div>
                     </div>
-                    <h3 id="avgActivityTime">0</h3>
-                    <p class="kpi-subtitle">phút</p>
+                    <h3 id="financialPendingPayments">0</h3>
+                    <p class="kpi-subtitle">Awaiting processing</p>
                 </div>
             </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-undo"></i>
+                            </div>
+                            <span class="kpi-title-text">Refunded Amount</span>
+                        </div>
+                    </div>
+                    <h3 id="financialRefundedAmount">0</h3>
+                    <p class="kpi-subtitle">Total refunded</p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Revenue Streams Analysis -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="chart-container">
+                    <h2>Revenue Distribution by Source</h2>
+                    <div class="chart-wrapper small">
+                        <canvas id="revenueSourceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-container">
+                    <h2>Revenue by Event Type</h2>
+                    <div class="chart-wrapper small">
+                        <canvas id="revenueByEventTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Revenue Trend Chart -->
+        <div class="chart-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">Revenue & Service Fee Trend</h2>
+                <button class="btn btn-outline-primary" onclick="exportToCSV('revenue-data')">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+            <div class="chart-filters">
+                <button class="chart-filter-btn active" onclick="filterChart('revenueTrend', 'day', this)">Day</button>
+                <button class="chart-filter-btn" onclick="filterChart('revenueTrend', 'month', this)">Month</button>
+                <button class="chart-filter-btn" onclick="filterChart('revenueTrend', 'year', this)">Year</button>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="revenueTrendChart"></canvas>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Order Management Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Order Management</h2>
+                <button class="btn btn-outline-primary" onclick="exportOrdersToCSV()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+            
+            <!-- Order Filters -->
+            <div class="filters mb-3">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="orderStatusFilter" onchange="loadOrders()">
+                            <option value="">All</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="PAID">Paid</option>
+                            <option value="CANCELLED">Cancelled</option>
+                            <option value="EXPIRED">Expired</option>
+                            <option value="REFUNDED">Refunded</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="orderFromDate" onchange="loadOrders()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="orderToDate" onchange="loadOrders()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" id="orderSearch" placeholder="ID, name, email..." onkeyup="debounceSearch('order')">
+                    </div>
+                </div>
+            </div>
+            
+            <table class="table" id="orders-table">
+                <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Event</th>
+                    <th>Ticket Type</th>
+                    <th>Quantity</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Created Date</th>
+                </tr>
+                </thead>
+                <tbody id="ordersBody">
+                <tr>
+                    <td colspan="9" class="text-center text-muted">Loading data...</td>
+                </tr>
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            <nav aria-label="Orders pagination">
+                <ul class="pagination justify-content-center" id="ordersPagination">
+                </ul>
+            </nav>
+        </div>
+
+        <hr>
+
+        <!-- Payment Transactions Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Payment Transactions</h2>
+                <button class="btn btn-outline-primary" onclick="exportPaymentsToCSV()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+            
+            <!-- Payment Filters -->
+            <div class="filters mb-3">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="paymentStatusFilter" onchange="loadPayments()">
+                            <option value="">All</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="PAID">Paid</option>
+                            <option value="CANCELLED">Cancelled</option>
+                            <option value="EXPIRED">Expired</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="paymentFromDate" onchange="loadPayments()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="paymentToDate" onchange="loadPayments()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" id="paymentSearch" placeholder="ID, Order ID, email..." onkeyup="debounceSearch('payment')">
+                    </div>
+                </div>
+            </div>
+            
+            <table class="table" id="payments-table">
+                <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Status</th>
+                    <th>Transaction ID</th>
+                    <th>Created Date</th>
+                    <th>Paid Date</th>
+                </tr>
+                </thead>
+                <tbody id="paymentsBody">
+                <tr>
+                    <td colspan="9" class="text-center text-muted">Loading data...</td>
+                </tr>
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            <nav aria-label="Payments pagination">
+                <ul class="pagination justify-content-center" id="paymentsPagination">
+                </ul>
+            </nav>
+        </div>
+
+        <hr>
+
+        <!-- Host Payouts Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Recent Host Payouts</h2>
+                <button class="btn btn-outline-primary" onclick="exportToCSV('payout-data')">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+            <table class="table" id="payout-data">
+                <thead>
+                <tr>
+                    <th>Host ID</th>
+                    <th>Host Name</th>
+                    <th>Amount</th>
+                    <th>Transaction Date</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="payoutBody">
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Loading data...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Event Operations Page -->
+    <section id="events" class="page-section">
+        <div class="page-header">
+            <h1>Event Operations Management</h1>
+            <p>Comprehensive event management and analytics</p>
+        </div>
+
+        <hr>
+
+        <!-- Pending Approval Requests -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-clock"></i> Pending Approval Requests</h2>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadPendingApprovals()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover" id="pendingApprovalsTable">
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAllPending" onchange="toggleSelectAll('pending')"></th>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Host</th>
+                        <th>Department</th>
+                        <th>Days Pending</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="pendingApprovalsBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div>
+                    <button class="btn btn-sm btn-success" onclick="bulkApproveSelected()">
+                        <i class="fas fa-check"></i> Approve Selected
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="bulkRejectSelected()">
+                        <i class="fas fa-times"></i> Reject Selected
+                    </button>
+                </div>
+                <nav id="pendingApprovalsPagination"></nav>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Event Status Management -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-list-alt"></i> Event Status Management</h2>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" id="eventStatusFilter" onchange="loadEventsByStatus()">
+                        <option value="">All Status</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="PUBLIC">Public</option>
+                        <option value="ONGOING">Ongoing</option>
+                        <option value="FINISH">Finished</option>
+                        <option value="CANCEL">Cancelled</option>
+                    </select>
+                    <select class="form-select form-select-sm" id="eventTypeFilter" onchange="loadEventsByStatus()">
+                        <option value="">All Types</option>
+                        <option value="MUSIC">Music</option>
+                        <option value="WORKSHOP">Workshop</option>
+                        <option value="COMPETITION">Competition</option>
+                        <option value="FESTIVAL">Festival</option>
+                        <option value="OTHERS">Others</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm" id="eventSearchFilter" placeholder="Search..." onkeyup="loadEventsByStatus()">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover" id="eventsByStatusTable">
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAllEvents" onchange="toggleSelectAll('events')"></th>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Department</th>
+                        <th>Start Date</th>
+                        <th>Registered</th>
+                        <th>Revenue</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="eventsByStatusBody">
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav id="eventsByStatusPagination" class="mt-2"></nav>
+        </div>
+
+        <hr>
+
+        <!-- Upcoming Events -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-calendar-alt"></i> Upcoming Events</h2>
+                <div class="d-flex gap-2 align-items-center">
+                    <label>Days:</label>
+                    <select class="form-select form-select-sm" id="upcomingDaysFilter" onchange="loadUpcomingEvents()">
+                        <option value="7">Next 7 days</option>
+                        <option value="30" selected>Next 30 days</option>
+                        <option value="60">Next 60 days</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Start Date</th>
+                        <th>Venue</th>
+                        <th>Registered/Capacity</th>
+                        <th>Fill Rate</th>
+                        <th>Department</th>
+                    </tr>
+                    </thead>
+                    <tbody id="upcomingEventsBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav id="upcomingEventsPagination" class="mt-2"></nav>
+        </div>
+
+        <hr>
+
+        <!-- Department Statistics -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-building"></i> Department Event Statistics</h2>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadDepartmentStats()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Events by Department</h3>
+                        <div class="chart-wrapper small">
+                            <canvas id="departmentEventsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Revenue by Department</h3>
+                        <div class="chart-wrapper small">
+                            <canvas id="departmentRevenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Total Events</th>
+                        <th>Active Events</th>
+                        <th>Pending Approval</th>
+                        <th>Completed</th>
+                        <th>Total Revenue</th>
+                        <th>Total Participants</th>
+                    </tr>
+                    </thead>
+                    <tbody id="departmentStatsBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Attendance Statistics -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-users"></i> Attendance & Participation Tracking</h2>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" id="attendanceEventTypeFilter" onchange="loadAttendanceStats()">
+                        <option value="">All Types</option>
+                        <option value="MUSIC">Music</option>
+                        <option value="WORKSHOP">Workshop</option>
+                        <option value="COMPETITION">Competition</option>
+                        <option value="FESTIVAL">Festival</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Attendance Rate by Event Type</h3>
+                        <div class="chart-wrapper small">
+                            <canvas id="attendanceRateChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Check-in vs No-show</h3>
+                        <div class="chart-wrapper small">
+                            <canvas id="checkinChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Start Date</th>
+                        <th>Total Registered</th>
+                        <th>Checked In</th>
+                        <th>No Show</th>
+                        <th>Attendance Rate</th>
+                    </tr>
+                    </thead>
+                    <tbody id="attendanceStatsBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav id="attendanceStatsPagination" class="mt-2"></nav>
+        </div>
+
+        <hr>
+
+        <!-- Venue Conflicts -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-exclamation-triangle"></i> Venue Conflict Detection</h2>
+                <button class="btn btn-sm btn-outline-warning" onclick="loadVenueConflicts()">
+                    <i class="fas fa-sync"></i> Check Conflicts
+                </button>
+            </div>
+            <div id="venueConflictsAlert" class="alert alert-warning" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i> <span id="conflictsCount">0</span> conflicts detected
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Venue</th>
+                        <th>Event 1</th>
+                        <th>Event 2</th>
+                        <th>Overlap Time</th>
+                        <th>Severity</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="venueConflictsBody">
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No conflicts detected</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Points Tracking -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-star"></i> Points & Learning Outcomes Tracking</h2>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" id="pointsEventTypeFilter" onchange="loadPointsTracking()">
+                        <option value="">All Types</option>
+                        <option value="MUSIC">Music</option>
+                        <option value="WORKSHOP">Workshop</option>
+                        <option value="COMPETITION">Competition</option>
+                        <option value="FESTIVAL">Festival</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Points Awarded</th>
+                        <th>Students Earned</th>
+                        <th>Total Participants</th>
+                        <th>Distribution Rate</th>
+                        <th>Learning Objectives</th>
+                    </tr>
+                    </thead>
+                    <tbody id="pointsTrackingBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav id="pointsTrackingPagination" class="mt-2"></nav>
+        </div>
+
+        <hr>
+
+        <!-- Speaker Statistics -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-microphone"></i> Speaker Management</h2>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadSpeakerStats()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Top Speakers by Events</h3>
+                        <div class="chart-wrapper small">
+                            <canvas id="speakerEventsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Speaker Performance</h3>
+                        <div class="chart-wrapper small">
+                            <canvas id="speakerPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Speaker</th>
+                        <th>Role</th>
+                        <th>Events Count</th>
+                        <th>Total Participants</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                    </thead>
+                    <tbody id="speakerStatsBody">
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Loading...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav id="speakerStatsPagination" class="mt-2"></nav>
+        </div>
+
+        <hr>
+
+        <!-- Event Performance Metrics -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span class="kpi-title-text">Registration Rate</span>
+                        </div>
+                    </div>
+                    <h3 id="registrationRate">0%</h3>
+                    <p class="kpi-subtitle">Conversion rate</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <span class="kpi-title-text">Attendance Rate</span>
+                        </div>
+                    </div>
+                    <h3 id="attendanceRateKPI">0%</h3>
+                    <p class="kpi-subtitle">Check-in rate</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <span class="kpi-title-text">Revenue per Event</span>
+                        </div>
+                    </div>
+                    <h3 id="revenuePerEvent">$0</h3>
+                    <p class="kpi-subtitle">Average revenue</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <span class="kpi-title-text">Cost per Participant</span>
+                        </div>
+                    </div>
+                    <h3 id="costPerParticipant">$0</h3>
+                    <p class="kpi-subtitle">Average cost</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Distribution Charts (Keep existing) -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <div class="chart-container">
+                    <h2>Event Distribution by Type</h2>
+                    <div class="chart-wrapper small">
+                        <canvas id="eventDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="chart-container">
+                    <h2>Event Approval Rate</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="approvalRateChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Top Performing Events (Keep existing) -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Top 10 Highest Performing Events</h2>
+                <button class="btn btn-outline-primary" onclick="exportToCSV('top-events')">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+            <table class="table" id="top-events">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Event Name</th>
+                    <th>Host</th>
+                    <th>Type</th>
+                    <th>Tickets Sold</th>
+                    <th>Revenue</th>
+                </tr>
+                </thead>
+                <tbody id="topEventsBody">
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Loading data...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <!-- Event Statistics (Keep existing) -->
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <span class="kpi-title-text">Approved Events</span>
+                        </div>
+                    </div>
+                    <h3 id="approvedEvents">0</h3>
+                    <p class="kpi-subtitle">Rate: <span id="approvedRate">0%</span></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <span class="kpi-title-text">Rejected Events</span>
+                        </div>
+                    </div>
+                    <h3 id="rejectedEvents">0</h3>
+                    <p class="kpi-subtitle">Rate: <span id="rejectedRate">0%</span></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <span class="kpi-title-text">Total Tickets Sold</span>
+                        </div>
+                    </div>
+                    <h3 id="totalTicketsSold">0</h3>
+                    <p class="kpi-subtitle">Total tickets sold</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="kpi-title-text">Average Rating</span>
+                        </div>
+                    </div>
+                    <h3 id="avgRating">0/5.0</h3>
+                    <p class="kpi-subtitle">Average rating</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Activity Page -->
+    <section id="users" class="page-section">
+        <div class="page-header">
+            <h1>User Activity Report</h1>
+            <p>Comprehensive user statistics, activity tracking, and engagement analysis</p>
+        </div>
+
+        <hr>
+
+        <!-- User Statistics KPI Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <span class="kpi-title-text">Total Users</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsTotalUsers">0</h3>
+                    <p class="kpi-subtitle">All registered users</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                            <span class="kpi-title-text">Active Users (30d)</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsActiveUsers">0</h3>
+                    <p class="kpi-subtitle">Active in last 30 days</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <span class="kpi-title-text">New This Month</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsNewUsers">0</h3>
+                    <p class="kpi-subtitle">New registrations</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span class="kpi-title-text">Retention Rate</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsRetentionRate">0%</h3>
+                    <p class="kpi-subtitle">User retention</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <span class="kpi-title-text">Daily Active (DAU)</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsDAU">0</h3>
+                    <p class="kpi-subtitle">Last 24 hours</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-calendar-week"></i>
+                            </div>
+                            <span class="kpi-title-text">Weekly Active (WAU)</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsWAU">0</h3>
+                    <p class="kpi-subtitle">Last 7 days</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <span class="kpi-title-text">Monthly Active (MAU)</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsMAU">0</h3>
+                    <p class="kpi-subtitle">Last 30 days</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-header">
+                        <div class="kpi-card-title">
+                            <div class="kpi-icon">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <span class="kpi-title-text">Total Feedback</span>
+                        </div>
+                    </div>
+                    <h3 id="userStatsFeedbackCount">0</h3>
+                    <p class="kpi-subtitle">Feedback submissions</p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Registration Trend Chart -->
+        <div class="chart-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">User Registration Trend</h2>
+            </div>
+            <div class="chart-filters">
+                <button class="chart-filter-btn active" onclick="filterChart('registrationTrend', 'day', this)">Day</button>
+                <button class="chart-filter-btn" onclick="filterChart('registrationTrend', 'month', this)">Month</button>
+                <button class="chart-filter-btn" onclick="filterChart('registrationTrend', 'year', this)">Year</button>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="registrationTrendChart"></canvas>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- User List Section -->
+        <div class="table-container mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>User List</h2>
+                <button class="btn btn-outline-primary" onclick="exportUsersToCSV()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+            
+            <!-- User List Filters -->
+            <div class="filters mb-3">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Role</label>
+                        <select class="form-select" id="userRoleFilter" onchange="window.loadUsers(0)">
+                            <option value="">All Roles</option>
+                            <option value="CUSTOMER">Customer</option>
+                            <option value="HOST">Host</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="DEPARTMENT">Department</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" id="userSearchFilter" placeholder="Name or email..." onkeyup="debounceSearchCallback(() => window.loadUsers(0))">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="userFromDateFilter" onchange="window.loadUsers(0)">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="userToDateFilter" onchange="window.loadUsers(0)">
+                    </div>
+                </div>
+            </div>
+            
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Registration Date</th>
+                    <th>Last Activity</th>
+                    <th>Total Events</th>
+                    <th>Total Orders</th>
+                    <th>Total Spent</th>
+                    <th>Points</th>
+                    <th>Feedback</th>
+                </tr>
+                </thead>
+                <tbody id="userListBody">
+                <tr>
+                    <td colspan="11" class="text-center text-muted">Loading data...</td>
+                </tr>
+                </tbody>
+            </table>
+            <div id="userListPagination" class="pagination-container"></div>
+        </div>
+
+        <hr>
+
+        <!-- Enhanced Audit Log Section -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Enhanced Activity History</h2>
+                <button class="btn btn-outline-primary" onclick="exportAuditLogsToCSV()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+            </div>
+            
+            <!-- Audit Log Filters -->
+            <div class="filters mb-3">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label">Action Type</label>
+                        <select class="form-select" id="actionTypeFilter" onchange="window.loadEnhancedAuditLogs(0)">
+                            <option value="">All</option>
+                            <option value="EVENT_CREATED">Event Created</option>
+                            <option value="EVENT_UPDATED">Event Updated</option>
+                            <option value="EVENT_CANCELLED">Event Cancelled</option>
+                            <option value="EVENT_APPROVED">Event Approved</option>
+                            <option value="USER_CREATED">User Created</option>
+                            <option value="ORDER_CREATED">Order Created</option>
+                            <option value="ORDER_AUTO_CANCELLED">Order Auto-Cancelled</option>
+                            <option value="PAYMENT_COMPLETED">Payment Completed</option>
+                            <option value="PAYMENT_AUTO_CANCELLED">Payment Auto-Cancelled</option>
+                            <option value="FEEDBACK_SUBMITTED">Feedback Submitted</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Entity Type</label>
+                        <select class="form-select" id="entityTypeFilter" onchange="window.loadEnhancedAuditLogs(0)">
+                            <option value="">All</option>
+                            <option value="EVENT">Event</option>
+                            <option value="ORDER">Order</option>
+                            <option value="PAYMENT">Payment</option>
+                            <option value="FEEDBACK">Feedback</option>
+                            <option value="USER">User</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">User ID</label>
+                        <input type="text" class="form-control" id="userIdFilter" placeholder="User ID..." onkeyup="debounceSearchCallback(() => window.loadEnhancedAuditLogs(0))">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" id="auditLogSearchFilter" placeholder="Search description..." onkeyup="debounceSearchCallback(() => window.loadEnhancedAuditLogs(0))">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="fromDateFilter" onchange="window.loadEnhancedAuditLogs(0)">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="toDateFilter" onchange="window.loadEnhancedAuditLogs(0)">
+                    </div>
+                </div>
+            </div>
+            
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Action Type</th>
+                    <th>Entity Type</th>
+                    <th>Entity Details</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody id="enhancedAuditLogBody">
+                <tr>
+                    <td colspan="7" class="text-center text-muted">Loading data...</td>
+                </tr>
+                </tbody>
+            </table>
+            <div id="enhancedAuditLogPagination" class="pagination-container"></div>
         </div>
     </section>
 </main>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    let allAuditLogs = [];
-    let chartInstances = {};
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        loadDashboardData();
-    });
-
-    // Load all dashboard data
-    function loadDashboardData() {
-        fetch('/admin/api/stats?period=month')
-            .then(response => response.json())
-            .then(data => {
-                console.log("[v0] Dashboard data loaded:", data);
-                updateKPIs(data);
-                initCharts(data);
-                loadAuditLogs();
-                loadPayoutData();
-                loadTopEvents();
-            })
-            .catch(error => console.error('Error loading dashboard data:', error));
-    }
-
-    // Update KPI Cards
-    function updateKPIs(data) {
-        document.getElementById('totalRevenue').textContent = formatCurrency(data.totalSystemRevenue);
-        document.getElementById('activeEvents').textContent = data.totalActiveEvents;
-        document.getElementById('newUsers').textContent = data.totalNewUsers;
-        document.getElementById('pendingRequests').textContent = data.pendingApprovalRequests;
-
-        const trendElement = document.getElementById('revenueTrend');
-        if (data.revenueChangePercent >= 0) {
-            trendElement.className = 'trend up';
-            trendElement.innerHTML = `<i class="fas fa-arrow-up"></i> ${data.revenueChangePercent.toFixed(1)}%`;
-        } else {
-            trendElement.className = 'trend down';
-            trendElement.innerHTML = `<i class="fas fa-arrow-down"></i> ${data.revenueChangePercent.toFixed(1)}%`;
-        }
-    }
-
-    // Initialize Charts
-    function initCharts(data) {
-        // Revenue Overview Chart
-        // Revenue Overview Chart (SỬA THÀNH BIỂU ĐỒ KẾT HỢP)
-        if (chartInstances.revenueOverview) chartInstances.revenueOverview.destroy();
-        const revenueCtx = document.getElementById('revenueOverviewChart').getContext('2d');
-        chartInstances.revenueOverview = new Chart(revenueCtx, {
-            type: 'bar', // <-- THAY ĐỔI 1: Loại biểu đồ chính là 'bar'
-            data: {
-                labels: data.revenueByMonth.map(item => item.month || item.date),
-
-                // THAY ĐỔI 2: Cấu hình lại datasets
-                datasets: [
-                    // Dataset 1: Biểu đồ CỘT
-                    {
-                        type: 'bar',
-                        label: 'Doanh thu (Cột)',
-                        data: data.revenueByMonth.map(item => item.revenue),
-                        backgroundColor: 'rgba(44, 123, 229, 0.6)', // Màu xanh cho cột (hơi nhạt)
-                        borderColor: 'rgba(44, 123, 229, 1)',
-                        borderWidth: 1
-                    },
-                    // Dataset 2: Biểu đồ ĐƯỜNG
-                    {
-                        type: 'line', // <-- Chỉ định rõ đây là 'line'
-                        label: 'Doanh thu (Đường)',
-                        data: data.revenueByMonth.map(item => item.revenue),
-                        borderColor: '#ff6b35', // Màu cam nổi bật cho đường
-                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                        borderWidth: 3, // Cho đường line đậm hơn
-                        fill: false, // Không tô màu dưới đường line
-                        tension: 0.4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: true } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        // Event Type Chart
-        if (chartInstances.eventType) chartInstances.eventType.destroy();
-        const eventTypeCtx = document.getElementById('eventTypeChart').getContext('2d');
-        const eventTypeData = data.eventsByType[0];
-        chartInstances.eventType = new Chart(eventTypeCtx, {
-            type: 'doughnut',
-            data: {
-                labels: eventTypeData.labels, // Sửa ở đây
-                datasets: [{
-                    data: eventTypeData.data, // Sửa ở đây
-                    backgroundColor: ['#2c7be5', '#00d4ff', '#0095ff', '#0066cc', '#004999', '#003366']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
-
-        // Revenue Trend Chart
-        if (chartInstances.revenueTrend) chartInstances.revenueTrend.destroy();
-        const revenueTrendCtx = document.getElementById('revenueTrendChart').getContext('2d');
-        chartInstances.revenueTrend = new Chart(revenueTrendCtx, {
-            type: 'line',
-            data: {
-                labels: data.revenueByMonth.map(item => item.month || item.date),
-                datasets: [{
-                    label: 'Doanh thu',
-                    data: data.revenueByMonth.map(item => item.revenue),
-                    borderColor: '#2c7be5',
-                    backgroundColor: 'rgba(44, 123, 229, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: true } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        // Event Distribution Chart
-        if (chartInstances.eventDist) chartInstances.eventDist.destroy();
-        const eventDistCtx = document.getElementById('eventDistributionChart').getContext('2d');
-
-        chartInstances.eventDist = new Chart(eventDistCtx, {
-            type: 'doughnut',
-            data: {
-                labels: eventTypeData.labels, // Sửa ở đây
-                datasets: [{
-                    data: eventTypeData.data, // Sửa ở đây
-                    backgroundColor: ['#2c7be5', '#00d4ff', '#0095ff', '#0066cc', '#004999', '#003366']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
-
-        // Approval Rate Chart
-        if (chartInstances.approvalRate) chartInstances.approvalRate.destroy();
-        const approvalRateCtx = document.getElementById('approvalRateChart').getContext('2d');
-        chartInstances.approvalRate = new Chart(approvalRateCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Đã duyệt', 'Từ chối', 'Đang chờ'],
-                datasets: [{
-                    label: 'Số lượng',
-                    data: [data.approvedEvents || 0, data.rejectedEvents || 0, data.pendingEvents || 0],
-                    backgroundColor: ['#2c7be5', '#dc3545', '#ffc107']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        // Registration Trend Chart
-        if (chartInstances.registration) chartInstances.registration.destroy();
-        const registrationCtx = document.getElementById('registrationTrendChart').getContext('2d');
-        chartInstances.registration = new Chart(registrationCtx, {
-            type: 'bar',
-            data: {
-                labels: data.userRegistrationTrend.map(item => item.month || item.day),
-                datasets: [{
-                    label: 'Người dùng mới',
-                    data: data.userRegistrationTrend.map(item => item.users || item.count),
-                    backgroundColor: '#2c7be5'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: true } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    }
-
-    // Load Audit Logs
-    function loadAuditLogs() {
-        fetch('/admin/api/audit-logs')
-            .then(response => response.json())
-            .then(data => {
-                allAuditLogs = data;
-                displayAuditLogs(data.slice(0, 10));
-                displayRecentActivity(data.slice(0, 4));
-            })
-            .catch(error => console.error('Error loading audit logs:', error));
-    }
-
-    // Display Audit Logs
-    function displayAuditLogs(logs) {
-        const tbody = document.getElementById('auditLogBody');
-        if (logs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = logs.map(log => `
-                <tr data-action="${log.actionType}" data-user="${log.userId}" data-date="${log.createdAt}">
-                    <td>${new Date(log.createdAt).toLocaleString('vi-VN')}</td>
-                    <td>${log.userId}</td>
-                    <td><span class="badge badge-warning">${log.actionType}</span></td>
-                    <td>${log.description}</td>
-                    <td>${log.ipAddress || 'N/A'}</td>
-                </tr>
-            `).join('');
-    }
-
-    // Display Recent Activity
-    function displayRecentActivity(logs) {
-        const tbody = document.getElementById('recentActivityBody');
-        if (logs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Không có dữ liệu</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = logs.map(log => `
-                <tr>
-                    <td>${new Date(log.createdAt).toLocaleString('vi-VN')}</td>
-                    <td>${log.userId}</td>
-                    <td>${log.description}</td>
-                    <td><span class="badge badge-success">Hoàn thành</span></td>
-                </tr>
-            `).join('');
-    }
-
-    // Load Payout Data
-    function loadPayoutData() {
-        const payoutData = [
-            { hostId: '#H2845', hostName: 'Nguyễn Văn A', amount: '145,000,000 VNĐ', date: '25/10/2025', status: 'Hoàn thành' },
-            { hostId: '#H1923', hostName: 'Trần Thị B', amount: '89,500,000 VNĐ', date: '24/10/2025', status: 'Hoàn thành' },
-            { hostId: '#H3467', hostName: 'Lê Văn C', amount: '234,000,000 VNĐ', date: '23/10/2025', status: 'Hoàn thành' },
-            { hostId: '#H5612', hostName: 'Phạm Thị D', amount: '67,800,000 VNĐ', date: '22/10/2025', status: 'Đang xử lý' },
-            { hostId: '#H7834', hostName: 'Hoàng Văn E', amount: '156,200,000 VNĐ', date: '21/10/2025', status: 'Hoàn thành' }
-        ];
-
-        const tbody = document.getElementById('payoutBody');
-        tbody.innerHTML = payoutData.map(payout => `
-                <tr>
-                    <td>${payout.hostId}</td>
-                    <td>${payout.hostName}</td>
-                    <td>${payout.amount}</td>
-                    <td>${payout.date}</td>
-                    <td><span class="badge ${payout.status === 'Hoàn thành' ? 'badge-success' : 'badge-warning'}">${payout.status}</span></td>
-                </tr>
-            `).join('');
-    }
-
-    // Load Top Events
-    function loadTopEvents() {
-        const topEvents = [
-            { rank: 1, name: 'Vietnam Tech Summit 2025', host: 'Tech Events Vietnam', type: 'Công nghệ', tickets: 2847, revenue: '856,000,000 VNĐ' },
-            { rank: 2, name: 'HCM Music Festival', host: 'Sound Wave Productions', type: 'Âm nhạc', tickets: 5234, revenue: '784,000,000 VNĐ' },
-            { rank: 3, name: 'Startup Networking Night', host: 'Innovation Hub', type: 'Kinh doanh', tickets: 1456, revenue: '437,000,000 VNĐ' }
-        ];
-
-        const tbody = document.getElementById('topEventsBody');
-        tbody.innerHTML = topEvents.map(event => `
-                <tr>
-                    <td>${event.rank}</td>
-                    <td>${event.name}</td>
-                    <td>${event.host}</td>
-                    <td>${event.type}</td>
-                    <td>${event.tickets}</td>
-                    <td>${event.revenue}</td>
-                </tr>
-            `).join('');
-    }
-
-    // Page Navigation
-    function showPage(pageId) {
-        document.querySelectorAll('.page-section').forEach(section => {
-            section.classList.remove('active');
-        });
-        document.getElementById(pageId).classList.add('active');
-
-        document.querySelectorAll('.menu-item, .submenu-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        event.target.closest('.menu-item, .submenu-item').classList.add('active');
-
-        if (window.innerWidth <= 768) {
-            document.getElementById('sidebar').classList.remove('show');
-        }
-    }
-
-    // Toggle Submenu
-    function toggleSubmenu(submenuId) {
-        const submenu = document.getElementById(submenuId + '-submenu');
-        submenu.classList.toggle('show');
-    }
-
-    // Toggle Mobile Sidebar
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('show');
-    }
-
-    // Filter Chart
-    function filterChart(chartName, period) {
-        const parentContainer = event.target.closest('.chart-container');
-        parentContainer.querySelectorAll('.chart-filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
-
-        fetch(`/admin/api/stats?period=${period}`)
-            .then(response => response.json())
-            .then(data => {
-                initCharts(data);
-            })
-            .catch(error => console.error('Error filtering chart:', error));
-    }
-
-    // Filter Audit Log
-    function filterAuditLog() {
-        const actionType = document.getElementById('actionTypeFilter').value;
-        const userId = document.getElementById('userIdFilter').value.toLowerCase();
-        const fromDate = document.getElementById('fromDateFilter').value;
-        const toDate = document.getElementById('toDateFilter').value;
-
-        let filtered = allAuditLogs;
-
-        if (actionType) {
-            filtered = filtered.filter(log => log.actionType === actionType);
-        }
-        if (userId) {
-            filtered = filtered.filter(log => log.userId.toLowerCase().includes(userId));
-        }
-        if (fromDate) {
-            filtered = filtered.filter(log => new Date(log.createdAt) >= new Date(fromDate));
-        }
-        if (toDate) {
-            filtered = filtered.filter(log => new Date(log.createdAt) <= new Date(toDate));
-        }
-
-        displayAuditLogs(filtered);
-    }
-
-    // Reset Filters
-    function resetFilters() {
-        document.getElementById('actionTypeFilter').value = '';
-        document.getElementById('userIdFilter').value = '';
-        document.getElementById('fromDateFilter').value = '';
-        document.getElementById('toDateFilter').value = '';
-        displayAuditLogs(allAuditLogs.slice(0, 10));
-    }
-
-    // Export to CSV
-    function exportToCSV(tableId) {
-        const table = document.getElementById(tableId);
-        if (!table) {
-            alert('Xuất dữ liệu thành công! (Demo)');
-            return;
-        }
-
-        let csv = [];
-        const rows = table.querySelectorAll('tr');
-
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('td, th');
-            const csvRow = Array.from(cols).map(col => col.innerText).join(',');
-            csv.push(csvRow);
-        });
-
-        const csvContent = csv.join('\n');
-        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', tableId + '-export.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // Format Currency
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-            minimumFractionDigits: 0
-        }).format(value);
-    }
-</script>
+<!-- Admin Dashboard JavaScript -->
+<script src="/js/admin-dashboard.js"></script>
 </body>
 </html>

@@ -17,8 +17,6 @@ import java.util.Optional;
 
 public interface DepartmentService {
 
-    Department getDepartmentByAccountId(Long accountId);
-
     Department saveDepartment(Department department);
 
     DepartmentStatsDTO getDepartmentStats(Long departmentId);
@@ -28,7 +26,6 @@ public interface DepartmentService {
     Map<String, Object> getEventsByType(Long departmentId);
 
     Map<String, Object> getParticipantsTrend(Long departmentId);
-
 
     Map<String, Object> getRevenueTrend(Long departmentId);
 

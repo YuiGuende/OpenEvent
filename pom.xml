@@ -52,6 +52,11 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
@@ -201,10 +206,17 @@
             <artifactId>regions</artifactId>
             <version>2.20.0</version>
         </dependency>
+        <!-- Apache HttpClient cho AWS SDK -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>http-client-url-connection</artifactId>
+            <artifactId>apache-client</artifactId>
             <version>2.20.0</version>
+        </dependency>
+        <!-- Apache HttpClient 4.x cho AWS SDK (required by apache-client) -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
         </dependency>
 
         <dependency>

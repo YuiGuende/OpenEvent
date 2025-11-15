@@ -2,32 +2,32 @@
 <div th:fragment="content">
     <div class="page-header">
         <div class="breadcrumbs">
-            <span class="link" data-link="host" style="cursor:pointer">Bảng điều khiển</span>
+            <span class="link" data-link="host" style="cursor:pointer">Dashboard</span>
             <i class="fas fa-chevron-right"></i>
-            <span>Sự kiện</span>
+            <span>Events</span>
         </div>
         <div class="header-content">
-            <h1 class="page-title">Sự kiện</h1>
+            <h1 class="page-title">Events</h1>
             <button class="btn-share">
                 <i class="fas fa-share-alt"></i>
-                <span>Chia sẻ</span>
+                <span>Share</span>
             </button>
         </div>
     </div>
 
     <div class="event-search-bar">
         <input type="text" id="eventSearchInput" class="event-search-input" 
-               placeholder="Tìm kiếm theo tên sự kiện"
+               placeholder="Search by event name"
                th:value="${searchValue}"/>
         <select id="eventSortFilter" class="event-search-select">
-            <option value="">Tất cả</option>
-            <option value="ONGOING" th:selected="${sortFilterValue == 'ONGOING'}">Đang diễn ra</option>
-            <option value="UPCOMING" th:selected="${sortFilterValue == 'UPCOMING'}">Sắp diễn ra</option>
-            <option value="FINISHED" th:selected="${sortFilterValue == 'FINISHED'}">Đã kết thúc</option>
+            <option value="">All</option>
+            <option value="ONGOING" th:selected="${sortFilterValue == 'ONGOING'}">Ongoing</option>
+            <option value="UPCOMING" th:selected="${sortFilterValue == 'UPCOMING'}">Upcoming</option>
+            <option value="FINISHED" th:selected="${sortFilterValue == 'FINISHED'}">Finished</option>
             <option value="OLDEST_FIRST" th:selected="${sortFilterValue == 'OLDEST_FIRST'}">Oldest first</option>
         </select>
         <button class="btn-create-event">
-            <i class="fas fa-calendar-plus"></i> Tạo sự kiện
+            <i class="fas fa-calendar-plus"></i> Create Event
         </button>
     </div>
 
@@ -39,10 +39,10 @@
             <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
             <p style="font-size: 18px; margin: 0;">
                 <span th:if="${(searchValue != null && !searchValue.isEmpty()) || (sortFilterValue != null && !sortFilterValue.isEmpty() && sortFilterValue != '')}">
-                    Không tìm thấy sự kiện phù hợp với bộ lọc của bạn
+                    No events found matching your filters
                 </span>
                 <span th:unless="${(searchValue != null && !searchValue.isEmpty()) || (sortFilterValue != null && !sortFilterValue.isEmpty() && sortFilterValue != '')}">
-                    Bạn chưa có sự kiện nào. Hãy tạo sự kiện đầu tiên!
+                    You don't have any events yet. Create your first event!
                 </span>
             </p>
         </div>
@@ -54,20 +54,20 @@
                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='100%25' height='100%25' fill='%236f42c1'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Segoe UI' font-size='12'%3EEvent%3C/text%3E%3C/svg%3E">
             </div>
             <div class="event-details">
-                <h3 class="event-title" th:text="${event.title}">Tên Sự Kiện</h3>
+                <h3 class="event-title" th:text="${event.title}">Event Name</h3>
 
-                <p class="event-subtitle" th:text="${event.eventType}">Loại Sự Kiện</p>
+                <p class="event-subtitle" th:text="${event.eventType}">Event Type</p>
 
                 <div class="event-info">
                     <div class="date-time-group">
-                        <span class="date-label">Bắt đầu:</span>
+                        <span class="date-label">Start:</span>
                         <span class="date-box" th:text="${#temporals.format(event.startsAt, 'MMM dd')}"></span>
                         <span class="time"
                               th:text="|${#temporals.format(event.startsAt, 'h:mm a')}|"></span>
                     </div>
 
                     <div class="date-time-group">
-                        <span class="date-label">Kết thúc:</span>
+                        <span class="date-label">End:</span>
                         <span class="date-box" th:text="${#temporals.format(event.endsAt, 'MMM dd')}"></span>
                         <span class="time"
                               th:text="|${#temporals.format(event.endsAt, 'h:mm a')}|"></span>
@@ -77,11 +77,11 @@
                     <!-- CANCEL và FINISH: Luôn hiển thị trạng thái từ DB (không phụ thuộc thời gian) -->
                     <span th:if="${event.status.name() == 'CANCEL'}" 
                           class="status-badge cancel"
-                          th:text="'ĐÃ HỦY'">ĐÃ HỦY</span>
+                          th:text="'CANCELLED'">CANCELLED</span>
                     
                     <span th:if="${event.status.name() == 'FINISH'}" 
                           class="status-badge finished"
-                          th:text="'KẾT THÚC'">KẾT THÚC</span>
+                          th:text="'FINISHED'">FINISHED</span>
                     
                     <!-- Với các status khác (DRAFT, PUBLIC, ONGOING): So sánh với thời gian thực -->
                     <th:block th:if="${event.status.name() != 'CANCEL' && event.status.name() != 'FINISH'}">
@@ -90,36 +90,36 @@
                             <!-- Event đã kết thúc: endsAt < currentTime -->
                             <span th:if="${event.endsAt.isBefore(currentTime)}" 
                                   class="status-badge finished"
-                                  th:text="'KẾT THÚC'">KẾT THÚC</span>
+                                  th:text="'FINISHED'">FINISHED</span>
                             
                             <!-- Event sắp diễn ra: startsAt > currentTime -->
                             <span th:if="${(event.endsAt.isAfter(currentTime) || event.endsAt.isEqual(currentTime)) and event.startsAt.isAfter(currentTime)}" 
                                   class="status-badge upcoming"
                                   th:text="${event.status.name() == 'PUBLIC' 
-                                             ? 'PUBLIC • SẮP TỚI' 
-                                             : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                                             ? 'PUBLIC • UPCOMING' 
+                                             : 'DRAFT • UPCOMING'}">UPCOMING</span>
                             
                             <!-- Event đang diễn ra: startsAt <= currentTime <= endsAt -->
                             <span th:if="${(event.endsAt.isAfter(currentTime) || event.endsAt.isEqual(currentTime)) 
                                            and (event.startsAt.isBefore(currentTime) || event.startsAt.isEqual(currentTime))}" 
                                   class="status-badge live"
                                   th:text="${event.status.name() == 'PUBLIC' || event.status.name() == 'ONGOING' 
-                                             ? 'LIVE • ĐANG DIỄN RA' 
-                                             : 'DRAFT • ĐANG DIỄN RA'}">ĐANG DIỄN RA</span>
+                                             ? 'LIVE • ONGOING' 
+                                             : 'DRAFT • ONGOING'}">ONGOING</span>
                         </th:block>
                         
                         <!-- Fallback: Nếu thiếu thông tin thời gian, hiển thị dựa vào status từ DB -->
                         <span th:if="${event.startsAt == null || event.endsAt == null}" 
                               class="status-badge draft"
                               th:text="${event.status.name() == 'PUBLIC' 
-                                         ? 'PUBLIC • SẮP TỚI' 
-                                         : 'DRAFT • SẮP TỚI'}">SẮP TỚI</span>
+                                         ? 'PUBLIC • UPCOMING' 
+                                         : 'DRAFT • UPCOMING'}">UPCOMING</span>
                     </th:block>
                 </div>
 
                 <div class="event-sales">
                     <i class="fas fa-users"></i>
-                    <span th:text="|0 đã bán|">0 đã bán</span>
+                    <span th:text="|${ticketsSoldMap != null && ticketsSoldMap.containsKey(event.id) ? ticketsSoldMap.get(event.id) : 0} sold|">0 sold</span>
                 </div>
             </div>
             <div class="event-actions">
@@ -136,12 +136,12 @@
                                          event.eventType.name() == 'COMPETITION' ? '/competition/' + event.id : 
                                          event.eventType.name() == 'FESTIVAL' ? '/festival/' + event.id : 
                                          '/event/' + event.id}">
-                                <i class="far fa-eye"></i> Xem trang sự kiện
+                                <i class="far fa-eye"></i> View Event Page
                             </a>
                         </li>
                         <li>
                             <a th:href="@{'/manage/event/' + ${event.id}+'/getting-stared'}">
-                                <i class="fas fa-cog"></i> Quản lý sự kiện
+                                <i class="fas fa-cog"></i> Manage Event
                             </a>
                         </li>
                         <li>
@@ -152,7 +152,7 @@
                         <li>
                             <a href="#" class="delete-event-action" 
                                th:attr="data-event-id=${event.id}, data-event-title=${event.title}">
-                                <i class="fas fa-trash-alt"></i> Xóa sự kiện
+                                <i class="fas fa-trash-alt"></i> Delete Event
                             </a>
                         </li>
                     </ul>
@@ -166,39 +166,39 @@
         <div class="modal-content">
             <span class="close">&times;</span>
 
-            <h2>✨ Tạo sự kiện của bạn</h2>
-            <p class="subtitle">Hãy cho chúng tôi biết về sự kiện của bạn</p>
+            <h2>✨ Create Your Event</h2>
+            <p class="subtitle">Tell us about your event</p>
 
             <form th:action="@{/api/events/saveEvent}" th:object="${eventForm}" method="post">
-                <label>Tên sự kiện *</label>
-                <input type="text" th:field="*{title}" placeholder="Nhập tên sự kiện">
+                <label>Event Name *</label>
+                <input type="text" th:field="*{title}" placeholder="Enter event name">
 
-                <label>Thể loại sự kiện</label>
+                <label>Event Type</label>
                 <select th:field="*{eventType}">
                     <option th:each="p : ${listTypeEvent}" th:value="${p}" th:text="${p}"></option>
                 </select>
 
-                <label>Mô tả sự kiện</label>
+                <label>Event Description</label>
                 <textarea th:field="*{description}"
-                          placeholder="Hãy cho mọi người biết điều gì sẽ có tại sự kiện..."></textarea>
+                          placeholder="Tell everyone what will be at the event..."></textarea>
 
                 <div>
-                    <label>Hạn đăng ký sự kiện</label>
+                    <label>Event Registration Deadline</label>
                     <input th:field="*{enrollDeadline}" type="datetime-local">
                 </div>
 
                 <div class="date-time">
                     <div>
-                        <label>Ngày & giờ bắt đầu *</label>
+                        <label>Start Date & Time *</label>
                         <input name="" th:field="*{startsAt}" type="datetime-local">
                     </div>
                     <div>
-                        <label>Ngày & giờ kết thúc</label>
+                        <label>End Date & Time</label>
                         <input th:field="*{endsAt}" type="datetime-local">
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn">📅 Tiếp tục thiết lập</button>
+                <button type="submit" class="submit-btn">📅 Continue Setup</button>
             </form>
         </div>
     </div>
@@ -219,7 +219,7 @@
                     event.stopImmediatePropagation();
                     
                     const eventId = deleteLink.getAttribute('data-event-id');
-                    const eventTitle = deleteLink.getAttribute('data-event-title') || 'sự kiện này';
+                    const eventTitle = deleteLink.getAttribute('data-event-title') || 'this event';
                     
                     // Close dropdown
                     const dropdownMenu = deleteLink.closest('.dropdown-menu');
@@ -228,7 +228,7 @@
                     }
                     
                     // Show confirmation dialog
-                    if (confirm('Bạn có chắc chắn muốn xóa sự kiện "' + eventTitle + '" không?\n\nHành động này không thể hoàn tác!')) {
+                    if (confirm('Are you sure you want to delete the event "' + eventTitle + '"?\n\nThis action cannot be undone!')) {
                         deleteEvent(eventId, deleteLink);
                     }
                 });
@@ -246,7 +246,7 @@
                 
                 // Show loading state
                 const originalHTML = deleteLink.innerHTML;
-                deleteLink.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xóa...';
+                deleteLink.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
                 deleteLink.style.pointerEvents = 'none';
                 deleteLink.style.opacity = '0.6';
                 
@@ -259,14 +259,14 @@
                 .then(response => {
                     if (!response.ok) {
                         return response.json().then(data => {
-                            throw new Error(data.message || 'Không thể xóa sự kiện');
+                            throw new Error(data.message || 'Unable to delete event');
                         });
                     }
                     return response.json();
                 })
                 .then(data => {
                     // Show success message
-                    alert('Đã xóa sự kiện thành công!');
+                    alert('Event deleted successfully!');
                     
                     // Remove event card from DOM with animation
                     if (eventCard) {
@@ -289,7 +289,7 @@
                                             <div class="events-empty" style="text-align: center; padding: 60px 20px; color: #999;">
                                                 <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
                                                 <p style="font-size: 18px; margin: 0;">
-                                                    Bạn chưa có sự kiện nào. Hãy tạo sự kiện đầu tiên!
+                                                    You don't have any events yet. Create your first event!
                                                 </p>
                                             </div>
                                         `;
@@ -309,7 +309,7 @@
                 })
                 .catch(error => {
                     console.error('Error deleting event:', error);
-                    alert('Lỗi: ' + error.message);
+                    alert('Error: ' + error.message);
                     
                     // Restore original button state
                     deleteLink.innerHTML = originalHTML;

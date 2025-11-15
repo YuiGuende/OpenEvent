@@ -5,6 +5,7 @@ import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.service.OrderService;
+import com.group02.openevent.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,10 +22,12 @@ public class UserOrderController {
 
     private final OrderService orderService;
     private final ICustomerRepo customerRepo;
+    private final UserService userService;
 
-    public UserOrderController(OrderService orderService, ICustomerRepo customerRepo) {
+    public UserOrderController(OrderService orderService, ICustomerRepo customerRepo, UserService userService) {
         this.orderService = orderService;
         this.customerRepo = customerRepo;
+        this.userService = userService;
     }
 
     /**
@@ -36,17 +39,7 @@ public class UserOrderController {
             @RequestParam(required = false) OrderStatus status,
             Model model) {
 
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
-            return "redirect:/login";
-        }
-
-        Customer customer = customerRepo.findByUser_Account_AccountId(accountId)
-                .orElse(null);
-        if (customer == null) {
-            model.addAttribute("error", "Customer not found");
-            return "error/404";
-        }
+        Customer customer = userService.getCurrentUser(session).getCustomer();
 
         List<UserOrderDTO> orders = orderService.getOrderDTOsByCustomer(customer, status);
 
@@ -74,16 +67,7 @@ public class UserOrderController {
             HttpSession session,
             Model model) {
 
-        Long accountId = (Long) session.getAttribute("ACCOUNT_ID");
-        if (accountId == null) {
-            return "redirect:/login";
-        }
-
-        Customer customer = customerRepo.findByUser_Account_AccountId(accountId).orElse(null);
-        if (customer == null) {
-            model.addAttribute("error", "Customer not found");
-            return "error/404";
-        }
+        Customer customer = userService.getCurrentUser(session).getCustomer();
 
         var orderOpt = orderService.getById(orderId);
         if (orderOpt.isEmpty()) {

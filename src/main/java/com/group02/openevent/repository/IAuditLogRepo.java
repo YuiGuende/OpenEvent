@@ -26,4 +26,7 @@ public interface IAuditLogRepo extends JpaRepository<AuditLog, Long> {
     
     @Query("SELECT a FROM AuditLog a WHERE a.createdAt >= :date ORDER BY a.createdAt DESC")
     List<AuditLog> findRecentAuditLogs(@Param("date") LocalDateTime date);
+    
+    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.actionType = :actionType AND a.createdAt >= :startDate AND a.createdAt < :endDate")
+    Long countByActionTypeAndDateRange(@Param("actionType") String actionType, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

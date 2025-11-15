@@ -20,20 +20,12 @@
         </button>
     </div>
     <div class="header-center">
-        <div class="live-status">
-            <i class="fas fa-broadcast"></i>
-            <span>Trực tiếp - Nhấp để gỡ bỏ</span>
-        </div>
     </div>
     <div class="header-right">
         <a th:href="@{/}" class="btn btn-homepage">
             <i class="fas fa-home"></i>
-            <span>Về trang chủ</span>
+            <span>Back to home page</span>
         </a>
-        <button class="btn-view-homepage">
-            <i class="fas fa-external-link-alt"></i>
-            <span>Xem trang chủ nhà tổ chức</span>
-        </button>
         <div class="customer-avatar" id="userAvatar">DL</div>
         <span class="user-name d-none d-md-inline" id="userName" style="margin-left: 8px; color: white; font-weight: 500;"></span>
     </div>
@@ -48,13 +40,6 @@
         </a>
     </div>
 
-    <div class="sidebar-status">
-        <div class="status-badge">
-            <i class="fas fa-broadcast"></i>
-            <span>Trực tiếp</span>
-            <small>Nhập để gỡ bỏ</small>
-        </div>
-    </div>
 
     <nav class="nav-menu">
         <div class="nav-section">
@@ -62,44 +47,44 @@
             <ul class="nav-list">
                 <li class="nav-item active" id="nav-host">
                     <i class="fas fa-tachometer-alt"></i>
-                    <span>Bảng điều khiển nhà tổ chức</span>
+                    <span>Organizer Dashboard</span>
                 </li>
             </ul>
         </div>
 
         <div class="nav-section">
-            <h3 class="nav-title">QUẢN LÝ</h3>
+            <h3 class="nav-title"> MANAGE</h3>
             <ul class="nav-list">
                 <li class="nav-item" id="nav-events" >
                     <i class="fas fa-calendar"></i>
-                    <span>Sự kiện</span>
+                    <span>Event</span>
                 </li>
                 <li class="nav-item" id="nav-request">
                     <i class="fas fa-paper-plane"></i>
-                    <span>Yêu cầu duyệt</span>
+                    <span>Request approval</span>
                 </li>
 
                 <li class="nav-item" id="nav-wallet">
                     <i class="fas fa-wallet"></i>
-                    <span>Ví</span>
+                    <span>Wallet</span>
                 </li>
 
-                <li class="nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Cài đặt</span>
-                </li>
+<!--                <li class="nav-item">-->
+<!--                    <i class="fas fa-cog"></i>-->
+<!--                    <span>Cài đặt</span>-->
+<!--                </li>-->
             </ul>
         </div>
 
-        <div class="nav-section">
-            <h3 class="nav-title">CÔNG CỤ</h3>
-            <ul class="nav-list">
-                <li class="nav-item">
-                    <i class="fas fa-wrench"></i>
-                    <span>Thiết kế trang sự kiện</span>
-                </li>
-            </ul>
-        </div>
+<!--        <div class="nav-section">-->
+<!--            <h3 class="nav-title">CÔNG CỤ</h3>-->
+<!--            <ul class="nav-list">-->
+<!--                <li class="nav-item">-->
+<!--                    <i class="fas fa-wrench"></i>-->
+<!--                    <span>Thiết kế trang sự kiện</span>-->
+<!--                </li>-->
+<!--            </ul>-->
+<!--        </div>-->
     </nav>
 
     <div class="sidebar-footer">
@@ -109,7 +94,7 @@
         <div class="url-info">https://app.Open.events/manage/events</div>
     </div>
 </aside>
-    <!-- Nội dung sẽ thay đổi -->
+    <!-- Content will change -->
 <main class="main-content">
     <div th:replace="~{__${content}__}"></div>
 </main>
@@ -125,7 +110,7 @@
             .catch(err => console.error(err));
     }
     
-    // Load and display user name
+    // Load and display user name and avatar
     function loadUserName() {
         fetch('/api/current-user')
             .then(response => response.json())
@@ -140,9 +125,18 @@
                     }
                     
                     if (userAvatarEl) {
-                        // Get first letter of name for avatar
-                        const initial = data.name.charAt(0).toUpperCase();
-                        userAvatarEl.textContent = initial;
+                        // If avatar URL exists, display image; otherwise show initial letter
+                        if (data.avatar && data.avatar.trim() !== '') {
+                            userAvatarEl.style.backgroundImage = `url(${data.avatar})`;
+                            userAvatarEl.style.backgroundSize = 'cover';
+                            userAvatarEl.style.backgroundPosition = 'center';
+                            userAvatarEl.textContent = '';
+                        } else {
+                            // Get first letter of name for avatar
+                            const initial = data.name.charAt(0).toUpperCase();
+                            userAvatarEl.textContent = initial;
+                            userAvatarEl.style.backgroundImage = '';
+                        }
                     }
                 }
             })

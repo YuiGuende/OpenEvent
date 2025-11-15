@@ -179,9 +179,18 @@ class DashboardStats {
         const checkInData = this.statsData.totalCheckIn || 0
         const notCheckInData = (this.statsData.totalTicketsSold || 0) - checkInData
         
-        // Nếu không có dữ liệu, hiển thị dữ liệu mẫu
-        const finalCheckInData = checkInData === 0 && notCheckInData === 0 ? 1 : checkInData
-        const finalNotCheckInData = checkInData === 0 && notCheckInData === 0 ? 1 : notCheckInData
+        // Nếu không có dữ liệu, không render chart
+        if (checkInData === 0 && notCheckInData === 0) {
+            console.log('⚠️ No check-in data available, skipping chart render')
+            const chartElement = document.querySelector("#checkInPieChart")
+            if (chartElement) {
+                chartElement.innerHTML = '<div class="text-center text-muted p-4">Chưa có dữ liệu check-in</div>'
+            }
+            return
+        }
+        
+        const finalCheckInData = checkInData
+        const finalNotCheckInData = notCheckInData
         
         console.log('📈 Chart Data:', { 
             original: { checkInData, notCheckInData },
@@ -214,9 +223,7 @@ class DashboardStats {
                     }
                 }]
             },
-            labels: checkInData === 0 && notCheckInData === 0 ? 
-                ['Chưa có dữ liệu', 'Chưa có dữ liệu'] : 
-                ['Đã Check-in', 'Chưa Check-in'],
+            labels: ['Đã Check-in', 'Chưa Check-in'],
             colors: ['#10B981', '#E5E7EB'],
                     legend: {
                 position: 'bottom',
@@ -374,10 +381,14 @@ class DashboardStats {
             }
         })
 
-        // Nếu không có dữ liệu, hiển thị thông báo
+        // Nếu không có dữ liệu, không render chart
         if (data.length === 0) {
-            labels.push("Không có dữ liệu")
-            data.push(1)
+            console.log('⚠️ No revenue data available, skipping chart render')
+            const chartElement = document.querySelector("#revenueByTypeChart")
+            if (chartElement) {
+                chartElement.innerHTML = '<div class="text-center text-muted p-4">Chưa có dữ liệu doanh thu</div>'
+            }
+            return
         }
 
         const options = {
@@ -454,10 +465,14 @@ class DashboardStats {
             }
         })
 
-        // Nếu không có dữ liệu, hiển thị thông báo
+        // Nếu không có dữ liệu, không render chart
         if (revenueData.length === 0) {
-            labels.push("Không có dữ liệu")
-            revenueData.push(0)
+            console.log('⚠️ No revenue data available, skipping chart render')
+            const chartElement = document.querySelector("#revenueBarChart")
+            if (chartElement) {
+                chartElement.innerHTML = '<div class="text-center text-muted p-4">Chưa có dữ liệu doanh thu</div>'
+            }
+            return
         }
 
         const options = {
@@ -562,7 +577,7 @@ class DashboardStats {
             return
         }
 
-        // Sử dụng dữ liệu thực từ API nếu có, nếu không thì dùng dữ liệu mẫu
+        // Sử dụng dữ liệu thực từ API
         let dates = []
         let revenueData = []
         let orderCountData = []
@@ -575,16 +590,13 @@ class DashboardStats {
                 orderCountData.push(dailyStat.ordersCount)
             })
         } else {
-            // Tạo dữ liệu mẫu cho 7 ngày gần nhất
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date()
-                date.setDate(date.getDate() - i)
-                dates.push(date.toLocaleDateString('vi-VN'))
-                
-                // Dữ liệu mẫu - trong thực tế sẽ lấy từ API
-                revenueData.push(Math.floor(Math.random() * 5000000) + 1000000)
-                orderCountData.push(Math.floor(Math.random() * 50) + 10)
+            // Nếu không có dữ liệu, không render chart
+            console.log('⚠️ No daily stats data available, skipping combo chart render')
+            const chartElement = document.querySelector("#comboChart")
+            if (chartElement) {
+                chartElement.innerHTML = '<div class="text-center text-muted p-4">Chưa có dữ liệu thống kê theo ngày</div>'
             }
+            return
         }
 
         const options = {
@@ -678,7 +690,7 @@ class DashboardStats {
             return
         }
 
-        // Sử dụng dữ liệu thực từ API nếu có, nếu không thì dùng dữ liệu mẫu
+        // Sử dụng dữ liệu thực từ API
         let dates = []
         let revenueData = []
         let ticketData = []
@@ -691,16 +703,13 @@ class DashboardStats {
                 ticketData.push(dailyStat.ticketsSold)
             })
         } else {
-            // Tạo dữ liệu mẫu cho 7 ngày gần nhất
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date()
-                date.setDate(date.getDate() - i)
-                dates.push(date.toLocaleDateString('vi-VN'))
-                
-                // Dữ liệu mẫu - trong thực tế sẽ lấy từ API
-                revenueData.push(Math.floor(Math.random() * 3000000) + 500000)
-                ticketData.push(Math.floor(Math.random() * 30) + 5)
+            // Nếu không có dữ liệu, không render chart
+            console.log('⚠️ No daily stats data available, skipping area chart render')
+            const chartElement = document.querySelector("#areaChart")
+            if (chartElement) {
+                chartElement.innerHTML = '<div class="text-center text-muted p-4">Chưa có dữ liệu thống kê theo ngày</div>'
             }
+            return
         }
 
         const options = {

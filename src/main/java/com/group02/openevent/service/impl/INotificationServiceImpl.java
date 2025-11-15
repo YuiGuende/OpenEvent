@@ -10,11 +10,13 @@ import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.INotificationRepo;
 import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.event.NotificationCreatedEvent;
 import com.group02.openevent.service.INotificationService;
 import com.group02.openevent.service.UserService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 
@@ -31,11 +33,14 @@ public class INotificationServiceImpl implements INotificationService {
 
     private IEventRepo eventRepo;
 
-    public INotificationServiceImpl(IOrderRepo orderRepo, INotificationRepo iNotificationRepo, IEventRepo eventRepo, UserService userService) {
+    private final ApplicationEventPublisher eventPublisher;
+
+    public INotificationServiceImpl(IOrderRepo orderRepo, INotificationRepo iNotificationRepo, IEventRepo eventRepo, UserService userService, ApplicationEventPublisher eventPublisher) {
         this.orderRepo = orderRepo;
         this.iNotificationRepo = iNotificationRepo;
         this.eventRepo = eventRepo;
         this.userService = userService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -74,6 +79,20 @@ public class INotificationServiceImpl implements INotificationService {
         notification.setType(NotificationType.HOST_TO_CUSTOMER);
 
         // 6. Lưu Notification (Notification đã có sẵn các thông tin cơ bản: sender, message, type, event)
-        return iNotificationRepo.save(notification);
+        Notification savedNotification = iNotificationRepo.save(notification);
+        
+        // 7. Publish NotificationCreatedEvent for audit log (only if notification was saved successfully)
+        try {
+            Long actorId = savedNotification.getSender() != null 
+                    ? savedNotification.getSender().getUserId() 
+                    : null;
+            if (actorId != null) {
+                eventPublisher.publishEvent(new NotificationCreatedEvent(this, savedNotification, actorId));
+            }
+        } catch (Exception e) {
+            logger.error("Error publishing NotificationCreatedEvent: {}", e.getMessage(), e);
+        }
+        
+        return savedNotification;
     }
 }

@@ -525,6 +525,30 @@ public class EventChatServiceImpl implements EventChatService {
         participant.setUser(volunteerUser);
         participantRepo.save(participant);
     }
+
+    @Override
+    @Transactional
+    public void addParticipantToRoom(Long roomId, Long userId) {
+        EventChatRoom room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat room not found: " + roomId));
+        
+        User user = userService.getUserById(userId);
+        
+        // Kiểm tra đã tham gia chưa
+        Optional<EventChatRoomParticipant> existing = participantRepo.findByRoomIdAndUserId(roomId, userId);
+        if (existing.isPresent()) {
+            log.debug("User {} already a participant of room {}", userId, roomId);
+            return; // Đã tham gia rồi
+        }
+        
+        EventChatRoomParticipant participant = new EventChatRoomParticipant();
+        participant.setRoom(room);
+        participant.setUser(user);
+        participantRepo.save(participant);
+        
+        log.info("Added user {} to room {} (event: {})", userId, roomId, 
+                room.getEvent() != null ? room.getEvent().getId() : "N/A");
+    }
 }
 
 

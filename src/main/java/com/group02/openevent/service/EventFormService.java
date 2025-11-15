@@ -1,10 +1,6 @@
 package com.group02.openevent.service;
 
-import com.group02.openevent.dto.form.CreateFormRequest;
-import com.group02.openevent.dto.form.EventFormDTO;
-import com.group02.openevent.dto.form.FormQuestionDTO;
-import com.group02.openevent.dto.form.FormResponseDTO;
-import com.group02.openevent.dto.form.SubmitResponseRequest;
+import com.group02.openevent.dto.form.*;
 
 import java.util.List;
 
@@ -31,4 +27,7 @@ public interface EventFormService {
     List<FormResponseDTO> getResponsesByEventId(Long eventId);
     List<FormResponseDTO> getUserResponsesByFormId(Long formId, Long customerId);
     List<FormResponseDTO> getResponsesByEventIdAndFormType(Long eventId, com.group02.openevent.model.form.EventForm.FormType formType);
+    
+    // Statistics
+    FormStatsDTO getFormStatistics(Long formId);
 }

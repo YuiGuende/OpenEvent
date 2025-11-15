@@ -38,6 +38,13 @@ public interface EventChatService {
      * @return Danh sách tất cả rooms mà user là participant
      */
     List<EventChatRoom> getAllRoomsForUser(Long userId);
+
+    /**
+     * Thêm user vào room participants (dùng khi volunteer được approved)
+     * @param roomId ID của room
+     * @param userId ID của user cần thêm
+     */
+    void addParticipantToRoom(Long roomId, Long userId);
 }
 
 

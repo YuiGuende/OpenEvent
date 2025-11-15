@@ -53,6 +53,7 @@ public class Notification {
     private Event event;
 
     @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     private List<NotificationReceiver> receivers = new ArrayList<>();
 
     public Notification() {

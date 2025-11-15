@@ -81,11 +81,11 @@
 }
 
 .kpi-card-secondary {
-    border-left-color: #8b5cf6;
+    border-left-color: #3b82f6;
 }
 
 .kpi-card-accent {
-    border-left-color: #ec4899;
+    border-left-color: var(--color-success-green);
 }
 
 .kpi-icon {
@@ -120,12 +120,12 @@
 }
 
 .kpi-card-secondary .kpi-icon {
-    color: #8b5cf6;
+    color:  #3b82f6;
     background-color: rgba(139, 92, 246, 0.1);
 }
 
 .kpi-card-accent .kpi-icon {
-    color: #ec4899;
+    color: var(--color-success-green);
     background-color: rgba(236, 72, 153, 0.1);
 }
 

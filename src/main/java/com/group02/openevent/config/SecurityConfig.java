@@ -18,6 +18,8 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthenticationSuccessHandler successHandler;
     @Autowired
+    private CustomAuthenticationFailureHandler failureHandler;
+    @Autowired
     private CustomUserDetailsService userDetailsService;
     @Autowired
     private CustomOAuth2UserService oauth2UserService;
@@ -80,7 +82,7 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/perform_login")
                         .successHandler(successHandler) // Handler tùy chỉnh để lưu ACCOUNT_ID
-                        .failureUrl("/login?error")
+                        .failureHandler(failureHandler) // Handler tùy chỉnh để xử lý lỗi
                         .permitAll()
                 )
 

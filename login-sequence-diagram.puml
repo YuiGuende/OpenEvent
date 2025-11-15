@@ -1,0 +1,139 @@
+    @startuml Login_Sequence_Diagram
+
+    actor User
+    participant "Browser" as Browser
+    participant "LoginController" as LoginCtrl
+    participant "AuthController" as AuthCtrl
+    participant "SecurityConfig" as Security
+    participant "CustomUserDetailsService" as UserDetailsSvc
+    participant "AuthServiceImpl" as AuthService
+    participant "IAccountRepo" as AccountRepo
+    participant "IUserRepo" as UserRepo
+    participant "PasswordEncoder" as PwdEncoder
+    participant "HttpSession" as Session
+    participant "CustomAuthenticationSuccessHandler" as SuccessHandler
+    participant "UserService" as UserSvc
+
+    == Show Login Page ==
+    User -> Browser: Navigate to /login
+    Browser -> LoginCtrl: GET /login
+    LoginCtrl -> Browser: Return login.html
+    Browser -> User: Display login form
+
+    == Form Login Process ==
+    User -> Browser: Submit login form (email, password)
+    Browser -> Security: POST /perform_login
+
+    activate Security
+    Security -> UserDetailsSvc: loadUserByUsername(email)
+    activate UserDetailsSvc
+    UserDetailsSvc -> AccountRepo: findByEmail(email)
+    activate AccountRepo
+    AccountRepo --> UserDetailsSvc: Optional<Account>
+    deactivate AccountRepo
+
+    alt Account not found
+        UserDetailsSvc --> Security: UsernameNotFoundException
+        Security --> Browser: Redirect to /login?error
+        Browser --> User: Show error message
+    else Account found
+        UserDetailsSvc -> UserRepo: findByAccount_AccountId(accountId)
+        activate UserRepo
+        UserRepo --> UserDetailsSvc: Optional<User>
+        deactivate UserRepo
+        
+        UserDetailsSvc -> UserDetailsSvc: Create CustomUserDetails\n(accountId, email, passwordHash, role, authorities)
+        UserDetailsSvc --> Security: CustomUserDetails
+        deactivate UserDetailsSvc
+        
+        Security -> PwdEncoder: matches(rawPassword, encodedPassword)
+        activate PwdEncoder
+        PwdEncoder --> Security: boolean
+        deactivate PwdEncoder
+        
+        alt Password mismatch
+            Security --> Browser: Redirect to /login?error
+            Browser --> User: Show error message
+        else Password matches
+            Security -> SuccessHandler: onAuthenticationSuccess(request, response, authentication)
+            activate SuccessHandler
+            SuccessHandler -> UserSvc: getUserByAccountId(accountId)
+            activate UserSvc
+            UserSvc -> UserRepo: findByAccount_AccountId(accountId)
+            activate UserRepo
+            UserRepo --> UserSvc: Optional<User>
+            deactivate UserRepo
+            UserSvc --> SuccessHandler: Optional<User>
+            deactivate UserSvc
+            
+            SuccessHandler -> Session: setAttribute("USER_ID", userId)
+            SuccessHandler -> Session: setAttribute("USER_ROLE", role)
+            
+            alt Has saved request
+                SuccessHandler -> SuccessHandler: Get saved request URL
+                SuccessHandler --> Browser: Redirect to saved URL
+            else Has redirect parameter
+                SuccessHandler -> SuccessHandler: Get redirect from query param
+                SuccessHandler --> Browser: Redirect to custom URL
+            else Default
+                SuccessHandler --> Browser: Redirect to "/"
+            end
+            deactivate SuccessHandler
+            Browser --> User: Redirect to target page
+        end
+    end
+    deactivate Security
+
+    == REST API Login (Alternative Flow) ==
+    User -> Browser: POST /api/auth/login (JSON)
+    Browser -> AuthController: POST /api/auth/login
+    activate AuthController
+    AuthController -> AuthService: login(LoginRequest)
+    activate AuthService
+
+    AuthService -> AuthService: Validate email and password
+
+    AuthService -> AccountRepo: findByEmail(email)
+    activate AccountRepo
+    AccountRepo --> AuthService: Optional<Account>
+    deactivate AccountRepo
+
+    alt Account not found
+        AuthService --> AuthController: IllegalArgumentException
+        AuthController --> Browser: 401 Unauthorized
+        Browser --> User: Error response
+    else Account found
+        AuthService -> PwdEncoder: matches(password, passwordHash)
+        activate PwdEncoder
+        PwdEncoder --> AuthService: boolean
+        deactivate PwdEncoder
+        
+        alt Password mismatch
+            AuthService --> AuthController: IllegalArgumentException
+            AuthController --> Browser: 401 Unauthorized
+            Browser --> User: Error response
+        else Password matches
+            AuthService -> UserRepo: findByAccount_AccountId(accountId)
+            activate UserRepo
+            UserRepo --> AuthService: Optional<User>
+            deactivate UserRepo
+            
+            AuthService -> User: getRole()
+            User --> AuthService: Role
+            
+            AuthService -> Session: setAttribute("USER_ID", userId)
+            AuthService -> Session: setAttribute("USER_ROLE", role)
+            
+            AuthService -> AuthService: redirectFor(role)
+            AuthService --> AuthController: AuthResponse(accountId, email, role, redirectPath)
+            deactivate AuthService
+            
+            AuthController --> Browser: 200 OK + AuthResponse
+            deactivate AuthController
+            Browser --> User: Success response with redirect path
+        end
+    end
+
+    @enduml
+
+

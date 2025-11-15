@@ -9,9 +9,14 @@ import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.IVolunteerApplicationRepo;
+import com.group02.openevent.repository.EventChatRoomRepository;
+import com.group02.openevent.model.chat.ChatRoomType;
+import com.group02.openevent.model.chat.EventChatRoom;
+import com.group02.openevent.service.EventChatService;
 import com.group02.openevent.service.VolunteerService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class VolunteerServiceImpl implements VolunteerService {
 
@@ -29,6 +33,27 @@ public class VolunteerServiceImpl implements VolunteerService {
     private final IEventRepo eventRepo;
     private final IAccountRepo accountRepo;
     private final com.group02.openevent.repository.IOrderRepo orderRepo;
+    private final EventChatRoomRepository eventChatRoomRepo;
+    private final EventChatService eventChatService;
+    
+    // ✅ Sử dụng constructor injection với @Lazy để phá vỡ circular dependency
+    @Autowired
+    public VolunteerServiceImpl(
+            IVolunteerApplicationRepo volunteerApplicationRepo,
+            ICustomerRepo customerRepo,
+            IEventRepo eventRepo,
+            IAccountRepo accountRepo,
+            com.group02.openevent.repository.IOrderRepo orderRepo,
+            EventChatRoomRepository eventChatRoomRepo,
+            @Lazy EventChatService eventChatService) {
+        this.volunteerApplicationRepo = volunteerApplicationRepo;
+        this.customerRepo = customerRepo;
+        this.eventRepo = eventRepo;
+        this.accountRepo = accountRepo;
+        this.orderRepo = orderRepo;
+        this.eventChatRoomRepo = eventChatRoomRepo;
+        this.eventChatService = eventChatService;
+    }
 
     @Override
     @Transactional
@@ -84,6 +109,34 @@ public class VolunteerServiceImpl implements VolunteerService {
 
         VolunteerApplication saved = volunteerApplicationRepo.save(application);
         log.info("Volunteer application {} approved successfully", applicationId);
+        
+        // ✅ Tự động thêm volunteer vào HOST_VOLUNTEERS room nếu room đã tồn tại
+        try {
+            Event event = saved.getEvent();
+            Customer customer = saved.getCustomer();
+            
+            if (event != null && event.getHost() != null && customer != null && customer.getUser() != null) {
+                Long hostUserId = event.getHost().getUser().getUserId();
+                Long volunteerUserId = customer.getUser().getUserId();
+                
+                // Tìm HOST_VOLUNTEERS room cho event này
+                Optional<EventChatRoom> existingRoom = 
+                    eventChatRoomRepo.findByEventAndHostAndRoomType(event.getId(), hostUserId);
+                
+                if (existingRoom.isPresent()) {
+                    EventChatRoom room = existingRoom.get();
+                    if (room.getRoomType() == ChatRoomType.HOST_VOLUNTEERS) {
+                        // Tự động thêm volunteer vào room
+                        eventChatService.addParticipantToRoom(room.getId(), volunteerUserId);
+                        log.info("Auto-added approved volunteer {} to HOST_VOLUNTEERS room {} for event {}", 
+                            volunteerUserId, room.getId(), event.getId());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log error nhưng không fail transaction nếu có lỗi khi thêm vào room
+            log.error("Error auto-adding volunteer to chat room after approval: {}", e.getMessage(), e);
+        }
         
         return saved;
     }

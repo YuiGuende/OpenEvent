@@ -8,6 +8,10 @@ import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.user.User;
+import com.group02.openevent.repository.IEventAttendanceRepo;
+import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.service.CustomerService;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.service.EventService;
@@ -55,6 +59,12 @@ public class EventAttendanceController {
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private IOrderRepo orderRepo;
+    
+    @Autowired
+    private IEventAttendanceRepo attendanceRepo;
     
     /**
      * Trang hiển thị 2 QR codes (check-in & check-out)
@@ -421,41 +431,49 @@ public class EventAttendanceController {
 
     /**
      * API endpoint to check customer's check-in status for an event
-     * GET: /api/events/{eventId}/checkin-status
+     * GET: /events/{eventId}/checkin-status
      */
-    @GetMapping("/api/{eventId}/checkin-status")
+    @GetMapping("/{eventId}/checkin-status")
     @ResponseBody
     public ResponseEntity<?> getCheckinStatus(
             @PathVariable Long eventId,
             HttpSession session) {
         try {
             Customer customer = customerService.getCurrentCustomer(session);
-            User user = customer.getUser();
             
-            if (user == null || user.getAccount() == null) {
-                return ResponseEntity.ok(java.util.Map.of(
-                    "checkedIn", false,
-                    "message", "User information not found"
-                ));
+            // ✅ Tìm check-in bằng customerId và orderId (giống logic face check-in)
+            // 1. Tìm paid order của customer cho event này
+            List<Order> customerOrders = orderRepo.findByCustomerId(customer.getCustomerId());
+            List<Order> paidOrdersForEvent = customerOrders.stream()
+                .filter(order -> order.getEvent() != null && 
+                               order.getEvent().getId().equals(eventId) &&
+                               order.getStatus() == OrderStatus.PAID)
+                .collect(java.util.stream.Collectors.toList());
+            
+            java.util.Optional<EventAttendance> attendanceOpt = java.util.Optional.empty();
+            
+            // 2. Nếu có paid order, tìm EventAttendance bằng orderId
+            if (!paidOrdersForEvent.isEmpty()) {
+                Order paidOrder = paidOrdersForEvent.get(0);
+                attendanceOpt = attendanceRepo.findByOrder_OrderId(paidOrder.getOrderId());
             }
             
-            String email = user.getAccount().getEmail();
-            if (email == null || email.trim().isEmpty()) {
-                return ResponseEntity.ok(java.util.Map.of(
-                    "checkedIn", false,
-                    "message", "Email not found"
-                ));
+            // 3. Fallback: nếu không tìm thấy bằng orderId, thử tìm bằng email
+            if (attendanceOpt.isEmpty()) {
+                User user = customer.getUser();
+                if (user != null && user.getAccount() != null) {
+                    String email = user.getAccount().getEmail();
+                    if (email != null && !email.trim().isEmpty()) {
+                        attendanceOpt = attendanceService.getAttendanceByEventAndEmail(eventId, email);
+                    }
+                }
             }
-            
-            // Check if customer has checked in
-            java.util.Optional<com.group02.openevent.model.attendance.EventAttendance> attendanceOpt = 
-                attendanceService.getAttendanceByEventAndEmail(eventId, email);
             
             boolean checkedIn = false;
             String checkInTime = null;
             
             if (attendanceOpt.isPresent()) {
-                com.group02.openevent.model.attendance.EventAttendance attendance = attendanceOpt.get();
+                EventAttendance attendance = attendanceOpt.get();
                 checkedIn = attendance.getCheckInTime() != null;
                 if (checkedIn) {
                     checkInTime = attendance.getCheckInTime().toString();

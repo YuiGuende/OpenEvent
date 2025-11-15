@@ -29,8 +29,12 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -340,6 +344,67 @@ public class EventChatServiceImpl implements EventChatService {
     }
 
     @Override
+    public List<EventChatRoom> getAllRoomsForUser(Long userId) {
+        // 1. Lấy tất cả rooms mà user là host
+        List<EventChatRoom> hostRooms = roomRepo.findByHostUserId(userId);
+        
+        // 2. Lấy tất cả rooms mà user là volunteer participant
+        List<EventChatRoom> volunteerRooms = roomRepo.findByVolunteerParticipantId(userId);
+        
+        // 3. Lọc volunteer rooms: chỉ lấy rooms mà user đã được approved làm volunteer
+        Optional<Customer> customerOpt = customerRepo.findByUser_UserId(userId);
+        List<EventChatRoom> approvedVolunteerRooms = new ArrayList<>();
+        
+        if (customerOpt.isPresent()) {
+            Customer customer = customerOpt.get();
+            
+            // Lấy tất cả approved volunteer applications của customer này
+            List<VolunteerApplication> approvedApps = volunteerService
+                .getVolunteerApplicationsByCustomerIdAndStatus(
+                    customer.getCustomerId(), 
+                    VolunteerStatus.APPROVED
+                );
+            
+            // Tạo Set eventIds mà user đã được approved
+            Set<Long> approvedEventIds = approvedApps.stream()
+                .map(app -> app.getEvent().getId())
+                .collect(Collectors.toSet());
+            
+            // Lọc volunteer rooms: chỉ lấy rooms của events mà user đã được approved
+            approvedVolunteerRooms = volunteerRooms.stream()
+                .filter(room -> {
+                    if (room.getEvent() == null) {
+                        return false;
+                    }
+                    return approvedEventIds.contains(room.getEvent().getId());
+                })
+                .collect(Collectors.toList());
+        }
+        
+        // 4. Merge 2 danh sách và loại bỏ duplicate (dựa trên room.id)
+        Set<Long> roomIds = new HashSet<>();
+        List<EventChatRoom> allRooms = new ArrayList<>();
+        
+        // Thêm host rooms
+        for (EventChatRoom room : hostRooms) {
+            if (!roomIds.contains(room.getId())) {
+                roomIds.add(room.getId());
+                allRooms.add(room);
+            }
+        }
+        
+        // Thêm approved volunteer rooms (tránh duplicate)
+        for (EventChatRoom room : approvedVolunteerRooms) {
+            if (!roomIds.contains(room.getId())) {
+                roomIds.add(room.getId());
+                allRooms.add(room);
+            }
+        }
+        
+        return allRooms;
+    }
+
+    @Override
     public Page<EventChatMessage> getMessages(Long roomId, int page, int size, Long currentUserId) {
         // Authorization: ensure current user is a participant of the room
         EventChatRoom room = roomRepo.findById(roomId)
@@ -459,6 +524,30 @@ public class EventChatServiceImpl implements EventChatService {
         participant.setRoom(room);
         participant.setUser(volunteerUser);
         participantRepo.save(participant);
+    }
+
+    @Override
+    @Transactional
+    public void addParticipantToRoom(Long roomId, Long userId) {
+        EventChatRoom room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat room not found: " + roomId));
+        
+        User user = userService.getUserById(userId);
+        
+        // Kiểm tra đã tham gia chưa
+        Optional<EventChatRoomParticipant> existing = participantRepo.findByRoomIdAndUserId(roomId, userId);
+        if (existing.isPresent()) {
+            log.debug("User {} already a participant of room {}", userId, roomId);
+            return; // Đã tham gia rồi
+        }
+        
+        EventChatRoomParticipant participant = new EventChatRoomParticipant();
+        participant.setRoom(room);
+        participant.setUser(user);
+        participantRepo.save(participant);
+        
+        log.info("Added user {} to room {} (event: {})", userId, roomId, 
+                room.getEvent() != null ? room.getEvent().getId() : "N/A");
     }
 }
 

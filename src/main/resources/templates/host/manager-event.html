@@ -174,19 +174,36 @@
                 </div>
 
                 <div class="nav-section">
+                    <div class="nav-section-title">TÌNH NGUYỆN VIÊN</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-create-form'}" class="nav-link" data-link>
+                                <i class="bi bi-file-earmark-plus"></i>
+                                <span>Tạo Form</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-requests'}" class="nav-link" data-link>
+                                <i class="bi bi-clipboard-check"></i>
+                                <span>Xem yêu cầu duyệt</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
                     <div class="nav-section-title">NOTIFICATION</div>
                     <ul class="nav-list">
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/notification'}" class="nav-link" data-link>
                                 <i class="bi bi-bell"></i>
                                 <span>Notification</span>
-                                <span>Thông báo</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a th:href="@{'/event-chat?eventId=' + ${eventId}}" class="nav-link">
                                 <i class="bi bi-chat-dots"></i>
-                                <span>Chat với Volunteer</span>
+                                <span>Chat With Volunteer</span>
                             </a>
                         </li>
                     </ul>

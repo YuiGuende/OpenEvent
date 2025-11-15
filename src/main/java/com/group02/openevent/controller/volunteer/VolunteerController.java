@@ -100,5 +100,3 @@ public class VolunteerController {
         return "redirect:/forms/form/" + formId + "/responses?eventId=" + eventId + "&success=rejected";
     }
 }
-
-

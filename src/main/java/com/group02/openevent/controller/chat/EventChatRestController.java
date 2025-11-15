@@ -114,6 +114,59 @@ public class EventChatRestController {
         ));
     }
 
+    @GetMapping("/rooms/all")
+    public List<ChatRoomDTO> getAllRooms(HttpSession session) {
+        User current = userService.getCurrentUser(session);
+        // Lấy tất cả rooms mà user là participant (không phụ thuộc vào event)
+        List<EventChatRoom> allRooms = chatService.getAllRoomsForUser(current.getUserId());
+        
+        return allRooms.stream()
+                .map(room -> {
+                    User counterpart = null;
+                    Long roomEventId = null;
+                    String roomEventTitle = null;
+                    
+                    if (room.getRoomType() == com.group02.openevent.model.chat.ChatRoomType.HOST_DEPARTMENT) {
+                        counterpart = room.getDepartment();
+                        if (counterpart == null) {
+                            try {
+                                counterpart = userService.getUserById(2L);
+                            } catch (Exception e) {
+                                // Ignore
+                            }
+                        }
+                    } else if (room.getRoomType() == ChatRoomType.HOST_VOLUNTEERS) {
+                        if (room.getEvent() != null) {
+                            roomEventId = room.getEvent().getId();
+                            roomEventTitle = room.getEvent().getTitle();
+                        }
+                    }
+                    
+                    Integer participantCount = null;
+                    if (room.getRoomType() == ChatRoomType.HOST_VOLUNTEERS) {
+                        int count = 1;
+                        List<com.group02.openevent.model.chat.EventChatRoomParticipant> participants = 
+                            participantRepo.findByRoom_Id(room.getId());
+                        if (participants != null) {
+                            count += participants.size();
+                        }
+                        participantCount = count;
+                    }
+                    
+                    return new ChatRoomDTO(
+                            room.getId(),
+                            room.getCreatedAt().toString(),
+                            toDto(room.getHost()),
+                            toDto(counterpart),
+                            room.getRoomType().name(),
+                            roomEventId,
+                            roomEventTitle,
+                            participantCount
+                    );
+                })
+                .toList();
+    }
+
     @GetMapping("/rooms/{roomId}/messages")
     public ResponseEntity<Page<EventChatMessage>> history(@PathVariable Long roomId,
                                                           @RequestParam(defaultValue = "0") int page,

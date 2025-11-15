@@ -127,11 +127,26 @@ function captureAndCheckIn() {
         performFaceCheckIn(eventId, imageBase64)
             .then(function(response) {
                 if (response.success) {
-                    showMessage(response.message || 'Check-in thành công!', 'success');
-                    // Optionally redirect after success
-                    setTimeout(function() {
-                        window.location.href = '/events/' + eventId;
-                    }, 2000);
+                    // ✅ Hiển thị thông báo thành công ngay trên trang, không redirect
+                    showSuccessMessage(response.message || 'Check-in thành công!', response.checkInTime);
+                    
+                    // Ẩn phần check-in và hiển thị phần thành công
+                    const checkinContainer = document.getElementById('checkinContainer');
+                    const successContainer = document.getElementById('successContainer');
+                    if (checkinContainer && successContainer) {
+                        checkinContainer.style.display = 'none';
+                        successContainer.classList.add('active');
+                    }
+                    
+                    // Tắt camera
+                    stopCamera();
+                    
+                    // ✅ Thông báo cho trang chính để ẩn nút check-in (nếu đang mở)
+                    if (window.opener) {
+                        window.opener.postMessage({ type: 'CHECKIN_SUCCESS', eventId: eventId }, '*');
+                    }
+                    // ✅ Hoặc lưu vào localStorage để trang chính có thể đọc khi reload
+                    localStorage.setItem('checkin_success_' + eventId, 'true');
                 } else {
                     showMessage(response.error || 'Check-in thất bại. Vui lòng thử lại.', 'error');
                     captureBtn.disabled = false;
@@ -227,6 +242,21 @@ function showMessage(message, type) {
         setTimeout(function() {
             messageDiv.style.display = 'none';
         }, 5000);
+    }
+}
+
+/**
+ * Show success message
+ */
+function showSuccessMessage(message, checkInTime) {
+    const successDetails = document.getElementById('successDetails');
+    if (successDetails) {
+        let detailsText = message;
+        if (checkInTime) {
+            const time = new Date(checkInTime);
+            detailsText += '<br>Thời gian check-in: ' + time.toLocaleString('vi-VN');
+        }
+        successDetails.innerHTML = detailsText;
     }
 }
 

@@ -30,6 +30,14 @@ public interface EventChatService {
      * @return EventChatRoom đã được tạo
      */
     EventChatRoom createHostVolunteerRoom(Long eventId, Long hostUserId);
+
+    /**
+     * Lấy tất cả rooms mà user là participant (host, department, hoặc volunteer)
+     * Không phụ thuộc vào event - trả về tất cả rooms mà user có quyền truy cập
+     * @param userId ID của user
+     * @return Danh sách tất cả rooms mà user là participant
+     */
+    List<EventChatRoom> getAllRoomsForUser(Long userId);
 }
 
 

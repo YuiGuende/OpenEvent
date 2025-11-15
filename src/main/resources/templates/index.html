@@ -161,7 +161,7 @@
 
             <div class="latest-events-track" th:if="${!#lists.isEmpty(latestEvents)}">
                 <div class="latest-events-container">
-                    <article class="event-card-simple" th:each="ev : ${latestEvents}">
+                    <article class="event-card-simple" th:each="ev : ${latestEvents}" th:attr="data-tags=${ev.eventTypeTag}">
                         <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
                            style="text-decoration: none; color: inherit;">
                             <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>

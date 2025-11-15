@@ -338,12 +338,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!latestContainer || !prevBtn || !nextBtn || !paginationInfo) return;
     
+    // LATEST filter by tag (similar to Live Events)
+    document.querySelectorAll('.latest-events-header .chip[data-filter]').forEach(ch=>{
+        ch.addEventListener('click', ()=>{
+            document.querySelectorAll('.latest-events-header .chip[data-filter]').forEach(x=>x.classList.remove('is-active'));
+            ch.classList.add('is-active');
+            const filter = ch.dataset.filter;
+            latestContainer.querySelectorAll('.event-card-simple').forEach(card=>{
+                const tags = (card.dataset.tags || '').toLowerCase();
+                const ok = filter==='all' || tags.includes(filter.toLowerCase());
+                card.style.display = ok ? '' : 'none';
+            });
+            // Reset scroll position and trigger pagination update after filter
+            setTimeout(() => {
+                if (latestContainer) {
+                    latestContainer.scrollLeft = 0;
+                    const scrollEvent = new Event('scroll');
+                    latestContainer.dispatchEvent(scrollEvent);
+                    // Also trigger update manually after a short delay
+                    setTimeout(() => {
+                        latestContainer.dispatchEvent(scrollEvent);
+                    }, 100);
+                }
+            }, 150);
+        });
+    });
+    
+    // Get all cards (including hidden ones for filter)
     const cards = Array.from(latestContainer.querySelectorAll('.event-card-simple'));
     if (cards.length === 0) return;
     
+    function getVisibleCards() {
+        return cards.filter(card => card.offsetParent !== null);
+    }
+    
     function getCardWidth() {
-        if (cards.length === 0) return 0;
-        const card = cards[0];
+        const visibleCards = getVisibleCards();
+        if (visibleCards.length === 0) return 0;
+        const card = visibleCards[0];
         const gap = 16; // gap from CSS
         return card.offsetWidth + gap;
     }
@@ -356,24 +388,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function getTotalPages() {
+        const visibleCards = getVisibleCards();
         const cardsPerView = getCardsPerView();
-        return Math.max(1, Math.ceil(cards.length / cardsPerView));
+        return Math.max(1, Math.ceil(visibleCards.length / cardsPerView));
     }
     
     let currentPage = 1;
     
     function updatePagination() {
+        const visibleCards = getVisibleCards();
         const totalPages = getTotalPages();
         const cardsPerView = getCardsPerView();
         const scrollLeft = latestContainer.scrollLeft;
         const containerWidth = latestContainer.offsetWidth;
         
         // Calculate current page based on scroll position
-        currentPage = Math.min(Math.max(1, Math.round(scrollLeft / containerWidth) + 1), totalPages);
+        // Use a threshold to handle rounding errors and ensure we're on the right page
+        if (containerWidth > 0) {
+            const pageFromScroll = Math.round(scrollLeft / containerWidth);
+            currentPage = Math.min(Math.max(1, pageFromScroll + 1), totalPages);
+        } else {
+            currentPage = 1;
+        }
         
         paginationInfo.textContent = `${currentPage} of ${totalPages}`;
-        prevBtn.disabled = currentPage === 1;
-        nextBtn.disabled = currentPage === totalPages || cards.length <= cardsPerView;
+        // Enable Previous if scrollLeft > 0 (we've scrolled) OR if we're not on page 1
+        prevBtn.disabled = scrollLeft <= 5 && currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages || visibleCards.length <= cardsPerView;
     }
     
     function scrollToPage(page) {
@@ -402,9 +443,14 @@ document.addEventListener('DOMContentLoaded', function() {
     prevBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        const visibleCards = getVisibleCards();
         const totalPages = getTotalPages();
         const cardsPerView = getCardsPerView();
-        if (currentPage > 1 && cards.length > cardsPerView) {
+        
+        // Force update pagination first to get correct currentPage
+        updatePagination();
+        
+        if (currentPage > 1 && visibleCards.length > cardsPerView) {
             scrollToPage(currentPage - 1);
         }
     });
@@ -412,14 +458,26 @@ document.addEventListener('DOMContentLoaded', function() {
     nextBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        const visibleCards = getVisibleCards();
         const totalPages = getTotalPages();
         const cardsPerView = getCardsPerView();
-        if (currentPage < totalPages && cards.length > cardsPerView) {
+        
+        // Force update pagination first to get correct currentPage
+        updatePagination();
+        
+        if (currentPage < totalPages && visibleCards.length > cardsPerView) {
             scrollToPage(currentPage + 1);
         }
     });
     
-    latestContainer.addEventListener('scroll', updatePagination);
+    // Use throttled scroll event to update pagination
+    let scrollTimer;
+    latestContainer.addEventListener('scroll', () => {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+            updatePagination();
+        }, 50);
+    });
     
     // Update on window resize
     let resizeTimer;
@@ -432,6 +490,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize
     setTimeout(updatePagination, 100);
+    
+    // Also update after a short delay to catch any delayed scroll completion
+    setTimeout(updatePagination, 500);
 })();
 
 // Live Events Horizontal Scroll - Copy exact logic from Latest Events

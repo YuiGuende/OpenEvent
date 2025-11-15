@@ -564,7 +564,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> getRecentEvents(int limit) {
         PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return eventRepo.findAll(pageRequest).getContent();
+        return eventRepo.findRecommendedEvents(EventStatus.PUBLIC, pageRequest);
     }
 
     @Override

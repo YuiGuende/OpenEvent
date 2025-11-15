@@ -8,6 +8,7 @@ import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IHostRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.HostService;
 import com.group02.openevent.service.OrganizationService;
 import jakarta.servlet.http.HttpSession;
@@ -25,13 +26,15 @@ public class HostServiceImpl implements HostService {
     private final OrganizationService organizationService;
     private final IAccountRepo accountRepo;
     private final ICustomerRepo customerRepo;
+    private final IUserRepo userRepo;
 
     public HostServiceImpl(IHostRepo hostRepo, OrganizationService organizationService,
-                           IAccountRepo accountRepo, ICustomerRepo customerRepo) {
+                           IAccountRepo accountRepo, ICustomerRepo customerRepo, IUserRepo userRepo) {
         this.hostRepo = hostRepo;
         this.organizationService = organizationService;
         this.accountRepo = accountRepo;
         this.customerRepo = customerRepo;
+        this.userRepo = userRepo;
     }
     
     @Override
@@ -69,33 +72,37 @@ public class HostServiceImpl implements HostService {
     }
 
     @Override
-    public boolean isUserHost(Long customerId) {
-        return hostRepo.findByUser_UserId(customerId).isPresent();
+    public boolean isUserHost(Long userId) {
+        return hostRepo.findByUser_UserId(userId).isPresent();
     }
 
     @Override
-    public Host registerHost(Customer customer, HostRegistrationRequest request) {
-        // Kiểm tra xem customer đã là host chưa
-        if (isUserHost(customer.getCustomerId())) {
-            throw new RuntimeException("Customer is already a host");
-        }
-
-        // Set host name vào Customer.name nếu có
-        if (request.getHostName() != null && !request.getHostName().trim().isEmpty()) {
-            customer.getUser().setName(request.getHostName().trim());
-        } else if (customer.getUser().getName() == null || customer.getUser().getName().trim().isEmpty()) {
-            // Nếu không có hostName và customer chưa có name, dùng email username
-            if (customer.getUser().getAccount() != null && customer.getUser().getAccount().getEmail() != null) {
-                String email = customer.getUser().getAccount().getEmail();
-                String username = email.contains("@") ? email.split("@")[0] : email;
-                customer.getUser().setName(username);
-            }
+    public Host registerHost(User user, HostRegistrationRequest request) {
+        // Kiểm tra xem user đã là host chưa
+        if (isUserHost(user.getUserId())) {
+            throw new RuntimeException("User is already a host");
         }
 
         // Tạo host mới
         Host host = new Host();
         host.setCreatedAt(LocalDateTime.now());
-        host.setUser(customer.getUser());
+        host.setUser(user); // Map trực tiếp với User
+        
+        // Set host name riêng vào Host.hostName (không ảnh hưởng đến User.name/Customer)
+        if (request.getHostName() != null && !request.getHostName().trim().isEmpty()) {
+            host.setHostName(request.getHostName().trim());
+        } else if (user.getName() != null && !user.getName().trim().isEmpty()) {
+            // Nếu không có hostName trong request, dùng User.name làm mặc định
+            host.setHostName(user.getName());
+        } else {
+            // Nếu User chưa có name, dùng email username
+            if (user.getAccount() != null && user.getAccount().getEmail() != null) {
+                String email = user.getAccount().getEmail();
+                String username = email.contains("@") ? email.split("@")[0] : email;
+                host.setHostName(username);
+            }
+        }
+        
         // Set organization nếu có
         if (request.getOrganizationId() != null) {
             Optional<Organization> organization = organizationService.findById(request.getOrganizationId());
@@ -105,16 +112,18 @@ public class HostServiceImpl implements HostService {
         }
 
         // Set discount percent (default 0 nếu null)
-        if (request.getHostDiscountPercent() != null) {
-            host.setHostDiscountPercent(request.getHostDiscountPercent());
-        } else {
-            host.setHostDiscountPercent(BigDecimal.ZERO);
-        }
+//        if (request.getHostDiscountPercent() != null) {
+//            host.setHostDiscountPercent(request.getHostDiscountPercent());
+//        } else {
+//            host.setHostDiscountPercent(BigDecimal.ZERO);
+//        }
+        
         // Set description
         host.setDescription(request.getDescription());
-        // Lưu customer (với name đã được update) trước khi save host
-        customerRepo.save(customer);
-
+        
+        // Lưu user (với name đã được update) trước khi save host
+        userRepo.save(user);
+        
         // Lưu host
         return hostRepo.save(host);
     }

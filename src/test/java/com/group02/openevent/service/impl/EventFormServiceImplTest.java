@@ -80,7 +80,6 @@ class EventFormServiceImplTest {
         User user = new User();
         user.setAccount(account);
         user.setUserId(1L);
-        user.setEmail("test@example.com");
         user.setName("Test User");
         customer = new Customer();
         customer.setCustomerId(CUSTOMER_ID);

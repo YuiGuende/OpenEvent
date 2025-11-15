@@ -52,6 +52,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         {
+            path: `/manage/event/${eventId}/check-in-list`,
+            fragment: `/fragments/check-in-list?id=${eventId}`,
+            title: 'Danh sách Check-In',
+            initializer: function() {
+                console.log('Initializing check-in list page...');
+                // Wait for DOM to be ready
+                setTimeout(() => {
+                    if (typeof window.initializeCheckInList === 'function') {
+                        window.initializeCheckInList();
+                    }
+                }, 100);
+            }
+        },
+        {
             path: `/manage/event/${eventId}/request-form`,
             fragment: `/api/requests/form?eventId=${eventId}`,
             title: 'Yêu cầu',

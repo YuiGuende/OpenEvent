@@ -313,8 +313,10 @@ function showImageCropper(div, file) {
     // Set image source
     cropperImage.src = URL.createObjectURL(file)
 
-    // Show modal
-    modal.style.display = "block"
+    // Show modal - ensure it's displayed properly
+    modal.style.display = "flex"
+    modal.style.visibility = "visible"
+    modal.style.opacity = "1"
 
     // Attach event listeners immediately
     const saveBtn = modal.querySelector(".cropper-save")
@@ -324,6 +326,18 @@ function showImageCropper(div, file) {
     console.log('Save button element:', saveBtn)
     console.log('Cancel button element:', cancelBtn)
     console.log('Close button element:', closeBtn)
+
+    // Ensure buttons are clickable
+    if (saveBtn) {
+        saveBtn.style.pointerEvents = 'auto'
+        saveBtn.style.zIndex = '100003'
+        saveBtn.style.position = 'relative'
+    }
+    if (cancelBtn) {
+        cancelBtn.style.pointerEvents = 'auto'
+        cancelBtn.style.zIndex = '100003'
+        cancelBtn.style.position = 'relative'
+    }
 
     // Function to close modal and cleanup
     const closeModal = () => {
@@ -342,10 +356,11 @@ function showImageCropper(div, file) {
     }
 
     // Save cropped image
-    saveBtn.onclick = (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        console.log('Save button clicked')
+    if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            console.log('Save button clicked')
 
         try {
             if (!cropperImage.cropper) {
@@ -428,13 +443,17 @@ function showImageCropper(div, file) {
 
         // Close modal
         closeModal()
+        }, { once: false, capture: false })
+    } else {
+        console.error('Save button not found!')
     }
 
     // Cancel cropping
-    cancelBtn.onclick = (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        console.log('Cancel button clicked')
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            console.log('Cancel button clicked')
 
         // Reset file input
         const fileInput = div.querySelector(".lineupImageInput")
@@ -444,13 +463,17 @@ function showImageCropper(div, file) {
 
         // Close modal
         closeModal()
+        }, { once: false, capture: false })
+    } else {
+        console.error('Cancel button not found!')
     }
 
     // Close button
-    closeBtn.onclick = (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        console.log('Close button clicked')
+    if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            console.log('Close button clicked')
 
         // Reset file input
         const fileInput = div.querySelector(".lineupImageInput")
@@ -460,15 +483,18 @@ function showImageCropper(div, file) {
 
         // Close modal
         closeModal()
+        }, { once: false, capture: false })
+    } else {
+        console.error('Close button not found!')
     }
 
     // Close modal when clicking outside
-    modal.onclick = (e) => {
+    modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             console.log('Clicked outside modal')
             closeModal()
         }
-    }
+    }, { once: false, capture: false })
 
     // Wait for image to load before initializing cropper
     cropperImage.onload = () => {

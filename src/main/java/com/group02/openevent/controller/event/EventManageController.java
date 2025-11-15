@@ -269,11 +269,19 @@ public class EventManageController {
     }
 
 
-    @GetMapping("/fragments/check-in")
-    public String checkIn(@RequestParam Long id, Model model) {
+//    @GetMapping("/fragments/check-in")
+//    public String checkIn(@RequestParam Long id, Model model) {
+//        Event event = eventService.getEventResponseById(id);
+//        model.addAttribute("event", event);
+//        return "fragments/check-in :: content";
+//    }
+
+    @GetMapping("/fragments/check-in-list")
+    public String checkInList(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
-        return "fragments/check-in :: content";
+        model.addAttribute("eventId", id);
+        return "fragments/check-in-list :: content";
     }
 
     @GetMapping("/fragments/create-forms")

@@ -75,9 +75,12 @@ public class AuthServiceImpl implements AuthService {
 
 		// Luôn tạo User record cho mọi account
 		User user = userService.getOrCreateUser(account);
-		if (user.getName() == null && request.getPhoneNumber() != null) {
-			user.setName(account.getEmail()); // Default name
-			user.setPhoneNumber(request.getPhoneNumber());
+		
+		// Set phone number nếu có trong request
+		if (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty()) {
+			user.setPhoneNumber(request.getPhoneNumber().trim());
+			// Lưu user sau khi set phone
+			user = userRepo.save(user);
 		}
 		
 		Customer customer = new Customer();

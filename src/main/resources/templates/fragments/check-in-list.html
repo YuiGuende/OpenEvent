@@ -1,0 +1,394 @@
+<div class="container-fluid checkin-list-container" th:fragment="content" th:attr="data-event-id=${eventId}">
+    <style>
+        :root {
+            --checkin-green: #10B981;
+            --checkin-green-light: #34D399;
+            --checkin-green-dark: #059669;
+            --checkin-orange: #FF9500;
+            --checkin-orange-light: #FFB84D;
+            --checkin-orange-dark: #E67E00;
+        }
+
+        .checkin-list-container {
+            padding: 2rem;
+            background: linear-gradient(135deg, #f0fdf4 0%, #fff7ed 100%);
+            min-height: 100vh;
+        }
+
+        /* Stats Cards - Large Numbers */
+        .stats-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 5px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.total {
+            border-left-color: var(--checkin-orange);
+        }
+
+        .stat-card.checked-in {
+            border-left-color: var(--checkin-green);
+        }
+
+        .stat-card.checked-out {
+            border-left-color: #6B7280;
+        }
+
+        .stat-card.present {
+            border-left-color: var(--checkin-orange-light);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6B7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin: 0;
+        }
+
+        .stat-card.total .stat-value {
+            color: var(--checkin-orange);
+        }
+
+        .stat-card.checked-in .stat-value {
+            color: var(--checkin-green);
+        }
+
+        .stat-card.checked-out .stat-value {
+            color: #6B7280;
+        }
+
+        .stat-card.present .stat-value {
+            color: var(--checkin-orange-light);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Search Bar */
+        .search-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3.5rem;
+            font-size: 1.1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--checkin-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9CA3AF;
+            font-size: 1.25rem;
+        }
+
+        .search-results-count {
+            margin-top: 0.75rem;
+            color: #6B7280;
+            font-size: 0.9rem;
+        }
+
+        /* Check-in List */
+        .checkin-list-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .checkin-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #F3F4F6;
+        }
+
+        .checkin-list-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin: 0;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--checkin-green), var(--checkin-green-dark));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .refresh-btn.spinning i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Check-in Table */
+        .checkin-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .checkin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .checkin-table thead {
+            background: linear-gradient(135deg, var(--checkin-green), var(--checkin-green-dark));
+            color: white;
+        }
+
+        .checkin-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .checkin-table tbody tr {
+            border-bottom: 1px solid #F3F4F6;
+            transition: background-color 0.2s;
+        }
+
+        .checkin-table tbody tr:hover {
+            background-color: #F9FAFB;
+        }
+
+        .checkin-table td {
+            padding: 1rem;
+            font-size: 0.95rem;
+            color: #374151;
+        }
+
+        .checkin-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-checked-in {
+            background: #D1FAE5;
+            color: var(--checkin-green-dark);
+        }
+
+        .status-checked-out {
+            background: #E5E7EB;
+            color: #6B7280;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #9CA3AF;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--checkin-green);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E5E7EB;
+            border-top-color: var(--checkin-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Realtime indicator */
+        .realtime-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--checkin-green);
+            margin-left: 1rem;
+        }
+
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--checkin-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+
+    <!-- Stats Header -->
+    <div class="stats-header">
+        <div class="stat-card total">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total number of people</div>
+            <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-card checked-in">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Checked in</div>
+            <div class="stat-value" id="statCheckedIn">0</div>
+        </div>
+        <div class="stat-card present">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-label">Present</div>
+            <div class="stat-value" id="statPresent">0</div>
+        </div>
+        <div class="stat-card checked-out">
+            <div class="stat-icon">🚪</div>
+            <div class="stat-label">Checked-out</div>
+            <div class="stat-value" id="statCheckedOut">0</div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" 
+                   id="checkinSearchInput" 
+                   class="search-input" 
+                   placeholder="Search by Ticket Code, Email, Phone Number, or Name... (search as you type)">
+        </div>
+        <div class="search-results-count" id="searchResultsCount"></div>
+    </div>
+
+    <!-- Check-in List Section -->
+    <div class="checkin-list-section">
+        <div class="checkin-list-header">
+            <h2 class="checkin-list-title">
+                Check-in List
+                <span class="realtime-indicator">
+                    <span class="realtime-dot"></span>
+                    <span>Updating</span>
+                </span>
+            </h2>
+            <button class="refresh-btn" id="refreshBtn" onclick="refreshCheckInList()">
+                <i class="bi bi-arrow-clockwise"></i>
+                Refresh
+            </button>
+        </div>
+
+        <div class="checkin-table-wrapper">
+            <div id="loadingState" class="loading-state" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 1rem;">Loading data...</p>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📋</div>
+                <h3>No check-in data yet</h3>
+                <p>The list will be displayed when someone checks in.</p>
+            </div>
+
+            <table class="checkin-table" id="checkinTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Ticket code</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Check-in time</th>
+                        <th>Check-out time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="checkinTableBody">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="/js/checkin-list.js"></script>
+

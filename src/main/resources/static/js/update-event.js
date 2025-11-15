@@ -951,28 +951,39 @@ function initializeLineupAndAgendaButtons() {
 function initializeEventTitleClick() {
     console.log('Initializing event title click...');
 
-    const eventTitle = document.querySelector('.event-title');
     const eventOverviewForm = document.getElementById('eventOverviewForm');
 
-    if (eventTitle && eventOverviewForm) {
-        console.log('Event title and form found, adding click listener');
+    // Check if form is hidden (display: none) - if form is already visible, no need to add click handler
+    if (eventOverviewForm) {
+        const formStyle = window.getComputedStyle(eventOverviewForm);
+        const isFormHidden = formStyle.display === 'none';
+        
+        if (isFormHidden) {
+            // Only add click handler if form is hidden
+            const eventTitle = document.querySelector('.event-title');
+            
+            if (eventTitle) {
+                console.log('Event title and form found, form is hidden - adding click listener');
 
-        // Define click handler
-        const handleEventTitleClick = () => {
-            console.log('Event title clicked, showing form');
-            eventOverviewForm.style.display = 'block';
-        };
+                // Define click handler
+                const handleEventTitleClick = () => {
+                    console.log('Event title clicked, showing form');
+                    eventOverviewForm.style.display = 'block';
+                };
 
-        // Remove existing listeners to avoid duplicates
-        eventTitle.removeEventListener('click', handleEventTitleClick);
+                // Remove existing listeners to avoid duplicates
+                eventTitle.removeEventListener('click', handleEventTitleClick);
 
-        // Add click listener
-        eventTitle.addEventListener('click', handleEventTitleClick);
+                // Add click listener
+                eventTitle.addEventListener('click', handleEventTitleClick);
+            } else {
+                console.log('Event title not found');
+            }
+        } else {
+            console.log('Event overview form is already visible, no need to add click handler');
+        }
     } else {
-        console.log('Event title or form not found:', {
-            eventTitle: !!eventTitle,
-            eventOverviewForm: !!eventOverviewForm
-        });
+        console.log('Event overview form not found');
     }
 }
 

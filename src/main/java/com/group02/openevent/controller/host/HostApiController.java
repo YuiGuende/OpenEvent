@@ -44,24 +44,45 @@ public class HostApiController {
 
     /**
      * Kiểm tra xem user hiện tại đã là host chưa
+     * Account-User có thể có 3 role: Customer, Department, Host
      */
     @GetMapping("/check")
     public ResponseEntity<Map<String, Object>> checkHostStatus(HttpSession session) {
         try {
             User user = userService.getCurrentUser(session);
             if (user == null) {
-                return ResponseEntity.ok(Map.of("authenticated", true, "isHost", false, "hasCustomer", false));
+                return ResponseEntity.ok(Map.of(
+                    "authenticated", false, 
+                    "isHost", false, 
+                    "hasCustomer", false,
+                    "hasDepartment", false
+                ));
             }
 
-            boolean isHost = hostService.isUserHost(user.getUserId());
-            return ResponseEntity.ok(Map.of(
-                    "authenticated", true,
-                    "isHost", isHost,
-                    "hasCustomer", true,
-                    "customerId", user.getUserId()
-            ));
+            // Chỉ check user có phải host hay không (không liên quan customer)
+            boolean isHost = user.hasHostRole() || hostService.isUserHost(user.getUserId());
+            boolean hasCustomer = user.hasCustomerRole();
+            boolean hasDepartment = user.hasDepartmentRole();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("authenticated", true);
+            response.put("isHost", isHost);
+            response.put("hasCustomer", hasCustomer);
+            response.put("hasDepartment", hasDepartment);
+            response.put("userId", user.getUserId());
+            
+            // Nếu là customer, thêm customerId (giữ lại để frontend có thể dùng)
+            if (hasCustomer && user.getCustomer() != null) {
+                response.put("customerId", user.getCustomer().getCustomerId());
+            }
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("authenticated", true, "isHost", false, "error", e.getMessage()));
+            return ResponseEntity.ok(Map.of(
+                "authenticated", true, 
+                "isHost", false, 
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -75,15 +96,21 @@ public class HostApiController {
 
         try {
             User user = userService.getCurrentUser(session);
-            Customer customer = user.getCustomer();
-
-            // Kiểm tra xem đã là host chưa
-            if (hostService.isUserHost(customer.getCustomerId())) {
+            if (user == null) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Customer is already a host"));
+                        .body(Map.of("error", "User not authenticated"));
             }
-            // Đăng ký host (sẽ update customer name và account role, và save cả customer và account)
-            hostService.registerHost(customer, request);
+            
+            // BỎ check customer - không cần customer để đăng ký làm host
+            // Chỉ check user đã là host chưa
+            if (hostService.isUserHost(user.getUserId())) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "User is already a host"));
+            }
+            
+            // Đăng ký host trực tiếp từ User (không cần customer)
+            hostService.registerHost(user, request);
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Host registration successful");

@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head th:replace="~{fragments/head :: head('Trang chủ')}"></head>
 
-<body class="page-bg" th:data-user-id="${session.ACCOUNT_ID ?: 2}">
+<body class="page-bg" th:data-user-id="${session.USER_ID ?: 2}">
 <div th:replace="~{fragments/header :: siteHeader('home')}"></div>
 <main>
     <section class="hero hero--slider">

@@ -115,7 +115,7 @@ public class EventFormController {
             log.error("Error loading feedback form for event ID: {}", eventId, e);
             // Instead of redirecting, show empty form page
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form feedback nào cho sự kiện này. Vui lòng liên hệ host để tạo form.");
+            model.addAttribute("noFormMessage", "No feedback form available for this event. Please contact the host to create one.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }
@@ -132,7 +132,7 @@ public class EventFormController {
             return "user/feedback-form"; // reuse generic form template
         } catch (Exception e) {
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form đăng ký nào cho sự kiện này.");
+            model.addAttribute("noFormMessage", "No registration form available for this event.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }
@@ -149,7 +149,7 @@ public class EventFormController {
             return "user/feedback-form"; // reuse generic form template UI
         } catch (Exception e) {
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form tình nguyện viên cho sự kiện này.");
+            model.addAttribute("noFormMessage", "This event is not currently recruiting volunteers.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }
@@ -166,7 +166,7 @@ public class EventFormController {
             return "user/feedback-form"; // reuse generic form template
         } catch (Exception e) {
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form check-in nào cho sự kiện này.");
+            model.addAttribute("noFormMessage", "No check-in form available for this event.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }

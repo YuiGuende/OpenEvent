@@ -35,9 +35,9 @@ public class VolunteerApplication {
     private String hostResponse; // Phản hồi từ host (optional)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewed_by_account_id", nullable = true,
+    @JoinColumn(name = "reviewed_by_user_id", nullable = true,
             foreignKey = @ForeignKey(name = "fk_volunteer_application_reviewer"))
-    private com.group02.openevent.model.account.Account reviewedBy; // Host đã review
+    private com.group02.openevent.model.user.User reviewedBy; // Host đã review
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -118,11 +118,11 @@ public class VolunteerApplication {
         this.hostResponse = hostResponse;
     }
 
-    public com.group02.openevent.model.account.Account getReviewedBy() {
+    public com.group02.openevent.model.user.User getReviewedBy() {
         return reviewedBy;
     }
 
-    public void setReviewedBy(com.group02.openevent.model.account.Account reviewedBy) {
+    public void setReviewedBy(com.group02.openevent.model.user.User reviewedBy) {
         this.reviewedBy = reviewedBy;
     }
 

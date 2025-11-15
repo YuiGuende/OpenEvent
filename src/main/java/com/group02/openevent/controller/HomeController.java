@@ -81,13 +81,15 @@ public class HomeController {
             // Get your events from user's orders - fetch complete event data from DB
             List<EventCardDTO> myEvents = List.of();
             try {
-                    Customer customer = userService.getCurrentUser(session).getCustomer();
-                    System.out.println("DEBUG: Customer found: " + (customer != null ? customer.getCustomerId() : "null"));
+                // Kiểm tra user đã đăng nhập chưa
+                Long userId = (Long) session.getAttribute("USER_ID");
+                if (userId != null) {
+                    User user = userService.getUserById(userId);
+                    Customer customer = user.getCustomer();
                     
                     if (customer != null) {
                         // Get user's orders to find event IDs
                         List<UserOrderDTO> userOrders = orderService.getOrderDTOsByCustomer(customer, null);
-                        System.out.println("DEBUG: User orders count: " + userOrders.size());
                         
                         // Extract unique event IDs from orders
                         List<Long> eventIds = userOrders.stream()
@@ -96,26 +98,19 @@ public class HomeController {
                                 .distinct()
                                 .collect(Collectors.toList());
                         
-                        System.out.println("DEBUG: Unique event IDs: " + eventIds);
-                        
                         // Fetch complete event data from database using event IDs
                         if (!eventIds.isEmpty()) {
                             List<Event> userEvents = eventRepo.findAllById(eventIds);
-                            System.out.println("DEBUG: Fetched events count: " + userEvents.size());
                             
                             // Convert Event entities to EventCardDTO
                             myEvents = userEvents.stream()
                                     .map(eventService::convertToDTO)
                                     .collect(Collectors.toList());
-                            System.out.println("DEBUG: Converted to EventCardDTO count: " + myEvents.size());
                         }
-
-                } else {
-                    System.out.println("DEBUG: User not logged in");
+                    }
                 }
             } catch (Exception e) {
-                System.err.println("Error loading customer events: " + e.getMessage());
-                e.printStackTrace();
+                log.error("Error loading customer events: {}", e.getMessage(), e);
             }
             model.addAttribute("myEvents", myEvents);
 
@@ -127,14 +122,12 @@ public class HomeController {
             List<TopStudentDTO> topStudents = new ArrayList<>();
             try {
                 topStudents = topStudentService.getTopStudents(3);
-                System.out.println("DEBUG HomeController: Top students count = " + (topStudents != null ? topStudents.size() : 0));
 
                 // Đảm bảo luôn có ít nhất 3 students (service đã handle nhưng double check)
                 if (topStudents == null) {
                     topStudents = new ArrayList<>();
                 }
                 if (topStudents.isEmpty()) {
-                    System.out.println("WARNING HomeController: Service returned empty list, adding placeholders");
                     for (int i = 1; i <= 3; i++) {
                         topStudents.add(TopStudentDTO.builder()
                                 .customerId(null)
@@ -147,18 +140,8 @@ public class HomeController {
                                 .build());
                     }
                 }
-
-                // Log chi tiết
-                if (!topStudents.isEmpty()) {
-                    for (int i = 0; i < topStudents.size(); i++) {
-                        TopStudentDTO student = topStudents.get(i);
-                        System.out.println("DEBUG HomeController: Student[" + i + "] = " +
-                            (student != null ? student.getName() + " (" + student.getPoints() + " points)" : "null"));
-                    }
-                }
             } catch (Exception e) {
-                System.err.println("ERROR loading top students (non-fatal): " + e.getMessage());
-                e.printStackTrace();
+                log.error("ERROR loading top students (non-fatal): {}", e.getMessage(), e);
                 // Tạo placeholder students để đảm bảo luôn có dữ liệu hiển thị
                 topStudents = new ArrayList<>();
                 for (int i = 1; i <= 3; i++) {
@@ -187,13 +170,11 @@ public class HomeController {
                         .build());
             }
 
-            System.out.println("DEBUG HomeController: Final topStudents size before adding to model: " + topStudents.size());
             model.addAttribute("topStudents", topStudents);
 
             return "index";
         } catch (Exception e) {
-            System.err.println("Error in home controller: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error in home controller: {}", e.getMessage(), e);
             // Return simple home page with empty data
             model.addAttribute("posterEvents", List.of());
             model.addAttribute("liveEvents", List.of());

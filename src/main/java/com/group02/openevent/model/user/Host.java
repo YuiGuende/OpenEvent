@@ -27,7 +27,7 @@ public class Host {
     @JoinColumn(name = "organize_id")
     private Organization organization;
 
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

@@ -43,6 +43,7 @@ public class Host {
 
     // Host có thể trực tiếp tạo nhiều sự kiện
     @OneToMany(mappedBy = "host", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 30)
     private List<Event> events;
 
     public Host() {

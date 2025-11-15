@@ -17,6 +17,7 @@ public class Place {
     private Long id;
 
     @ManyToMany(mappedBy = "places", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JsonIgnore
     private List<Event> events = new ArrayList<>();
 

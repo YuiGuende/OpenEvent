@@ -45,10 +45,12 @@ public class EventForm {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "eventForm", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JsonManagedReference
     private List<FormQuestion> questions;
 
     @OneToMany(mappedBy = "eventForm", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JsonManagedReference
     private List<FormResponse> responses;
 }

@@ -31,6 +31,7 @@ public class Speaker {
     private SpeakerRole defaultRole = SpeakerRole.SPEAKER;
 
     @ManyToMany(mappedBy = "speakers")
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JsonIgnore
     private List<Event> events;
 

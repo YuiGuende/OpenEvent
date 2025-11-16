@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat với Host - Department</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/event-chat.css}"/>
+    
+    <style>
+        :root {
+            --primary-orange: #e65100;
+            --dark-bg: #000000;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--light-bg);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            min-height: 100vh;
+            background: var(--dark-bg);
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar .nav-link.active {
+            background: var(--primary-orange);
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            background: white;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="d-flex align-items-center mb-3">
+                <div class="sidebar-logo">
+                    <i class="bi bi-building text-white fs-4"></i>
+                </div>
+            </div>
+            <div>
+                <h5 class="text-white mb-0">Department Panel</h5>
+            </div>
+        </div>
+
+        <ul class="nav flex-column px-3 py-3">
+            <li class="nav-item">
+                <a class="nav-link" href="/department/dashboard">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/department/events">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    Events
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/department/orders">
+                    <i class="bi bi-receipt me-2"></i>
+                    Orders
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/department/requests">
+                    <i class="bi bi-inbox me-2"></i>
+                    Approval Requests
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/department/articles">
+                    <i class="bi bi-newspaper me-2"></i>
+                    Articles
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="/department/chat">
+                    <i class="bi bi-chat-dots me-2"></i>
+                    Chat với Host
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <div class="container">
+                <h2><i class="bi bi-chat-dots"></i> Chat với Host</h2>
+                <p class="mb-0 text-muted">Giao tiếp với các Host về sự kiện</p>
+            </div>
+        </div>
+
+        <div class="container mb-5">
+            <!-- Fragment Chat -->
+            <div th:replace="~{fragments/event-chat :: eventChat(${eventId}, ${uid}, ${isHost})}"></div>
+        </div>
+    </main>
+
+    <!-- WebSocket Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <!-- Scripts -->
+    <script th:src="@{/js/main.js}" defer></script>
+</body>
+</html>
+

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" th:href="@{/css/event-chat.css}"/>
+</head>
+<body>
+<th:block th:fragment="eventChat(eventId, currentUserId, isHost)">
+    <section id="event-chat"
+             class="event-chat-wrapper"
+             th:attr="data-event-id=${eventId}, data-current-user-id=${currentUserId}, data-is-host=${isHost != null ? isHost : false}">
+        <div class="event-chat-sidebar">
+            <div class="event-chat-sidebar__header">
+                <h3 class="event-chat-title">Cuộc trò chuyện</h3>
+                <div class="event-chat-sidebar__actions">
+                    <button type="button"
+                            id="create-volunteer-room-btn"
+                            class="btn btn-sm btn-primary"
+                            th:if="${isHost != null ? isHost : false}"
+                            title="Tạo phòng chat với volunteers">+ Room</button>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            onclick="loadRooms()">Làm mới</button>
+                </div>
+            </div>
+            <ul id="chat-room-list" class="event-chat-room-list"></ul>
+        </div>
+
+        <div class="event-chat-main">
+            <header class="event-chat-main__header">
+                <h4 id="chat-room-title" class="event-chat-room-title">Chọn một cuộc trò chuyện</h4>
+            </header>
+
+            <div id="chat-empty-state" class="event-chat-empty">
+                <p th:if="${isHost != null ? isHost : false}">Hãy chọn hoặc bắt đầu một cuộc trò chuyện với tình nguyện viên.</p>
+                <p th:unless="${isHost != null ? isHost : false}">Hãy chọn một cuộc trò chuyện với Host.</p>
+            </div>
+
+            <div id="chat-message-list" class="event-chat-messages"></div>
+
+            <div class="event-chat-input">
+                <textarea id="chat-input"
+                          class="event-chat-textarea"
+                          rows="2"
+                          placeholder="Nhập nội dung tin nhắn..."></textarea>
+                <button id="chat-send-btn"
+                        type="button"
+                        class="btn btn-primary event-chat-send">Gửi</button>
+            </div>
+        </div>
+    </section>
+
+    <script th:src="@{/js/event-chat.js}" defer></script>
+</th:block>
+</body>
+</html>
+
+

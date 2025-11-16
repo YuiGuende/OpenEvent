@@ -494,14 +494,14 @@ const HostDashboard = {
         if (!pageTitle) return;
 
         const titles = {
-            'Bảng điều khiển nhà tổ chức': 'duc le - Bảng điều khiển',
-            'Sự kiện': 'duc le - Quản lý sự kiện',
-            'Yêu cầu duyệt': 'duc le - Yêu cầu duyệt',
-            'Cài đặt': 'duc le - Cài đặt',
-            'Thiết kế trang sự kiện': 'duc le - Thiết kế trang sự kiện'
+            'Bảng điều khiển nhà tổ chức': 'Bảng điều khiển',
+            'Sự kiện': 'Quản lý sự kiện',
+            'Yêu cầu duyệt': 'Yêu cầu duyệt',
+            'Cài đặt': 'Cài đặt',
+            'Thiết kế trang sự kiện':'Thiết kế trang sự kiện'
         };
 
-        pageTitle.textContent = titles[navText] || 'duc le - Dashboard';
+        pageTitle.textContent = titles[navText] || 'Dashboard';
     },
 
     // Toggle live status
@@ -541,10 +541,6 @@ const HostDashboard = {
     },
 
     // View organizer homepage
-    viewOrganizerHomepage() {
-        const homepageUrl = 'https://app.hi.events/organizer/duc-le';
-        window.open(homepageUrl, '_blank');
-    },
 
     // Show user dropdown menu
     showUserMenu() {

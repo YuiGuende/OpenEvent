@@ -75,7 +75,7 @@ public class ChatSessionService {
             chatMessageRepo.save(userMessage);
             
             // Generate AI response (simplified)
-            String aiResponse = generateAIResponse(request.message());
+            String aiResponse = generateAIResponse(request.message(), request.userId(), request.sessionId());
             
             // Save AI response
             ChatMessage aiMessage = new ChatMessage();
@@ -109,13 +109,13 @@ public class ChatSessionService {
     /**
      * Generate AI response using EventAIAgent
      */
-    private String generateAIResponse(String userMessage) {
+    private String generateAIResponse(String userMessage, Long userId, String sessionId) {
         try {
             // Get or create AI agent for the session
-            EventAIAgent agent = SessionManager.getOrCreate("default");
+            EventAIAgent agent = SessionManager.getOrCreate(sessionId);
             
             // Generate response using the AI agent
-            String response = agent.reply(userMessage, 1L, "default");
+            String response = agent.reply(userMessage, userId, sessionId);
             
             return response != null ? response : "🤖 Xin lỗi, tôi không thể tạo phản hồi lúc này. Vui lòng thử lại sau.";
             

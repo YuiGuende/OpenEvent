@@ -59,11 +59,11 @@ public class VolunteerController {
 
     // Host: list approved volunteers (management)
     @GetMapping("/fragments/volunteers")
-    public String listApproved(@PathVariable Long eventId, Model model) {
-        List<VolunteerApplication> approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(eventId, VolunteerStatus.APPROVED);
+    public String listApproved(@RequestParam Long id, Model model) {
+        List<VolunteerApplication> approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, VolunteerStatus.APPROVED);
         model.addAttribute("volunteers", approved);
-        model.addAttribute("eventId", eventId);
-        return "host/volunteers";
+        model.addAttribute("eventId", id);
+        return "host/volunteers :: content";
     }
 
     // Host: "suspend" by marking as REJECTED with a flag in hostResponse

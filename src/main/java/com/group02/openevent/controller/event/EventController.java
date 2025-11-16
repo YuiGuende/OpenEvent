@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.repository.IEventImageRepo;
 import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.model.enums.Role;
+import com.group02.openevent.security.annotation.RequireRole;
 import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.UserService;
 import com.group02.openevent.service.impl.HostServiceImpl;
@@ -75,27 +77,31 @@ public class EventController {
 
 
 
-    // POST - create event
+    // POST - create event (chỉ HOST, ADMIN, DEPARTMENT mới tạo được)
     @PostMapping("save/music")
     @ResponseBody
+    @RequireRole({Role.HOST, Role.ADMIN, Role.DEPARTMENT})
     public MusicEvent saveMusic(@RequestBody MusicEvent event) {
         return eventService.saveMusicEvent(event);
     }
 
     @PostMapping("save/festival")
     @ResponseBody
+    @RequireRole({Role.HOST, Role.ADMIN, Role.DEPARTMENT})
     public FestivalEvent saveFestival(@RequestBody FestivalEvent event) {
         return eventService.saveFestivalEvent(event);
     }
 
     @PostMapping("save/competition")
     @ResponseBody
+    @RequireRole({Role.HOST, Role.ADMIN, Role.DEPARTMENT})
     public CompetitionEvent saveCompetition(@RequestBody CompetitionEvent event) {
         return eventService.saveCompetitionEvent(event);
     }
 
     @PostMapping("save/workshop")
     @ResponseBody
+    @RequireRole({Role.HOST, Role.ADMIN, Role.DEPARTMENT})
     public WorkshopEvent saveWorkshop(@RequestBody WorkshopEvent event) {
         return eventService.saveWorkshopEvent(event);
     }

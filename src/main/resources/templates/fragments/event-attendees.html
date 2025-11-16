@@ -16,7 +16,7 @@
         <!-- Header Section -->
         <div class="attendees-header mb-4 p-4 rounded-3">
             <h2 class="mb-4 fw-bold text-white">
-                <i class="bi bi-people-fill me-2"></i>Quản lý Người Tham Dự
+                <i class="bi bi-people-fill me-2"></i>Manage Attendees
             </h2>
 
             <!-- Search Bar -->
@@ -30,11 +30,11 @@
                             id="searchInput"
                             name="search"
                             th:value="${search}"
-                            placeholder="Tìm theo tên, email hoặc SĐT..."
+                            placeholder="Search by name, email or phone..."
                             class="form-control border-0 fs-6"
                     />
                     <button type="submit" class="btn btn-light fw-bold">
-                        <i class="bi bi-search me-1"></i>Tìm Kiếm
+                        <i class="bi bi-search me-1"></i>Search
                     </button>
                     <button type="button" onclick="resetSearch()" class="btn btn-outline-light fw-bold">
                         <i class="bi bi-arrow-clockwise me-1"></i>Reset
@@ -46,7 +46,7 @@
             <form id="filterForm" onsubmit="event.preventDefault(); performFilter();" class="row g-2">
                 <div class="col-md-3">
                     <select id="ticketTypeFilter" name="ticketTypeFilter" class="form-select form-select-sm">
-                        <option value="">📋 Tất cả loại vé</option>
+                        <option value="">📋 All ticket types</option>
                         <option th:each="ticket : ${ticketTypes}" 
                                 th:value="${ticket.ticketTypeId}"
                                 th:selected="${ticketTypeFilter != null and ticketTypeFilter == ticket.ticketTypeId}"
@@ -57,26 +57,26 @@
                 <div class="col-md-3">
                     <select id="paymentStatusFilter" name="paymentStatusFilter"
                             class="form-select form-select-sm">
-                        <option value="">💳 Tất cả trạng thái TT</option>
-                        <option value="PAID" th:selected="${paymentStatusFilter == 'PAID'}">✓ Đã thanh toán</option>
-                        <option value="PENDING" th:selected="${paymentStatusFilter == 'PENDING'}">⏳ Chưa thanh toán</option>
-                        <option value="CANCELLED" th:selected="${paymentStatusFilter == 'CANCELLED'}">✗ Đã hủy</option>
+                        <option value="">💳 All payment statuses</option>
+                        <option value="PAID" th:selected="${paymentStatusFilter == 'PAID'}">✓ Paid</option>
+                        <option value="PENDING" th:selected="${paymentStatusFilter == 'PENDING'}">⏳ Pending</option>
+                        <option value="CANCELLED" th:selected="${paymentStatusFilter == 'CANCELLED'}">✗ Cancelled</option>
                     </select>
                 </div>
 
                 <div class="col-md-3">
                     <select id="checkinStatusFilter" name="checkinStatusFilter"
                             class="form-select form-select-sm">
-                        <option value="">📍 Tất cả trạng thái check-in</option>
-                        <option value="CHECKED_IN" th:selected="${checkinStatusFilter == 'CHECKED_IN'}">✓ Đã check-in</option>
-                        <option value="NOT_CHECKED_IN" th:selected="${checkinStatusFilter == 'NOT_CHECKED_IN'}">✗ Chưa check-in</option>
-                        <option value="CHECKED_OUT" th:selected="${checkinStatusFilter == 'CHECKED_OUT'}">🚪 Đã check-out</option>
+                        <option value="">📍 All check-in statuses</option>
+                        <option value="CHECKED_IN" th:selected="${checkinStatusFilter == 'CHECKED_IN'}">✓ Checked in</option>
+                        <option value="NOT_CHECKED_IN" th:selected="${checkinStatusFilter == 'NOT_CHECKED_IN'}">✗ Not checked in</option>
+                        <option value="CHECKED_OUT" th:selected="${checkinStatusFilter == 'CHECKED_OUT'}">🚪 Checked out</option>
                     </select>
                 </div>
 
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-light w-100 fw-bold">
-                        <i class="bi bi-funnel me-1"></i>Lọc
+                        <i class="bi bi-funnel me-1"></i>Filter
                     </button>
                 </div>
             </form>
@@ -90,13 +90,13 @@
                     class="btn btn-success btn-lg fw-bold"
                     onclick="openAddModal()"
             >
-                <i class="bi bi-plus-lg me-2"></i>Thêm Người Tham Dự
+                <i class="bi bi-plus-lg me-2"></i>Add Attendee
             </button>
 
             <a th:href="@{/event/{eventId}/attendees/export/excel(eventId=${event.id}, ticketTypeFilter=${ticketTypeFilter}, paymentStatusFilter=${paymentStatusFilter}, checkinStatusFilter=${checkinStatusFilter})}"
                class="btn btn-warning btn-lg fw-bold text-dark"
             >
-                <i class="bi bi-download me-2"></i>Xuất Excel
+                <i class="bi bi-download me-2"></i>Export Excel
             </a>
         </div>
 
@@ -107,14 +107,14 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light border-bottom-2">
                         <tr>
-                            <th class="fw-bold">STT</th>
-                            <th class="fw-bold">Tên</th>
+                            <th class="fw-bold">#</th>
+                            <th class="fw-bold">Name</th>
                             <th class="fw-bold">Email</th>
-                            <th class="fw-bold">SĐT</th>
-                            <th class="fw-bold">Loại Vé</th>
-                            <th class="fw-bold">Trạng Thái TT</th>
+                            <th class="fw-bold">Phone</th>
+                            <th class="fw-bold">Ticket Type</th>
+                            <th class="fw-bold">Payment Status</th>
                             <th class="fw-bold">Check-in</th>
-                            <th class="fw-bold text-center">Hành Động</th>
+                            <th class="fw-bold text-center">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -127,19 +127,19 @@
                             <td>
                                         <span th:if="${attendee.order != null and attendee.order.status.toString() == 'PAID'}"
                                               class="badge bg-success">
-                                            ✓ Đã Thanh Toán
+                                            ✓ Paid
                                         </span>
                                 <span th:if="${attendee.order != null and attendee.order.status.toString() == 'PENDING'}"
                                       class="badge bg-warning text-dark">
-                                            ⏳ Chưa TT
+                                            ⏳ Pending
                                         </span>
                                 <span th:if="${attendee.order != null and attendee.order.status.toString() == 'CANCELLED'}"
                                       class="badge bg-danger">
-                                            ✗ Đã Hủy
+                                            ✗ Cancelled
                                         </span>
                                 <span th:if="${attendee.order == null}"
                                       class="badge bg-secondary">
-                                            - Không có Order
+                                            - No Order
                                         </span>
                             </td>
                             <td>
@@ -148,7 +148,7 @@
                                                 th:text="${#temporals.format(attendee.checkInTime, 'HH:mm')}"></span>
                                         </span>
                                 <span th:if="${attendee.checkInTime == null}" class="badge bg-danger">
-                                            ✗ Chưa Check-in
+                                            ✗ Not Checked In
                                         </span>
                             </td>
                             <td class="text-center">
@@ -181,7 +181,7 @@
                                             th:data-phone="${attendee.order != null ? attendee.order.participantPhone : attendee.phone}"
                                             th:data-organization="${attendee.order != null ? (attendee.order.participantOrganization != null ? attendee.order.participantOrganization : '') : (attendee.organization != null ? attendee.organization : '')}"
                                             class="btn btn-sm btn-outline-primary"
-                                            title="Sửa">
+                                            title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </button>
 
@@ -189,7 +189,7 @@
                                             type="button"
                                             th:onclick="|deleteAttendee(${attendee.attendanceId})|"
                                             class="btn btn-sm btn-outline-danger"
-                                            title="Xóa"
+                                            title="Delete"
                                     >
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -210,10 +210,10 @@
                        th:onclick="${currentPage > 0} ? |loadPage(${currentPage - 1})| : ''"
                        th:if="${currentPage > 0}"
                        href="javascript:void(0)">
-                        <i class="bi bi-chevron-left"></i> Trước
+                        <i class="bi bi-chevron-left"></i> Previous
                     </a>
                     <span class="page-link" th:if="${currentPage == 0}">
-                            <i class="bi bi-chevron-left"></i> Trước
+                            <i class="bi bi-chevron-left"></i> Previous
                         </span>
                 </li>
 
@@ -231,10 +231,10 @@
                        th:onclick="${currentPage < attendees.totalPages - 1} ? |loadPage(${currentPage + 1})| : ''"
                        th:if="${currentPage < attendees.totalPages - 1}"
                        href="javascript:void(0)">
-                        Sau <i class="bi bi-chevron-right"></i>
+                        Next <i class="bi bi-chevron-right"></i>
                     </a>
                     <span class="page-link" th:if="${currentPage >= attendees.totalPages - 1}">
-                            Sau <i class="bi bi-chevron-right"></i>
+                            Next <i class="bi bi-chevron-right"></i>
                         </span>
                 </li>
             </ul>

@@ -124,8 +124,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // Xác định Role
         com.group02.openevent.model.enums.Role role = user.getRole();
         
-        // Tạo authorities
-        GrantedAuthority authority = new SimpleGrantedAuthority(role.toString());
+        // Tạo authorities với prefix ROLE_ để Spring Security's hasRole() hoạt động đúng
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.toString());
         
         // Lưu AccountId và Role vào attributes để sử dụng trong AuthenticationSuccessHandler
         attributes.put("accountId", account.getAccountId());

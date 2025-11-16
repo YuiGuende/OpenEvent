@@ -1,0 +1,265 @@
+/* Event Chat Styles */
+.event-chat-wrapper {
+    display: flex;
+    height: 600px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 2rem;
+}
+
+.event-chat-sidebar {
+    width: 300px;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    background: #f8f9fa;
+}
+
+.event-chat-sidebar__header {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+}
+
+.event-chat-sidebar__actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.event-chat-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.event-chat-room-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.chat-room-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.chat-room-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.chat-room-subtext {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.chat-room-item.active .chat-room-subtext {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.badge-group {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #28a745;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.chat-room-item.active .badge-group {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.chat-room-item:hover {
+    background-color: #e9ecef;
+}
+
+.chat-room-item.active {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.chat-room-empty {
+    padding: 2rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.event-chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.event-chat-main__header {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+
+.event-chat-room-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.event-chat-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    text-align: center;
+    padding: 2rem;
+}
+
+.event-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chat-message {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 70%;
+}
+
+.chat-message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.chat-message.received {
+    align-self: flex-start;
+}
+
+.chat-message-content {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: #e9ecef;
+}
+
+.chat-message.sent .chat-message-content {
+    background: #007bff;
+    color: #fff;
+}
+
+.chat-message-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.event-chat-input {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.event-chat-textarea {
+    flex: 1;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.5rem;
+    resize: none;
+    font-family: inherit;
+}
+
+.event-chat-send {
+    padding: 0.5rem 1.5rem;
+}
+
+/* Hide empty state when messages are shown */
+.event-chat-messages:not(:empty) ~ .event-chat-empty {
+    display: none;
+}
+
+/* Message styles - phân biệt tin nhắn của mình và người khác */
+.chat-message-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+/* Tin nhắn của mình - hiển thị bên phải */
+.chat-message-item.from-me {
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.chat-message-item.from-me .chat-message-body {
+    background: #007bff;
+    color: white;
+    border-radius: 12px 12px 4px 12px;
+    padding: 0.75rem 1rem;
+}
+
+.chat-message-item.from-me .chat-message-meta {
+    text-align: right;
+    padding-right: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Tin nhắn của người khác - hiển thị bên trái */
+.chat-message-item.from-them {
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.chat-message-item.from-them .chat-message-body {
+    background: #e9ecef;
+    color: #333;
+    border-radius: 12px 12px 12px 4px;
+    padding: 0.75rem 1rem;
+}
+
+.chat-message-item.from-them .chat-message-meta {
+    text-align: left;
+    padding-left: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Thêm tên người gửi cho tin nhắn của người khác */
+.chat-message-item.from-them .chat-message-sender {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+    padding-left: 0.5rem;
+}
+
+.chat-message-item.from-me .chat-message-sender {
+    display: none; /* Không hiển thị tên cho tin nhắn của mình */
+}
+
+
+
+

@@ -16,7 +16,7 @@ public class PayosPayoutClient {
     private static final Logger logger = LoggerFactory.getLogger(PayosPayoutClient.class);
     private final PayOS payOS;
 
-    public PayosPayoutClient(@Qualifier("payOSPayout")PayOS payOS) {
+    public PayosPayoutClient(@Qualifier("payOS")PayOS payOS) {
         this.payOS = payOS;
     }
 
@@ -33,6 +33,7 @@ public class PayosPayoutClient {
         PayoutRequests payoutRequestsBody = PayoutRequests.builder()
                 .referenceId(request.getPayosOrderCode())
                 .amount(request.getAmount().longValue())
+//                .cac
                 .toBin(request.getBankCode())
                 .toAccountNumber(request.getBankAccountNumber())
                 .description("Rut tien Host id: #" + request.getHost().getId())

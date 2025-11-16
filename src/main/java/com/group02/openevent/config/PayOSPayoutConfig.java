@@ -1,11 +1,13 @@
 package com.group02.openevent.config;// src/main/java/com/group02/openevent.config.PayOSPayoutConfig.java
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import vn.payos.PayOS;
 
 @Configuration
+@ConditionalOnProperty(name = "payos.payout-client-id", matchIfMissing = false)
 public class PayOSPayoutConfig {
 
     // Lấy các khóa API riêng cho Payout

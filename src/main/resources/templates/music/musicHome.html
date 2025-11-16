@@ -2921,6 +2921,21 @@
         /*    margin-bottom: 50px !important;*/
         /*    padding: 30px 0 !important;*/
         /*}*/
+
+        /* Ensure Event Detail Header is always visible and on top */
+        .event-detail-header {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10000 !important; /* Higher than bubbles canvas */
+            background: #fff !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* Ensure header is above bubbles canvas */
+        #bubbles-canvas {
+            z-index: 10 !important; /* Keep lower than header */
+        }
     </style>
     <!-- Theme Colors -->
     <link rel="stylesheet" th:href="@{/music/assets/css/themeColors.css}">
@@ -3156,6 +3171,9 @@
 
 
 <body>
+<!-- Event Detail Header -->
+<div th:replace="~{fragments/header-event-detail :: eventDetailHeader(${eventId}, ${isVolunteerApproved}, ${customerId})}"></div>
+
 <!-- Floating Bubbles Canvas for Countdown Timer -->
 <canvas id="bubbles-canvas"></canvas>
 
@@ -4003,7 +4021,6 @@
                         Sale Not Active
                     </a>
 
-                    
                 </div>
             </div>
         </div>

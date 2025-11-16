@@ -941,7 +941,9 @@
     /*]]>*/
 </script>
 
-<body>
+<body th:with="eventId=${eventId != null ? eventId : 0}, isVolunteerApproved=${isVolunteerApproved != null ? isVolunteerApproved : false}, customerId=${customerId}">
+<!-- Event Detail Header -->
+<div th:replace="~{fragments/header-event-detail :: eventDetailHeader(${eventId}, ${isVolunteerApproved}, ${customerId})}"></div>
 
 <section class="hero hero--slider hero--compact">
     <div class="hero-track" id="heroTrack">

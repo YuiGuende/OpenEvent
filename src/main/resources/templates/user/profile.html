@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ - OpenEvent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #FF6B35, #e55a2b);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .avatar-section {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .avatar-preview {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #FF6B35;
+            margin: 0 auto 20px;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .avatar-placeholder {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35, #e55a2b);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-section {
+            padding: 20px 0;
+        }
+
+        .info-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: #212529;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-registered {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-not-registered {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #e55a2b;
+            border-color: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+
+        .alert {
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #FF6B35;
+            background-color: #fff5f2;
+        }
+
+        .upload-area.dragover {
+            border-color: #FF6B35;
+            background-color: #fff5f2;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .section-title {
+            color: #FF6B35;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FF6B35;
+        }
+    </style>
+</head>
+<body>
+
+<header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
+
+<div class="container mb-5">
+
+    <!-- Profile Information Card -->
+    <div class="profile-card">
+        <h4 class="section-title">
+            <i class="bi bi-person"></i> Thông tin cá nhân
+        </h4>
+        
+        <div class="row">
+            <!-- Avatar Section -->
+            <div class="col-md-4">
+                <div class="avatar-section">
+                    <div th:if="${customer.avatarUrl != null and !customer.avatarUrl.isEmpty()}">
+                        <img th:src="${customer.avatarUrl}" 
+                             alt="Avatar" 
+                             class="avatar-preview"
+                             id="avatarPreview">
+                    </div>
+                    <div th:if="${customer.avatarUrl == null or customer.avatarUrl.isEmpty()}" 
+                         class="avatar-placeholder"
+                         id="avatarPlaceholder">
+                        <span th:text="${user.name != null ? user.name.substring(0, 1).toUpperCase() : 'U'}">U</span>
+                    </div>
+                    
+                    <!-- Upload Avatar Section -->
+                    <div class="mt-4">
+                        <div class="upload-area" id="uploadArea">
+                            <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #FF6B35;"></i>
+                            <p class="mt-2 mb-2">Kéo thả ảnh vào đây hoặc</p>
+                            <div class="file-input-wrapper">
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('avatarFileInput').click()">
+                                    <i class="bi bi-upload"></i> Chọn ảnh
+                                </button>
+                                <input type="file" 
+                                       id="avatarFileInput" 
+                                       accept="image/*" 
+                                       style="display: none;"
+                                       onchange="handleFileSelect(event)">
+                            </div>
+                            <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">
+                                Hỗ trợ: JPG, PNG, GIF • Tối đa 5MB
+                            </p>
+                        </div>
+                        <button type="button" 
+                                class="btn btn-primary w-100 mt-3" 
+                                id="uploadBtn"
+                                onclick="uploadAvatar()"
+                                style="display: none;">
+                            <i class="bi bi-upload"></i> Upload ảnh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Information Section -->
+            <div class="col-md-8">
+                <div class="info-section">
+                    <form id="profileForm">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-person"></i> Họ và tên
+                            </div>
+                            <div class="info-value">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="nameInput"
+                                       th:value="${user.name != null ? user.name : ''}"
+                                       placeholder="Nhập họ và tên"
+                                       style="max-width: 400px;">
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-envelope"></i> Email
+                            </div>
+                            <div class="info-value">
+                                <input type="email" 
+                                       class="form-control" 
+                                       th:value="${user.account != null ? user.account.email : ''}"
+                                       disabled
+                                       style="max-width: 400px; background-color: #e9ecef; cursor: not-allowed;"
+                                       title="Email không thể thay đổi">
+                                <small class="text-muted">Email không thể thay đổi</small>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-telephone"></i> Số điện thoại
+                            </div>
+                            <div class="info-value">
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phoneInput"
+                                       th:value="${user.phoneNumber != null ? user.phoneNumber : ''}"
+                                       placeholder="Nhập số điện thoại"
+                                       style="max-width: 400px;">
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-star"></i> Điểm tích lũy
+                            </div>
+                            <div class="info-value">
+                                <span class="badge bg-warning text-dark" style="font-size: 1rem; padding: 8px 12px;">
+                                    <i class="bi bi-star-fill"></i> 
+                                    <span th:text="${customer.points != null ? customer.points : 0}">0</span> điểm
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    onclick="updateProfile()">
+                                <i class="bi bi-save"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Section -->
+    <div class="profile-card">
+        <h4 class="section-title">
+            <i class="bi bi-shield-lock"></i> Bảo mật
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <p class="mb-3">
+                    Thay đổi mật khẩu để bảo vệ tài khoản của bạn.
+                </p>
+                
+                <form id="passwordForm">
+                    <div class="mb-3">
+                        <label for="oldPassword" class="form-label">
+                            <i class="bi bi-key"></i> Mật khẩu cũ <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="oldPassword"
+                               placeholder="Nhập mật khẩu cũ"
+                               required>
+                        <div class="invalid-feedback" id="oldPasswordError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">
+                            <i class="bi bi-key-fill"></i> Mật khẩu mới <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="newPassword"
+                               placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                               required
+                               minlength="6">
+                        <div class="invalid-feedback" id="newPasswordError"></div>
+                        <small class="text-muted">Mật khẩu phải có ít nhất 6 ký tự</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">
+                            <i class="bi bi-key-fill"></i> Xác nhận mật khẩu mới <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="confirmPassword"
+                               placeholder="Nhập lại mật khẩu mới"
+                               required>
+                        <div class="invalid-feedback" id="confirmPasswordError"></div>
+                    </div>
+
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            onclick="changePassword()">
+                        <i class="bi bi-shield-check"></i> Đổi mật khẩu
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Face Check-in Registration Card -->
+    <div class="profile-card">
+        <h4 class="section-title">
+            <i class="bi bi-camera"></i> Check-in bằng khuôn mặt
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <p class="mb-3">
+                    Đăng ký check-in bằng khuôn mặt để có thể check-in nhanh chóng và tiện lợi tại các sự kiện.
+                </p>
+                
+                <div class="mb-3">
+                    <strong>Trạng thái:</strong>
+                    <span th:if="${customer.faceRegistered == true}" 
+                          class="status-badge status-registered ms-2">
+                        <i class="bi bi-check-circle"></i> Đã đăng ký
+                    </span>
+                    <span th:if="${customer.faceRegistered == null or customer.faceRegistered == false}" 
+                          class="status-badge status-not-registered ms-2">
+                        <i class="bi bi-x-circle"></i> Chưa đăng ký
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <strong>Ảnh đại diện:</strong>
+                    <span th:if="${customer.avatarUrl != null and !customer.avatarUrl.isEmpty()}" 
+                          class="text-success ms-2">
+                        <i class="bi bi-check-circle"></i> Đã có
+                    </span>
+                    <span th:if="${customer.avatarUrl == null or customer.avatarUrl.isEmpty()}" 
+                          class="text-danger ms-2">
+                        <i class="bi bi-x-circle"></i> Chưa có
+                    </span>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Lưu ý:</strong> Bạn cần upload ảnh đại diện trước khi đăng ký check-in bằng khuôn mặt.
+                </div>
+            </div>
+
+            <div class="col-md-4 text-end">
+                <div th:if="${customer.faceRegistered == true}">
+                    <button type="button" 
+                            class="btn btn-danger w-100 mb-2" 
+                            onclick="unregisterFace()">
+                        <i class="bi bi-x-circle"></i> Hủy đăng ký
+                    </button>
+                    <p class="text-muted small">
+                        Bạn đã đăng ký check-in bằng khuôn mặt. Bạn có thể hủy đăng ký bất cứ lúc nào.
+                    </p>
+                </div>
+                <div th:if="${customer.faceRegistered == null or customer.faceRegistered == false}">
+                    <button type="button" 
+                            class="btn btn-success w-100 mb-2" 
+                            onclick="registerFace()"
+                            th:disabled="${customer.avatarUrl == null or customer.avatarUrl.isEmpty()}">
+                        <i class="bi bi-check-circle"></i> Đăng ký khuôn mặt
+                    </button>
+                    <p class="text-muted small">
+                        <span th:if="${customer.avatarUrl == null or customer.avatarUrl.isEmpty()}">
+                            Vui lòng upload ảnh đại diện trước.
+                        </span>
+                        <span th:if="${customer.avatarUrl != null and !customer.avatarUrl.isEmpty()}">
+                            Nhấn để đăng ký check-in bằng khuôn mặt.
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let selectedFile = null;
+
+    // Handle file selection
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showAlert('File phải là ảnh!', 'danger');
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('File không được vượt quá 5MB!', 'danger');
+                return;
+            }
+
+            selectedFile = file;
+
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarPreview = document.getElementById('avatarPreview');
+                const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+                
+                if (avatarPreview) {
+                    avatarPreview.src = e.target.result;
+                    avatarPreview.style.display = 'block';
+                } else {
+                    // Create new preview if doesn't exist
+                    const newPreview = document.createElement('img');
+                    newPreview.id = 'avatarPreview';
+                    newPreview.className = 'avatar-preview';
+                    newPreview.src = e.target.result;
+                    newPreview.alt = 'Avatar';
+                    avatarPlaceholder.parentNode.insertBefore(newPreview, avatarPlaceholder);
+                    avatarPlaceholder.style.display = 'none';
+                }
+                
+                if (avatarPlaceholder) {
+                    avatarPlaceholder.style.display = 'none';
+                }
+
+                // Show upload button
+                document.getElementById('uploadBtn').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Upload avatar
+    async function uploadAvatar() {
+        if (!selectedFile) {
+            showAlert('Vui lòng chọn ảnh!', 'warning');
+            return;
+        }
+
+        const uploadBtn = document.getElementById('uploadBtn');
+        const originalText = uploadBtn.innerHTML;
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang upload...';
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const response = await fetch('/api/profile/upload-avatar', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert('Upload ảnh đại diện thành công!', 'success');
+                // Update avatar preview with new URL
+                const avatarPreview = document.getElementById('avatarPreview');
+                if (avatarPreview) {
+                    avatarPreview.src = data.imageUrl;
+                }
+                // Hide upload button
+                uploadBtn.style.display = 'none';
+                selectedFile = null;
+                // Reload page after 1 second to update face registration status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showAlert(data.error || 'Upload thất bại!', 'danger');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            showAlert('Lỗi khi upload ảnh. Vui lòng thử lại!', 'danger');
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = originalText;
+        }
+    }
+
+    // Register face
+    async function registerFace() {
+        if (!confirm('Bạn có chắc chắn muốn đăng ký check-in bằng khuôn mặt?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/profile/register-face', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert('Đăng ký khuôn mặt thành công!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showAlert(data.error || 'Đăng ký thất bại!', 'danger');
+            }
+        } catch (error) {
+            console.error('Register face error:', error);
+            showAlert('Lỗi khi đăng ký. Vui lòng thử lại!', 'danger');
+        }
+    }
+
+    // Unregister face
+    async function unregisterFace() {
+        if (!confirm('Bạn có chắc chắn muốn hủy đăng ký check-in bằng khuôn mặt?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/profile/unregister-face', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert('Hủy đăng ký thành công!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showAlert(data.error || 'Hủy đăng ký thất bại!', 'danger');
+            }
+        } catch (error) {
+            console.error('Unregister face error:', error);
+            showAlert('Lỗi khi hủy đăng ký. Vui lòng thử lại!', 'danger');
+        }
+    }
+
+    // Show alert message using JavaScript alert
+    function showAlert(message, type) {
+        // Use JavaScript alert for all notifications
+        if (type === 'success') {
+            alert('✓ ' + message);
+        } else if (type === 'danger' || type === 'error') {
+            alert('✗ ' + message);
+        } else if (type === 'warning') {
+            alert('⚠ ' + message);
+        } else {
+            alert(message);
+        }
+    }
+
+    // Drag and drop support
+    const uploadArea = document.getElementById('uploadArea');
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                // Create a fake event to reuse handleFileSelect
+                const fakeEvent = {
+                    target: {
+                        files: [file]
+                    }
+                };
+                handleFileSelect(fakeEvent);
+            } else {
+                showAlert('File phải là ảnh!', 'danger');
+            }
+        }
+    });
+
+    // Click on upload area to select file
+    uploadArea.addEventListener('click', () => {
+        document.getElementById('avatarFileInput').click();
+    });
+
+    // Update profile information
+    async function updateProfile() {
+        const nameInput = document.getElementById('nameInput');
+        const phoneInput = document.getElementById('phoneInput');
+        
+        const name = nameInput.value.trim();
+        const phoneNumber = phoneInput.value.trim();
+        
+        // Validate name
+        if (name.length === 0) {
+            showAlert('Vui lòng nhập họ và tên!', 'warning');
+            nameInput.focus();
+            return;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('phoneNumber', phoneNumber);
+            
+            const response = await fetch('/api/profile/update', {
+                method: 'PUT',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Cập nhật thông tin thành công!', 'success');
+                // Optionally reload page after 1 second to show updated data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showAlert(data.error || 'Cập nhật thất bại!', 'danger');
+            }
+        } catch (error) {
+            console.error('Update profile error:', error);
+            showAlert('Lỗi khi cập nhật thông tin. Vui lòng thử lại!', 'danger');
+        }
+    }
+
+    // Change password
+    async function changePassword() {
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        // Clear previous errors
+        document.getElementById('oldPasswordError').textContent = '';
+        document.getElementById('newPasswordError').textContent = '';
+        document.getElementById('confirmPasswordError').textContent = '';
+        document.getElementById('oldPassword').classList.remove('is-invalid');
+        document.getElementById('newPassword').classList.remove('is-invalid');
+        document.getElementById('confirmPassword').classList.remove('is-invalid');
+        
+        // Frontend validation
+        let hasError = false;
+        
+        if (!oldPassword || oldPassword.trim().length === 0) {
+            document.getElementById('oldPasswordError').textContent = 'Vui lòng nhập mật khẩu cũ';
+            document.getElementById('oldPassword').classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (!newPassword || newPassword.trim().length === 0) {
+            document.getElementById('newPasswordError').textContent = 'Vui lòng nhập mật khẩu mới';
+            document.getElementById('newPassword').classList.add('is-invalid');
+            hasError = true;
+        } else if (newPassword.length < 6) {
+            document.getElementById('newPasswordError').textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
+            document.getElementById('newPassword').classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (!confirmPassword || confirmPassword.trim().length === 0) {
+            document.getElementById('confirmPasswordError').textContent = 'Vui lòng xác nhận mật khẩu mới';
+            document.getElementById('confirmPassword').classList.add('is-invalid');
+            hasError = true;
+        } else if (newPassword !== confirmPassword) {
+            document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
+            document.getElementById('confirmPassword').classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (hasError) {
+            return;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('oldPassword', oldPassword);
+            formData.append('newPassword', newPassword);
+            formData.append('confirmPassword', confirmPassword);
+            
+            const response = await fetch('/api/profile/change-password', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Đổi mật khẩu thành công!', 'success');
+                // Clear form
+                document.getElementById('passwordForm').reset();
+                // Clear any error states
+                document.getElementById('oldPassword').classList.remove('is-invalid');
+                document.getElementById('newPassword').classList.remove('is-invalid');
+                document.getElementById('confirmPassword').classList.remove('is-invalid');
+            } else {
+                showAlert(data.error || 'Đổi mật khẩu thất bại!', 'danger');
+                // Show specific error on old password field if it's wrong
+                if (data.error && data.error.includes('Mật khẩu cũ')) {
+                    document.getElementById('oldPasswordError').textContent = data.error;
+                    document.getElementById('oldPassword').classList.add('is-invalid');
+                }
+            }
+        } catch (error) {
+            console.error('Change password error:', error);
+            showAlert('Lỗi khi đổi mật khẩu. Vui lòng thử lại!', 'danger');
+        }
+    }
+</script>
+</body>
+</html>
+

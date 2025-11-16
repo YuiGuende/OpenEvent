@@ -6,7 +6,6 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Host;
 import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.IEventRepo;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,6 +13,8 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -31,13 +32,20 @@ import java.util.Optional;
  */
 @Aspect
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class EventHostAuthorizationAspect {
     
     private final IEventRepo eventRepository;
     
+    // Constructor để log khi aspect được khởi tạo
+    public EventHostAuthorizationAspect(IEventRepo eventRepository) {
+        this.eventRepository = eventRepository;
+        log.info("✅✅✅ EventHostAuthorizationAspect initialized and registered! ✅✅✅");
+        log.info("Aspect will intercept methods annotated with @RequireEventHost");
+    }
+    
     @Before("@annotation(requireEventHost)")
+    @Transactional(readOnly = true)
     public void checkEventHost(JoinPoint joinPoint, RequireEventHost requireEventHost) {
         log.info("=== EventHostAuthorizationAspect.checkEventHost CALLED ===");
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -72,16 +80,22 @@ public class EventHostAuthorizationAspect {
             log.info("userId from parameters: {}", userId);
         }
         
-        if (eventId == null || userId == null) {
-            log.error("Missing required parameters for authorization check - eventId: {}, userId: {}", eventId, userId);
+        if (userId == null) {
+            log.error("Missing required parameters for authorization check - userId: {}", userId);
             log.error("Request parameters: {}", request.getParameterMap().keySet());
             if (request.getSession(false) != null) {
                 log.error("Session attributes: {}", Collections.list(request.getSession(false).getAttributeNames()));
-                log.error("ACCOUNT_ID in session: {}", request.getSession(false).getAttribute("USER_ID"));
+                log.error("USER_ID in session: {}", request.getSession(false).getAttribute("USER_ID"));
             } else {
                 log.error("No session found");
             }
-            throw new IllegalArgumentException("Missing eventId or userId parameter");
+            throw new IllegalArgumentException("User not authenticated");
+        }
+        
+        // If eventId is null, skip validation (method will handle the error)
+        if (eventId == null) {
+            log.warn("eventId is null, skipping authorization check (method will handle the error)");
+            return;
         }
         
         log.info("Authorization check - eventId: {}, userId: {}", eventId, userId);
@@ -101,7 +115,7 @@ public class EventHostAuthorizationAspect {
         }
         
         Event eventEntity = event.get();
-        log.debug("Event found: ID={}, Title={}, Host={}", eventEntity.getId(), eventEntity.getTitle(), 
+        log.info("Event found: ID={}, Title={}, Host={}", eventEntity.getId(), eventEntity.getTitle(), 
                 eventEntity.getHost() != null ? eventEntity.getHost().getId() : "null");
         
         // Safely extract host account ID with null checks
@@ -113,7 +127,7 @@ public class EventHostAuthorizationAspect {
             }
             
             Host host = eventEntity.getHost();
-            log.debug("Host found: ID={}", host.getId());
+            log.info("Host found: hostId={}", host.getId());
             
             // Force initialization of lazy-loaded User relationship
             try {
@@ -125,7 +139,7 @@ public class EventHostAuthorizationAspect {
                 }
                 
                 eventHostId = hostUser.getUserId();
-                log.debug("Host user found: userId={}", eventHostId);
+                log.info("Host user found: userId={}, hostId={}", eventHostId, host.getId());
                 
                 if (eventHostId == null) {
                     log.error("Event {} host user ID is null", eventId);
@@ -146,23 +160,26 @@ public class EventHostAuthorizationAspect {
             throw new IllegalStateException("Cannot determine event host: " + e.getMessage(), e);
         }
         
-        log.info("Comparing - Current userId: {} (type: {}), Event hostId: {} (type: {})", 
-                userId, userId != null ? userId.getClass().getName() : "null", 
-                eventHostId, eventHostId != null ? eventHostId.getClass().getName() : "null");
+        log.info("=== COMPARISON ===");
+        log.info("Current userId from session: {} (type: {})", userId, userId != null ? userId.getClass().getName() : "null");
+        log.info("Event hostId from database: {} (type: {})", eventHostId, eventHostId != null ? eventHostId.getClass().getName() : "null");
+        log.info("Direct comparison (==): {}", userId == eventHostId);
+        log.info("Objects.equals(): {}", java.util.Objects.equals(eventHostId, userId));
+        log.info("Long.compare(): {}", userId != null && eventHostId != null ? Long.compare(userId, eventHostId) : "N/A");
         
         // Use Objects.equals for safe comparison
         if (!java.util.Objects.equals(eventHostId, userId)) {
-            log.error("Authorization FAILED - User {} attempted to create request for event {} hosted by user {}", 
+            log.error("❌ Authorization FAILED ❌");
+            log.error("User {} (from session) attempted to access event {} which belongs to user {} (from database)", 
                     userId, eventId, eventHostId);
-            log.error("Event details - ID: {}, Title: '{}', Host Account ID: {}", 
-                    eventEntity.getId(), eventEntity.getTitle(), eventHostId);
-            log.error("Comparison details - userId == eventHostId: {}, userId.equals(eventHostId): {}", 
-                    userId == eventHostId, 
-                    userId != null && eventHostId != null && userId.equals(eventHostId));
-            throw new AccessDeniedException("Only the event host can create approval requests for this event");
+            log.error("Event details - ID: {}, Title: '{}'", 
+                    eventEntity.getId(), eventEntity.getTitle());
+            log.error("Host details - hostId: {}, hostUserId: {}", 
+                    eventEntity.getHost() != null ? eventEntity.getHost().getId() : "null", eventHostId);
+            throw new AccessDeniedException("Access denied: You can only manage events that you own. Event " + eventId + " belongs to another host.");
         }
         
-        log.info("Authorization check PASSED for user {} on event {}", userId, eventId);
+        log.info("✅ Authorization check PASSED for user {} on event {}", userId, eventId);
     }
     
     /**
@@ -241,6 +258,21 @@ public class EventHostAuthorizationAspect {
                 }
             }
             
+            // Check @PathVariable annotation
+            PathVariable pathVariable = param.getAnnotation(PathVariable.class);
+            if (pathVariable != null) {
+                String pathVariableValue = pathVariable.value();
+                if (pathVariableValue.isEmpty()) {
+                    pathVariableValue = param.getName();
+                }
+                if (pathVariableValue.equals(paramName) || param.getName().equals(paramName)) {
+                    Object value = args[i];
+                    if (value != null) {
+                        return type.cast(value);
+                    }
+                }
+            }
+            
             // Check @RequestParam annotation
             RequestParam requestParam = param.getAnnotation(RequestParam.class);
             if (requestParam != null) {
@@ -276,12 +308,28 @@ public class EventHostAuthorizationAspect {
         
         // If not found in parameters, try to get from request directly
         if (request != null) {
+            // Try request parameter first
             String paramValue = request.getParameter(paramName);
             if (paramValue != null && type == Long.class) {
                 try {
                     return type.cast(Long.parseLong(paramValue));
                 } catch (NumberFormatException e) {
                     log.warn("Could not parse {} as Long: {}", paramValue, e.getMessage());
+                }
+            }
+            
+            // Try path variable from URI (for @PathVariable)
+            String requestURI = request.getRequestURI();
+            if (requestURI != null && paramName.equals("eventId")) {
+                // Pattern: /manage/event/{eventId}/...
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("/manage/event/(\\d+)");
+                java.util.regex.Matcher matcher = pattern.matcher(requestURI);
+                if (matcher.find()) {
+                    try {
+                        return type.cast(Long.parseLong(matcher.group(1)));
+                    } catch (NumberFormatException e) {
+                        log.warn("Could not parse eventId from URI: {}", matcher.group(1));
+                    }
                 }
             }
         }

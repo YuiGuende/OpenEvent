@@ -249,7 +249,7 @@
         }
     </style>
 </head>
-<body>
+<body th:attr="data-user-id=${uid != null ? uid : ''}">
 
 <!-- Sidebar -->
 <nav class="sidebar">
@@ -293,6 +293,12 @@
             <a class="nav-link" href="/department/articles">
                 <i class="bi bi-newspaper me-2"></i>
                 Articles
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/department/chat">
+                <i class="bi bi-chat-dots me-2"></i>
+                Chat với Host
             </a>
         </li>
     </ul>
@@ -721,5 +727,10 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Chatbot Integration -->
+    <!-- Chatbot: hiển thị cho TẤT CẢ người dùng (department pages) -->
+    <div id="openevent-chatbot-container"></div>
+    <div th:replace="~{fragments/chatbot :: chatbot(${uid != null ? uid : null})}"></div>
+    <script th:src="@{/js/chatbot.js(v=4)}" defer></script>
 </body>
 </html>

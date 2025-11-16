@@ -466,6 +466,7 @@ CREATE TABLE event_attendance
     -- Metadata
     created_at      DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at      DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    notes           TEXT,
     
     -- Foreign Keys
     CONSTRAINT fk_attendance_order 

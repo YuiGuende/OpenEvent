@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Chat - OpenEvent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <link rel="stylesheet" th:href="@{/css/event-chat.css}"/>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #FF6B35, #e55a2b);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 0;
+        }
+        
+        .my-chat-wrapper {
+            display: flex;
+            height: calc(100vh - 200px);
+            max-width: 1400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .my-chat-sidebar {
+            width: 300px;
+            border-right: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+        }
+        
+        .my-chat-sidebar__header {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+            background: white;
+        }
+        
+        .my-chat-sidebar__header h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .my-chat-sidebar__actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .my-chat-room-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .my-chat-room-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background: white;
+            position: relative;
+        }
+        
+        .my-chat-room-item:hover {
+            background-color: #f1f3f5;
+        }
+        
+        .my-chat-room-item.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+        
+        .my-chat-room-item.active .my-chat-room-subtext {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .my-chat-room-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #212529;
+        }
+        
+        .my-chat-room-item.active .my-chat-room-name {
+            color: #fff;
+        }
+        
+        .my-chat-room-subtext {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .my-chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <header th:replace="~{fragments/header :: siteHeader('customer')}"></header>
+
+    <div class="page-header">
+        <div class="container">
+            <h1 class="mb-0"><i class="bi bi-chat-dots"></i> My Chat</h1>
+            <p class="mb-0 mt-2">Tất cả cuộc trò chuyện của bạn</p>
+        </div>
+    </div>
+
+    <div class="container mb-5" style="padding-top: 20px;">
+        <div class="my-chat-wrapper" 
+             th:attr="data-current-user-id=${userId}">
+            
+            <!-- Sidebar: Danh sách tất cả rooms -->
+            <div class="my-chat-sidebar">
+                <div class="my-chat-sidebar__header">
+                    <h3>Cuộc trò chuyện</h3>
+                    <div class="my-chat-sidebar__actions">
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="loadAllRooms()">Làm mới</button>
+                    </div>
+                </div>
+                <ul id="all-chat-room-list" class="my-chat-room-list">
+                    <li class="my-chat-room-item" style="text-align: center; color: #6c757d; padding: 40px 20px;">
+                        Đang tải...
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="my-chat-main">
+                <header class="event-chat-main__header">
+                    <h4 id="chat-room-title" class="event-chat-room-title">Chọn một cuộc trò chuyện</h4>
+                </header>
+
+                <div id="chat-empty-state" class="event-chat-empty">
+                    <p>Hãy chọn một cuộc trò chuyện từ danh sách bên trái.</p>
+                </div>
+
+                <div id="chat-message-list" class="event-chat-messages"></div>
+
+                <div class="event-chat-input">
+                    <textarea id="chat-input"
+                              class="event-chat-textarea"
+                              rows="2"
+                              placeholder="Nhập nội dung tin nhắn..."></textarea>
+                    <button id="chat-send-btn"
+                            type="button"
+                            class="btn btn-primary event-chat-send">Gửi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: siteFooter()}"></footer>
+
+    <!-- WebSocket Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <!-- Expose events data to JavaScript -->
+    <script th:inline="javascript">
+        window.EVENTS_DATA = /*[[${eventsJson}]]*/ [];
+    </script>
+    
+    <!-- Scripts -->
+    <script th:src="@{/js/main.js}" defer></script>
+    <script th:src="@{/js/my-chat.js}" defer></script>
+</body>
+</html>

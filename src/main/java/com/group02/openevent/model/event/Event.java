@@ -62,6 +62,7 @@ public class Event {
     private Event parentEvent;
 
     @OneToMany(mappedBy = "parentEvent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JsonManagedReference
     private List<Event> subEvents;
 
@@ -111,21 +112,25 @@ public class Event {
     private Integer points;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     private List<EventSchedule> schedules = new ArrayList<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JoinTable(name = "event_speaker",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "speaker_id"))
     private List<Speaker> speakers = new ArrayList<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JoinTable(name = "event_place",
             joinColumns = @JoinColumn(name = "event_id"),
             inverseJoinColumns = @JoinColumn(name = "place_id"))
     private List<Place> places = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JoinColumn(name = "event_id")
     private Set<EventImage> eventImages;
 
@@ -143,6 +148,7 @@ public class Event {
     private Host host;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 30)
     @JoinColumn(name = "event_id")
     private List<TicketType> ticketTypes = new ArrayList<>();
     @Column(name = "venue_address", length = 500)
@@ -151,6 +157,7 @@ public class Event {
     @Column(name = "guidelines", columnDefinition = "TEXT")
     private String guidelines;
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 30)
     private List<EmailReminder> emailReminders;
     public Event() {
     }
@@ -236,5 +243,31 @@ public class Event {
         }
         return minTicketPice;
 
+    }
+
+    public String getImageUrl() {
+        if (this.imageUrl != null && !this.imageUrl.isEmpty()) {
+            return this.imageUrl;
+        }
+
+        if (this.eventImages != null && !this.eventImages.isEmpty()) {
+            EventImage firstImageFromGallery = this.eventImages.iterator().next();
+            return firstImageFromGallery.getUrl();
+        }
+        return null;
+    }
+
+    public Organization getOrganization() {
+        if (this.organization != null ) {
+            return this.organization;
+        }
+        else {
+            Organization organizationTemp = new Organization();
+            if(this.host.getHostName().isEmpty() || this.host.getHostName() == null) {
+                organizationTemp.setOrgName(this.host.getUser().getName());
+            }
+            organizationTemp.setOrgName(this.host.getHostName());
+            return organizationTemp;
+        }
     }
 }

@@ -41,6 +41,12 @@ public class Customer {
     @Column(unique = true, length = 100)
     private String memberID;
 
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;  // URL to customer's profile photo for face recognition
+
+    @Column(name = "face_registered", nullable = false)
+    private Boolean faceRegistered = false;  // Whether customer has registered face for check-in
+
     public Customer() {
     }
 

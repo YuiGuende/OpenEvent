@@ -103,6 +103,45 @@ public class QdrantService {
         return "{\"status\":\"ok\"}";
     }
 
+    /**
+     * Xóa một embedding (vector) khỏi Qdrant bằng ID của nó.
+     * @param pointId ID của điểm (vector) cần xóa (chính là eventId đã chuyển thành String)
+     */
+    public void deleteEmbedding(String pointId) throws Exception {
+        if (pointId == null || pointId.isBlank()) {
+            log.warn("deleteEmbedding được gọi với ID rỗng, bỏ qua.");
+            return;
+        }
+
+        log.info("Attempting to delete point ID {} from collection '{}'", pointId, collection);
+        ensureCollection();
+
+        // 1. Chuyển đổi ID sang định dạng Qdrant (giống hệt logic upsert)
+        Object qId;
+        try {
+            qId = Long.valueOf(pointId);
+        } catch (NumberFormatException e) {
+            qId = pointId; // Giữ nguyên là String nếu không phải là số
+        }
+
+        // 2. Tạo body cho request, Qdrant yêu cầu một danh sách các ID
+        Map<String, Object> reqBody = Map.of(
+                "points", List.of(qId)
+        );
+
+        // 3. Tạo HTTP POST request
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/collections/" + collection + "/points/delete?wait=true")) // wait=true để đảm bảo xóa xong
+                .header("Content-Type", "application/json")
+                .header("api-key", apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(reqBody)))
+                .build();
+
+        // 4. Gửi request và kiểm tra lỗi
+        HttpResponse<String> resp = http.send(request, HttpResponse.BodyHandlers.ofString());
+        requireOk(resp, "Lỗi khi xóa point ID: " + pointId);
+        log.info("✅ Xóa thành công point ID {} khỏi collection '{}'", pointId, collection);
+    }
 
     public List<Map<String,Object>> searchSimilarVectors(float[] queryVector, int limit) throws Exception {
         ensureCollection();

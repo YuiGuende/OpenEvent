@@ -58,8 +58,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         com.group02.openevent.model.enums.Role role = user.getRole();
         
         // 4. Tạo danh sách quyền hạn (Authorities) từ Role của User
+        // Spring Security's hasRole() method tự động thêm prefix "ROLE_", nên cần thêm prefix này
         List<GrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority(role.toString()) // Ví dụ: "CUSTOMER"
+                new SimpleGrantedAuthority("ROLE_" + role.toString()) // Ví dụ: "ROLE_CUSTOMER", "ROLE_DEPARTMENT"
         );
 
         // 5. Trả về đối tượng CustomUserDetails

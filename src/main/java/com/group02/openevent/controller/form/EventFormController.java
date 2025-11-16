@@ -5,6 +5,7 @@ import com.group02.openevent.service.EventFormService;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.service.AuditLogService;
 import com.group02.openevent.dto.attendance.AttendanceRequest;
+import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.repository.ICustomerRepo;
@@ -157,8 +158,37 @@ public class EventFormController {
 
     // User: View check-in form (after login and QR)
     @GetMapping("/checkin/{eventId}")
-    public String showCheckinForm(@PathVariable Long eventId, Model model) {
+    public String showCheckinForm(@PathVariable Long eventId, Model model, HttpSession session) {
         try {
+            // Kiểm tra nếu user đã đăng nhập và đã check-in
+            Long userId = (Long) session.getAttribute("USER_ID");
+            if (userId != null) {
+                try {
+                    Optional<Customer> customerOpt = customerRepo.findByUser_UserId(userId);
+                    if (customerOpt.isPresent()) {
+                        Customer customer = customerOpt.get();
+                        String email = customer.getUser().getAccount().getEmail();
+                        if (email != null) {
+                            // Kiểm tra đã check-in chưa
+                            Optional<EventAttendance> attendanceOpt = attendanceService.getAttendanceByEventAndEmail(eventId, email);
+                            if (attendanceOpt.isPresent() && attendanceOpt.get().getCheckInTime() != null) {
+                                // Đã check-in rồi, không cần điền form
+                                model.addAttribute("eventId", eventId);
+                                model.addAttribute("alreadyCheckedIn", true);
+                                model.addAttribute("checkInTime", attendanceOpt.get().getCheckInTime());
+                                model.addAttribute("noFormMessage", "You have already checked in at " + 
+                                    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(attendanceOpt.get().getCheckInTime()) + ". No need to fill the form.");
+                                model.addAttribute("form", null);
+                                return "user/feedback-form";
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Error checking attendance status: {}", e.getMessage());
+                    // Continue to show form if check fails
+                }
+            }
+            
             EventFormDTO form = eventFormService.getActiveFormByEventIdAndType(eventId, com.group02.openevent.model.form.EventForm.FormType.CHECKIN);
             model.addAttribute("form", form);
             model.addAttribute("eventId", eventId);

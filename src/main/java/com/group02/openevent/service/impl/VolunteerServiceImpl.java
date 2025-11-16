@@ -41,14 +41,14 @@ public class VolunteerServiceImpl implements VolunteerService {
             IVolunteerApplicationRepo volunteerApplicationRepo,
             ICustomerRepo customerRepo,
             IEventRepo eventRepo,
-            IAccountRepo accountRepo,
+            IUserRepo userRepo,
             com.group02.openevent.repository.IOrderRepo orderRepo,
             EventChatRoomRepository eventChatRoomRepo,
             @Lazy EventChatService eventChatService) {
         this.volunteerApplicationRepo = volunteerApplicationRepo;
         this.customerRepo = customerRepo;
         this.eventRepo = eventRepo;
-        this.accountRepo = accountRepo;
+        this.userRepo = userRepo;
         this.orderRepo = orderRepo;
         this.eventChatRoomRepo = eventChatRoomRepo;
         this.eventChatService = eventChatService;

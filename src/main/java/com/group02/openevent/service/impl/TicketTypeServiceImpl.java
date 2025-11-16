@@ -81,10 +81,20 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
     @Override
     public void deleteTicketType(Long id) {
+        // Tìm ticketType với null check
         TicketType ticketType = ticketTypeRepo.findById(id)
                 .orElse(null);
-        // Kiểm tra đã bán vé chưa
-        assert ticketType != null;
+        
+        // Nếu ticketType không tồn tại, có thể đã bị xóa hoặc chưa được commit
+        // Kiểm tra lại một lần nữa để tránh race condition
+        if (ticketType == null) {
+            // Kiểm tra xem có đơn hàng nào tham chiếu không (nếu có thì ticketType có thể đã bị xóa ở transaction khác)
+            if (orderRepo.existsByTicketType_TicketTypeId(id)) {
+                throw new IllegalStateException("Không thể xóa loại vé vì đã có đơn hàng liên quan");
+            }
+            // Nếu không có đơn hàng và ticketType không tồn tại, có thể đã bị xóa
+            throw new EntityNotFoundException("Loại vé không tồn tại hoặc đã bị xóa");
+        }
 
         // Nếu có đơn hàng tham chiếu đến ticket type này thì không cho xóa
         if (orderRepo.existsByTicketType_TicketTypeId(id)) {

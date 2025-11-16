@@ -361,9 +361,9 @@ body {
 }
 
 /* Collapse button khi collapsed */
-.sidebar.collapsed .btn-collapse-sidebar i {
-    transform: rotate(180deg);
-}
+/*.sidebar.collapsed .btn-collapse-sidebar i {*/
+/*    transform: rotate(180deg);*/
+/*}*/
 
 /* Ẩn section titles */
 .sidebar.collapsed .nav-section-title {

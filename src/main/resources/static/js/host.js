@@ -119,7 +119,6 @@ const HostDashboard = {
                     document.body.classList.remove('sidebar-collapsed');
                     mainContent.style.marginLeft = '280px';
                     mainContent.style.width = 'calc(100% - 280px)';
-                    this.showNotification('Sidebar đã được mở', 'info');
                 } else {
                     sidebar.classList.add('open');
                 }
@@ -395,6 +394,26 @@ const HostDashboard = {
                                 window.initEventDropdowns();
                             }
                         }, 100); // Small delay to ensure DOM is ready
+                    }
+                    
+                    // Trigger check-in list initialization if check-in-list page is loaded
+                    if (fragmentUrl.includes('/check-in-list') || fragmentUrl.includes('/fragment/check-in-list')) {
+                        setTimeout(() => {
+                            console.log('Check-in list fragment detected, initializing check-in list...');
+                            console.log('window.initializeCheckInList type:', typeof window.initializeCheckInList);
+                            if (typeof window.initializeCheckInList === 'function') {
+                                console.log('Calling window.initializeCheckInList()');
+                                try {
+                                    window.initializeCheckInList();
+                                    console.log('✅ initializeCheckInList called successfully');
+                                } catch (e) {
+                                    console.error('❌ Error calling initializeCheckInList:', e);
+                                }
+                            } else {
+                                console.warn('⚠️ initializeCheckInList function not found!');
+                                console.warn('Make sure checkin-list.js is loaded');
+                            }
+                        }, 200); // Delay to ensure scripts are executed and DOM is ready
                     }
                 }
                 this.attachDynamicEvents();
@@ -674,11 +693,9 @@ const HostDashboard = {
             if (sidebar.classList.contains('collapsed')) {
                 mainContent.style.marginLeft = '0';
                 mainContent.style.width = '100%';
-                this.showNotification('Sidebar đã được thu gọn', 'info');
             } else {
                 mainContent.style.marginLeft = '280px';
                 mainContent.style.width = 'calc(100% - 280px)';
-                this.showNotification('Sidebar đã được mở rộng', 'info');
             }
         } else {
             // Mobile behavior

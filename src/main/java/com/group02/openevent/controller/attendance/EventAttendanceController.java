@@ -12,6 +12,7 @@ import com.group02.openevent.repository.IEventAttendanceRepo;
 import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.repository.IEventAttendanceRepo;
 import com.group02.openevent.service.CustomerService;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.service.EventService;
@@ -49,6 +50,9 @@ public class EventAttendanceController {
     private EventAttendanceService attendanceService;
     
     @Autowired
+    private IEventAttendanceRepo attendanceRepo;
+
+    @Autowired
     private QRCodeService qrCodeService;
     
     @Autowired
@@ -62,10 +66,8 @@ public class EventAttendanceController {
     
     @Autowired
     private IOrderRepo orderRepo;
-    
-    @Autowired
-    private IEventAttendanceRepo attendanceRepo;
-    
+
+
     /**
      * Trang hiển thị 2 QR codes (check-in & check-out)
      * URL: /events/{eventId}/attendance
@@ -249,50 +251,103 @@ public class EventAttendanceController {
     @ResponseBody
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<CheckInListDTO>> getAttendances(@PathVariable Long eventId) {
-        List<EventAttendance> attendances = attendanceService.getAttendancesByEventId(eventId);
-        
-        // Convert to DTO to avoid circular reference and nested depth issues
-        // Process within transaction to allow lazy loading of orderId if needed
-        List<CheckInListDTO> dtos = attendances.stream()
-            .map(attendance -> {
-                CheckInListDTO dto = new CheckInListDTO();
-                dto.setAttendanceId(attendance.getAttendanceId());
-                
-                // Get orderId safely - Hibernate proxy allows accessing ID without full load
-                // But we need to be in a transaction context
-                Long orderId = null;
-                try {
-                    // Check if order proxy is initialized
-                    if (attendance.getOrder() != null) {
-                        // Use Hibernate's getIdentifier() if available, or just getOrderId()
-                        // This should work within transaction context
-                        orderId = attendance.getOrder().getOrderId();
-                    }
-                } catch (org.hibernate.LazyInitializationException e) {
-                    // Should not happen if we're in transaction, but handle gracefully
-                    log.debug("Could not get orderId for attendance {} (lazy load failed): {}", 
-                        attendance.getAttendanceId(), e.getMessage());
-                    orderId = null;
-                } catch (Exception e) {
-                    log.warn("Could not get orderId for attendance {}: {}", 
-                        attendance.getAttendanceId(), e.getMessage());
-                    orderId = null;
+        log.info("=== Fetching attendances for event: {} ===", eventId);
+
+        try {
+            // Verify event exists first
+            Event event = eventService.getEventById(eventId)
+                    .orElse(null);
+            if (event == null) {
+                log.error("❌ Event not found with ID: {}", eventId);
+                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                    .body(new java.util.ArrayList<>());
+            }
+            log.info("✅ Event found: {} (ID: {})", event.getTitle(), eventId);
+
+            // Use service method that eagerly loads order to avoid lazy loading issues
+            List<EventAttendance> attendances = attendanceService.getAttendancesByEventId(eventId);
+            log.info("Found {} attendances for event {}", attendances.size(), eventId);
+
+            if (attendances.isEmpty()) {
+                log.warn("⚠️ No attendances found for event {}. This could mean:", eventId);
+                log.warn("  1. No orders have been paid for this event");
+                log.warn("  2. EventAttendance records were not created when orders were paid");
+                log.warn("  3. Query is not finding records correctly");
+
+                // Try to get count directly from repo to verify
+                long totalCount = attendanceRepo.countByEventId(eventId);
+                log.info("📊 Total EventAttendance count in DB for event {}: {}", eventId, totalCount);
+
+                if (totalCount > 0) {
+                    log.error("❌ CRITICAL: Database has {} records but query returned 0! Query issue detected!", totalCount);
                 }
-                
-                dto.setOrderId(orderId);
-                dto.setFullName(attendance.getFullName());
-                dto.setEmail(attendance.getEmail());
-                dto.setPhone(attendance.getPhone());
-                dto.setOrganization(attendance.getOrganization());
-                dto.setCheckInTime(attendance.getCheckInTime());
-                dto.setCheckOutTime(attendance.getCheckOutTime());
-                dto.setStatus(attendance.getStatus() != null ? attendance.getStatus().name() : null);
-                dto.setCreatedAt(attendance.getCreatedAt());
-                return dto;
-            })
-            .collect(java.util.stream.Collectors.toList());
-        
-        return ResponseEntity.ok(dtos);
+            } else {
+                log.info("Sample attendance: ID={}, Name={}, Email={}, CheckInTime={}, Status={}, OrderId={}",
+                    attendances.get(0).getAttendanceId(),
+                    attendances.get(0).getFullName(),
+                    attendances.get(0).getEmail(),
+                    attendances.get(0).getCheckInTime(),
+                    attendances.get(0).getStatus(),
+                    attendances.get(0).getOrder() != null ? attendances.get(0).getOrder().getOrderId() : "null");
+            }
+
+            // Convert to DTO to avoid circular reference and nested depth issues
+            // Process within transaction to allow lazy loading of orderId if needed
+            List<CheckInListDTO> dtos = attendances.stream()
+                .map(attendance -> {
+                    CheckInListDTO dto = new CheckInListDTO();
+                    dto.setAttendanceId(attendance.getAttendanceId());
+
+                    // Get orderId safely - Hibernate proxy allows accessing ID without full load
+                    // But we need to be in a transaction context
+                    Long orderId = null;
+                    try {
+                        // Check if order proxy is initialized
+                        if (attendance.getOrder() != null) {
+                            // Use Hibernate's getIdentifier() if available, or just getOrderId()
+                            // This should work within transaction context
+                            orderId = attendance.getOrder().getOrderId();
+                            log.debug("Got orderId {} for attendance {}", orderId, attendance.getAttendanceId());
+                        } else {
+                            log.debug("Attendance {} has no associated order (manually added)", attendance.getAttendanceId());
+                        }
+                    } catch (org.hibernate.LazyInitializationException e) {
+                        // Should not happen if we're in transaction, but handle gracefully
+                        log.warn("Could not get orderId for attendance {} (lazy load failed): {}",
+                            attendance.getAttendanceId(), e.getMessage());
+                        orderId = null;
+                    } catch (Exception e) {
+                        log.warn("Could not get orderId for attendance {}: {}",
+                            attendance.getAttendanceId(), e.getMessage());
+                        orderId = null;
+                    }
+
+                    dto.setOrderId(orderId);
+                    dto.setFullName(attendance.getFullName());
+                    dto.setEmail(attendance.getEmail());
+                    dto.setPhone(attendance.getPhone());
+                    dto.setOrganization(attendance.getOrganization());
+                    dto.setCheckInTime(attendance.getCheckInTime());
+                    dto.setCheckOutTime(attendance.getCheckOutTime());
+                    dto.setStatus(attendance.getStatus() != null ? attendance.getStatus().name() : null);
+                    dto.setCreatedAt(attendance.getCreatedAt());
+
+                    log.debug("Created DTO: attendanceId={}, orderId={}, name={}, email={}, status={}, checkInTime={}",
+                        attendance.getAttendanceId(), orderId, dto.getFullName(), dto.getEmail(),
+                        dto.getStatus(), dto.getCheckInTime());
+
+                    return dto;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+            log.info("=== Returning {} attendance DTOs for event {} ===", dtos.size(), eventId);
+            return ResponseEntity.ok(dtos);
+
+        } catch (Exception e) {
+            log.error("❌ Error fetching attendances for event {}: {}", eventId, e.getMessage(), e);
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new java.util.ArrayList<>());
+        }
     }
     
     /**
@@ -431,33 +486,33 @@ public class EventAttendanceController {
 
     /**
      * API endpoint to check customer's check-in status for an event
-     * GET: /events/{eventId}/checkin-status
+     * GET: /api/events/{eventId}/checkin-status
      */
-    @GetMapping("/{eventId}/checkin-status")
+    @GetMapping("/api/{eventId}/checkin-status")
     @ResponseBody
     public ResponseEntity<?> getCheckinStatus(
             @PathVariable Long eventId,
             HttpSession session) {
         try {
             Customer customer = customerService.getCurrentCustomer(session);
-            
+
             // ✅ Tìm check-in bằng customerId và orderId (giống logic face check-in)
             // 1. Tìm paid order của customer cho event này
             List<Order> customerOrders = orderRepo.findByCustomerId(customer.getCustomerId());
             List<Order> paidOrdersForEvent = customerOrders.stream()
-                .filter(order -> order.getEvent() != null && 
+                .filter(order -> order.getEvent() != null &&
                                order.getEvent().getId().equals(eventId) &&
                                order.getStatus() == OrderStatus.PAID)
                 .collect(java.util.stream.Collectors.toList());
-            
+
             java.util.Optional<EventAttendance> attendanceOpt = java.util.Optional.empty();
-            
+
             // 2. Nếu có paid order, tìm EventAttendance bằng orderId
             if (!paidOrdersForEvent.isEmpty()) {
                 Order paidOrder = paidOrdersForEvent.get(0);
                 attendanceOpt = attendanceRepo.findByOrder_OrderId(paidOrder.getOrderId());
             }
-            
+
             // 3. Fallback: nếu không tìm thấy bằng orderId, thử tìm bằng email
             if (attendanceOpt.isEmpty()) {
                 User user = customer.getUser();

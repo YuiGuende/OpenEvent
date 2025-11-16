@@ -1,10 +1,10 @@
 <div class="container-fluid checkin-list-container" th:fragment="content" th:attr="data-event-id=${eventId}">
     <style>
         :root {
-            --checkin-green: #10B981;
+            --checkin-green: #106e03;
             --checkin-green-light: #34D399;
             --checkin-green-dark: #059669;
-            --checkin-orange: #FF9500;
+            --checkin-orange: #f1731b;
             --checkin-orange-light: #FFB84D;
             --checkin-orange-dark: #E67E00;
         }
@@ -26,7 +26,7 @@
         .stat-card {
             background: white;
             border-radius: 16px;
-            padding: 2rem;
+            padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, box-shadow 0.2s;
             border-left: 5px solid;
@@ -42,15 +42,15 @@
         }
 
         .stat-card.checked-in {
-            border-left-color: var(--checkin-green);
+            border-left-color: var(--checkin-orange);
         }
 
         .stat-card.checked-out {
-            border-left-color: #6B7280;
+            border-left-color: var(--checkin-orange);
         }
 
         .stat-card.present {
-            border-left-color: var(--checkin-orange-light);
+            border-left-color: var(--checkin-orange);
         }
 
         .stat-label {
@@ -70,19 +70,19 @@
         }
 
         .stat-card.total .stat-value {
-            color: var(--checkin-orange);
+            color: #5e5b5b;
         }
 
         .stat-card.checked-in .stat-value {
-            color: var(--checkin-green);
+            color: #5e5b5b;
         }
 
         .stat-card.checked-out .stat-value {
-            color: #6B7280;
+            color: #5e5b5b;
         }
 
         .stat-card.present .stat-value {
-            color: var(--checkin-orange-light);
+            color: #5e5b5b;
         }
 
         .stat-icon {
@@ -114,7 +114,7 @@
 
         .search-input:focus {
             outline: none;
-            border-color: var(--checkin-green);
+            border-color: var(--checkin-orange-dark);
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
 
@@ -158,7 +158,7 @@
         }
 
         .refresh-btn {
-            background: linear-gradient(135deg, var(--checkin-green), var(--checkin-green-dark));
+            background: linear-gradient(135deg, var(--checkin-orange), var(--checkin-orange));
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
@@ -173,7 +173,7 @@
 
         .refresh-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 12px rgb(255, 147, 46);
         }
 
         .refresh-btn:active {
@@ -182,6 +182,34 @@
 
         .refresh-btn.spinning i {
             animation: spin 1s linear infinite;
+        }
+
+        .realtime-toggle-btn {
+            background: linear-gradient(135deg, #6B7280, #4B5563);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .realtime-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        }
+
+        .realtime-toggle-btn.active {
+            background: linear-gradient(135deg, var(--checkin-orange), var(--checkin-orange));
+        }
+
+        .realtime-toggle-btn.active:hover {
+            box-shadow: 0 4px 12px rgb(239, 120, 19);
         }
 
         @keyframes spin {
@@ -200,7 +228,7 @@
         }
 
         .checkin-table thead {
-            background: linear-gradient(135deg, var(--checkin-green), var(--checkin-green-dark));
+            background: linear-gradient(135deg, var(--checkin-orange), var(--checkin-orange));
             color: white;
         }
 
@@ -215,7 +243,7 @@
 
         .checkin-table tbody tr {
             border-bottom: 1px solid #F3F4F6;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, opacity 0.3s ease, transform 0.3s ease;
         }
 
         .checkin-table tbody tr:hover {
@@ -265,7 +293,7 @@
             opacity: 0.5;
         }
 
-        .loading-state {
+        .loading-st ate {
             text-align: center;
             padding: 4rem 2rem;
             color: var(--checkin-green);
@@ -303,27 +331,29 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+
+        @keyframes highlight {
+            0% { background-color: transparent; }
+            50% { background-color: rgba(16, 185, 129, 0.2); }
+            100% { background-color: transparent; }
+        }
     </style>
 
     <!-- Stats Header -->
     <div class="stats-header">
         <div class="stat-card total">
-            <div class="stat-icon">👥</div>
             <div class="stat-label">Total number of people</div>
             <div class="stat-value" id="statTotal">0</div>
         </div>
         <div class="stat-card checked-in">
-            <div class="stat-icon">✅</div>
             <div class="stat-label">Checked in</div>
             <div class="stat-value" id="statCheckedIn">0</div>
         </div>
         <div class="stat-card present">
-            <div class="stat-icon">🎯</div>
             <div class="stat-label">Present</div>
             <div class="stat-value" id="statPresent">0</div>
         </div>
         <div class="stat-card checked-out">
-            <div class="stat-icon">🚪</div>
             <div class="stat-label">Checked-out</div>
             <div class="stat-value" id="statCheckedOut">0</div>
         </div>
@@ -346,15 +376,21 @@
         <div class="checkin-list-header">
             <h2 class="checkin-list-title">
                 Check-in List
-                <span class="realtime-indicator">
+                <span class="realtime-indicator" id="realtimeIndicator" style="display: none;">
                     <span class="realtime-dot"></span>
-                    <span>Updating</span>
+                    <span>Live</span>
                 </span>
             </h2>
-            <button class="refresh-btn" id="refreshBtn" onclick="refreshCheckInList()">
-                <i class="bi bi-arrow-clockwise"></i>
-                Refresh
-            </button>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <button class="realtime-toggle-btn" id="realtimeToggleBtn" title="Toggle realtime updates">
+                    <i class="bi bi-broadcast"></i>
+                    <span id="realtimeToggleText">Auto-update: ON</span>
+                </button>
+                <button class="refresh-btn" id="refreshBtn" onclick="refreshCheckInList()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Refresh
+                </button>
+            </div>
         </div>
 
         <div class="checkin-table-wrapper">
@@ -390,5 +426,4 @@
     </div>
 </div>
 
-<script src="/js/checkin-list.js"></script>
 

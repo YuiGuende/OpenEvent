@@ -166,25 +166,25 @@ class ImageUploadManager {
     validateFile(file, type) {
         // Check file type
         if (!this.allowedTypes.includes(file.type)) {
-            this.showError(`File ${file.name} không được hỗ trợ. Chỉ chấp nhận JPG, PNG, WebP.`);
+            this.showError(`File ${file.name} is not supported. Only JPG, PNG, WebP are accepted.`);
             return false;
         }
 
         // Check file size
         if (file.size > this.maxFileSize) {
-            this.showError(`File ${file.name} quá lớn. Kích thước tối đa là 5MB.`);
+            this.showError(`File ${file.name} is too large. Maximum size is 5MB.`);
             return false;
         }
 
         // Check gallery limit
         if (type === 'gallery' && this.galleryImages.length >= this.maxGalleryImages) {
-            this.showError(`Chỉ được upload tối đa ${this.maxGalleryImages} ảnh gallery.`);
+            this.showError(`Maximum ${this.maxGalleryImages} gallery images allowed.`);
             return false;
         }
 
         // Check poster limit
         if (type === 'poster' && this.posterImages.length >= 5) {
-            this.showError('Chỉ được upload tối đa 5 ảnh poster.');
+            this.showError('Maximum 5 poster images allowed.');
             return false;
         }
 
@@ -251,7 +251,7 @@ class ImageUploadManager {
 
         } catch (error) {
             console.error('Error processing file:', error);
-            this.showError('Có lỗi xảy ra khi xử lý ảnh.');
+            this.showError('An error occurred while processing the image.');
             
             // Remove failed image from arrays
             if (type === 'poster') {
@@ -449,7 +449,7 @@ class ImageUploadManager {
 
     // Method to remove image from database
     async removeImageFromDatabase(imageId, type) {
-        if (confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+        if (confirm('Are you sure you want to delete this image?')) {
             try {
                 console.log('Deleting image from database:', imageId, 'type:', type);
                 
@@ -481,17 +481,17 @@ class ImageUploadManager {
                     this.updateUploadButtons();
                     
                     console.log('Image deleted successfully. Posters:', this.posterImages.length, 'Gallery:', this.galleryImages.length);
-                    alert('Xóa ảnh thành công!');
+                    alert('Image deleted successfully!');
                 } else {
                     const errorText = await response.text();
                     console.error('Error deleting image - status:', response.status);
                     console.error('Error response:', errorText);
-                    alert('Lỗi khi xóa ảnh!');
+                    alert('Error deleting image!');
                 }
             } catch (error) {
                 console.error('Error deleting image:', error);
                 console.error('Error stack:', error.stack);
-                alert('Lỗi mạng!');
+                alert('Network error!');
             }
         }
     }
@@ -529,11 +529,11 @@ class ImageUploadManager {
                 // Reload the page to show updated data
                 window.location.reload();
             } else {
-                alert('Lỗi khi đặt làm poster chính!');
+                alert('Error setting as main poster!');
             }
         } catch (error) {
             console.error('Error setting main poster:', error);
-            alert('Lỗi mạng!');
+            alert('Network error!');
         }
     }
 
@@ -641,7 +641,7 @@ class ImageUploadManager {
             
             if (!eventId || isNaN(eventId)) {
                 console.error('Invalid eventId:', eventId);
-                this.showError('Không tìm thấy Event ID. Vui lòng reload trang.');
+                this.showError('Event ID not found. Please reload the page.');
                 return;
             }
 
@@ -765,7 +765,7 @@ class ImageUploadManager {
                 console.error('Error creating image - status:', response.status);
                 console.error('Error response:', errorText);
                 
-                let errorMessage = 'Lỗi khi lưu ảnh vào cơ sở dữ liệu.';
+                let errorMessage = 'Error saving image to database.';
                 try {
                     const errorJson = JSON.parse(errorText);
                     if (errorJson.error) {
@@ -788,7 +788,7 @@ class ImageUploadManager {
         } catch (error) {
             console.error('Error creating image in database:', error);
             console.error('Error stack:', error.stack);
-            this.showError('Lỗi mạng khi lưu ảnh: ' + error.message);
+            this.showError('Network error while saving image: ' + error.message);
             
             // Remove failed image from arrays
             const imageArray = type === 'poster' ? this.posterImages : this.galleryImages;
@@ -825,7 +825,7 @@ class ImageUploadManager {
                 const imageUrl = result.imageUrl;
                 if (!imageUrl) {
                     console.error('No imageUrl in response:', result);
-                    throw new Error('Không nhận được URL ảnh từ server');
+                    throw new Error('Failed to receive image URL from server');
                 }
                 
                 return imageUrl;
@@ -833,7 +833,7 @@ class ImageUploadManager {
                 const errorText = await response.text();
                 console.error('Failed to upload image to Cloudinary - status:', response.status);
                 console.error('Error response:', errorText);
-                throw new Error('Không thể upload ảnh lên Cloudinary: ' + (errorText || 'Unknown error'));
+                throw new Error('Failed to upload image to Cloudinary: ' + (errorText || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error uploading to Cloudinary:', error);
@@ -1075,7 +1075,7 @@ window.initializeEventFormListeners = function() {
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.textContent;
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Đang xử lý...';
+            submitBtn.textContent = 'Processing...';
 
             try {
                 // First, submit the event form
@@ -1120,21 +1120,21 @@ window.initializeEventFormListeners = function() {
                         // Upload images
                         const imagesUploaded = await window.imageUploadManager.uploadImagesToServer(eventId);
                         if (imagesUploaded) {
-                            alert('Sự kiện và ảnh đã được lưu thành công!');
+                            alert('Event and images saved successfully!');
                             // Redirect or refresh page
                             window.location.reload();
                         } else {
-                            alert('Sự kiện đã được lưu nhưng có lỗi khi upload ảnh.');
+                            alert('Event saved but there was an error uploading images.');
                         }
                     } else {
-                        alert('Sự kiện đã được lưu thành công!');
+                        alert('Event saved successfully!');
                     }
                 } else {
-                    alert('Có lỗi xảy ra khi lưu sự kiện.');
+                    alert('An error occurred while saving the event.');
                 }
             } catch (error) {
                 console.error('Error submitting form:', error);
-                alert('Có lỗi xảy ra khi xử lý form.');
+                alert('An error occurred while processing the form.');
             } finally {
                 // Reset button state
                 submitBtn.disabled = false;

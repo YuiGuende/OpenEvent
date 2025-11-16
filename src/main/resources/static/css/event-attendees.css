@@ -3,34 +3,53 @@
 /* Updated CSS to work with Bootstrap 5 */
 
 :root {
-    --primary-color: #ff9f43;
-    --secondary-color: #4caf50;
+    /* Unified color scheme - Green, Orange, Blue */
+    --blue-primary: #3B82F6;
+    --blue-secondary: #2563EB;
+    --green-primary: #10B981;
+    --green-secondary: #059669;
+    --orange-primary: #FF6B35;
+    --orange-secondary: #F7931E;
+    
+    /* Legacy variables for compatibility */
+    /*--primary-color: #10B981; !* Green for Participants *!*/
+    --secondary-color: #10B981;
     --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #0dcaf0;
+    --warning-color: #FF6B35; /* Orange */
+    --info-color: #ef7813; /* Blue */
     --light-color: #f8f9fa;
     --dark-color: #212529;
 }
 
-/* Override Bootstrap colors */
-.btn-success {
-    background-color: var(--secondary-color) !important;
-    border-color: var(--secondary-color) !important;
+/* Override Bootstrap colors - Only for action buttons in attendees page - Orange color */
+.action-buttons .btn-success {
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+    border: 1px solid var(--orange-primary) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3) !important;
 }
 
-.btn-success:hover {
-    background-color: #45a049 !important;
-    border-color: #45a049 !important;
+.action-buttons .btn-success:hover {
+    background: linear-gradient(135deg, #FF5722, #FF6B35) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4) !important;
+    color: white !important;
 }
 
-.btn-warning {
-    background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
+.action-buttons .btn-warning {
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+    border: 1px solid var(--orange-primary) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3) !important;
 }
 
-.btn-warning:hover {
-    background-color: #e08830 !important;
-    border-color: #e08830 !important;
+.action-buttons .btn-warning:hover {
+    background: linear-gradient(135deg, #FF5722, #FF6B35) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4) !important;
+    color: white !important;
 }
 
 /* Container */
@@ -39,11 +58,13 @@
     background: transparent;
 }
 
-/* Header Section */
+/* Header Section - White background with black text */
 .attendees-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background: white;
     border-radius: 1rem;
-    color: white;
+    color: #1F2937;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .attendees-header input[type="text"],
@@ -61,7 +82,8 @@
 .attendees-header h2 {
     margin: 0 0 1.5rem 0;
     font-size: 1.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    color: #1F2937;
 }
 
 /* Search Section */
@@ -236,16 +258,17 @@
     border-collapse: collapse;
 }
 
-/* Scope table styles to event-attendees fragment only to avoid conflicts with orders page */
+/* Scope table styles to event-attendees fragment only - Light orange gradient */
 .event-attendees-fragment .table th {
-    background-color: #f8f9fa;
-    color: var(--dark-color);
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+    color: #1F2937 !important;
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     padding: 1rem !important;
-    border-bottom: 2px solid var(--primary-color) !important;
+    border-bottom: none !important;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
 }
 
 /* Scope table td styles to event-attendees fragment only */
@@ -255,15 +278,16 @@
 }
 
 .attendees-table thead tr {
-    background-color: var(--color-light);
-    border-bottom: 2px solid var(--color-primary);
+    background: linear-gradient(135deg, #FFE5D9, #FFD4B8);
+    border-bottom: none;
 }
 
 .attendees-table th {
     padding: 1rem;
     text-align: left;
     font-weight: 600;
-    color: var(--color-dark);
+    color: #1F2937;
+    background: linear-gradient(135deg, #FFE5D9, #FFD4B8);
 }
 
 .attendee-row {
@@ -276,7 +300,7 @@
 
 .attendees-table td {
     padding: 1rem;
-    color: var(--color-text);
+    color: #106e03;
 }
 
 .cell-name {
@@ -487,26 +511,56 @@
     border-radius: 0 0 0.5rem 0.5rem;
 }
 
+/* Bootstrap Modal Fix - Ensure proper z-index for modal and content */
+/* Override any conflicting z-index from header, sidebar, etc. */
 .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
+    z-index: 9999 !important; /* Very high z-index to be above everything */
+    position: fixed !important;
+}
+
+.modal-backdrop {
+    z-index: 9998 !important; /* Backdrop should be below modal but above everything else */
+    position: fixed !important;
+}
+
+.modal-dialog {
+    z-index: 10000 !important; /* Dialog should be above backdrop */
+    position: relative; /* Ensure positioning context */
+    margin: 1.75rem auto; /* Center the modal */
 }
 
 .modal-content {
+    z-index: 10001 !important; /* Content should be above dialog */
+    position: relative; /* Ensure positioning context */
+    pointer-events: auto !important; /* Ensure inputs are clickable */
     background: var(--color-white);
-    padding: 2rem;
     border-radius: var(--radius);
-    width: 90%;
-    max-width: 500px;
     box-shadow: var(--shadow-lg);
+}
+
+/* Ensure all form elements inside modal are clickable */
+.modal-content * {
+    pointer-events: auto !important;
+}
+
+.modal input,
+.modal select,
+.modal textarea,
+.modal button,
+.modal label,
+.modal .form-label {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: inherit;
+}
+
+/* Ensure modal is above header and sidebar */
+body .modal {
+    z-index: 9999 !important;
+}
+
+body .modal-backdrop {
+    z-index: 9998 !important;
 }
 
 .modal-title {
@@ -536,8 +590,8 @@
 
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(255, 159, 67, 0.25);
+    border-color: var(--green-primary);
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
 }
 
 .form-input,

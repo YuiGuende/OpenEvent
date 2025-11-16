@@ -143,7 +143,28 @@ public class EventAttendanceServiceImpl implements EventAttendanceService {
     
     @Override
     public List<EventAttendance> getAttendancesByEventId(Long eventId) {
-        return attendanceRepo.findByEventId(eventId);
+        log.info("Getting attendances for event: {}", eventId);
+        try {
+            // Try using method with eager loading to avoid lazy initialization issues
+            List<EventAttendance> attendances = attendanceRepo.findByEventIdWithOrder(eventId);
+            log.info("Found {} attendances using findByEventIdWithOrder", attendances.size());
+            
+            // If no results, try fallback method
+            if (attendances.isEmpty()) {
+                log.warn("No attendances found with eager loading, trying fallback method");
+                List<EventAttendance> fallbackAttendances = attendanceRepo.findByEventId(eventId);
+                log.info("Fallback method found {} attendances", fallbackAttendances.size());
+                return fallbackAttendances;
+            }
+            
+            return attendances;
+        } catch (Exception e) {
+            log.error("Error getting attendances with eager loading, using fallback: {}", e.getMessage(), e);
+            // Fallback to simple method if eager loading fails
+            List<EventAttendance> fallbackAttendances = attendanceRepo.findByEventId(eventId);
+            log.info("Fallback method found {} attendances", fallbackAttendances.size());
+            return fallbackAttendances;
+        }
     }
     
     @Override

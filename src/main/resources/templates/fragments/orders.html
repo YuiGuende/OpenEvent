@@ -42,15 +42,55 @@
             color: #004085;
         }
 
+        :root {
+            --blue-primary: #3B82F6;
+            --blue-secondary: #2563EB;
+            --green-primary: #10B981;
+            --green-secondary: #059669;
+            --orange-primary: #FF6B35;
+            --orange-secondary: #F7931E;
+        }
+
+        /* Orders page - Orange theme (thead) with Green buttons */
+        .container {
+            padding: 2rem;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+        }
+
+        .card-body {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        }
+
         .status-option.active {
             background-color: var(--orange-primary) !important;
             color: white !important;
             border-color: var(--orange-primary) !important;
         }
 
-        /* Override event-attendees.css for orders table - ensure gradient header */
+        /* Status badges with consistent styling */
+        .status-badge {
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-paid {
+            background: linear-gradient(135deg, var(--green-primary), var(--green-secondary)) !important;
+            color: white !important;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+            color: white !important;
+        }
+
+        /* Orders table - Orange gradient (tone chủ đạo) */
         .orders-table thead {
             background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
         }
 
         .orders-table thead th {
@@ -61,6 +101,44 @@
             letter-spacing: 0.5px !important;
             border: none !important;
             padding: 1rem !important;
+        }
+
+        /* Buttons - Green (màu phụ) */
+        .btn-outline-primary {
+            border-color: var(--green-primary);
+            color: var(--green-primary);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--green-primary);
+            border-color: var(--green-primary);
+            color: white;
+        }
+
+        /* Pagination */
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+            border-color: var(--orange-primary);
+            color: white;
+        }
+
+        .pagination .page-link {
+            color: var(--orange-secondary);
+        }
+
+        .pagination .page-link:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+            color: var(--orange-secondary);
+        }
+
+        /* Modal header - Orange gradient */
+        .modal-header-gradient {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+            color: white !important;
+        }
+
+        .modal-header-gradient .modal-title {
+            color: white !important;
         }
 
         /* Modal close button fix */
@@ -102,7 +180,7 @@
                                 type="text"
                                 class="form-control border-start-0 ps-0"
                                 id="searchInput"
-                                placeholder="Tìm kiếm theo tên, email, hoặc mã đơn hàng #"
+                                placeholder="Search by name, email, or order ID #"
                         />
                     </div>
                 </div>
@@ -111,8 +189,8 @@
                 <select class="form-select" id="sortDropdown" style="width: auto; min-width: 150px;">
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
-                    <option value="amount-high">Giá cao nhất</option>
-                    <option value="amount-low">Giá thấp nhất</option>
+                    <option value="amount-high">Highest Price</option>
+                    <option value="amount-low">Lowest Price</option>
                 </select>
 
                 <!-- Status Filter Dropdown -->
@@ -121,26 +199,28 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
                     </svg>
-                        <span id="statusFilterText">Tất cả trạng thái</span>
+                        <span id="statusFilterText">All Status</span>
                 </button>
                     <ul class="dropdown-menu" aria-labelledby="statusFilterDropdown">
-                        <li><a class="dropdown-item status-filter-option" href="#" data-status="" onclick="selectStatusFilter(this)">Tất cả</a></li>
-                        <li><a class="dropdown-item status-filter-option" href="#" data-status="PENDING" onclick="selectStatusFilter(this)">Chờ xử lý</a></li>
-                        <li><a class="dropdown-item status-filter-option" href="#" data-status="PAID" onclick="selectStatusFilter(this)">Đã thanh toán</a></li>
-                        <li><a class="dropdown-item status-filter-option" href="#" data-status="CANCELLED" onclick="selectStatusFilter(this)">Đã hủy</a></li>
-                        <li><a class="dropdown-item status-filter-option" href="#" data-status="EXPIRED" onclick="selectStatusFilter(this)">Hết hạn</a></li>
-                        <li><a class="dropdown-item status-filter-option" href="#" data-status="REFUNDED" onclick="selectStatusFilter(this)">Hoàn tiền</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="" onclick="selectStatusFilter(this)">All</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="PENDING" onclick="selectStatusFilter(this)">Pending</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="PAID" onclick="selectStatusFilter(this)">Paid</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="CANCELLED" onclick="selectStatusFilter(this)">Cancelled</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="EXPIRED" onclick="selectStatusFilter(this)">Expired</a></li>
+                        <li><a class="dropdown-item status-filter-option" href="#" data-status="REFUNDED" onclick="selectStatusFilter(this)">Refunded</a></li>
                     </ul>
                 </div>
 
                 <!-- Export Button with custom gradient -->
-                <button class="btn bg-gradient-green text-white d-flex align-items-center gap-2 btn-export" id="exportBtn">
+                <button class="btn text-white d-flex align-items-center gap-2 btn-export" 
+                        id="exportBtn"
+                        style="background: linear-gradient(135deg, var(--green-primary), var(--green-secondary)); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    Xuất
+                    Export
                 </button>
             </div>
 
@@ -150,14 +230,14 @@
                     <table class="table table-hover orders-table mb-4">
                         <thead>
                         <tr>
-                            <th class="py-3">Mã đơn</th>
-                            <th class="py-3">Sự kiện</th>
-                            <th class="py-3">Loại vé</th>
-                            <th class="py-3">Người tham gia</th>
-                            <th class="py-3">Trạng thái</th>
-                            <th class="py-3">Tổng tiền</th>
-                            <th class="py-3">Ngày tạo</th>
-                            <th class="py-3">Hành động</th>
+                            <th class="py-3">Order ID</th>
+                            <th class="py-3">Event</th>
+                            <th class="py-3">Ticket Type</th>
+                            <th class="py-3">Participant</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Total Amount</th>
+                            <th class="py-3">Created Date</th>
+                            <th class="py-3">Action</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -192,11 +272,13 @@
                             <td>
                                 <button
                                         class="btn btn-sm btn-outline-primary"
-                                        style="border-color: var(--orange-primary); color: var(--orange-primary);"
+                                        style="border-color: var(--green-primary); color: var(--green-primary); background: transparent;"
                                         th:attr="data-order-id=${order.orderId}"
                                         onclick="viewOrderDetail(this)"
+                                        onmouseover="this.style.background='var(--green-primary)'; this.style.color='white';"
+                                        onmouseout="this.style.background='transparent'; this.style.color='var(--green-primary)';"
                                 >
-                                    Xem chi tiết
+                                    View Details
                                 </button>
                             </td>
                         </tr>
@@ -207,7 +289,7 @@
                 <!-- Pagination using Bootstrap pagination -->
                 <div class="d-flex justify-content-between align-items-center pt-4 border-top">
                     <div class="text-muted small">
-                        Hiển thị <span th:text="${orders.numberOfElements}"></span> trong tổng số <span th:text="${orders.totalElements}"></span> đơn hàng
+                        Showing <span th:text="${orders.numberOfElements}"></span> of <span th:text="${orders.totalElements}"></span> orders
                     </div>
                     <nav>
                         <ul class="pagination mb-0">
@@ -216,9 +298,9 @@
                                    th:onclick="${!orders.first} ? |loadOrdersPage(${orders.number - 1})| : ''"
                                    th:if="${!orders.first}"
                                    href="javascript:void(0)">
-                                    Trước
+                                    Previous
                                 </a>
-                                <span class="page-link" th:if="${orders.first}">Trước</span>
+                                <span class="page-link" th:if="${orders.first}">Previous</span>
                             </li>
 
                             <li
@@ -237,9 +319,9 @@
                                    th:onclick="${!orders.last} ? |loadOrdersPage(${orders.number + 1})| : ''"
                                    th:if="${!orders.last}"
                                    href="javascript:void(0)">
-                                    Sau
+                                    Next
                                 </a>
-                                <span class="page-link" th:if="${orders.last}">Sau</span>
+                                <span class="page-link" th:if="${orders.last}">Next</span>
                             </li>
                         </ul>
                     </nav>
@@ -259,8 +341,8 @@
                     <circle cx="100" cy="30" r="15" fill="#e5e7eb"/>
                     <text x="100" y="38" text-anchor="middle" font-size="20" fill="#6b7280">$</text>
                 </svg>
-                <h3 class="h5 fw-semibold text-secondary mb-2">Không có đơn hàng nào để hiển thị</h3>
-                <p class="text-muted small">Đơn hàng của bạn sẽ xuất hiện ở đây sau khi chúng bắt đầu tham gia.</p>
+                <h3 class="h5 fw-semibold text-secondary mb-2">No orders to display</h3>
+                <p class="text-muted small">Your orders will appear here once they start participating.</p>
             </div>
         </div>
     </div>
@@ -270,28 +352,28 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header modal-header-gradient border-0">
-                    <h5 class="modal-title fw-semibold">Chi tiết đơn hàng #<span id="detailOrderId"></span></h5>
+                    <h5 class="modal-title fw-semibold">Order Details #<span id="detailOrderId"></span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <!-- Event Information -->
                     <div class="mb-4">
-                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Thông tin sự kiện</h6>
+                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Event Information</h6>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted">Tên sự kiện</span>
+                            <span class="text-muted">Event Name</span>
                             <span class="fw-medium text-end" id="detailEventTitle"></span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted">Loại vé</span>
+                            <span class="text-muted">Ticket Type</span>
                             <span class="fw-medium" id="detailTicketType"></span>
                         </div>
                     </div>
 
                     <!-- Participant Information -->
                     <div class="mb-4">
-                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Thông tin người tham gia</h6>
+                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Participant Information</h6>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted">Họ và tên</span>
+                            <span class="text-muted">Full Name</span>
                             <span class="fw-medium" id="detailParticipantName"></span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
@@ -302,25 +384,25 @@
 
                     <!-- Payment Information -->
                     <div class="mb-3">
-                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Thông tin thanh toán</h6>
+                        <h6 class="fw-semibold text-dark mb-3 pb-2 border-bottom">Payment Information</h6>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted">Trạng thái</span>
+                            <span class="text-muted">Status</span>
                             <span id="detailStatus"></span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted">Ngày tạo</span>
+                            <span class="text-muted">Created Date</span>
                             <span class="fw-medium" id="detailCreatedAt"></span>
                         </div>
                         <div class="bg-light rounded p-3 mt-3">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-semibold fs-6">Tổng tiền</span>
+                                <span class="fw-semibold fs-6">Total Amount</span>
                                 <span class="fw-bold fs-4" style="color: var(--orange-primary);" id="detailTotalAmount"></span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
                 </div>
             </div>
         </div>

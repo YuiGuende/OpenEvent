@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -68,8 +69,13 @@ public class HostServiceImpl implements HostService {
 
     @Override
     public Host findHostByUserId(Long userId) {
-        return hostRepo.findByUser_UserId(userId)
-                .orElseThrow(() -> new RuntimeException("This account is not a host"));
+        List<Host> hosts = hostRepo.findAllByUser_UserId(userId);
+        if (hosts.isEmpty()) {
+            throw new RuntimeException("This account is not a host");
+        }
+        // Return first host for backward compatibility
+        // In the future, you may want to select by organization or other criteria
+        return hosts.get(0);
     }
 
     @Override
@@ -83,16 +89,15 @@ public class HostServiceImpl implements HostService {
 
     @Override
     public boolean isUserHost(Long userId) {
-        return hostRepo.findByUser_UserId(userId).isPresent();
+        List<Host> hosts = hostRepo.findAllByUser_UserId(userId);
+        return hosts != null && !hosts.isEmpty();
     }
 
 
     @Override
     public Host registerHost(User user, HostRegistrationRequest request) {
-        // Kiểm tra xem user đã là host chưa
-        if (isUserHost(user.getUserId())) {
-            throw new RuntimeException("User is already a host");
-        }
+        // Note: Một user có thể có nhiều host records (cho các events khác nhau)
+        // Không cần check isUserHost() nữa vì cho phép nhiều hosts
 
         // Tạo host mới
         Host host = new Host();

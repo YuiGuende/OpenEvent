@@ -13,6 +13,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -60,8 +61,8 @@ public class User {
     @JsonIgnore
     private Customer customer;
     
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Host host;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Host> hosts;
     
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Admin admin;
@@ -84,7 +85,15 @@ public class User {
     }
     
     public boolean hasHostRole() {
-        return host != null;
+        return hosts != null && !hosts.isEmpty();
+    }
+    
+    /**
+     * Get the first host for backward compatibility
+     * Note: A user can have multiple hosts for different organizations
+     */
+    public Host getHost() {
+        return (hosts != null && !hosts.isEmpty()) ? hosts.get(0) : null;
     }
     
     public boolean hasAdminRole() {
@@ -106,7 +115,7 @@ public class User {
         if (department != null) {
             return Role.DEPARTMENT;
         }
-        if (host != null) {
+        if (hosts != null && !hosts.isEmpty()) {
             return Role.HOST;
         }
         if (customer != null) {

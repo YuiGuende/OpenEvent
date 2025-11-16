@@ -22,13 +22,8 @@ public class TopStudentServiceImpl implements TopStudentService {
     @Override
     public List<TopStudentDTO> getTopStudents(int limit) {
         try {
-            System.out.println("========================================");
-            System.out.println("=== DEBUG: Getting top students by points (Native SQL) ===");
-            System.out.println("Limit requested: " + limit);
-            
             // Sử dụng native SQL query - đơn giản và trực tiếp
             List<Object[]> results = customerRepo.findTopStudentsByPointsNative();
-            System.out.println("DEBUG: Native SQL query returned " + (results != null ? results.size() : 0) + " results");
             
             List<TopStudentDTO> topStudents = new ArrayList<>();
             
@@ -40,7 +35,8 @@ public class TopStudentServiceImpl implements TopStudentService {
                     }
                     
                     // Parse kết quả từ native query
-                    // Object[] format: [customer_id, name, points, email, image_url]
+                    // Object[] format: [customer_id, name, points, email, avatar]
+                    // name từ user.name, email từ account.email, avatar từ user.avatar
                     try {
                         Long customerId = ((Number) row[0]).longValue();
                         String name = row[1] != null ? row[1].toString() : null;
@@ -48,13 +44,8 @@ public class TopStudentServiceImpl implements TopStudentService {
                         String email = row[3] != null ? row[3].toString() : "";
                         String imageUrl = row[4] != null ? row[4].toString() : null;
                         
-                        System.out.println("DEBUG: Processing row - ID: " + customerId + 
-                            ", Name: '" + name + "'" + 
-                            ", Points: " + points);
-                        
                         // Skip nếu không có name
                         if (name == null || name.trim().isEmpty() || name.equals("Chưa có dữ liệu")) {
-                            System.out.println("DEBUG: Skipping - invalid name");
                             continue;
                         }
                         
@@ -69,42 +60,21 @@ public class TopStudentServiceImpl implements TopStudentService {
                                 .rank(rank++)
                                 .build();
                         
-                        System.out.println("DEBUG: ✓ Added student - Name: '" + dto.getName() + 
-                            "', Points: " + dto.getPoints() + 
-                            ", Rank: " + dto.getRank());
                         topStudents.add(dto);
                         
                     } catch (Exception e) {
-                        System.out.println("DEBUG: Error parsing row: " + e.getMessage());
-                        e.printStackTrace();
+                        // Skip invalid rows silently
                     }
                 }
-            } else {
-                System.out.println("WARNING: Native SQL query returned 0 results!");
             }
-            
-            System.out.println("DEBUG: Total students added: " + topStudents.size());
             
             // Ensure we have exactly the requested number of students (fill with placeholder if needed)
             while (topStudents.size() < limit) {
-                System.out.println("DEBUG: Adding placeholder student for rank " + (topStudents.size() + 1));
                 topStudents.add(createPlaceholderStudent(topStudents.size() + 1));
             }
             
-            System.out.println("DEBUG: Final result - Returning " + topStudents.size() + " students");
-            for (int i = 0; i < topStudents.size(); i++) {
-                TopStudentDTO s = topStudents.get(i);
-                System.out.println("  Final[" + i + "]: Name='" + s.getName() + "', Points=" + s.getPoints() + ", Rank=" + s.getRank());
-            }
-            System.out.println("========================================");
-            
             return topStudents;
         } catch (Exception e) {
-            System.err.println("========================================");
-            System.err.println("ERROR getting top students: " + e.getMessage());
-            System.err.println("Exception type: " + e.getClass().getName());
-            e.printStackTrace();
-            System.err.println("========================================");
             // Return placeholder students on error
             List<TopStudentDTO> placeholders = new ArrayList<>();
             for (int i = 1; i <= limit; i++) {

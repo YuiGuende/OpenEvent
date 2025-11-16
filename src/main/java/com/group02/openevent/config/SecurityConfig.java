@@ -117,7 +117,19 @@ public class SecurityConfig {
                                 .userService(oauth2UserService)
                         )
                         .successHandler(successHandler)
-                        .failureUrl("/login?error=oauth")
+                        .failureHandler((request, response, exception) -> {
+                            // Log lỗi chi tiết
+                            System.err.println("=== OAuth2 Login Failure ===");
+                            System.err.println("Exception: " + exception.getClass().getName());
+                            System.err.println("Message: " + exception.getMessage());
+                            if (exception.getCause() != null) {
+                                System.err.println("Cause: " + exception.getCause().getMessage());
+                            }
+                            exception.printStackTrace();
+                            // Redirect về login với thông báo lỗi
+                            response.sendRedirect("/login?error=oauth&message=" + 
+                                java.net.URLEncoder.encode(exception.getMessage(), "UTF-8"));
+                        })
                 )
 
                 // 5. Cấu hình Logout

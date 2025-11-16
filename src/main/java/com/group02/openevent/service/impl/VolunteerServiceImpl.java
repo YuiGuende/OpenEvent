@@ -1,13 +1,12 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.volunteer.VolunteerApplication;
 import com.group02.openevent.model.volunteer.VolunteerStatus;
-import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.repository.IVolunteerApplicationRepo;
 import com.group02.openevent.repository.EventChatRoomRepository;
 import com.group02.openevent.model.chat.ChatRoomType;
@@ -31,7 +30,7 @@ public class VolunteerServiceImpl implements VolunteerService {
     private final IVolunteerApplicationRepo volunteerApplicationRepo;
     private final ICustomerRepo customerRepo;
     private final IEventRepo eventRepo;
-    private final IAccountRepo accountRepo;
+    private final IUserRepo userRepo;
     private final com.group02.openevent.repository.IOrderRepo orderRepo;
     private final EventChatRoomRepository eventChatRoomRepo;
     private final EventChatService eventChatService;
@@ -89,8 +88,8 @@ public class VolunteerServiceImpl implements VolunteerService {
 
     @Override
     @Transactional
-    public VolunteerApplication approveVolunteerApplication(Long applicationId, Long reviewerAccountId, String hostResponse) {
-        log.info("Approving volunteer application {} by reviewer {}", applicationId, reviewerAccountId);
+    public VolunteerApplication approveVolunteerApplication(Long applicationId, Long reviewerUserId, String hostResponse) {
+        log.info("Approving volunteer application {} by reviewer user {}", applicationId, reviewerUserId);
 
         VolunteerApplication application = volunteerApplicationRepo.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Volunteer application not found: " + applicationId));
@@ -99,8 +98,8 @@ public class VolunteerServiceImpl implements VolunteerService {
             throw new IllegalStateException("Chỉ có thể approve application đang ở trạng thái PENDING");
         }
 
-        Account reviewer = accountRepo.findById(reviewerAccountId)
-                .orElseThrow(() -> new IllegalArgumentException("Reviewer account not found: " + reviewerAccountId));
+        com.group02.openevent.model.user.User reviewer = userRepo.findById(reviewerUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Reviewer user not found: " + reviewerUserId));
 
         application.setStatus(VolunteerStatus.APPROVED);
         application.setReviewedBy(reviewer);
@@ -143,8 +142,8 @@ public class VolunteerServiceImpl implements VolunteerService {
 
     @Override
     @Transactional
-    public VolunteerApplication rejectVolunteerApplication(Long applicationId, Long reviewerAccountId, String hostResponse) {
-        log.info("Rejecting volunteer application {} by reviewer {}", applicationId, reviewerAccountId);
+    public VolunteerApplication rejectVolunteerApplication(Long applicationId, Long reviewerUserId, String hostResponse) {
+        log.info("Rejecting volunteer application {} by reviewer user {}", applicationId, reviewerUserId);
 
         VolunteerApplication application = volunteerApplicationRepo.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Volunteer application not found: " + applicationId));
@@ -153,8 +152,8 @@ public class VolunteerServiceImpl implements VolunteerService {
             throw new IllegalStateException("Chỉ có thể reject application đang ở trạng thái PENDING");
         }
 
-        Account reviewer = accountRepo.findById(reviewerAccountId)
-                .orElseThrow(() -> new IllegalArgumentException("Reviewer account not found: " + reviewerAccountId));
+        com.group02.openevent.model.user.User reviewer = userRepo.findById(reviewerUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Reviewer user not found: " + reviewerUserId));
 
         application.setStatus(VolunteerStatus.REJECTED);
         application.setReviewedBy(reviewer);

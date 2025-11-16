@@ -1,12 +1,10 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.notification.Notification;
 import com.group02.openevent.model.notification.NotificationReceiver;
 import com.group02.openevent.model.notification.NotificationType;
 import com.group02.openevent.model.user.User;
-import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.IEventRepo;
 import com.group02.openevent.repository.INotificationRepo;
 import com.group02.openevent.repository.IOrderRepo;
@@ -52,16 +50,16 @@ public class INotificationServiceImpl implements INotificationService {
         notification.setEvent(event);
 
         // 2. Lấy danh sách Account ID của người tham gia
-        List<Long> receiverAccountIds = orderRepo.findDistinctCustomerAccountIdsByEventIdAndStatusPaid(eventId);
+        List<Long> receiverUserIds = orderRepo.findDistinctCustomerUserIdsByEventIdAndStatusPaid(eventId);
 
-        if (receiverAccountIds.isEmpty()) {
+        if (receiverUserIds.isEmpty()) {
             // Không có người tham gia nào để gửi thông báo
-            logger.error("receiverAccountIds is empty");
+            logger.error("receiverUserIds is empty");
             return null;
         }
 
         // 3. Lấy đối tượng Account dựa trên IDs
-        List<User> receivers = userService.findAllById(receiverAccountIds);
+        List<User> receivers = userService.findAllById(receiverUserIds);
 
         // 4. Tạo các NotificationReceiver cho từng người nhận
         List<NotificationReceiver> notificationReceivers = receivers.stream()

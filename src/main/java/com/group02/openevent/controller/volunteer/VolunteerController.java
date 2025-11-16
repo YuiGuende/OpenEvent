@@ -92,29 +92,29 @@ public class VolunteerController {
     @PostMapping("/volunteers/approve-by-customer")
     public String approveByCustomer(@RequestParam Long eventId,
                                     @RequestParam Long customerId,
-                                    @RequestParam Long formId,
+                                    @RequestParam(required = false) Long formId,
                                     HttpSession session) {
         Long reviewerUserId = (Long) session.getAttribute("USER_ID");
         if (reviewerUserId == null) {
             throw new IllegalStateException("User not logged in");
         }
         var opt = volunteerService.getVolunteerApplicationByCustomerAndEvent(customerId, eventId);
-        opt.ifPresent(app -> volunteerService.approveVolunteerApplication(app.getVolunteerApplicationId(), reviewerUserId, "Approved from form responses"));
-        return "redirect:/forms/form/" + formId + "/responses?eventId=" + eventId + "&success=approved";
+        opt.ifPresent(app -> volunteerService.approveVolunteerApplication(app.getVolunteerApplicationId(), reviewerUserId, "Approved from volunteer requests"));
+        return "redirect:/manage/event/" + eventId + "/volunteer-requests?success=approved";
     }
 
     // Host: reject by customerId + eventId (used from form responses view)
     @PostMapping("/volunteers/reject-by-customer")
     public String rejectByCustomer(@RequestParam Long eventId,
                                    @RequestParam Long customerId,
-                                   @RequestParam Long formId,
+                                   @RequestParam(required = false) Long formId,
                                    HttpSession session) {
         Long reviewerUserId = (Long) session.getAttribute("USER_ID");
         if (reviewerUserId == null) {
             throw new IllegalStateException("User not logged in");
         }
         var opt = volunteerService.getVolunteerApplicationByCustomerAndEvent(customerId, eventId);
-        opt.ifPresent(app -> volunteerService.rejectVolunteerApplication(app.getVolunteerApplicationId(), reviewerUserId, "Rejected from form responses"));
-        return "redirect:/forms/form/" + formId + "/responses?eventId=" + eventId + "&success=rejected";
+        opt.ifPresent(app -> volunteerService.rejectVolunteerApplication(app.getVolunteerApplicationId(), reviewerUserId, "Rejected from volunteer requests"));
+        return "redirect:/manage/event/" + eventId + "/volunteer-requests?success=rejected";
     }
 }

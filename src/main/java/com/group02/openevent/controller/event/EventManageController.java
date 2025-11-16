@@ -529,6 +529,25 @@ public class EventManageController {
                     Collectors.toList()
                 ));
 
+            // Filter to only show responses from customers with PENDING volunteer applications
+            List<com.group02.openevent.model.volunteer.VolunteerApplication> pendingApplications = 
+                volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, com.group02.openevent.model.volunteer.VolunteerStatus.PENDING);
+            
+            // Get customer IDs of pending applications
+            java.util.Set<Long> pendingCustomerIds = pendingApplications.stream()
+                .map(app -> app.getCustomer().getCustomerId())
+                .collect(Collectors.toSet());
+            
+            // Filter groupedResponses to only include pending customers
+            Map<Long, List<com.group02.openevent.dto.form.FormResponseDTO>> filteredGroupedResponses = groupedResponses.entrySet().stream()
+                .filter(entry -> pendingCustomerIds.contains(entry.getKey()))
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    (v1, v2) -> v1,
+                    LinkedHashMap::new
+                ));
+
             // Get volunteer form if exists
             try {
                 var volunteerForm = eventFormService.getActiveFormByEventIdAndType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
@@ -540,10 +559,10 @@ public class EventManageController {
                 log.info("📋 No volunteer form found for event {}", id);
             }
 
-            model.addAttribute("groupedResponses", groupedResponses);
+            model.addAttribute("groupedResponses", filteredGroupedResponses);
             model.addAttribute("formId", formId);
 
-            log.info("✅ Loaded {} volunteer request groups for event {}", groupedResponses.size(), id);
+            log.info("✅ Loaded {} volunteer request groups (pending only) for event {}", filteredGroupedResponses.size(), id);
         } catch (Exception e) {
             log.error("❌ Error loading volunteer requests fragment for event ID: {}", id, e);
             model.addAttribute("error", "Không thể tải yêu cầu duyệt: " + e.getMessage());

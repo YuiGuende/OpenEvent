@@ -57,9 +57,9 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
     Page<Order> findByEventId(@Param("eventId") Long eventId, Pageable pageable);
 
-    @Query("SELECT DISTINCT o.customer.user.account.accountId FROM Order o " +
+    @Query("SELECT DISTINCT o.customer.user.userId FROM Order o " +
             "WHERE o.event.id = :eventId AND o.status = 'PAID'")
-    List<Long> findDistinctCustomerAccountIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
+    List<Long> findDistinctCustomerUserIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
 
     boolean existsByTicketType_TicketTypeId(Long ticketTypeId);
 

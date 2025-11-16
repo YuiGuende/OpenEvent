@@ -18,10 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * Service to handle AI-driven order creation
@@ -36,7 +35,7 @@ public class OrderAIService {
     private final OrderService orderService;
     private final PaymentService paymentService;
     private final ICustomerRepo customerRepo;
-    private final AgentEventService  agentEventService;
+    private final AgentEventService agentEventService;
 
     // Store pending orders by userId
     private final Map<Long, PendingOrder> pendingOrders = new HashMap<>();
@@ -45,44 +44,82 @@ public class OrderAIService {
      * Start order creation process
      */
     public String startOrderCreation(Long userId, String eventQuery) {
-        // Search for event (PUBLIC status only for ticket buying)
+        // Tìm sự kiện PUBLIC theo tên
         List<Event> events = eventService.findByTitleAndPublicStatus(eventQuery);
 
         if (events.isEmpty()) {
-            return "❌ Không tìm thấy sự kiện \"" + eventQuery + "\". Vui lòng kiểm tra lại tên sự kiện.";
+            return "❌ Em chưa tìm thấy sự kiện có tên \"" + eventQuery + "\" trên hệ thống ạ.\n"
+                    + "Anh/chị giúp em kiểm tra lại tên sự kiện hoặc gõ rõ hơn một chút được không? 😊";
         }
 
+        // Tạm thời lấy sự kiện khớp đầu tiên
         Event event = events.get(0);
 
-        // Create pending order
+        // Lấy danh sách vé THẬT từ DB
+        List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEventId(event.getId());
+
+        if (ticketTypes.isEmpty()) {
+            return "ℹ️ Sự kiện **" + event.getTitle() + "** hiện vẫn chưa cấu hình/mở bán bất kỳ loại vé nào trên hệ thống ạ.\n"
+                    + "Anh/chị có thể chọn sự kiện khác hoặc quay lại sau nhé! 😊";
+        }
+
+        // Tạo pending order cho user
         PendingOrder pendingOrder = new PendingOrder();
         pendingOrder.setEvent(event);
         pendingOrder.setCurrentStep(PendingOrder.OrderStep.SELECT_TICKET_TYPE);
         pendingOrders.put(userId, pendingOrder);
 
-        // Get available ticket types
-        List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEventId(event.getId());
-
-        if (ticketTypes.isEmpty()) {
-            return "❌ Sự kiện \"" + event.getTitle() + "\" hiện không có vé nào.";
-        }
+        // Format thời gian & tiền
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        NumberFormat moneyFmt = NumberFormat.getInstance(new Locale("vi", "VN"));
 
         StringBuilder response = new StringBuilder();
-        response.append("🎫 Sự kiện: **").append(event.getTitle()).append("**\n\n");
-        response.append("📅 Thời gian: ").append(event.getStartsAt()).append("\n\n");
-        response.append("Các loại vé có sẵn:\n\n");
+        response.append("Dạ em đã tìm thấy sự kiện **\"")
+                .append(event.getTitle())
+                .append("\"** rồi ạ! 🎉\n\n");
+
+        if (event.getStartsAt() != null && event.getEndsAt() != null) {
+            response.append("📅 Thời gian: ")
+                    .append(event.getStartsAt().format(timeFmt))
+                    .append(" ➜ ")
+                    .append(event.getEndsAt().format(timeFmt))
+                    .append("\n\n");
+        }
+
+        response.append("Hiện tại sự kiện đang có các loại vé sau:\n\n");
 
         for (TicketType ticket : ticketTypes) {
             response.append("• **").append(ticket.getName()).append("**\n");
-            response.append("  - Giá: ").append(ticket.getFinalPrice()).append(" VND\n");
-            response.append("  - Còn lại: ").append(ticket.getAvailableQuantity()).append(" vé\n");
-            if (ticket.getDescription() != null) {
-                response.append("  - Mô tả: ").append(ticket.getDescription()).append("\n");
+
+            if (ticket.getFinalPrice() != null) {
+                long price = ticket.getFinalPrice().longValue();
+                response.append("  - Giá: ")
+                        .append(moneyFmt.format(price))
+                        .append(" VNĐ/vé\n");
+            } else {
+                response.append("  - Giá: đang cập nhật\n");
             }
+
+            response.append("  - Còn lại: ")
+                    .append(ticket.getAvailableQuantity())
+                    .append(" vé");
+
+            if (!ticket.isAvailable()) {
+                response.append(" (⛔ tạm hết)");
+            }
+
+            response.append("\n");
+
+            if (ticket.getDescription() != null && !ticket.getDescription().isBlank()) {
+                response.append("  - Mô tả: ")
+                        .append(ticket.getDescription().trim())
+                        .append("\n");
+            }
+
             response.append("\n");
         }
 
-        response.append("💡 Bạn muốn chọn loại vé nào?");
+        response.append("Anh/chị muốn chọn **loại vé nào** và **số lượng bao nhiêu** ạ? 😊");
 
         return response.toString();
     }

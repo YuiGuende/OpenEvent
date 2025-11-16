@@ -36,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,8 +62,11 @@ public class EventAIAgent implements Serializable {
     private final TranslationService translationService;
     private final AISecurityService securityService;
 
-    /** PendingEvent neo theo sessionId để tránh đè nhau giữa nhiều phiên của cùng 1 user */
-    private final Map<String, PendingEvent> pendingEvents = new HashMap<>();
+    /**
+     * PendingEvent neo theo sessionId để tránh đè nhau giữa nhiều phiên của cùng 1 user
+     * Dùng ConcurrentHashMap để thread-safe trong bean singleton.
+     */
+    private final Map<String, PendingEvent> pendingEvents = new ConcurrentHashMap<>();
 
     public EventAIAgent(EmbeddingService embeddingService,
                         PlaceService placeService,
@@ -198,6 +202,18 @@ Khi người dùng hỏi về cách thao tác trên hệ thống hoặc cần h�
   
   Anh/chị muốn tìm sự kiện như thế nào ạ? 🔍"
 
+### Khi người dùng hỏi "sự kiện nổi bật / hot / gần đây":
+- Hiểu là người dùng muốn xem MỘT VÀI sự kiện tiêu biểu, không phải toàn bộ danh sách.
+- Ưu tiên:
+  - Các sự kiện đang ở trạng thái PUBLIC
+  - Có thời gian diễn ra gần ngày hiện tại
+- Chỉ nên gợi ý khoảng 3–5 sự kiện, mỗi sự kiện nên có:
+  - Tên sự kiện
+  - Thời gian
+  - Địa điểm (nếu có)
+- Trả lời thân thiện, ví dụ:
+  "Dạ, đây là một vài sự kiện nổi bật gần đây em gợi ý cho anh/chị nè: ..."
+
 ### Hướng dẫn tạo sự kiện:
 - Nếu người dùng hỏi "Tạo sự kiện như thế nào?", hãy hướng dẫn:
   "Để tạo sự kiện, anh/chị cần cung cấp cho em các thông tin sau:
@@ -284,13 +300,21 @@ hoặc
 [
   { "toolName": "DELETE_EVENT", "args": { "title": "Tên sự kiện" } }
 ]
-- Không giải thích hay hiển thị nội dung JSON cho người dùng.
 
 ## NGUYÊN TẮC:
 - Tránh dùng từ kỹ thuật với người dùng.
 - Luôn đảm bảo rằng các trường TÊN SỰ KIỆN, THỜI GIAN BẮT ĐẦU/KẾT THÚC, và ĐỊA ĐIỂM đều được xác định. Nếu bất kỳ trường nào bị thiếu, hãy hỏi lại người dùng.
 - Nếu phát hiện địa điểm và thời gian bị trùng với sự kiện khác, hãy hỏi lại người dùng một thời gian khác hoặc một địa điểm khác. Không tự ý thêm nếu bị trùng.
 - Luôn diễn giải ý định rõ ràng, thân thiện.
+
+## NGUYÊN TẮC DỮ LIỆU (RẤT QUAN TRỌNG):
+- KHÔNG được tự bịa ra sự kiện, loại vé, giá vé, số lượng vé hoặc trạng thái sự kiện.
+- Chỉ mô tả dựa trên dữ liệu mà hệ thống backend cung cấp (Event, TicketType, Order,...).
+- Nếu hệ thống không trả về vé nào:
+  → hãy trả lời kiểu: "Hiện tại sự kiện này chưa có thông tin vé được mở bán"
+  hoặc "Em chưa thấy loại vé nào cho sự kiện này trong hệ thống".
+- Nếu không chắc chắn 100% về thông tin, hãy hỏi lại người dùng hoặc đề nghị họ chọn từ danh sách sự kiện / vé mà hệ thống hiển thị.
+- Luôn ưu tiên phản hồi an toàn thay vì đoán hoặc bịa thêm thông tin.
 """);
         systemPrompt.append("- Ngày hiện tại là ")
                 .append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
@@ -465,27 +489,27 @@ hoặc
 
         // Các từ khóa ngoài phạm vi
         String[] outOfScopeKeywords = {
-            "lịch sử việt nam", "lịch sử trung quốc", "lịch sử mỹ", "tổng thống mỹ",
-            "khoa học vật lý", "hóa học", "sinh học", "khoa học",
-            "địa lý việt nam", "địa lý thế giới", "thủ đô của", "giới thiệu về",
-            "văn học việt nam", "văn học thế giới", "nhà văn", "tác phẩm",
-            "tin tức", "chính trị", "bầu cử", "quốc hội", "đảng chính trị",
-            "nấu ăn", "món ăn", "công thức", "ẩm thực",
-            "đá bóng", "world cup", "euro", "world series", "olympic",
-            "giải trí", "phim ảnh", "mv", "nhạc mới", "game",
-            "thời sự", "tin nóng", "sự kiện thế giới"
+                "lịch sử việt nam", "lịch sử trung quốc", "lịch sử mỹ", "tổng thống mỹ",
+                "khoa học vật lý", "hóa học", "sinh học", "khoa học",
+                "địa lý việt nam", "địa lý thế giới", "thủ đô của", "giới thiệu về",
+                "văn học việt nam", "văn học thế giới", "nhà văn", "tác phẩm",
+                "tin tức", "chính trị", "bầu cử", "quốc hội", "đảng chính trị",
+                "nấu ăn", "món ăn", "công thức", "ẩm thực",
+                "đá bóng", "world cup", "euro", "world series", "olympic",
+                "giải trí", "phim ảnh", "mv", "nhạc mới", "game",
+                "thời sự", "tin nóng", "sự kiện thế giới"
         };
 
         // Kiểm tra không chứa các từ khóa liên quan đến OpenEvent
         String[] openEventKeywords = {
-            "sự kiện", "event", "vé", "ticket", "mua vé", "đặt vé",
-            "workshop", "music", "festival", "competition", "conference",
-            "speaker", "địa điểm", "location", "place",
-            "thanh toán", "payment", "payos", "order",
-            "reminder", "email", "thông báo", "nhắc nhở",
-            "voucher", "giảm giá", "discount",
-            "schedule", "lịch trình", "time",
-            "thời tiết", "weather", "mưa", "nắng", "dự báo", "forecast"
+                "sự kiện", "event", "vé", "ticket", "mua vé", "đặt vé",
+                "workshop", "music", "festival", "competition", "conference",
+                "speaker", "địa điểm", "location", "place",
+                "thanh toán", "payment", "payos", "order",
+                "reminder", "email", "thông báo", "nhắc nhở",
+                "voucher", "giảm giá", "discount",
+                "schedule", "lịch trình", "time",
+                "thời tiết", "weather", "mưa", "nắng", "dự báo", "forecast"
         };
 
         // Nếu có từ khóa OpenEvent, không phải ngoài phạm vi
@@ -510,13 +534,13 @@ hoặc
      */
     private String handleOutOfScopeQuestion() {
         return "Xin lỗi anh/chị, em chỉ có thể hỗ trợ về hệ thống OpenEvent và các sự kiện thôi ạ.\n\n" +
-               "Em có thể giúp anh/chị:\n" +
-               "✅ Tìm kiếm sự kiện\n" +
-               "✅ Mua vé sự kiện\n" +
-               "✅ Tạo và quản lý sự kiện\n" +
-               "✅ Xem thông tin về speakers và địa điểm\n" +
-               "✅ Thanh toán và voucher\n\n" +
-               "Anh/chị cần hỗ trợ gì về OpenEvent ạ? 😊";
+                "Em có thể giúp anh/chị:\n" +
+                "✅ Tìm kiếm sự kiện\n" +
+                "✅ Mua vé sự kiện\n" +
+                "✅ Tạo và quản lý sự kiện\n" +
+                "✅ Xem thông tin về speakers và địa điểm\n" +
+                "✅ Thanh toán và voucher\n\n" +
+                "Anh/chị cần hỗ trợ gì về OpenEvent ạ? 😊";
     }
 
     /**
@@ -530,9 +554,9 @@ hoặc
         String input = userInput.toLowerCase();
 
         String[] weatherKeywords = {
-            "thời tiết", "weather", "mưa", "nắng", "dự báo", "forecast",
-            "trời hôm nay", "thời tiết hôm nay", "ngày mai trời",
-            "hôm nay trời", "weather today", "weather forecast"
+                "thời tiết", "weather", "mưa", "nắng", "dự báo", "forecast",
+                "trời hôm nay", "thời tiết hôm nay", "ngày mai trời",
+                "hôm nay trời", "weather today", "weather forecast"
         };
 
         for (String keyword : weatherKeywords) {
@@ -556,10 +580,10 @@ hoặc
             if (userInput.toLowerCase().contains("hà nội") || userInput.toLowerCase().contains("hanoi")) {
                 location = "Ha Noi";
             } else if (userInput.toLowerCase().contains("hồ chí minh") ||
-                      userInput.toLowerCase().contains("ho chi minh")) {
+                    userInput.toLowerCase().contains("ho chi minh")) {
                 location = "Ho Chi Minh City";
             } else if (userInput.toLowerCase().contains("đà nẵng") ||
-                      userInput.toLowerCase().contains("da nang")) {
+                    userInput.toLowerCase().contains("da nang")) {
                 location = "Da Nang";
             } else if (userInput.toLowerCase().contains("hải phòng")) {
                 location = "Hai Phong";
@@ -571,16 +595,16 @@ hoặc
 
             if (forecastNote != null && !forecastNote.isEmpty()) {
                 return "🌤 **Thời tiết:**\n" + forecastNote +
-                       "\n\n💡 Lưu ý: Thời tiết có thể ảnh hưởng đến sự kiện ngoài trời. " +
-                       "Anh/chị có thể cân nhắc khi lập kế hoạch sự kiện! 😊";
+                        "\n\n💡 Lưu ý: Thời tiết có thể ảnh hưởng đến sự kiện ngoài trời. " +
+                        "Anh/chị có thể cân nhắc khi lập kế hoạch sự kiện! 😊";
             } else {
                 return "⚠️ Hiện tại em chưa thể lấy thông tin thời tiết chi tiết. " +
-                       "Đề xuất anh/chị kiểm tra thời tiết trên ứng dụng thời tiết trước khi tổ chức sự kiện ngoài trời ạ! 😊";
+                        "Đề xuất anh/chị kiểm tra thời tiết trên ứng dụng thời tiết trước khi tổ chức sự kiện ngoài trời ạ! 😊";
             }
         } catch (Exception e) {
             log.error("Error getting weather forecast: {}", e.getMessage());
             return "⚠️ Xin lỗi, em không thể lấy thông tin thời tiết lúc này. " +
-                   "Vui lòng thử lại sau hoặc kiểm tra thời tiết qua ứng dụng thời tiết ạ! 😊";
+                    "Vui lòng thử lại sau hoặc kiểm tra thời tiết qua ứng dụng thời tiết ạ! 😊";
         }
     }
 
@@ -603,7 +627,7 @@ hoặc
         }
 
         boolean shouldReload = false;
-        String redirectUrl = null;
+        String redirectUrl = null; // NOTE: hiện tại chưa dùng; có thể tích hợp front-end nếu cần
         StringBuilder systemResult = new StringBuilder();
 
         /* ===== Pending theo SESSION ===== */
@@ -622,6 +646,48 @@ hoặc
             }
         }
 
+        // ✅ NEW: nếu đang có pending order và user đang trả lời tên sự kiện
+        if (orderAIService.hasPendingOrder(userId) && looksLikeEventNameAnswer(userInput)) {
+            String eventName = extractEventNameFromBuyTicketInput("mua vé " + userInput);
+            if (eventName != null && !eventName.isBlank()) {
+                try {
+                    return orderAIService.startOrderCreation(userId, eventName.trim());
+                } catch (Exception e) {
+                    log.error("Error starting order from event-name-only input: {}", e.getMessage(), e);
+                }
+            }
+        }
+
+        // ✅ NEW: Nếu KHÔNG có pending order nhưng user chỉ nói tên sự kiện
+        if (!orderAIService.hasPendingOrder(userId)) {
+            String lowerInput = userInput.toLowerCase().trim();
+            
+            // Kiểm tra nếu input có vẻ như chỉ là tên sự kiện
+            if (looksLikeEventNameAnswer(userInput) || 
+                (lowerInput.split("\\s+").length <= 3 && !lowerInput.contains("mua") && !lowerInput.contains("vé"))) {
+                
+                String eventName = extractEventNameFromBuyTicketInput(userInput);
+                if (eventName != null && !eventName.isBlank()) {
+                    // Thử tìm sự kiện và trigger flow mua vé
+                    Optional<Event> eventOpt = eventService.getFirstPublicEventByTitle(eventName.trim());
+                    if (eventOpt.isPresent()) {
+                        return orderAIService.startOrderCreation(userId, eventName.trim());
+                    }
+                    
+                    // Fuzzy match
+                    String searchName = eventName.trim().toLowerCase();
+                    List<Event> matches = eventService.getAllEvents().stream()
+                            .filter(e -> e.getStatus() == EventStatus.PUBLIC)
+                            .filter(e -> e.getStartsAt() != null && e.getStartsAt().isAfter(LocalDateTime.now()))
+                            .filter(e -> e.getTitle() != null && e.getTitle().toLowerCase().contains(searchName))
+                            .toList();
+                    if (!matches.isEmpty()) {
+                        return orderAIService.startOrderCreation(userId, matches.get(0).getTitle());
+                    }
+                }
+            }
+        }
+
         float[] userVector;
         try {
             userVector = embeddingService.getEmbedding(userInput);
@@ -637,16 +703,43 @@ hoặc
         /* ==================== ORDER FLOW ==================== */
         ActionType intent = classifier.classifyIntent(userInput, userVector);
         if (intent == ActionType.BUY_TICKET) {
+            // Bước 1: Trích xuất tên sự kiện từ userInput
+            String extractedEventName = extractEventNameFromBuyTicketInput(userInput);
+
+            // Bước 2: Thử tìm kiếm exact match trong database trước (nếu có tên được trích xuất)
+            Optional<Event> exactMatch = Optional.empty();
+            if (extractedEventName != null && !extractedEventName.trim().isEmpty()) {
+                exactMatch = eventService.getFirstPublicEventByTitle(extractedEventName.trim());
+                if (exactMatch.isPresent()) {
+                    return orderAIService.startOrderCreation(userId, extractedEventName.trim());
+                }
+            }
+
+            // Bước 3: Nếu không tìm thấy exact match, thử vector search
             List<Event> foundEvents = eventVectorSearchService.searchEvents(userInput, userId, 1);
-            if (foundEvents.isEmpty()) {
-                return "Tôi hiểu bạn muốn mua vé, nhưng tôi chưa nhận ra tên sự kiện. Bạn có thể nói rõ hơn được không, ví dụ: 'Mua vé sự kiện Music Night'";
+            if (!foundEvents.isEmpty()) {
+                String eventName = foundEvents.get(0).getTitle();
+                Optional<Event> eventOpt = eventService.getFirstPublicEventByTitle(eventName.trim());
+                if (eventOpt.isPresent()) {
+                    return orderAIService.startOrderCreation(userId, eventName.trim());
+                }
             }
-            String eventName = foundEvents.get(0).getTitle();
-            Optional<Event> eventOpt = eventService.getFirstPublicEventByTitle(eventName.trim());
-            if (eventOpt.isEmpty()) {
-                return "❌ Không tìm thấy sự kiện \"" + eventName.trim() + "\" đang mở bán vé. Vui lòng kiểm tra lại tên sự kiện.";
+
+            // Bước 4: Nếu vector search cũng không tìm thấy, thử tìm kiếm fuzzy match
+            if (extractedEventName != null && !extractedEventName.trim().isEmpty()) {
+                String searchName = extractedEventName.trim().toLowerCase();
+                List<Event> allPublicEvents = eventService.getAllEvents().stream()
+                        .filter(e -> e.getStatus() == EventStatus.PUBLIC)
+                        .filter(e -> e.getStartsAt() != null && e.getStartsAt().isAfter(LocalDateTime.now()))
+                        .filter(e -> e.getTitle() != null && e.getTitle().toLowerCase().contains(searchName))
+                        .toList();
+                if (!allPublicEvents.isEmpty()) {
+                    return orderAIService.startOrderCreation(userId, allPublicEvents.get(0).getTitle());
+                }
             }
-            return orderAIService.startOrderCreation(userId, eventName.trim());
+
+            // Bước 5: Nếu vẫn không tìm thấy, trả về thông báo lỗi
+            return "Tôi hiểu bạn muốn mua vé, nhưng tôi chưa nhận ra tên sự kiện. Bạn có thể cho tôi biết tên sự kiện cụ thể được không?";
         }
 
         if (orderAIService.hasPendingOrder(userId)) {
@@ -654,6 +747,7 @@ hoặc
 
             switch (pendingOrder.getCurrentStep()) {
                 case SELECT_EVENT -> {
+                    // Khi tới đây mà chưa bắt được tên sự kiện bằng rule ở trên
                     return "ℹ️ Vui lòng cho biết tên sự kiện bạn muốn mua vé.";
                 }
                 case SELECT_TICKET_TYPE -> {
@@ -751,7 +845,6 @@ hoặc
                                         placeOpt = placeService.findPlaceByNameFlexible(placeName);
                                     }
                                 } catch (IllegalStateException e) {
-                                    // Embedding service không khả dụng, dùng fallback
                                     log.warn("Embedding service không khả dụng, dùng tìm kiếm place bằng tên: {}", e.getMessage());
                                     placeOpt = placeService.findPlaceByNameFlexible(placeName);
                                 } catch (Exception e) {
@@ -779,7 +872,7 @@ hoặc
                                 } else {
                                     errorMsg += " Vui lòng cung cấp tên địa điểm.";
                                 }
-                                return errorMsg; // Return immediately instead of break
+                                return errorMsg;
                             }
 
                             EventItem event = new EventItem();
@@ -826,19 +919,7 @@ hoặc
                                 log.info("Creating event: title={}, userId={}, orgId={}", event.getTitle(), userId, orgId);
                                 Event saved = agentEventService.createEventByCustomer(userId, event, orgId);
                                 systemResult.append("✅ Đã thêm sự kiện: ").append(saved.getTitle()).append("\n");
-//                                shouldReload = true;
                                 redirectUrl = "/events?create=true";
-
-                                // (Tùy chọn) upsert vector vào Qdrant — có thể bật lại khi cần
-                                // float[] eventVec = embeddingService.getEmbedding(saved.getTitle());
-                                // Map<String, Object> payload = Map.of(
-                                //     "event_id", saved.getId(),
-                                //     "title", saved.getTitle(),
-                                //     "kind", "event",
-                                //     "startsAt", saved.getStartsAt().toEpochSecond(java.time.ZoneOffset.UTC)
-                                // );
-                                // qdrantService.upsertEmbedding(String.valueOf(saved.getId()), eventVec, payload);
-
                             } catch (Exception e) {
                                 log.error("Error creating event: {}", e.getMessage(), e);
                                 systemResult.append("❌ Lỗi khi lưu sự kiện: ").append(e.getMessage()).append("\n");
@@ -959,9 +1040,9 @@ hoặc
                             Event finalEvent = targetEventOpt.get();
 
                             Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(userId);
-                            if (customerOpt.isEmpty() || customerOpt.get().getUser() == null 
-                                || customerOpt.get().getUser().getAccount() == null 
-                                || customerOpt.get().getUser().getAccount().getEmail() == null) {
+                            if (customerOpt.isEmpty() || customerOpt.get().getUser() == null
+                                    || customerOpt.get().getUser().getAccount() == null
+                                    || customerOpt.get().getUser().getAccount().getEmail() == null) {
                                 systemResult.append("❌ Tài khoản của bạn chưa có email để nhận thông báo.");
                                 break;
                             }
@@ -985,46 +1066,38 @@ hoặc
             // Không có action JSON
 
             // --- BẮT ĐẦU SỬA LỖI HALLUCINATION ---
-
-            // 1. Ngay lập tức kiểm tra xem ý định của người dùng có phải là TÌM KIẾM không
             ActionType fallbackIntent = classifier.classifyIntent(userInput, userVector);
 
             if (fallbackIntent == ActionType.PROMPT_SUMMARY_TIME ||
                     fallbackIntent == ActionType.QUERY_TICKET_INFO) {
 
-                // 2. Gọi các hàm helper để lấy dữ liệu THẬT từ DB
                 String realDataSummary;
                 try {
                     if (fallbackIntent == ActionType.PROMPT_SUMMARY_TIME) {
-                        realDataSummary = handleSummaryRequest(userInput, userId); // Gọi hàm tìm kiếm sự kiện
+                        realDataSummary = handleSummaryRequest(userInput, userId);
                     } else {
-                        realDataSummary = handleTicketInfoQuery(userInput, userVector); // Gọi hàm tìm kiếm vé
+                        realDataSummary = handleTicketInfoQuery(userInput, userVector, userId);
                     }
                 } catch (Exception e) {
                     log.error("Lỗi khi chạy fallback intent: {}", e.getMessage());
                     return "❌ Đã có lỗi xảy ra khi tôi cố gắng tìm kiếm thông tin.";
                 }
 
-                // 3. KIỂM TRA XEM CÓ DỮ LIỆU THẬT KHÔNG
-                // (Kiểm tra các chuỗi rỗng mà hàm helper của bạn trả về)
                 if (realDataSummary == null ||
                         realDataSummary.startsWith("📭 Không có sự kiện") ||
                         realDataSummary.startsWith("ℹ️ Sự kiện") ||
                         realDataSummary.startsWith("📝 Mình không hiểu")) {
 
-                    // 4. NẾU DB TRỐNG: Trả về câu trả lời an toàn, do chính bạn viết
                     return "Dạ, hiện tại em chưa tìm thấy sự kiện nào phù hợp với yêu cầu của anh/chị ạ. Anh/chị có muốn em hỗ trợ tạo một sự kiện mới không? 😊";
                 }
 
-                // 5. NẾU CÓ DỮ LIỆU THẬT: Trả về dữ liệu đó
                 return realDataSummary;
             }
             // --- KẾT THÚC SỬA LỖI ---
 
-
-            // Nếu KHÔNG PHẢI LÀ TÌM KIẾM (ví dụ: chào hỏi, nói chuyện phiếm)
-            // VÀ AI có trả lời, thì mới return text đó
-            if (!userVisibleText.isBlank()) {
+            // ✅ Chỉ dùng câu trả lời tự nhiên của LLM khi intent là UNKNOWN / ERROR
+            if ((fallbackIntent == ActionType.UNKNOWN || fallbackIntent == ActionType.ERROR)
+                    && !userVisibleText.isBlank()) {
                 return userVisibleText;
             }
 
@@ -1035,9 +1108,6 @@ hoặc
                 }
                 case CONFIRM_ORDER, CANCEL_ORDER -> {
                     return "❌ Không có đơn hàng nào đang chờ xác nhận. Vui lòng bắt đầu quy trình mua vé trước.";
-                }
-                case QUERY_TICKET_INFO -> {
-                    return handleTicketInfoQuery(userInput, userVector);
                 }
                 case PROMPT_FREE_TIME -> {
                     TimeContext timeContext = TimeSlotUnit.extractTimeContext(userInput);
@@ -1079,17 +1149,6 @@ hoặc
                     }
                     return sb.toString();
                 }
-                case PROMPT_SUMMARY_TIME -> {
-                    try {
-                        String summary = handleSummaryRequest(userInput, userId);
-                        return (summary != null)
-                                ? summary
-                                : "📝 Mình không hiểu khoảng thời gian bạn muốn tổng hợp. Bạn có thể hỏi kiểu như: \"Lịch hôm nay\", \"Sự kiện tuần sau\"...";
-                    } catch (Exception e) {
-                        log.error("Summary error: {}", e.getMessage(), e);
-                        return "⚠️ Đã xảy ra lỗi khi xử lý yêu cầu tổng hợp lịch.";
-                    }
-                }
                 case PROMPT_SEND_EMAIL -> {
                     Pattern patternTime = Pattern.compile("trước (\\d{1,3}) ?(phút|giờ)");
                     Matcher matcherTime = patternTime.matcher(userInput.toLowerCase());
@@ -1123,8 +1182,8 @@ hoặc
 
                     Event finalEvent = targetEventOpt.get();
                     Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(userId);
-                    if (customerOpt.isEmpty() || customerOpt.get().getUser() == null 
-                        || customerOpt.get().getUser().getAccount() == null) {
+                    if (customerOpt.isEmpty() || customerOpt.get().getUser() == null
+                            || customerOpt.get().getUser().getAccount() == null) {
                         return "❌ Không tìm thấy thông tin tài khoản của bạn. Vui lòng đăng nhập lại.";
                     }
 
@@ -1193,6 +1252,14 @@ hoặc
     }
 
     public String handleSummaryRequest(String userInputs, Long userId) throws Exception {
+        String lowerInput = userInputs.toLowerCase().trim();
+
+        // Kiểm tra nếu là câu hỏi về "sự kiện nổi bật"
+        if (lowerInput.contains("nổi bật") || lowerInput.contains("featured") ||
+                lowerInput.contains("prominent") || lowerInput.contains("recommended")) {
+            return handleFeaturedEventsRequest(userId);
+        }
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start;
         String range;
@@ -1205,7 +1272,7 @@ hoặc
             range = "ngày mai";
         } else if (userInputs.contains("tuần này")) {
             DayOfWeek dow = now.getDayOfWeek();
-            start = now.minusDays(dow.getValue() - 1).toLocalDate().atStartOfDay(); // Monday
+            start = now.minusDays(dow.getValue() - 1).toLocalDate().atStartOfDay();
             range = "tuần này";
         } else if (userInputs.contains("tuần sau")) {
             DayOfWeek dow = now.getDayOfWeek();
@@ -1220,38 +1287,112 @@ hoặc
         List<Event> allEvents = eventService.getAllEvents();
 
         List<Event> events = allEvents.stream()
-                // Lọc sự kiện chưa kết thúc
                 .filter(event -> event.getEndsAt().isAfter(start))
-
-                // --- THAY ĐỔI QUAN TRỌNG ---
-                // Lọc bỏ các sự kiện có trạng thái DRAFT hoặc CANCEL
                 .filter(event -> event.getStatus() != EventStatus.DRAFT && event.getStatus() != EventStatus.CANCEL)
-                // --- KẾT THÚC THAY ĐỔI ---
-
-                .sorted(Comparator.comparing(Event::getStartsAt)) // Sắp xếp theo thời gian
+                .sorted(Comparator.comparing(Event::getStartsAt))
                 .toList();
 
         if (events.isEmpty()) {
-            return "📭 Không có sự kiện nào " + range + ".";
+            return "📭 Không có sự kiện nào " + range + " ạ. Anh/chị có muốn em tìm các sự kiện khác không? 😊";
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         StringBuilder sb = new StringBuilder();
-        sb.append("📆 Các sự kiện ").append(range).append(":\n");
+        sb.append("📆 **Các sự kiện ").append(range).append(":**\n\n");
+
+        int index = 1;
         for (Event e : events) {
-            sb.append("• ").append(e.getTitle())
-                    .append(" 🕒 ")
+            sb.append("**").append(index).append(". ").append(e.getTitle()).append("**\n");
+            sb.append("   🕒 **Thời gian:** ")
                     .append(e.getStartsAt().format(formatter))
                     .append(" - ")
-                    .append(e.getEndsAt().format(formatter));
+                    .append(e.getEndsAt().format(formatter))
+                    .append("\n");
 
             if (e.getPlaces() != null && !e.getPlaces().isEmpty()) {
-                sb.append(" 📍 ").append(e.getPlaces().get(0).getPlaceName());
+                sb.append("   📍 **Địa điểm:** ").append(e.getPlaces().get(0).getPlaceName()).append("\n");
             }
+
+            if (e.getEventType() != null) {
+                sb.append("   🎭 **Loại:** ").append(e.getEventType()).append("\n");
+            }
+
             sb.append("\n");
+            index++;
         }
+
+        sb.append("💡 Anh/chị muốn xem thông tin chi tiết hoặc mua vé cho sự kiện nào không ạ? 😊");
         return sb.toString();
+    }
+
+    /**
+     * Xử lý câu hỏi về sự kiện nổi bật
+     */
+    private String handleFeaturedEventsRequest(Long userId) {
+        try {
+            List<com.group02.openevent.dto.home.EventCardDTO> posterEvents = eventService.getPosterEvents();
+            List<com.group02.openevent.dto.home.EventCardDTO> featuredEvents = posterEvents;
+            if (featuredEvents == null || featuredEvents.isEmpty()) {
+                featuredEvents = eventService.getRecommendedEvents(10);
+            }
+
+            if (featuredEvents == null || featuredEvents.isEmpty()) {
+                return "🌟 Hiện tại chưa có sự kiện nổi bật nào ạ. Anh/chị có muốn em tìm các sự kiện sắp diễn ra không? 😊";
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            List<com.group02.openevent.dto.home.EventCardDTO> upcomingFeatured = featuredEvents.stream()
+                    .filter(event -> {
+                        if (event.getStartsAt() == null) return false;
+                        return event.getStartsAt().isAfter(now) ||
+                                (event.getEndsAt() != null && event.getEndsAt().isAfter(now));
+                    })
+                    .limit(10)
+                    .toList();
+
+            if (upcomingFeatured.isEmpty()) {
+                return "🌟 Hiện tại chưa có sự kiện nổi bật nào sắp diễn ra ạ. Anh/chị có muốn em tìm các sự kiện khác không? 😊";
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("🌟 **Các sự kiện nổi bật gần đây:**\n\n");
+
+            int index = 1;
+            for (com.group02.openevent.dto.home.EventCardDTO event : upcomingFeatured) {
+                sb.append("**").append(index).append(". ").append(event.getTitle()).append("**\n");
+
+                if (event.getStartsAt() != null) {
+                    sb.append("   🕒 **Thời gian:** ");
+                    sb.append(event.getStartsAt().format(formatter));
+                    if (event.getEndsAt() != null) {
+                        sb.append(" - ").append(event.getEndsAt().format(formatter));
+                    }
+                    sb.append("\n");
+                }
+
+                if (event.getCity() != null && !event.getCity().trim().isEmpty() && !event.getCity().equals("TBA")) {
+                    sb.append("   📍 **Địa điểm:** ").append(event.getCity()).append("\n");
+                }
+
+                if (event.getEventType() != null) {
+                    sb.append("   🎭 **Loại:** ").append(event.getEventType()).append("\n");
+                }
+
+                sb.append("\n");
+                index++;
+            }
+
+            sb.append("💡 Anh/chị muốn xem thông tin chi tiết hoặc mua vé cho sự kiện nào không ạ? 😊");
+
+            return sb.toString();
+
+        } catch (Exception e) {
+            log.error("Error handling featured events request: {}", e.getMessage(), e);
+            return "❌ Đã có lỗi xảy ra khi tôi cố gắng lấy danh sách sự kiện nổi bật. Vui lòng thử lại sau ạ.";
+        }
     }
 
     private String extractEventName(String userInput) {
@@ -1259,6 +1400,98 @@ hoặc
                 .replaceAll("(?i)(mua vé|mua ve|đăng ký|đăng ky|tham gia|đặt vé|dat ve|book vé|order vé|sự kiện|su kien|event)", "")
                 .trim();
         return cleaned;
+    }
+
+    /**
+     * Nhận diện các câu trả lời dạng "sự kiện đó tên là ..." để hiểu là user đang cung cấp tên sự kiện.
+     */
+    private boolean looksLikeEventNameAnswer(String input) {
+        if (input == null) return false;
+        String lower = input.toLowerCase().trim();
+        if (lower.isEmpty()) return false;
+
+        if (lower.startsWith("sự kiện đó tên là")
+                || lower.startsWith("sự kiện tên là")
+                || lower.startsWith("tên sự kiện là")
+                || lower.startsWith("tên sự kiện")) {
+            return true;
+        }
+
+        // Câu rất ngắn kiểu "sự kiện ku", "sự kiện abc"
+        if (lower.startsWith("sự kiện") && lower.split("\\s+").length <= 5) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Trích xuất tên sự kiện từ câu input khi người dùng muốn mua vé
+     * Ví dụ: "tôi muốn mua vé sự kiện ku" -> "ku"
+     */
+    private String extractEventNameFromBuyTicketInput(String userInput) {
+        if (userInput == null || userInput.trim().isEmpty()) {
+            return null;
+        }
+
+        String input = userInput.trim();
+
+        // Pattern 1: "mua vé sự kiện [tên]" hoặc "mua vé [tên]"
+        Pattern pattern1 = Pattern.compile(
+                "(?i)(?:mua vé|mua ve|đăng ký|đăng ky|tham gia|đặt vé|dat ve|book vé|order vé)\\s+(?:sự kiện|su kien|event)?\\s*:?\\s*([^,]+?)(?:\\s|$|,|\\?|!)",
+                Pattern.CASE_INSENSITIVE
+        );
+        Matcher matcher1 = pattern1.matcher(input);
+        if (matcher1.find()) {
+            String eventName = matcher1.group(1).trim();
+            eventName = eventName.replaceAll("(?i)\\b(sự kiện|su kien|event|cho|về|tại)\\b", "").trim();
+            if (!eventName.isEmpty() && eventName.length() >= 1) {
+                return eventName;
+            }
+        }
+
+        // Pattern 2: "sự kiện [tên]" ở cuối câu
+        Pattern pattern2 = Pattern.compile(
+                "(?i)sự kiện\\s+(?:tên)?\\s*:?\\s*([^,]+?)(?:\\s|$|,|\\?|!)",
+                Pattern.CASE_INSENSITIVE
+        );
+        Matcher matcher2 = pattern2.matcher(input);
+        if (matcher2.find()) {
+            String eventName = matcher2.group(1).trim();
+            if (!eventName.isEmpty() && eventName.length() >= 1) {
+                return eventName;
+            }
+        }
+
+        // Pattern 3: Tìm từ cuối cùng sau "vé" hoặc "sự kiện"
+        Pattern pattern3 = Pattern.compile(
+                "(?i)(?:vé|ve|sự kiện|su kien|event)\\s+([^\\s,]+?)(?:\\s|$|,|\\?|!)",
+                Pattern.CASE_INSENSITIVE
+        );
+        Matcher matcher3 = pattern3.matcher(input);
+        if (matcher3.find()) {
+            String eventName = matcher3.group(1).trim();
+            if (!eventName.isEmpty() && eventName.length() >= 1) {
+                return eventName;
+            }
+        }
+
+        // Pattern 4: Nếu không tìm thấy pattern nào, thử lấy từ cuối cùng (có thể là tên sự kiện ngắn)
+        String[] words = input.split("\\s+");
+        if (words.length > 0) {
+            String lastWord = words[words.length - 1];
+            lastWord = lastWord.replaceAll("[.,!?;:]", "").trim();
+            if (!lastWord.isEmpty() && lastWord.length() >= 1 &&
+                    !lastWord.equalsIgnoreCase("vé") &&
+                    !lastWord.equalsIgnoreCase("ve") &&
+                    !lastWord.equalsIgnoreCase("sự") &&
+                    !lastWord.equalsIgnoreCase("kiện") &&
+                    !lastWord.equalsIgnoreCase("event")) {
+                return lastWord;
+            }
+        }
+
+        return null;
     }
 
     private Map<String, String> extractParticipantInfo(String userInput) {
@@ -1321,40 +1554,68 @@ hoặc
     /**
      * Xử lý câu hỏi về thông tin vé từ database thực tế
      */
-    private String handleTicketInfoQuery(String userInput, float[] userVector) {
+    private String handleTicketInfoQuery(String userInput, float[] userVector, Long userId) {
         log.debug("handleTicketInfoQuery called with: '{}'", userInput);
         try {
-            List<Event> foundEvents = eventVectorSearchService.searchEvents(userInput, 0L, 1);
-            if (foundEvents.isEmpty()) {
-                return "Tôi hiểu bạn muốn xem thông tin vé, nhưng tôi chưa nhận ra tên sự kiện. Bạn có thể cho tôi biết tên sự kiện cụ thể được không?";
-            }
+            String extractedEventName = extractEventNameFromBuyTicketInput(userInput);
 
-            Event event = foundEvents.get(0);
-            List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEventId(event.getId());
-            if (ticketTypes.isEmpty()) {
-                return "ℹ️ Sự kiện \"" + event.getTitle() + "\" hiện chưa có thông tin vé nào được mở bán.";
-            }
-
-            StringBuilder response = new StringBuilder();
-            response.append("🎫 **Thông tin vé cho sự kiện: ").append(event.getTitle()).append("**\n");
-            response.append("------------------------------------\n");
-
-            for (TicketType ticket : ticketTypes) {
-                response.append("• **Loại vé:** ").append(ticket.getName()).append("\n");
-                response.append("  - **Giá:** ").append(String.format("%,d", ticket.getFinalPrice())).append(" VNĐ\n");
-                response.append("  - **Còn lại:** ").append(ticket.getAvailableQuantity()).append(" vé\n");
-                if (ticket.getDescription() != null && !ticket.getDescription().trim().isEmpty()) {
-                    response.append("  - *Mô tả:* ").append(ticket.getDescription()).append("\n");
+            Optional<Event> exactMatch = Optional.empty();
+            if (extractedEventName != null && !extractedEventName.trim().isEmpty()) {
+                exactMatch = eventService.getFirstPublicEventByTitle(extractedEventName.trim());
+                if (exactMatch.isPresent()) {
+                    Event event = exactMatch.get();
+                    return buildTicketInfoResponse(event);
                 }
-                response.append("\n");
             }
 
-            response.append("💡 Để mua vé, bạn chỉ cần nói 'Mua vé ").append(event.getTitle()).append("' nhé!");
-            return response.toString();
+            Long vectorUserId = (userId != null ? userId : 0L);
+            List<Event> foundEvents = eventVectorSearchService.searchEvents(userInput, vectorUserId, 1);
+            if (!foundEvents.isEmpty()) {
+                Event event = foundEvents.get(0);
+                return buildTicketInfoResponse(event);
+            }
+
+            if (extractedEventName != null && !extractedEventName.trim().isEmpty()) {
+                String searchName = extractedEventName.trim().toLowerCase();
+                List<Event> allPublicEvents = eventService.getAllEvents().stream()
+                        .filter(e -> e.getStatus() == EventStatus.PUBLIC)
+                        .filter(e -> e.getStartsAt() != null && e.getStartsAt().isAfter(LocalDateTime.now()))
+                        .filter(e -> e.getTitle() != null && e.getTitle().toLowerCase().contains(searchName))
+                        .toList();
+                if (!allPublicEvents.isEmpty()) {
+                    return buildTicketInfoResponse(allPublicEvents.get(0));
+                }
+            }
+
+            return "Tôi hiểu bạn muốn xem thông tin vé, nhưng tôi chưa nhận ra tên sự kiện. Bạn có thể cho tôi biết tên sự kiện cụ thể được không?";
 
         } catch (Exception e) {
             log.error("Error handling ticket info query: {}", e.getMessage(), e);
             return "❌ Đã có lỗi xảy ra khi tôi cố gắng lấy thông tin vé. Vui lòng thử lại sau.";
         }
+    }
+
+    private String buildTicketInfoResponse(Event event) {
+        List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEventId(event.getId());
+        if (ticketTypes.isEmpty()) {
+            return "ℹ️ Sự kiện \"" + event.getTitle() + "\" hiện chưa có thông tin vé nào được mở bán.";
+        }
+
+        StringBuilder response = new StringBuilder();
+        response.append("🎫 **Thông tin vé cho sự kiện: ").append(event.getTitle()).append("**\n");
+        response.append("------------------------------------\n");
+
+        for (TicketType ticket : ticketTypes) {
+            response.append("• **Loại vé:** ").append(ticket.getName()).append("\n");
+            response.append("  - **Giá:** ").append(String.format("%,d", ticket.getFinalPrice())).append(" VNĐ\n");
+            response.append("  - **Còn lại:** ").append(ticket.getAvailableQuantity()).append(" vé\n");
+            if (ticket.getDescription() != null && !ticket.getDescription().trim().isEmpty()) {
+                response.append("  - *Mô tả:* ").append(ticket.getDescription()).append("\n");
+            }
+            response.append("\n");
+        }
+
+        response.append("💡 Để mua vé, bạn chỉ cần nói 'Mua vé ").append(event.getTitle()).append("' nhé!");
+        return response.toString();
     }
 }

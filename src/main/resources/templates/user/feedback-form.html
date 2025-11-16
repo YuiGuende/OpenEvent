@@ -36,9 +36,10 @@
 <body>
     <div class="container">
         <div class="form-container">
-            <div class="form-header">
-                <h2><i class="fas fa-comment-dots"></i> <span th:text="${form != null ? form.formTitle : 'Form'}">Form</span></h2>
-                <p th:text="${form != null ? form.formDescription : 'Please fill in the form'}">Please fill in the form</p>
+            <!-- Form Header - Only show when form exists -->
+            <div th:if="${form} != null" class="form-header">
+                <h2><i class="fas fa-comment-dots"></i> <span th:text="${form.formTitle}">Form</span></h2>
+                <p th:text="${form.formDescription}">Please fill in the form</p>
             </div>
             
             <!-- No Form Message -->

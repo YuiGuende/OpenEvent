@@ -47,22 +47,27 @@ public class MyChatController {
             
             List<EventChatInfo> eventsWithChat = new ArrayList<>();
             
-            // 1. Lấy events mà user là host
-            Optional<Host> hostOpt = hostRepo.findByUser_UserId(userId);
-            if (hostOpt.isPresent()) {
-                Host host = hostOpt.get();
+            // 1. Lấy events mà user là host (user có thể có nhiều host records)
+            List<Host> hosts = hostRepo.findAllByUser_UserId(userId);
+            for (Host host : hosts) {
                 List<Event> hostEvents = eventService.getEventByHostId(host.getId());
                 
                 for (Event event : hostEvents) {
-                    // Thêm tất cả events của host (room sẽ được tạo tự động khi vào chat)
-                    eventsWithChat.add(new EventChatInfo(
-                        event.getId(),
-                        event.getTitle(),
-                        event.getImageUrl(),
-                        event.getStartsAt(),
-                        true, // isHost
-                        false // isVolunteer
-                    ));
+                    // Kiểm tra đã có trong danh sách chưa (tránh duplicate)
+                    boolean alreadyExists = eventsWithChat.stream()
+                        .anyMatch(e -> e.getEventId().equals(event.getId()));
+                    
+                    if (!alreadyExists) {
+                        // Thêm tất cả events của host (room sẽ được tạo tự động khi vào chat)
+                        eventsWithChat.add(new EventChatInfo(
+                            event.getId(),
+                            event.getTitle(),
+                            event.getImageUrl(),
+                            event.getStartsAt(),
+                            true, // isHost
+                            false // isVolunteer
+                        ));
+                    }
                 }
             }
             

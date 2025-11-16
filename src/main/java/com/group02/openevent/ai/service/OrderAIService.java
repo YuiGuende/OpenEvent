@@ -210,6 +210,39 @@ public class OrderAIService {
             log.info("🔍 DEBUG: Customer found - customerId: {}, email: {}",
                     customer.getCustomerId(), email);
 
+            // RE-VALIDATE ticket availability from database before creating order
+            // This prevents race conditions where ticket was sold between selection and confirmation
+            Long ticketTypeId = pendingOrder.getTicketType().getTicketTypeId();
+            TicketType ticketType = ticketTypeService.getTicketTypeById(ticketTypeId)
+                    .orElseThrow(() -> new IllegalStateException("Ticket type not found: " + ticketTypeId));
+            
+            if (!ticketType.isAvailable() || !ticketTypeService.canPurchaseTickets(ticketTypeId, 1)) {
+                pendingOrders.remove(userId);
+                log.warn("⚠️ Ticket type {} is no longer available when confirming order for user {}", 
+                        ticketTypeId, userId);
+                result.put("success", false);
+                result.put("message", "❌ Loại vé này đã hết. Vui lòng chọn loại vé khác.");
+                return result;
+            }
+            
+            // Check if event is still open for registration
+            Event event = pendingOrder.getEvent();
+            if (event.getStatus() != com.group02.openevent.model.enums.EventStatus.PUBLIC) {
+                pendingOrders.remove(userId);
+                log.warn("⚠️ Event {} is not open for registration when confirming order", event.getId());
+                result.put("success", false);
+                result.put("message", "❌ Sự kiện này hiện không mở đăng ký. Vui lòng chọn sự kiện khác.");
+                return result;
+            }
+            
+            if (event.getStartsAt() != null && event.getStartsAt().isBefore(java.time.LocalDateTime.now())) {
+                pendingOrders.remove(userId);
+                log.warn("⚠️ Event {} has already started when confirming order", event.getId());
+                result.put("success", false);
+                result.put("message", "❌ Sự kiện này đã bắt đầu. Không thể đăng ký.");
+                return result;
+            }
+
             // Create order request
             CreateOrderWithTicketTypeRequest request = new CreateOrderWithTicketTypeRequest();
             request.setEventId(pendingOrder.getEvent().getId());

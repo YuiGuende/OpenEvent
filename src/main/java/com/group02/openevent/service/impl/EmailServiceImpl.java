@@ -28,6 +28,24 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendEventReminderEmail(String userEmail, Event event, int minutesBefore) {
+        // Validate email format
+        if (userEmail == null || userEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        
+        if (!isValidEmailFormat(userEmail)) {
+            throw new IllegalArgumentException("Invalid email format: " + userEmail);
+        }
+        
+        // Validate event
+        if (event == null) {
+            throw new IllegalArgumentException("Event cannot be null");
+        }
+        
+        if (event.getStartsAt() == null || event.getEndsAt() == null) {
+            throw new IllegalArgumentException("Event start/end time cannot be null");
+        }
+        
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -46,9 +64,30 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+    
+    /**
+     * Validate email format
+     */
+    private boolean isValidEmailFormat(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        // Basic email format validation
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        return email.matches(emailRegex);
+    }
 
     @Override
     public void sendSimpleEmail(String to, String subject, String content) {
+        // Validate email format
+        if (to == null || to.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        
+        if (!isValidEmailFormat(to)) {
+            throw new IllegalArgumentException("Invalid email format: " + to);
+        }
+        
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
@@ -68,6 +107,15 @@ public class EmailServiceImpl implements EmailService {
      * Build HTML email content for event reminder
      */
     private String buildReminderEmailContent(Event event, int minutesBefore) {
+        // Validate event and times
+        if (event == null) {
+            throw new IllegalArgumentException("Event cannot be null");
+        }
+        
+        if (event.getStartsAt() == null || event.getEndsAt() == null) {
+            throw new IllegalArgumentException("Event start/end time cannot be null");
+        }
+        
         String startTime = event.getStartsAt().format(DATE_FORMATTER);
         String endTime = event.getEndsAt().format(DATE_FORMATTER);
         

@@ -772,14 +772,14 @@ hoặc
                                     break;
                                 }
                             } else {
-                                systemResult.append("⛔ Để tạo sự kiện, bạn cần cung cấp địa điểm hợp lệ.");
+                                String errorMsg = "⛔ Để tạo sự kiện, bạn cần cung cấp địa điểm hợp lệ.";
                                 String placeNameRaw = getStr(args, "place", "location");
                                 if (placeNameRaw != null && !placeNameRaw.isBlank()) {
-                                    systemResult.append(" Không tìm thấy địa điểm \"").append(placeNameRaw).append("\".\n");
+                                    errorMsg += " Không tìm thấy địa điểm \"" + placeNameRaw + "\".";
                                 } else {
-                                    systemResult.append(" Vui lòng cung cấp tên địa điểm.\n");
+                                    errorMsg += " Vui lòng cung cấp tên địa điểm.";
                                 }
-                                break;
+                                return errorMsg; // Return immediately instead of break
                             }
 
                             EventItem event = new EventItem();

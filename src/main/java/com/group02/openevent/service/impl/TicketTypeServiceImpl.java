@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.LockModeType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -131,14 +132,17 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Override
     @Transactional
     public void reserveTickets(Long ticketTypeId) {
-        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)
-                .orElse(null);
+        // Use pessimistic lock to prevent race conditions
+        TicketType ticketType = ticketTypeRepo.findByIdForUpdate(ticketTypeId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + ticketTypeId));
 
-        assert ticketType != null;
+        // Re-check availability with lock held
         if (!ticketType.canPurchase()) {
-            throw new IllegalStateException("Cannot reserve tickets for ticket type: " + ticketTypeId);
+            throw new IllegalStateException("Cannot reserve tickets for ticket type: " + ticketTypeId + 
+                " (Available: " + ticketType.getAvailableQuantity() + ")");
         }
 
+        // Reserve ticket (increases soldQuantity)
         ticketType.increaseSoldQuantity();
         ticketTypeRepo.save(ticketType);
     }

@@ -486,6 +486,21 @@ public class VectorIntentClassifier {
             return false;
         }
         
+        String lowerInput = userInput.toLowerCase().trim();
+        
+        // QUAN TRỌNG: Loại trừ các câu có từ khóa "mua vé" - đây là BUY_TICKET, không phải QUERY_TICKET_INFO
+        String[] buyTicketKeywords = {
+            "mua vé", "mua ve", "đăng ký", "đăng ky", "tham gia", 
+            "đặt vé", "dat ve", "book vé", "order vé", "mua ticket"
+        };
+        
+        for (String keyword : buyTicketKeywords) {
+            if (lowerInput.contains(keyword)) {
+                System.out.println("❌ DEBUG: Found buy ticket keyword '" + keyword + "', not a ticket info query");
+                return false; // Đây là BUY_TICKET, không phải QUERY_TICKET_INFO
+            }
+        }
+        
         System.out.println("🔍 DEBUG: Checking ticket info query with embedding for: '" + userInput + "'");
         
         try {
@@ -525,7 +540,7 @@ public class VectorIntentClassifier {
             System.out.println("🔄 DEBUG: Falling back to keyword matching...");
             
             // Fallback: sử dụng keyword matching
-            String lowerInput = userInput.toLowerCase().trim();
+            // lowerInput đã được khai báo ở đầu hàm
             String[] ticketInfoKeywords = {
                 "giá vé", "giá tiền", "bao nhiêu tiền", "giá cả",
                 "vé thường", "vé vip", "vé early bird", "loại vé",

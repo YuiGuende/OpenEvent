@@ -12,7 +12,7 @@
         <th:block th:replace="${content}"></th:block>
     </main>
 
-    <footer th:replace="~{fragments/footer :: siteFooter()}"></footer>
+    <footer th:replace="~{fragments/footer :: siteFooter(true)}"></footer>
 
     <!-- WebSocket Libraries for Realtime Notifications -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

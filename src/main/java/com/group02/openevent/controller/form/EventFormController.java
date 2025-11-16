@@ -175,7 +175,7 @@ public class EventFormController {
     @PostMapping("/feedback/submit")
     public String submitFeedback(@ModelAttribute SubmitResponseRequest request,
                                  @RequestParam(required = false) Long eventId,
-                                 HttpServletRequest httpRequest) {
+                                 HttpServletRequest httpRequest,HttpSession session) {
         log.info("=== FORM SUBMIT REQUEST RECEIVED ===");
         log.info("Form ID from request: {}", request.getFormId());
         log.info("Event ID from param: {}", eventId);
@@ -188,66 +188,7 @@ public class EventFormController {
                 throw new RuntimeException("Form ID is required");
             }
 
-            Long accountId = null;
-            
-            if (accountId == null) {
-                HttpSession session = httpRequest.getSession(false);
-                if (session != null) {
-                    accountId = (Long) session.getAttribute("USER_ID");
-                }
-            }
-            
-            if (accountId == null) {
-                // Redirect to login page with return URL to feedback form
-                String currentUri = httpRequest.getRequestURI();
-                String queryString = httpRequest.getQueryString();
-                String fullUrl = currentUri;
-                if (queryString != null) {
-                    fullUrl += "?" + queryString;
-                }
-
-                // Try to get eventId to construct feedback form URL
-                Long feedbackEventId = eventId;
-                if (feedbackEventId == null && request.getFormId() != null) {
-                    try {
-                        EventFormDTO formDto = eventFormService.getFormById(request.getFormId());
-                        feedbackEventId = formDto.getEventId();
-                    } catch (Exception ex) {
-                        log.error("Could not get eventId from form: {}", ex.getMessage());
-                    }
-                }
-
-                // Redirect to login with return URL
-                if (feedbackEventId != null) {
-                    String feedbackFormUrl = "/forms/feedback/" + feedbackEventId;
-                    String loginUrl = "/login?redirect=" + UriUtils.encode(feedbackFormUrl, StandardCharsets.UTF_8);
-                    log.info("User not logged in, redirecting to login: {}", loginUrl);
-                    return "redirect:" + loginUrl;
-                } else {
-                    // Fallback: redirect to login with current URL
-                    String loginUrl = "/login?redirect=" + UriUtils.encode(fullUrl, StandardCharsets.UTF_8);
-                    log.info("User not logged in, redirecting to login: {}", loginUrl);
-                    return "redirect:" + loginUrl;
-                }
-            }
-            
-            final Long finalAccountId = accountId;
-            
-            // Tìm Customer từ accountId
-            Customer customer = customerRepo.findByUser_Account_AccountId(finalAccountId).orElse(null);
-            if (customer == null) {
-                // Tự động tạo Customer nếu chưa có (giống như OrderController)
-                Account account = accountRepo.findById(finalAccountId)
-                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + finalAccountId));
-                
-                // Get or create User
-                com.group02.openevent.model.user.User user = userService.getOrCreateUser(account);
-                
-                customer = new Customer();
-                customer.setUser(user);
-                customer.setPoints(0);
-                customer = customerRepo.save(customer);
-            }
+           Customer customer= userService.getCurrentUser(session).getCustomer();
             
             // Set customerId vào request
             request.setCustomerId(customer.getCustomerId());

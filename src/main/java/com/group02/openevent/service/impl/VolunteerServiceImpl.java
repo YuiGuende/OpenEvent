@@ -4,11 +4,7 @@ import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.volunteer.VolunteerApplication;
 import com.group02.openevent.model.volunteer.VolunteerStatus;
-import com.group02.openevent.repository.ICustomerRepo;
-import com.group02.openevent.repository.IEventRepo;
-import com.group02.openevent.repository.IUserRepo;
-import com.group02.openevent.repository.IVolunteerApplicationRepo;
-import com.group02.openevent.repository.EventChatRoomRepository;
+import com.group02.openevent.repository.*;
 import com.group02.openevent.model.chat.ChatRoomType;
 import com.group02.openevent.model.chat.EventChatRoom;
 import com.group02.openevent.service.EventChatService;
@@ -40,15 +36,14 @@ public class VolunteerServiceImpl implements VolunteerService {
     public VolunteerServiceImpl(
             IVolunteerApplicationRepo volunteerApplicationRepo,
             ICustomerRepo customerRepo,
-            IEventRepo eventRepo,
-            IAccountRepo accountRepo,
+            IEventRepo eventRepo, IUserRepo userRepo,
             com.group02.openevent.repository.IOrderRepo orderRepo,
             EventChatRoomRepository eventChatRoomRepo,
             @Lazy EventChatService eventChatService) {
         this.volunteerApplicationRepo = volunteerApplicationRepo;
         this.customerRepo = customerRepo;
         this.eventRepo = eventRepo;
-        this.accountRepo = accountRepo;
+        this.userRepo = userRepo;
         this.orderRepo = orderRepo;
         this.eventChatRoomRepo = eventChatRoomRepo;
         this.eventChatService = eventChatService;

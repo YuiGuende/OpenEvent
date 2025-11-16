@@ -163,7 +163,7 @@
 
 .event-search-select {
     padding: 12px 18px;
-    border: 1px solid #1EA86B;
+    border: 1px solid  #ff9800;
     border-radius: 8px;
     font-size: 1.1em;
     background: #fff;
@@ -193,7 +193,7 @@
 }
 
 .btn-create-event {
-    background: #27c281;
+    background: #e48d44;;
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -209,7 +209,7 @@
 }
 
 .btn-create-event:hover {
-    background: #1ea86b;
+    background: #e48d44;;
 }
 
 /* Tabs */
@@ -221,7 +221,7 @@
 
 .event-tab {
     background: #ece6fa;
-    color: #1EA86B;
+    color: #e48d44;;
     border-radius: 8px;
     padding: 7px 18px;
     font-weight: 600;
@@ -233,7 +233,7 @@
 
 .event-tab.active,
 .event-tab:hover {
-    background: #1EA86B;
+    background:  #e48d44;;
     color: #fff;
 }
 
@@ -243,13 +243,13 @@
     align-items: center;
     gap: 8px;
     font-size: 1em;
-    color: #1EA86B;
+    color: #e48d44;;
     margin-bottom: 18px;
 }
 
 .event-breadcrumbs i {
     font-size: 0.95em;
-    color: #1EA86B;
+    color: #e48d44;;
 }
 .modal {
     display: none; /* Ẩn mặc định */

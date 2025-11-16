@@ -21,8 +21,22 @@ public interface IEventAttendanceRepo extends JpaRepository<EventAttendance, Lon
     
     /**
      * Find all attendances for an event
+     * Note: Spring Data JPA will automatically create query based on method name
+     * Since EventAttendance has 'event' relationship, we need to use event.id
      */
-    List<EventAttendance> findByEventId(Long eventId);
+    @Query("SELECT a FROM EventAttendance a WHERE a.event.id = :eventId ORDER BY a.createdAt DESC")
+    List<EventAttendance> findByEventId(@Param("eventId") Long eventId);
+    
+    /**
+     * Find all attendances for an event with eager loading of order
+     * Uses LEFT JOIN FETCH to eagerly load order to avoid LazyInitializationException
+     * Note: DISTINCT is needed when using JOIN FETCH to avoid duplicate results
+     */
+    @Query("SELECT DISTINCT a FROM EventAttendance a " +
+           "LEFT JOIN FETCH a.order o " +
+           "WHERE a.event.id = :eventId " +
+           "ORDER BY a.createdAt DESC")
+    List<EventAttendance> findByEventIdWithOrder(@Param("eventId") Long eventId);
     
     /**
      * Find attendance by order and customer

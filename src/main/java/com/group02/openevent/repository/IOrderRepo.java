@@ -28,6 +28,11 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o " +
             "WHERE o.event.id = :eventId " +
             "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
+    Long countPaidOrdersByEventId(@Param("eventId") Long eventId);
+
+    @Query("SELECT COUNT(o) FROM Order o " +
+            "WHERE o.event.id = :eventId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
     Integer countConfirmedParticipantsByEventId(@Param("eventId") Long eventId);
 
     @Query("SELECT DISTINCT o.event FROM Order o WHERE o.customer.customerId = :customerId")

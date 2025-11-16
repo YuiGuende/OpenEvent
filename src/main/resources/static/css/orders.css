@@ -1,9 +1,12 @@
-/* Reduced custom CSS, using Bootstrap and Tailwind classes instead */
+/* Unified color scheme for Orders, Volunteers, and Participants */
 :root {
-    --orange-primary: #ff6b35;
-    --orange-secondary: #ff8c42;
-    --green-primary: #22c55e;
-    --green-secondary: #16a34a;
+    /* Primary colors - Blue, Green, Orange */
+    --blue-primary: #3B82F6;
+    --blue-secondary: #2563EB;
+    --green-primary: #10B981;
+    --green-secondary: #059669;
+    --orange-primary: #FF6B35;
+    --orange-secondary: #F7931E;
 }
 
 /* Custom gradient backgrounds */
@@ -13,6 +16,10 @@
 
 .bg-gradient-green {
     background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+}
+
+.bg-gradient-blue {
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary));
 }
 
 /* Custom hover effects */
@@ -41,14 +48,14 @@
 .status-expired { background: #e5e7eb; color: #374151; }
 .status-refunded { background: #dbeafe; color: #1e40af; }
 
-/* Custom table header - Increase specificity to override event-attendees.css */
+/* Custom table header - Blue gradient for Orders */
 .orders-table thead {
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary)) !important;
 }
 
 .orders-table thead th {
     color: white !important;
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary)) !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
@@ -56,21 +63,21 @@
     padding: 1rem !important;
 }
 
-/* Modal header gradient */
+/* Modal header gradient - Blue for Orders */
 .modal-header-gradient {
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));!important;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary)) !important;
     color: white;
 }
 
-/* Custom focus state */
+/* Custom focus state - Blue for Orders */
 .form-control:focus {
-    border-color: var(--orange-primary);
-    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
 }
 
-/* Active filter button */
+/* Active filter button - Blue for Orders */
 .status-option.active {
-    background: var(--orange-primary);
-    border-color: var(--orange-primary);
+    background: var(--blue-primary);
+    border-color: var(--blue-primary);
     color: white;
 }

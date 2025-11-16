@@ -150,13 +150,29 @@ public class PaymentController {
                 System.out.println("Payment and Order updated to PAID");
                 
                 // Create EventAttendance when order is paid
-                try {
-                    attendanceService.createAttendanceFromOrder(order);
-                    System.out.println("EventAttendance created successfully for order: " + order.getOrderId());
-                } catch (Exception e) {
-                    System.out.println("Error creating EventAttendance for order " + order.getOrderId() + ": " + e.getMessage());
-                    e.printStackTrace();
-                    // Don't fail the webhook if attendance creation fails
+                // Always ensure order status is PAID and create EventAttendance
+                if (order.getStatus() != OrderStatus.PAID) {
+                    order.setStatus(OrderStatus.PAID);
+                    order.setUpdatedAt(java.time.LocalDateTime.now());
+                    orderService.save(order);
+                    System.out.println("Order status updated to PAID");
+
+                    // Create EventAttendance when order is paid
+                    try {
+                        attendanceService.createAttendanceFromOrder(order);
+                        System.out.println("EventAttendance created successfully for order: " + order.getOrderId());
+                    } catch (Exception e) {
+                        System.out.println("Error creating EventAttendance for order " + order.getOrderId() + ": " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                } else {
+                    // Order already PAID, but check if EventAttendance exists
+                    try {
+                        attendanceService.createAttendanceFromOrder(order);
+                        System.out.println("EventAttendance verified/created for order: " + order.getOrderId());
+                    } catch (Exception e) {
+                        System.out.println("EventAttendance may already exist for order " + order.getOrderId());
+                    }
                 }
 
                 // Credit host wallet when order is paid successfully

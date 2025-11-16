@@ -247,7 +247,7 @@ class TicketManager {
     }
 
     // Form Handling
-    handleSubmit() {
+    async handleSubmit() {
         console.log("Form submitted!")
         const formData = this.getFormData()
         console.log("Form data:", formData)
@@ -268,8 +268,14 @@ class TicketManager {
         this.showCreateForm()
         this.renderTickets()
 
-        // Persist immediately to server when clicking save
-        this.saveTicketsToServer()
+        // Persist immediately to server when clicking save, then reload tickets with real IDs
+        try {
+            await this.saveTicketsToServer()
+            // After successful save, reload tickets from server to get real IDs
+            await this.reloadTicketsFromServer()
+        } catch (error) {
+            console.error("Error saving or reloading tickets:", error)
+        }
     }
 
     getFormData() {
@@ -288,27 +294,27 @@ class TicketManager {
 
     validateForm(data) {
         if (!data.name) {
-            alert("Vui lòng nhập tên vé!")
+            alert("Please enter ticket name!")
             return false
         }
 
         if (data.price < 0) {
-            alert("Giá vé không hợp lệ!")
+            alert("Invalid ticket price!")
             return false
         }
 
         if (data.totalQuantity < 1) {
-            alert("Số lượng vé phải lớn hơn 0!")
+            alert("Quantity must be greater than 0!")
             return false
         }
 
         if (data.sale < 0 || data.sale > 100) {
-            alert("Giảm giá phải từ 0-100%!")
+            alert("Discount must be between 0-100%!")
             return false
         }
 
         if (new Date(data.startSaleDate) >= new Date(data.endSaleDate)) {
-            alert("Ngày kết thúc phải sau ngày bắt đầu!")
+            alert("End date must be after start date!")
             return false
         }
 
@@ -321,7 +327,7 @@ class TicketManager {
         this.tickets.unshift(data);
         this.renderTickets();
         if (typeof this.showNotification === 'function') {
-            this.showNotification("Tạo vé thành công!", "success")
+            this.showNotification("Ticket created successfully!", "success")
         }
     }
 
@@ -333,7 +339,7 @@ class TicketManager {
             this.tickets[index].isDeleted = false; // Ensure not marked as deleted
             this.renderTickets();
             if (typeof this.showNotification === 'function') {
-                this.showNotification("Cập nhật vé thành công!", "success")
+                this.showNotification("Ticket updated successfully!", "success")
             }
         }
     }
@@ -350,7 +356,7 @@ class TicketManager {
             }
             this.renderTickets();
             if (typeof this.showNotification === 'function') {
-                this.showNotification("Xóa vé thành công!", "success")
+                this.showNotification("Ticket deleted successfully!", "success")
             }
         }
     }
@@ -377,8 +383,8 @@ class TicketManager {
         document.getElementById("ticket-description").innerHTML = ticket.description
 
         // Update UI
-        document.getElementById("form-title").innerHTML = '<i class="fas fa-edit"></i> Chỉnh Sửa Vé'
-        document.getElementById("submit-btn").innerHTML = '<i class="fas fa-save"></i> Cập Nhật'
+        document.getElementById("form-title").innerHTML = '<i class="fas fa-edit"></i> Edit Ticket'
+        document.getElementById("submit-btn").innerHTML = '<i class="fas fa-save"></i> Update'
         
         const cancelBtn = document.getElementById("cancel-edit-btn")
         if (cancelBtn) {
@@ -413,8 +419,8 @@ class TicketManager {
         document.getElementById("ticket-description").innerHTML = ""
         
         // Update UI for create mode
-        document.getElementById("form-title").innerHTML = '<i class="fas fa-plus-circle"></i> Tạo Vé Mới'
-        document.getElementById("submit-btn").innerHTML = '<i class="fas fa-save"></i> Lưu Vé'
+        document.getElementById("form-title").innerHTML = '<i class="fas fa-plus-circle"></i> Add New Ticket'
+        document.getElementById("submit-btn").innerHTML = '<i class="fas fa-save"></i> Save'
         
         // Hide cancel button
         const cancelBtn = document.getElementById("cancel-edit-btn")
@@ -449,47 +455,47 @@ class TicketManager {
             if (t && t.id && !isNaN(parseInt(t.id))) {
                 fetch(`/api/events/ticket/${parseInt(t.id)}`, { method: 'DELETE' })
                     .then(async (res) => {
-                        // Đọc text một lần, sau đó cố parse JSON từ text
+                        // Read text once, then try to parse JSON from text
                         const text = await res.text()
                         
                         if (!res.ok) {
-                            // Try to parse JSON từ text
+                            // Try to parse JSON from text
                             try {
                                 const data = JSON.parse(text)
-                                const msg = data?.error || data?.message || 'Không thể xóa vé'
+                                const msg = data?.error || data?.message || 'Cannot delete ticket'
                                 throw new Error(msg)
                             } catch (parseError) {
-                                // Nếu không parse được JSON, dùng text hoặc message mặc định
-                                throw new Error(text || 'Không thể xóa vé')
+                                // If cannot parse JSON, use text or default message
+                                throw new Error(text || 'Cannot delete ticket')
                             }
                         }
                         
-                        // Parse success response từ text
+                        // Parse success response from text
                         try {
                             const data = JSON.parse(text)
                             // Server confirmed deletion → remove locally
                             this.tickets = this.tickets.filter(x => x.id !== id)
                             this.renderTickets()
                             if (typeof this.showNotification === 'function') {
-                                this.showNotification(data?.message || 'Đã xóa vé', 'success')
+                                this.showNotification(data?.message || 'Ticket deleted', 'success')
                             }
                         } catch (parseError) {
-                            // Nếu không parse được JSON, vẫn coi như thành công nếu status OK
+                            // If cannot parse JSON, still consider success if status OK
                             this.tickets = this.tickets.filter(x => x.id !== id)
                             this.renderTickets()
                             if (typeof this.showNotification === 'function') {
-                                this.showNotification('Đã xóa vé', 'success')
+                                this.showNotification('Ticket deleted', 'success')
                             }
                         }
                     })
                     .catch(err => {
                         console.error('Delete ticket error:', err)
                         if (typeof this.showNotification === 'function') {
-                            this.showNotification(err?.message || 'Xóa vé thất bại', 'error')
+                            this.showNotification(err?.message || 'Failed to delete ticket', 'error')
                         }
                     })
             } else {
-                // Vé mới (chưa lưu DB) → xóa local
+                // New ticket (not saved to DB) → delete local
                 this.deleteTicket(id)
             }
         }
@@ -507,13 +513,13 @@ class TicketManager {
         if (visibleTickets.length === 0) {
             container.style.display = "none"
             emptyState.style.display = "block"
-            ticketCount.textContent = "0 vé"
+            ticketCount.textContent = "0 tickets"
             return
         }
 
         container.style.display = "flex"
         emptyState.style.display = "none"
-        ticketCount.textContent = `${visibleTickets.length} vé`
+        ticketCount.textContent = `${visibleTickets.length} ${visibleTickets.length === 1 ? 'ticket' : 'tickets'}`
 
         container.innerHTML = visibleTickets.map((ticket) => this.renderTicketCard(ticket)).join("")
 
@@ -545,13 +551,13 @@ class TicketManager {
                 <div class="ticket-header">
                     <div>
                         <h3 class="ticket-title">${ticket.name}</h3>
-                        <p class="ticket-subtitle">${ticket.description ? ticket.description.replace(/<[^>]*>/g, '').substring(0, 50) + '...' : 'Mô tả vé'}</p>
+                        <p class="ticket-subtitle">${ticket.description ? ticket.description.replace(/<[^>]*>/g, '').substring(0, 50) + '...' : 'Ticket description'}</p>
                     </div>
                     <div class="ticket-actions">
-                        <button class="icon-btn edit" data-action="edit" data-id="${ticket.id}" title="Chỉnh sửa">
+                        <button class="icon-btn edit" data-action="edit" data-id="${ticket.id}" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="icon-btn delete" data-action="delete" data-id="${ticket.id}" title="Xóa">
+                        <button class="icon-btn delete" data-action="delete" data-id="${ticket.id}" title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -563,7 +569,7 @@ class TicketManager {
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="info-content">
-                            <span class="info-label">Giá vé</span>
+                            <span class="info-label">Ticket Price</span>
                             <div>
                                 <span class="info-value price-current">${this.formatCurrency(finalPrice)}</span>
                                 <span class="price-original">${this.formatCurrency(ticket.price)}</span>
@@ -576,7 +582,7 @@ class TicketManager {
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="info-content">
-                            <span class="info-label">Số lượng</span>
+                            <span class="info-label">Quantity</span>
                             <span class="info-value quantity-info">${ticket.soldQuantity}/${ticket.totalQuantity} (${soldPercent}%)</span>
                         </div>
                     </div>
@@ -586,10 +592,10 @@ class TicketManager {
                             <i class="fas fa-calendar"></i>
                         </div>
                         <div class="info-content">
-                            <span class="info-label">Thời gian bán:</span>
+                            <span class="info-label">Sale Period:</span>
                             <div class="sale-period">
-                                <div><strong>Từ:</strong> ${startDate}</div>
-                                <div><strong>Đến:</strong> ${endDate}</div>
+                                <div><strong>From:</strong> ${startDate}</div>
+                                <div><strong>To:</strong> ${endDate}</div>
                             </div>
                         </div>
                     </div>
@@ -678,7 +684,7 @@ class TicketManager {
  * Populate ticket types from database (similar to populateLineupFromEvent and populateSchedulesFromEvent)
  */
 function populateTicketTypesFromEvent() {
-    console.log('--- BƯỚC B: populateTicketTypesFromEvent ĐANG CHẠY ---');
+    console.log('--- STEP B: populateTicketTypesFromEvent RUNNING ---');
     console.log('initialTicketTypesData:', initialTicketTypesData);
     
 
@@ -686,14 +692,14 @@ function populateTicketTypesFromEvent() {
         console.log('Creating new TicketManager instance...');
         window.ticketManager = new TicketManager();
     }
-    // 1. Kiểm tra dữ liệu
+    // 1. Check data
     if (!initialTicketTypesData || initialTicketTypesData.length === 0) {
         console.log('No initial ticket types to populate.');
         return;
     }
-    console.log('LOG: Tìm thấy', initialTicketTypesData.length, 'ticket types để load.');
+    console.log('LOG: Found', initialTicketTypesData.length, 'ticket types to load.');
 
-    // 2. Khởi tạo TicketManager với dữ liệu từ database
+    // 2. Initialize TicketManager with data from database
     
     
     console.log('Initializing TicketManager with database data...');
@@ -763,12 +769,49 @@ TicketManager.prototype.saveTicketsToServer = async function() {
         if (!res.ok) throw new Error('Failed to save tickets')
 
         if (typeof this.showNotification === 'function') {
-            this.showNotification('Đã lưu vé vào hệ thống', 'success')
+            this.showNotification('Tickets saved successfully', 'success')
         }
     } catch (err) {
         console.error('Error saving tickets:', err)
         if (typeof this.showNotification === 'function') {
-            this.showNotification('Lưu vé thất bại', 'error')
+            this.showNotification('Failed to save tickets', 'error')
         }
+        throw err // Re-throw to let caller handle it
+    }
+}
+
+// Reload tickets from server to get real IDs after saving
+TicketManager.prototype.reloadTicketsFromServer = async function() {
+    try {
+        const pathParts = window.location.pathname.split('/')
+        const eventId = pathParts[3]
+        if (!eventId || isNaN(eventId)) {
+            console.error('Cannot determine eventId from URL, skip reloading tickets')
+            return
+        }
+
+        console.log('🔄 Reloading tickets from server for event:', eventId)
+        const response = await fetch(`/api/ticket-types/event/${eventId}`)
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch tickets: ${response.status}`)
+        }
+
+        const ticketTypes = await response.json()
+        console.log('✅ Reloaded tickets from server:', ticketTypes.length, 'tickets')
+
+        // Re-initialize tickets with real IDs from server
+        if (ticketTypes && ticketTypes.length > 0) {
+            this.initializeTicketTypes(ticketTypes)
+        } else {
+            // No tickets on server, but still re-render to show empty state
+            this.tickets = []
+            this.renderTickets()
+        }
+    } catch (err) {
+        console.error('Error reloading tickets from server:', err)
+        // Don't show error notification here as save was successful
+        // Just re-render with current data
+        this.renderTickets()
     }
 }

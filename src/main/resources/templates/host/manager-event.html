@@ -88,14 +88,20 @@
                             <a th:href="@{'/manage/event/' + ${eventId} + '/attendees'}" class="nav-link" data-link>
                                 <i class="bi bi-people"></i>
                                 <span>Participants</span>
-                                <span class="badge">0</span>
+                                <span class="badge" id="participantsBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteers'}" class="nav-link" data-link>
+                                <i class="bi bi-people-fill"></i>
+                                <span>Volunteer</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a th:href="@{'/manage/event/' + ${eventId} + '/orders'}" class="nav-link" data-link>
                                 <i class="bi bi-receipt"></i>
                                 <span>Order</span>
-                                <span class="badge">0</span>
+                                <span class="badge" id="ordersBadge">0</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -145,6 +151,23 @@
                             <a th:href="@{'/manage/event/' + ${eventId} + '/qr-codes'}" class="nav-link" data-link>
                                 <i class="bi bi-qr-code"></i>
                                 <span>QR Codes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">TÌNH NGUYỆN VIÊN</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-create-form'}" class="nav-link" data-link>
+                                <i class="bi bi-file-earmark-plus"></i>
+                                <span>Tạo Form</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a th:href="@{'/manage/event/' + ${eventId} + '/volunteer-requests'}" class="nav-link" data-link>
+                                <i class="bi bi-clipboard-check"></i>
+                                <span>Xem yêu cầu duyệt</span>
                             </a>
                         </li>
                     </ul>
@@ -273,6 +296,7 @@
     <script src="/js/router.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/update-ticket.js"></script>
+    <script src="/js/checkin-list.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="/js/event-attendees.js"></script>
 
@@ -337,6 +361,119 @@
         } else {
             loadUserName();
         }
+
+        // Load event statistics (orders and participants count)
+        // Make it available globally so router can call it
+        window.loadEventStats = function(retryCount = 0) {
+            // Get eventId from URL if not available from Thymeleaf
+            let eventId = /*[[${eventId}]]*/ null;
+            
+            // Fallback: Try to get eventId from URL path
+            if (!eventId) {
+                const pathParts = window.location.pathname.split('/');
+                const eventIdIndex = pathParts.indexOf('event');
+                if (eventIdIndex !== -1 && pathParts[eventIdIndex + 1]) {
+                    eventId = parseInt(pathParts[eventIdIndex + 1]);
+                    if (isNaN(eventId)) {
+                        eventId = null;
+                    }
+                }
+            }
+            
+            console.log('Loading event stats for eventId:', eventId);
+            if (!eventId) {
+                console.warn('Event ID not found, skipping stats load');
+                // Retry after 500ms if badges not found (max 5 retries)
+                if (retryCount < 5) {
+                    setTimeout(() => window.loadEventStats(retryCount + 1), 500);
+                }
+                return;
+            }
+
+            // Helper function to update badge with retry logic
+            function updateBadge(badgeId, count, apiName) {
+                const badge = document.getElementById(badgeId);
+                if (badge) {
+                    badge.textContent = count || 0;
+                    console.log(`✅ Updated ${apiName} badge to:`, count || 0);
+                    return true;
+                } else {
+                    console.warn(`⚠️ ${badgeId} element not found. Retry: ${retryCount}/5`);
+                    // Retry if badge not found (max 5 retries)
+                    if (retryCount < 5) {
+                        setTimeout(() => window.loadEventStats(retryCount + 1), 500);
+                    }
+                    return false;
+                }
+            }
+
+            // Load participants count
+            console.log('📊 Fetching participants count from:', `/api/events/${eventId}/participants/count`);
+            fetch(`/api/events/${eventId}/participants/count`)
+                .then(response => {
+                    console.log('📊 Participants API response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📊 Participants API response data:', data);
+                    if (data && data.success !== false) {
+                        updateBadge('participantsBadge', data.count, 'Participants');
+                    } else {
+                        console.error('❌ Error loading participants count:', data.error || 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error fetching participants count:', error);
+                });
+
+            // Load orders count
+            console.log('📦 Fetching orders count from:', `/api/events/${eventId}/orders/count`);
+            fetch(`/api/events/${eventId}/orders/count`)
+                .then(response => {
+                    console.log('📦 Orders API response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📦 Orders API response data:', data);
+                    if (data && data.success !== false) {
+                        updateBadge('ordersBadge', data.count, 'Orders');
+                    } else {
+                        console.error('❌ Error loading orders count:', data.error || 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error fetching orders count:', error);
+                });
+        };
+
+        // Load event stats when page loads - with delay to ensure DOM is ready
+        function initLoadEventStats() {
+            // Wait a bit to ensure DOM is fully ready
+            setTimeout(function() {
+                if (typeof window.loadEventStats === 'function') {
+                    window.loadEventStats(0);
+                }
+            }, 300);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLoadEventStats);
+        } else {
+            initLoadEventStats();
+        }
+
+        // Also refresh stats periodically (every 30 seconds)
+        setInterval(function() {
+            if (typeof window.loadEventStats === 'function') {
+                window.loadEventStats(0);
+            }
+        }, 30000); // Refresh every 30 seconds
     </script>
 
     <!-- Event Attendees Modals (Global - outside fragment to prevent recreation on reload) -->

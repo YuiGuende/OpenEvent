@@ -223,7 +223,7 @@ class DashboardStats {
                     }
                 }]
             },
-            labels: ['Đã Check-in', 'Chưa Check-in'],
+            labels: ['Checked-in', 'Not checked in yet'],
             colors: ['#10B981', '#E5E7EB'],
                     legend: {
                 position: 'bottom',
@@ -238,14 +238,14 @@ class DashboardStats {
                     tooltip: {
                 y: {
                     formatter: function (val) {
-                        return val + " vé"
+                        return val + " ticket"
                     }
                 }
             },
             dataLabels: {
                 enabled: true,
                 formatter: function (val, opts) {
-                    return opts.w.config.series[opts.seriesIndex] + " vé"
+                    return opts.w.config.series[opts.seriesIndex] + " ticket"
                 }
             }
         }
@@ -282,11 +282,11 @@ class DashboardStats {
 
         const options = {
             series: [{
-                name: 'Đã Check-in',
+                name: 'Checked-in',
                 data: checkInData,
                 color: '#10B981'
             }, {
-                name: 'Tổng Vé Bán',
+                name: 'Total Tickets Sold',
                 data: totalData,
                 color: '#E5E7EB'
             }],
@@ -334,7 +334,7 @@ class DashboardStats {
             },
             yaxis: {
                 title: {
-                    text: 'Số Lượng Vé'
+                    text: 'Number of Tickets'
                 }
             },
             fill: {
@@ -343,7 +343,7 @@ class DashboardStats {
             tooltip: {
                 y: {
                     formatter: function (val) {
-                        return val + " vé"
+                        return val + " ticket"
                     }
                 }
             },
@@ -601,11 +601,11 @@ class DashboardStats {
 
         const options = {
             series: [{
-                name: 'Doanh Thu',
+                name: 'Revenue',
                 type: 'column',
                 data: revenueData
             }, {
-                name: 'Số Lượng Đơn',
+                name: 'Number of Orders',
                 type: 'line',
                 data: orderCountData
             }],
@@ -629,7 +629,7 @@ class DashboardStats {
             },
             yaxis: [{
                 title: {
-                    text: 'Doanh Thu (VND)',
+                    text: 'Revenue (VND)',
                 },
                 labels: {
                     formatter: function (val) {
@@ -643,7 +643,7 @@ class DashboardStats {
             }, {
                 opposite: true,
                 title: {
-                    text: 'Số Lượng Đơn'
+                    text: 'Number of Orders'
                 }
             }],
             colors: ['#3B82F6', '#10B981'],
@@ -662,7 +662,7 @@ class DashboardStats {
                                 currency: "VND",
                             }).format(val)
                         }
-                        return val + ' đơn'
+                        return val + ' order'
                     }
                 }
             }
@@ -714,11 +714,11 @@ class DashboardStats {
 
         const options = {
             series: [{
-                name: 'Doanh Thu',
+                name: 'Revenue',
                 data: revenueData,
                 color: '#3B82F6'
             }, {
-                name: 'Vé Bán',
+                name: 'Ticket Sold',
                 data: ticketData,
                 color: '#10B981'
             }],
@@ -756,7 +756,7 @@ class DashboardStats {
             },
             yaxis: [{
                 title: {
-                    text: 'Doanh Thu (VND)',
+                    text: 'Revenue (VND)',
                 },
                 labels: {
                     formatter: function (val) {
@@ -770,7 +770,7 @@ class DashboardStats {
             }, {
                 opposite: true,
                 title: {
-                    text: 'Số Vé Bán'
+                    text: 'Number of Tickets Sold'
                 }
             }],
             legend: {
@@ -788,7 +788,7 @@ class DashboardStats {
                                 currency: "VND",
                             }).format(val)
                         }
-                        return val + ' vé'
+                        return val + ' ticket'
                     }
                 }
             }

@@ -72,7 +72,7 @@
 
                         <div th:if="${groupedResponses != null and !groupedResponses.isEmpty()}" class="table-responsive">
                             <table class="table table-striped table-hover">
-                                <thead class="table-dark">
+                                <thead style="background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)); color: white; box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);">
                                     <tr>
                                         <th>#</th>
                                         <th><i class="bi bi-person"></i> Ứng viên</th>
@@ -144,13 +144,37 @@
         margin-bottom: 30px;
     }
     
+    :root {
+        --blue-primary: #3B82F6;
+        --blue-secondary: #2563EB;
+        --green-primary: #10B981;
+        --green-secondary: #059669;
+        --orange-primary: #FF6B35;
+        --orange-secondary: #F7931E;
+    }
+
+    /* Volunteer page - Orange theme */
+    .container {
+        padding: 2rem;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+    }
+
+    .card-body {
+        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    }
+
     .form-type-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--orange-primary) 0%, var(--orange-secondary) 100%);
         color: white;
         padding: 20px;
         border-radius: 10px;
         margin-bottom: 20px;
         text-align: center;
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
     }
     
     .form-type-header h3 {
@@ -184,15 +208,51 @@
     .table th {
         font-weight: 600;
         white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem !important;
     }
-    
+
     .table td {
         vertical-align: middle;
     }
-    
+
     .btn-sm {
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+        border: none;
+        color: white;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+        border-left: 4px solid var(--blue-primary);
+    }
+
+    .alert-warning {
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(247, 147, 30, 0.1));
+        border-left: 4px solid var(--orange-primary);
     }
 </style>
 

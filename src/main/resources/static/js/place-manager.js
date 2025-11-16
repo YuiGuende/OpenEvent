@@ -1,6 +1,6 @@
 /**
- * Place Manager - Quản lý places trong bộ nhớ tạm
- * Chỉ lưu vào database khi nhấn nút "Lưu thay đổi"
+ * Place Manager - Manages places in temporary memory
+ * Only saves to database when "Save Changes" button is clicked
  */
 class PlaceManager {
     constructor() {
@@ -10,8 +10,8 @@ class PlaceManager {
     }
 
     /**
-     * Khởi tạo danh sách places từ server
-     * @param {Array} serverPlaces - Danh sách places từ server
+     * Initialize places list from server
+     * @param {Array} serverPlaces - Places list from server
      */
     initializePlaces(serverPlaces) {
         console.log('🔍 PlaceManager: Initializing places with server data:', serverPlaces);
@@ -32,7 +32,7 @@ class PlaceManager {
     }
 
     /**
-     * Khởi tạo event listeners
+     * Initialize event listeners
      */
     initializeEventListeners() {
         // Add place button
@@ -61,7 +61,7 @@ class PlaceManager {
     }
 
     /**
-     * Hiển thị modal thêm địa điểm
+     * Show add place modal
      */
     showAddPlaceModal() {
         const modal = document.getElementById('addPlaceModal');
@@ -73,7 +73,7 @@ class PlaceManager {
     }
 
     /**
-     * Đóng modal
+     * Close modal
      */
     closeModal() {
         const modal = document.getElementById('addPlaceModal');
@@ -83,7 +83,7 @@ class PlaceManager {
     }
 
     /**
-     * Thêm địa điểm mới vào bộ nhớ tạm
+     * Add new place to temporary memory
      */
     addPlace() {
         console.log('🔍 PlaceManager: addPlace() called');
@@ -95,13 +95,13 @@ class PlaceManager {
         console.log('🔍 PlaceManager: name:', name, 'building:', building);
         
         if (!name) {
-            alert('Vui lòng nhập tên địa điểm');
+            alert('Please enter location name');
             return;
         }
         
         // Check for duplicate names (case insensitive)
         if (this.places.some(p => p.placeName.toLowerCase() === name.toLowerCase())) {
-            alert('Địa điểm đã tồn tại');
+            alert('Location already exists');
             return;
         }
 
@@ -127,12 +127,12 @@ class PlaceManager {
     }
 
     /**
-     * Xóa địa điểm khỏi bộ nhớ tạm
-     * @param {number} index - Index của địa điểm cần xóa
+     * Remove place from temporary memory
+     * @param {number} index - Index of place to remove
      */
     removePlace(index) {
         const place = this.places[index];
-        if (confirm(`Xóa địa điểm "${place.placeName}"?`)) {
+        if (confirm(`Delete location "${place.placeName}"?`)) {
             // If it's a new place (not saved to DB yet), remove completely
             if (place.isNew) {
                 this.places.splice(index, 1);
@@ -147,7 +147,7 @@ class PlaceManager {
     }
 
     /**
-     * Render danh sách places lên UI
+     * Render places list to UI
      */
     renderPlaces() {
         console.log('🔍 PlaceManager: renderPlaces() called');
@@ -166,7 +166,7 @@ class PlaceManager {
         
         if (this.places.length === 0) {
             console.log('🔍 PlaceManager: No places to render, showing empty message');
-            list.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">Chưa có địa điểm nào</td></tr>';
+            list.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">No locations yet</td></tr>';
             return;
         }
         
@@ -187,7 +187,7 @@ class PlaceManager {
                 <td>${place.building}</td>
                 <td>
                     <button type="button" class="btn btn-danger btn-sm" onclick="placeManager.removePlace(${index})">
-                        <i class="fas fa-trash"></i> Xóa
+                        <i class="fas fa-trash"></i> Delete
                     </button>
                 </td>
             `;
@@ -198,16 +198,16 @@ class PlaceManager {
     }
 
     /**
-     * Lấy dữ liệu places để submit form
-     * @returns {Array} Danh sách tất cả places (bao gồm cả những places bị xóa)
+     * Get places data to submit form
+     * @returns {Array} All places list (including deleted places)
      */
     getPlacesData() {
-        return this.places; // Gửi tất cả places, bao gồm cả những places bị xóa
+        return this.places; // Send all places, including deleted ones
     }
 
     /**
-     * Lấy tóm tắt các thay đổi
-     * @returns {Object} Tóm tắt thay đổi
+     * Get summary of changes
+     * @returns {Object} Change summary
      */
     getChangesSummary() {
         const newPlaces = this.places.filter(p => p.isNew && !p.isDeleted);
@@ -227,8 +227,8 @@ class PlaceManager {
 let placeManager = null;
 
 /**
- * Khởi tạo PlaceManager với dữ liệu từ server
- * @param {Array} serverPlaces - Dữ liệu places từ server
+ * Initialize PlaceManager with data from server
+ * @param {Array} serverPlaces - Places data from server
  */
 function initializePlaceManager(serverPlaces) {
     console.log('🔍 initializePlaceManager() called');
@@ -252,12 +252,12 @@ function initializePlaceManager(serverPlaces) {
  * Populate places from database (similar to populateLineupFromEvent and populateSchedulesFromEvent)
  */
 function populatePlacesFromEvent() {
-    console.log('--- BƯỚC B: populatePlacesFromEvent ĐANG CHẠY ---');
+    console.log('--- STEP B: populatePlacesFromEvent RUNNING ---');
     console.log('initialPlacesData:', initialPlacesData);
     console.log('typeof initialPlacesData:', typeof initialPlacesData);
     console.log('window.placeManager before:', window.placeManager);
     
-    // 1. Kiểm tra dữ liệu
+    // 1. Check data
     if (!initialPlacesData || initialPlacesData.length === 0) {
         console.log('No initial places to populate.');
         // Still initialize PlaceManager with empty data
@@ -270,9 +270,9 @@ function populatePlacesFromEvent() {
         console.log('window.placeManager after empty init:', window.placeManager);
         return;
     }
-    console.log('LOG: Tìm thấy', initialPlacesData.length, 'places để load.');
+    console.log('LOG: Found', initialPlacesData.length, 'places to load.');
 
-    // 2. Khởi tạo PlaceManager với dữ liệu từ database
+    // 2. Initialize PlaceManager with data from database
     if (!placeManager) {
         console.log('Creating new PlaceManager instance...');
         placeManager = new PlaceManager();

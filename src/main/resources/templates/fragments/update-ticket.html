@@ -24,10 +24,10 @@
                         <div class="card-body">
                             <div class="form-header">
                                 <h2 id="form-title" class="card-title mb-3">
-                                    <i class="fas fa-plus-circle"></i> Tạo Vé Mới
+                                    <i class="fas fa-plus-circle"></i> Create New Ticket
                                 </h2>
                                 <button id="cancel-edit-btn" class="btn btn-outline-secondary" style="display: none;">
-                                    <i class="fas fa-times"></i> Hủy Chỉnh Sửa
+                                    <i class="fas fa-times"></i> Cancel Edit
                                 </button>
                             </div>
                             
@@ -38,21 +38,21 @@
                                 <!-- Ticket Name -->
                                 <div class="mb-3">
                                     <label for="ticket-name" class="form-label">
-                                        <i class="fas fa-tag"></i> Tên loại vé <span class="text-danger">*</span>
+                                        <i class="fas fa-tag"></i> Ticket Type Name <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="ticket-name" 
-                                           placeholder="VD: Vé Early Bird, Vé VIP..." required>
+                                           placeholder="e.g., Early Bird Ticket, VIP Ticket..." required>
                                     <div class="valid-feedback">
-                                        <i class="fas fa-check-circle me-1"></i>Tên vé hợp lệ!
+                                        <i class="fas fa-check-circle me-1"></i>Valid ticket name!
                                     </div>
                                     <div class="invalid-feedback">
-                                        <i class="fas fa-exclamation-circle me-1"></i>Vui lòng nhập tên loại vé
+                                        <i class="fas fa-exclamation-circle me-1"></i>Please enter ticket type name
                                     </div>
                                 </div>
                                 <!-- Description with Rich Text Editor -->
                                 <div class="mb-3">
                                     <label class="form-label">
-                                        <i class="fas fa-align-left"></i> Mô tả
+                                        <i class="fas fa-align-left"></i> Description
                                     </label>
                                     <div class="rich-text-editor">
                                         <!-- Toolbar -->
@@ -90,7 +90,7 @@
                                         </div>
 
                                         <!-- Editor Content -->
-                                        <div class="editor-content" contenteditable="true" id="ticket-description" data-placeholder="Nhập mô tả chi tiết về loại vé này...">
+                                        <div class="editor-content" contenteditable="true" id="ticket-description" data-placeholder="Enter detailed description about this ticket type...">
                                         </div>
                                     </div>
                                 </div>
@@ -99,28 +99,28 @@
                                 <div class="row mb-3">
                                     <div class="col-md-8">
                                         <label for="ticket-price" class="form-label">
-                                            <i class="fas fa-dollar-sign"></i> Giá (VNĐ) <span class="text-danger">*</span>
+                                            <i class="fas fa-dollar-sign"></i> Price (VND) <span class="text-danger">*</span>
                                         </label>
                                         <input type="number" class="form-control" id="ticket-price" 
                                                placeholder="0" min="0" step="1000" required>
                                         <div class="valid-feedback">
-                                            <i class="fas fa-check-circle me-1"></i>Giá vé hợp lệ!
+                                            <i class="fas fa-check-circle me-1"></i>Valid ticket price!
                                         </div>
                                         <div class="invalid-feedback">
-                                            <i class="fas fa-exclamation-circle me-1"></i>Vui lòng nhập giá vé hợp lệ
+                                            <i class="fas fa-exclamation-circle me-1"></i>Please enter a valid ticket price
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <label for="ticket-sale" class="form-label">
-                                            <i class="fas fa-percent"></i> Giảm giá (%)
+                                            <i class="fas fa-percent"></i> Discount (%)
                                         </label>
                                         <input type="number" class="form-control" id="ticket-sale" 
                                                placeholder="0" min="0" max="100" step="1">
                                         <div class="valid-feedback">
-                                            <i class="fas fa-check-circle me-1"></i>Giảm giá hợp lệ!
+                                            <i class="fas fa-check-circle me-1"></i>Valid discount!
                                         </div>
                                         <div class="invalid-feedback">
-                                            <i class="fas fa-exclamation-circle me-1"></i>Giảm giá phải từ 0-100%
+                                            <i class="fas fa-exclamation-circle me-1"></i>Discount must be between 0-100%
                                         </div>
                                     </div>
                                 </div>
@@ -128,15 +128,15 @@
                                 <!-- Quantity -->
                                 <div class="mb-3">
                                     <label for="ticket-quantity" class="form-label">
-                                        <i class="fas fa-boxes"></i> Tổng số lượng <span class="text-danger">*</span>
+                                        <i class="fas fa-boxes"></i> Total Quantity <span class="text-danger">*</span>
                                     </label>
                                     <input type="number" class="form-control" id="ticket-quantity" 
                                            placeholder="0" min="1" required>
                                     <div class="valid-feedback">
-                                        <i class="fas fa-check-circle me-1"></i>Số lượng hợp lệ!
+                                        <i class="fas fa-check-circle me-1"></i>Valid quantity!
                                     </div>
                                     <div class="invalid-feedback">
-                                        <i class="fas fa-exclamation-circle me-1"></i>Số lượng phải lớn hơn 0
+                                        <i class="fas fa-exclamation-circle me-1"></i>Quantity must be greater than 0
                                     </div>
                                 </div>
 
@@ -144,7 +144,7 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="ticket-start-date" class="form-label">
-                                            <i class="fas fa-calendar-alt"></i> Ngày bắt đầu bán <span class="text-danger">*</span>
+                                            <i class="fas fa-calendar-alt"></i> Sale Start Date <span class="text-danger">*</span>
                                         </label>
                                         <div class="input-group">
                                             <input type="datetime-local" class="form-control" id="ticket-start-date" required>
@@ -153,15 +153,15 @@
                                             </span>
                                         </div>
                                         <div class="valid-feedback">
-                                            <i class="fas fa-check-circle me-1"></i>Ngày bắt đầu hợp lệ!
+                                            <i class="fas fa-check-circle me-1"></i>Valid start date!
                                         </div>
                                         <div class="invalid-feedback">
-                                            <i class="fas fa-exclamation-circle me-1"></i>Vui lòng chọn ngày bắt đầu
+                                            <i class="fas fa-exclamation-circle me-1"></i>Please select start date
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="ticket-end-date" class="form-label">
-                                            <i class="fas fa-calendar-check"></i> Ngày kết thúc bán <span class="text-danger">*</span>
+                                            <i class="fas fa-calendar-check"></i> Sale End Date <span class="text-danger">*</span>
                                         </label>
                                         <div class="input-group">
                                             <input type="datetime-local" class="form-control" id="ticket-end-date" required>
@@ -170,17 +170,17 @@
                                             </span>
                                         </div>
                                         <div class="valid-feedback">
-                                            <i class="fas fa-check-circle me-1"></i>Ngày kết thúc hợp lệ!
+                                            <i class="fas fa-check-circle me-1"></i>Valid end date!
                                         </div>
                                         <div class="invalid-feedback">
-                                            <i class="fas fa-exclamation-circle me-1"></i>Vui lòng chọn ngày kết thúc
+                                            <i class="fas fa-exclamation-circle me-1"></i>Please select end date
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Payment Method -->
                                 <div class="mb-3">
-                                    <label class="form-label">Phương thức thanh toán</label>
+                                    <label class="form-label">Payment Method</label>
                                     <div class="payment-method-card">
                                         <div class="d-flex align-items-center">
                                             <div class="payment-icon me-3">
@@ -188,7 +188,7 @@
                                             </div>
                                             <div>
                                                 <h6 class="mb-1">PayOS</h6>
-                                                <small class="text-muted">Phương thức thanh toán mặc định</small>
+                                                <small class="text-muted">Default payment method</small>
                                             </div>
                                         </div>
                                     </div>
@@ -197,7 +197,7 @@
                                 <!-- Action Buttons -->
                                 <div class="form-actions">
                                     <button type="submit" class="btn btn-primary btn-lg flex-fill" id="submit-btn">
-                                        <i class="fas fa-save me-2"></i> Lưu Vé
+                                        <i class="fas fa-save me-2"></i> Save Ticket
                                     </button>
                                 </div>
                             </form>
@@ -213,9 +213,9 @@
                         <div class="card-body">
                             <div class="list-header">
                                 <h2 class="card-title mb-0">
-                                    <i class="fas fa-list"></i> Danh sách vé
+                                    <i class="fas fa-list"></i> Ticket List
                                 </h2>
-                                <span class="badge bg-light text-dark" id="ticket-count">0 vé</span>
+                                <span class="badge bg-light text-dark" id="ticket-count">0 tickets</span>
                             </div>
                             
                             <!-- Ticket List Container -->
@@ -228,8 +228,8 @@
                                 <div class="empty-icon mb-3">
                                     <i class="fas fa-ticket-alt"></i>
                                 </div>
-                                <h5 class="text-muted">Chưa có vé nào được tạo</h5>
-                                <p class="text-muted">Hãy tạo vé đầu tiên của bạn!</p>
+                                <h5 class="text-muted">No tickets created yet</h5>
+                                <p class="text-muted">Create your first ticket!</p>
                             </div>
                         </div>
                     </div>
@@ -241,18 +241,18 @@
     <div id="delete-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-exclamation-triangle"></i> Xác Nhận Xóa</h3>
+                <h3><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h3>
             </div>
             <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa vé này không?</p>
-                <p class="modal-warning">Hành động này không thể hoàn tác!</p>
+                <p>Are you sure you want to delete this ticket?</p>
+                <p class="modal-warning">This action cannot be undone!</p>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" id="cancel-delete-btn">
-                    <i class="fas fa-times"></i> Hủy
+                    <i class="fas fa-times"></i> Cancel
                 </button>
                 <button class="btn btn-danger" id="confirm-delete-btn">
-                    <i class="fas fa-trash"></i> Xóa
+                    <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
         </div>

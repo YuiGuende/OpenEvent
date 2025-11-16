@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group02.openevent.repository.ITicketTypeRepo;
 import com.group02.openevent.repository.IEventImageRepo;
 import com.group02.openevent.repository.IEventRepo;
+import com.group02.openevent.repository.IOrderRepo;
+import com.group02.openevent.repository.IEventAttendanceRepo;
 import com.group02.openevent.service.TicketTypeService;
 import com.group02.openevent.service.UserService;
 import com.group02.openevent.service.impl.HostServiceImpl;
@@ -60,9 +62,11 @@ public class EventController {
     
     private final IEventRepo eventRepo;
     private final UserService userService;
+    private final IOrderRepo orderRepo;
+    private final IEventAttendanceRepo attendanceRepo;
 
     @Autowired
-    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService, IEventImageRepo eventImageRepo, IEventRepo eventRepo, UserService userService) {
+    public EventController(EventService eventService, IImageService imageService, ITicketTypeRepo ticketTypeRepo, TicketTypeService ticketTypeService, HostServiceImpl hostService, IEventImageRepo eventImageRepo, IEventRepo eventRepo, UserService userService, IOrderRepo orderRepo, IEventAttendanceRepo attendanceRepo) {
         this.eventService = eventService;
         this.imageService = imageService;
         this.ticketTypeRepo = ticketTypeRepo;
@@ -71,6 +75,8 @@ public class EventController {
         this.eventImageRepo = eventImageRepo;
         this.eventRepo = eventRepo;
         this.userService = userService;
+        this.orderRepo = orderRepo;
+        this.attendanceRepo = attendanceRepo;
     }
 
 
@@ -120,14 +126,40 @@ public class EventController {
     @GetMapping("/{id}/participants/count")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getParticipantsCount(@PathVariable Long id) {
+        log.info("Getting participants count for event ID: {}", id);
         try {
-            long count = eventService.countUniqueParticipantsByEventId(id);
+            // Use EventAttendance to count participants (more accurate)
+            long count = attendanceRepo.countByEventId(id);
+            log.info("Found {} participants for event {}", count, id);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("count", count);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error getting participants count for event {}: {}", id, e.getMessage());
+            log.error("Error getting participants count for event {}: {}", id, e.getMessage(), e);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("count", 0);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/{id}/orders/count")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getOrdersCount(@PathVariable Long id) {
+        log.info("Getting PAID orders count for event ID: {}", id);
+        try {
+            // Only count orders with PAID status - use optimized query
+            Long count = orderRepo.countPaidOrdersByEventId(id);
+            count = count != null ? count : 0L;
+            log.info("Found {} PAID orders for event {}", count, id);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("count", count);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error getting orders count for event {}: {}", id, e.getMessage(), e);
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("count", 0);
@@ -289,6 +321,10 @@ public class EventController {
             ticketTypeService.deleteTicketType(ticketTypeId);
             ApiResponse<Void> ok = ApiResponse.<Void>builder().message("Đã xóa vé").build();
             return org.springframework.http.ResponseEntity.ok(ok);
+        } catch (jakarta.persistence.EntityNotFoundException ex) {
+            // TicketType không tồn tại hoặc đã bị xóa
+            ApiResponse<Void> notFound = ApiResponse.<Void>builder().message(ex.getMessage()).build();
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(notFound);
         } catch (IllegalStateException ex) {
             // Vi phạm nghiệp vụ (ví dụ: đã có order tham chiếu)
             ApiResponse<Void> bad = ApiResponse.<Void>builder().message(ex.getMessage()).build();

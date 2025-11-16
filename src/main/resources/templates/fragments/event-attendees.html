@@ -1,21 +1,9 @@
 <div class="event-attendees-fragment" th:fragment="content" th:attr="data-event-id=${event.id}">
-    <style>
-        /* Fix z-index for modals - prevent backdrop from covering modal */
-        .modal-backdrop {
-            z-index: 1040 !important;
-        }
-        .modal {
-            z-index: 1055 !important;
-        }
-        .modal.show {
-            z-index: 1055 !important;
-        }
-    </style>
     <!-- Header with search and filters -->
     <div class="container-fluid">
         <!-- Header Section -->
         <div class="attendees-header mb-4 p-4 rounded-3">
-            <h2 class="mb-4 fw-bold text-white">
+            <h2 class="mb-4 fw-bold">
                 <i class="bi bi-people-fill me-2"></i>Manage Attendees
             </h2>
 

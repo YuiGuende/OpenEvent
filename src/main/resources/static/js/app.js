@@ -50,13 +50,28 @@ document.addEventListener('DOMContentLoaded', () => {
             fragment: `/fragments/check-in-list?id=${eventId}`,
             title: 'Danh sách Check-In',
             initializer: function() {
-                console.log('Initializing check-in list page...');
-                // Wait for DOM to be ready
-                setTimeout(() => {
-                    if (typeof window.initializeCheckInList === 'function') {
-                        window.initializeCheckInList();
-                    }
-                }, 100);
+                console.log('[app.js] Initializing check-in list page...');
+                // Wait for DOM to be fully ready and scripts executed
+                // Use requestAnimationFrame to ensure DOM is painted
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        console.log('[app.js] Calling initializeCheckInList...');
+                        if (typeof window.initializeCheckInList === 'function') {
+                            window.initializeCheckInList();
+                        } else {
+                            console.warn('[app.js] initializeCheckInList not found, retrying...');
+                            // Retry after a bit more time in case script hasn't loaded
+                            setTimeout(() => {
+                                if (typeof window.initializeCheckInList === 'function') {
+                                    console.log('[app.js] Found initializeCheckInList on retry, calling...');
+                                    window.initializeCheckInList();
+                                } else {
+                                    console.error('[app.js] initializeCheckInList still not found after retry');
+                                }
+                            }, 200);
+                        }
+                    }, 150); // Increased delay to ensure DOM is ready
+                });
             }
         },
         {

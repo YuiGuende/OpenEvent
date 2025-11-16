@@ -101,7 +101,7 @@
                             <!-- ✅ Chỉ hiện nút check-in từ khi event bắt đầu đến 15 phút sau đó -->
                             <a th:if="${ev.startsAt != null and !ev.startsAt.isAfter(#temporals.createNow()) and ev.startsAt.plusMinutes(15).isAfter(#temporals.createNow())}"
                                th:href="@{'/events/' + ${ev.id} + '/face-checkin'}"
-                               class="checkin-btn-face" 
+                               class="checkin-btn-face"
                                style="flex: 1; min-width: 120px; padding: 8px 12px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-size: 0.9em; display: inline-block;">
                                 📷 Check-in khuôn mặt
                             </a>
@@ -644,70 +644,70 @@
     // Check check-in status for all events when page loads
     document.addEventListener('DOMContentLoaded', function() {
         const checkinSections = document.querySelectorAll('.checkin-section');
-        
+
         checkinSections.forEach(function(section) {
             const eventId = section.getAttribute('data-event-id');
             if (!eventId) return;
-            
+
             // Check check-in status
             fetch('/events/' + eventId + '/checkin-status', {
                 credentials: 'include'
             })
-            .then(response => response.json())
-            .then(data => {
-                const statusDiv = document.getElementById('checkin-status-' + eventId);
-                const badge = statusDiv.querySelector('.checkin-badge');
-                const buttons = section.querySelector('.checkin-buttons');
-                const successMessage = document.getElementById('checkin-success-' + eventId);
-                
-                if (data.checkedIn) {
-                    // Show checked-in badge
-                    badge.style.display = 'inline-block';
-                    badge.textContent = '✓ Đã check-in';
-                    if (data.checkInTime) {
-                        badge.textContent += ' (' + new Date(data.checkInTime).toLocaleString('vi-VN') + ')';
-                    }
-                    // ✅ Ẩn nút check-in và hiển thị thông báo thành công
-                    if (buttons) {
-                        buttons.style.display = 'none';
-                    }
-                    if (successMessage) {
-                        successMessage.style.display = 'block';
-                    }
-                } else {
-                    // Hide badge, show buttons normally
-                    badge.style.display = 'none';
-                    if (buttons) {
-                        buttons.style.display = 'flex';
-                    }
-                    if (successMessage) {
-                        successMessage.style.display = 'none';
-                    }
-                }
+                .then(response => response.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('checkin-status-' + eventId);
+                    const badge = statusDiv.querySelector('.checkin-badge');
+                    const buttons = section.querySelector('.checkin-buttons');
+                    const successMessage = document.getElementById('checkin-success-' + eventId);
 
-                // ✅ Kiểm tra localStorage để ẩn nút nếu đã check-in từ trang face-checkin
-                const checkinKey = 'checkin_success_' + eventId;
-                if (localStorage.getItem(checkinKey) === 'true') {
-                    // Ẩn nút check-in
-                    if (buttons) {
-                        buttons.style.display = 'none';
-                    }
-                    // Hiển thị thông báo thành công
-                    if (successMessage) {
-                        successMessage.style.display = 'block';
-                    }
-                    // Hiển thị badge đã check-in
-                    if (badge) {
+                    if (data.checkedIn) {
+                        // Show checked-in badge
                         badge.style.display = 'inline-block';
                         badge.textContent = '✓ Đã check-in';
+                        if (data.checkInTime) {
+                            badge.textContent += ' (' + new Date(data.checkInTime).toLocaleString('vi-VN') + ')';
+                        }
+                        // ✅ Ẩn nút check-in và hiển thị thông báo thành công
+                        if (buttons) {
+                            buttons.style.display = 'none';
+                        }
+                        if (successMessage) {
+                            successMessage.style.display = 'block';
+                        }
+                    } else {
+                        // Hide badge, show buttons normally
+                        badge.style.display = 'none';
+                        if (buttons) {
+                            buttons.style.display = 'flex';
+                        }
+                        if (successMessage) {
+                            successMessage.style.display = 'none';
+                        }
                     }
-                    // Xóa key khỏi localStorage
-                    localStorage.removeItem(checkinKey);
-                }
-            })
-            .catch(error => {
-                console.error('Error checking check-in status for event ' + eventId + ':', error);
-            });
+
+                    // ✅ Kiểm tra localStorage để ẩn nút nếu đã check-in từ trang face-checkin
+                    const checkinKey = 'checkin_success_' + eventId;
+                    if (localStorage.getItem(checkinKey) === 'true') {
+                        // Ẩn nút check-in
+                        if (buttons) {
+                            buttons.style.display = 'none';
+                        }
+                        // Hiển thị thông báo thành công
+                        if (successMessage) {
+                            successMessage.style.display = 'block';
+                        }
+                        // Hiển thị badge đã check-in
+                        if (badge) {
+                            badge.style.display = 'inline-block';
+                            badge.textContent = '✓ Đã check-in';
+                        }
+                        // Xóa key khỏi localStorage
+                        localStorage.removeItem(checkinKey);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking check-in status for event ' + eventId + ':', error);
+                });
         });
 
         // ✅ Lắng nghe message từ trang face-checkin để ẩn nút check-in

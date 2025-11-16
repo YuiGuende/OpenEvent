@@ -12,13 +12,13 @@
         <th:block th:replace="${content}"></th:block>
     </main>
 
-    <footer th:replace="~{fragments/footer :: siteFooter(true)}"></footer>
+    <footer th:replace="~{fragments/footer :: siteFooter()}"></footer>
 
     <!-- WebSocket Libraries for Realtime Notifications -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
-    
+
     <!-- Chatbot Integration -->
     <!-- Chatbot: hiển thị cho TẤT CẢ người dùng (kể cả chưa đăng nhập, trừ trang login) -->
     <!-- Note: Trang login (security/login.html) không dùng layout.html nên tự động không có chatbot -->

@@ -8,11 +8,13 @@ import com.group02.openevent.model.payment.Payment;
 import com.group02.openevent.model.payment.PaymentStatus;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.model.user.Customer;
+import com.group02.openevent.model.user.User;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.service.EventService;
 import com.group02.openevent.service.OrderService;
 import com.group02.openevent.service.PaymentService;
 import com.group02.openevent.service.TicketTypeService;
+import com.group02.openevent.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ public class OrderAIService {
     private final PaymentService paymentService;
     private final ICustomerRepo customerRepo;
     private final AgentEventService agentEventService;
+    private final UserService userService;
 
     // Store pending orders by userId
     private final Map<Long, PendingOrder> pendingOrders = new HashMap<>();
@@ -231,20 +234,38 @@ public class OrderAIService {
                 pendingOrder.getParticipantName());
 
         try {
-            // Get customer
+            // Get customer - tự động tạo nếu chưa có (tương tự Host trong AgentEventService)
             log.info("🔍 DEBUG: Looking for customer with userId: {}", userId);
-            Optional<Customer> customerOpt = customerRepo.findByUser_Account_AccountId(userId);
+            Optional<Customer> customerOpt = customerRepo.findByUser_UserId(userId);
+            
+            Customer customer;
             if (customerOpt.isEmpty()) {
-                log.error("❌ DEBUG: Customer not found for userId: {}", userId);
-                result.put("success", false);
-                result.put("message", "❌ Không tìm thấy thông tin khách hàng.");
-                return result;
+                // Auto-create customer for user if they don't have one
+                log.info("User {} does not have a customer, auto-creating customer", userId);
+                
+                // Lấy User
+                User user = userService.getUserById(userId);
+                if (user == null) {
+                    log.error("❌ DEBUG: User not found for userId: {}", userId);
+                    result.put("success", false);
+                    result.put("message", "❌ Không tìm thấy thông tin người dùng.");
+                    return result;
+                }
+                
+                // Tạo Customer mới
+                customer = new Customer();
+                customer.setUser(user);
+                customer.setPoints(0);
+                customer.setFaceRegistered(false);
+                customer = customerRepo.save(customer);
+                log.info("✅ Auto-created customer {} for user {}", customer.getCustomerId(), userId);
+            } else {
+                customer = customerOpt.get();
             }
 
-            Customer customer = customerOpt.get();
             String email = customer.getUser() != null && customer.getUser().getAccount() != null 
                 ? customer.getUser().getAccount().getEmail() : "No email";
-            log.info("🔍 DEBUG: Customer found - customerId: {}, email: {}",
+            log.info("🔍 DEBUG: Customer found/created - customerId: {}, email: {}",
                     customer.getCustomerId(), email);
 
             // RE-VALIDATE ticket availability from database before creating order

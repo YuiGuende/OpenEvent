@@ -1,5 +1,5 @@
 <!-- templates/fragments/footer.html -->
-<footer class="site-footer site-footer--dark" th:fragment="siteFooter(chatbotIncluded = false)">
+<footer class="site-footer site-footer--dark" th:fragment="siteFooter()">
     <div class="container footer-grid">
         <div class="footer-about">
             <div class="footer-logo-wrapper">
@@ -7,8 +7,8 @@
                 <span class="footer-brand-name">OpenEvent</span>
             </div>
             <p class="footer-description">
-                The premier event management and participation platform for FPT University Da Nang students. 
-                Create, discover, and connect with events seamlessly. Join thousands of students in building 
+                The premier event management and participation platform for FPT University Da Nang students.
+                Create, discover, and connect with events seamlessly. Join thousands of students in building
                 a vibrant campus community.
             </p>
             <div class="footer-socials">
@@ -83,12 +83,3 @@
         </div>
     </div>
 </footer>
-
-<!-- Chatbot Integration -->
-<!-- Chatbot: chỉ hiển thị nếu chưa có chatbot từ layout (chatbotIncluded = false) -->
-<!-- Note: Nếu chatbotIncluded = true (từ layout.html), không render chatbot ở đây để tránh duplicate -->
-<th:block th:unless="${chatbotIncluded == true}">
-    <div id="openevent-chatbot-container"></div>
-    <div th:replace="~{fragments/chatbot :: chatbot(${#authentication.principal?.id != null ? #authentication.principal.id : null})}"></div>
-    <script th:src="@{/js/chatbot.js(v=4)}" defer></script>
-</th:block>

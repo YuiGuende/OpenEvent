@@ -297,7 +297,6 @@ public class AgentEventService {
             h = new Host();
             h.setUser(user);
             h = hostService.save(h);
-            user.setHost(h);
             // Note: user will be saved by cascade or you can explicitly save if needed
             log.info("Auto-created host {} for user {}", h.getId(), userId);
         }

@@ -1,0 +1,106 @@
+@startuml Register_Sequence_Diagram
+
+actor User
+participant "Browser" as Browser
+participant "AuthController" as AuthCtrl
+participant "AuthServiceImpl" as AuthService
+participant "IAccountRepo" as AccountRepo
+participant "PasswordEncoder" as PwdEncoder
+participant "UserService" as UserSvc
+participant "IUserRepo" as UserRepo
+participant "ICustomerRepo" as CustomerRepo
+participant "ApplicationEventPublisher" as EventPublisher
+
+== User Registration Process ==
+User -> Browser: Submit registration form\n(email, password, phoneNumber)
+Browser -> AuthCtrl: POST /api/auth/register\n(RegisterRequest JSON)
+activate AuthCtrl
+
+AuthCtrl -> AuthService: register(RegisterRequest)
+activate AuthService
+
+== Validation ==
+AuthService -> AuthService: Validate email\n(not null, not empty)
+AuthService -> AuthService: Validate password\n(not null, not empty, length >= 6)
+
+AuthService -> AccountRepo: existsByEmail(email)
+activate AccountRepo
+AccountRepo --> AuthService: boolean
+deactivate AccountRepo
+
+alt Email already exists
+    AuthService --> AuthCtrl: IllegalArgumentException\n("Email này đã được đăng ký")
+    AuthCtrl --> Browser: 400 Bad Request + Error
+    Browser --> User: Show error message
+else Email is available
+    == Create Account ==
+    AuthService -> AuthService: Create new Account()
+    AuthService -> AuthService: account.setEmail(email.trim())
+    AuthService -> PwdEncoder: encode(password)
+    activate PwdEncoder
+    PwdEncoder --> AuthService: encodedPassword
+    deactivate PwdEncoder
+    AuthService -> AuthService: account.setPasswordHash(encodedPassword)
+    
+    AuthService -> AccountRepo: save(account)
+    activate AccountRepo
+    AccountRepo --> AuthService: Account (with accountId)
+    deactivate AccountRepo
+    
+    == Create User ==
+    AuthService -> UserSvc: getOrCreateUser(account)
+    activate UserSvc
+    UserSvc -> UserRepo: findByAccount(account)
+    activate UserRepo
+    UserRepo --> UserSvc: Optional<User>
+    deactivate UserRepo
+    
+    alt User already exists
+        UserSvc --> AuthService: Existing User
+    else User does not exist
+        UserSvc -> UserSvc: createUserFromAccount(account)
+        UserSvc -> UserRepo: save(new User(account))
+        activate UserRepo
+        UserRepo --> UserSvc: User (with userId)
+        deactivate UserRepo
+        UserSvc --> AuthService: New User
+    end
+    deactivate UserSvc
+    
+    AuthService -> AuthService: Update user name and phone\nif needed
+    
+    == Create Customer ==
+    AuthService -> AuthService: Create new Customer()
+    AuthService -> AuthService: customer.setUser(user)
+    AuthService -> AuthService: customer.setPoints(0)
+    AuthService -> CustomerRepo: save(customer)
+    activate CustomerRepo
+    CustomerRepo --> AuthService: Customer
+    deactivate CustomerRepo
+    
+    == Publish Event ==
+    AuthService -> EventPublisher: publishEvent(UserCreatedEvent)
+    activate EventPublisher
+    EventPublisher --> AuthService: Event published
+    deactivate EventPublisher
+    
+    == Get Role ==
+    AuthService -> User: getRole()
+    User --> AuthService: Role.CUSTOMER
+    
+    == Create Response ==
+    AuthService -> AuthService: redirectFor(role) → "/login?registered=1"
+    AuthService -> AuthService: new AuthResponse(accountId, email, role, redirectPath)
+    AuthService --> AuthCtrl: AuthResponse
+    deactivate AuthService
+    
+    AuthCtrl --> Browser: 200 OK + AuthResponse
+    deactivate AuthCtrl
+    Browser --> User: Success response\n(redirect to /login?registered=1)
+end
+
+@enduml
+
+
+
+

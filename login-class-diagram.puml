@@ -1,0 +1,163 @@
+@startuml Login_Class_Diagram
+
+class LoginController {
+    - AuthService authService
+    + showLoginPage(redirect, redirectUrl, model): String
+}
+
+class AuthController {
+    - AuthService authService
+    + login(LoginRequest): ResponseEntity<?>
+    + register(RegisterRequest): ResponseEntity<?>
+}
+
+interface AuthService {
+    + login(LoginRequest): AuthResponse
+    + register(RegisterRequest): AuthResponse
+}
+
+class AuthServiceImpl {
+    - IAccountRepo accountRepo
+    - IUserRepo userRepo
+    - PasswordEncoder passwordEncoder
+    - HttpSession httpSession
+    - SessionService sessionService
+    - UserService userService
+    + login(LoginRequest): AuthResponse
+    + register(RegisterRequest): AuthResponse
+    + loginWithSession(LoginRequest, HttpServletRequest): AuthResponse
+    - redirectFor(Role): String
+}
+
+class CustomUserDetailsService {
+    - IAccountRepo accountRepository
+    - IUserRepo userRepo
+    + loadUserByUsername(String): UserDetails
+}
+
+class UserService {
+    + getUserByAccountId(Long): Optional<User>
+    + getOrCreateUser(Account): User
+}
+
+interface IAccountRepo {
+    + findByEmail(String): Optional<Account>
+    + existsByEmail(String): boolean
+    + save(Account): Account
+}
+
+interface IUserRepo {
+    + findByAccount_AccountId(Long): Optional<User>
+    + findByAccount(Account): Optional<User>
+    + findByAccount_Email(String): Optional<User>
+}
+
+class Account {
+    - Long accountId
+    - String email
+    - String passwordHash
+    - String oauthProvider
+    - String oauthProviderId
+    - User user
+}
+
+class User {
+    - Long userId
+    - Account account
+    - String name
+    - String phoneNumber
+    - String avatar
+    - LocalDateTime dateOfBirth
+    - String address
+    - Customer customer
+    - Host host
+    - Admin admin
+    - Department department
+    + getRole(): Role
+    + hasCustomerRole(): boolean
+    + hasHostRole(): boolean
+    + hasAdminRole(): boolean
+    + hasDepartmentRole(): boolean
+}
+
+class CustomUserDetails {
+    - Long accountId
+    - String username
+    - String password
+    - String role
+    - List<GrantedAuthority> authorities
+}
+
+enum Role {
+    ADMIN
+    CUSTOMER
+    HOST
+    DEPARTMENT
+    VOLUNTEER
+}
+
+class LoginRequest {
+    - String email
+    - String password
+}
+
+class AuthResponse {
+    - Long accountId
+    - String email
+    - Role role
+    - String redirectPath
+}
+
+class SecurityConfig {
+    + PasswordEncoder passwordEncoder(): PasswordEncoder
+    + DaoAuthenticationProvider authenticationProvider(): DaoAuthenticationProvider
+    + AuthenticationManager authenticationManager(): AuthenticationManager
+    + SecurityFilterChain securityFilterChain(): SecurityFilterChain
+}
+
+class CustomAuthenticationSuccessHandler {
+    - UserService userService
+    - HttpSessionRequestCache requestCache
+    + onAuthenticationSuccess(HttpServletRequest, HttpServletResponse, Authentication): void
+}
+
+' Relationships
+LoginController --> AuthService
+AuthController --> AuthService
+AuthService <|.. AuthServiceImpl
+AuthServiceImpl --> IAccountRepo
+AuthServiceImpl --> IUserRepo
+AuthServiceImpl --> PasswordEncoder
+AuthServiceImpl --> HttpSession
+AuthServiceImpl --> SessionService
+AuthServiceImpl --> UserService
+
+CustomUserDetailsService --> IAccountRepo
+CustomUserDetailsService --> IUserRepo
+CustomUserDetailsService ..|> UserDetailsService
+
+IAccountRepo --> Account
+IUserRepo --> User
+
+Account "1" --> "1" User
+User --> Role
+User "1" --> "0..1" Customer
+User "1" --> "0..1" Host
+User "1" --> "0..1" Admin
+User "1" --> "0..1" Department
+
+AuthServiceImpl ..> LoginRequest
+AuthServiceImpl ..> AuthResponse
+AuthController ..> LoginRequest
+AuthController ..> AuthResponse
+
+CustomUserDetailsService ..> CustomUserDetails
+CustomUserDetails ..|> UserDetails
+
+SecurityConfig --> CustomUserDetailsService
+SecurityConfig --> PasswordEncoder
+SecurityConfig --> CustomAuthenticationSuccessHandler
+CustomAuthenticationSuccessHandler --> UserService
+
+@enduml
+

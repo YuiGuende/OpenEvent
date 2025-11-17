@@ -51,6 +51,7 @@ public class Organization {
     private Customer representative;
 
     @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 30)
     private List<Event> events = new ArrayList<>();
 
 	public Long getOrgId() {

@@ -5,6 +5,7 @@ import com.group02.openevent.service.EventFormService;
 import com.group02.openevent.service.EventAttendanceService;
 import com.group02.openevent.service.AuditLogService;
 import com.group02.openevent.dto.attendance.AttendanceRequest;
+import com.group02.openevent.model.attendance.EventAttendance;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.account.Account;
 import com.group02.openevent.repository.ICustomerRepo;
@@ -115,7 +116,7 @@ public class EventFormController {
             log.error("Error loading feedback form for event ID: {}", eventId, e);
             // Instead of redirecting, show empty form page
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form feedback nào cho sự kiện này. Vui lòng liên hệ host để tạo form.");
+            model.addAttribute("noFormMessage", "No feedback form available for this event. Please contact the host to create one.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }
@@ -132,7 +133,7 @@ public class EventFormController {
             return "user/feedback-form"; // reuse generic form template
         } catch (Exception e) {
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form đăng ký nào cho sự kiện này.");
+            model.addAttribute("noFormMessage", "No registration form available for this event.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }
@@ -149,7 +150,7 @@ public class EventFormController {
             return "user/feedback-form"; // reuse generic form template UI
         } catch (Exception e) {
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form tình nguyện viên cho sự kiện này.");
+            model.addAttribute("noFormMessage", "This event is not currently recruiting volunteers.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }
@@ -157,8 +158,37 @@ public class EventFormController {
 
     // User: View check-in form (after login and QR)
     @GetMapping("/checkin/{eventId}")
-    public String showCheckinForm(@PathVariable Long eventId, Model model) {
+    public String showCheckinForm(@PathVariable Long eventId, Model model, HttpSession session) {
         try {
+            // Kiểm tra nếu user đã đăng nhập và đã check-in
+            Long userId = (Long) session.getAttribute("USER_ID");
+            if (userId != null) {
+                try {
+                    Optional<Customer> customerOpt = customerRepo.findByUser_UserId(userId);
+                    if (customerOpt.isPresent()) {
+                        Customer customer = customerOpt.get();
+                        String email = customer.getUser().getAccount().getEmail();
+                        if (email != null) {
+                            // Kiểm tra đã check-in chưa
+                            Optional<EventAttendance> attendanceOpt = attendanceService.getAttendanceByEventAndEmail(eventId, email);
+                            if (attendanceOpt.isPresent() && attendanceOpt.get().getCheckInTime() != null) {
+                                // Đã check-in rồi, không cần điền form
+                                model.addAttribute("eventId", eventId);
+                                model.addAttribute("alreadyCheckedIn", true);
+                                model.addAttribute("checkInTime", attendanceOpt.get().getCheckInTime());
+                                model.addAttribute("noFormMessage", "You have already checked in at " + 
+                                    java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(attendanceOpt.get().getCheckInTime()) + ". No need to fill the form.");
+                                model.addAttribute("form", null);
+                                return "user/feedback-form";
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Error checking attendance status: {}", e.getMessage());
+                    // Continue to show form if check fails
+                }
+            }
+            
             EventFormDTO form = eventFormService.getActiveFormByEventIdAndType(eventId, com.group02.openevent.model.form.EventForm.FormType.CHECKIN);
             model.addAttribute("form", form);
             model.addAttribute("eventId", eventId);
@@ -166,7 +196,7 @@ public class EventFormController {
             return "user/feedback-form"; // reuse generic form template
         } catch (Exception e) {
             model.addAttribute("eventId", eventId);
-            model.addAttribute("noFormMessage", "Chưa có form check-in nào cho sự kiện này.");
+            model.addAttribute("noFormMessage", "No check-in form available for this event.");
             model.addAttribute("form", null);
             return "user/feedback-form";
         }
@@ -175,7 +205,7 @@ public class EventFormController {
     @PostMapping("/feedback/submit")
     public String submitFeedback(@ModelAttribute SubmitResponseRequest request,
                                  @RequestParam(required = false) Long eventId,
-                                 HttpServletRequest httpRequest) {
+                                 HttpServletRequest httpRequest,HttpSession session) {
         log.info("=== FORM SUBMIT REQUEST RECEIVED ===");
         log.info("Form ID from request: {}", request.getFormId());
         log.info("Event ID from param: {}", eventId);
@@ -188,66 +218,7 @@ public class EventFormController {
                 throw new RuntimeException("Form ID is required");
             }
 
-            Long accountId = null;
-            
-            if (accountId == null) {
-                HttpSession session = httpRequest.getSession(false);
-                if (session != null) {
-                    accountId = (Long) session.getAttribute("USER_ID");
-                }
-            }
-            
-            if (accountId == null) {
-                // Redirect to login page with return URL to feedback form
-                String currentUri = httpRequest.getRequestURI();
-                String queryString = httpRequest.getQueryString();
-                String fullUrl = currentUri;
-                if (queryString != null) {
-                    fullUrl += "?" + queryString;
-                }
-
-                // Try to get eventId to construct feedback form URL
-                Long feedbackEventId = eventId;
-                if (feedbackEventId == null && request.getFormId() != null) {
-                    try {
-                        EventFormDTO formDto = eventFormService.getFormById(request.getFormId());
-                        feedbackEventId = formDto.getEventId();
-                    } catch (Exception ex) {
-                        log.error("Could not get eventId from form: {}", ex.getMessage());
-                    }
-                }
-
-                // Redirect to login with return URL
-                if (feedbackEventId != null) {
-                    String feedbackFormUrl = "/forms/feedback/" + feedbackEventId;
-                    String loginUrl = "/login?redirect=" + UriUtils.encode(feedbackFormUrl, StandardCharsets.UTF_8);
-                    log.info("User not logged in, redirecting to login: {}", loginUrl);
-                    return "redirect:" + loginUrl;
-                } else {
-                    // Fallback: redirect to login with current URL
-                    String loginUrl = "/login?redirect=" + UriUtils.encode(fullUrl, StandardCharsets.UTF_8);
-                    log.info("User not logged in, redirecting to login: {}", loginUrl);
-                    return "redirect:" + loginUrl;
-                }
-            }
-            
-            final Long finalAccountId = accountId;
-            
-            // Tìm Customer từ accountId
-            Customer customer = customerRepo.findByUser_Account_AccountId(finalAccountId).orElse(null);
-            if (customer == null) {
-                // Tự động tạo Customer nếu chưa có (giống như OrderController)
-                Account account = accountRepo.findById(finalAccountId)
-                        .orElseThrow(() -> new RuntimeException("Account not found for ID: " + finalAccountId));
-                
-                // Get or create User
-                com.group02.openevent.model.user.User user = userService.getOrCreateUser(account);
-                
-                customer = new Customer();
-                customer.setUser(user);
-                customer.setPoints(0);
-                customer = customerRepo.save(customer);
-            }
+           Customer customer= userService.getCurrentUser(session).getCustomer();
             
             // Set customerId vào request
             request.setCustomerId(customer.getCustomerId());

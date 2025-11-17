@@ -7,7 +7,11 @@ CREATE TABLE account
     account_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     email         VARCHAR(100) NOT NULL UNIQUE,
     phone_number VARCHAR(20),
-    password_hash VARCHAR(255) NOT NULL
+    password_hash VARCHAR(255) NULL, -- NULL for OAuth users
+    oauth_provider VARCHAR(50) NULL, -- "GOOGLE", "FACEBOOK", etc.
+    oauth_provider_id VARCHAR(255) NULL, -- OAuth provider user ID
+    INDEX idx_account_oauth_provider_id (oauth_provider_id),
+    INDEX idx_account_oauth_provider (oauth_provider, oauth_provider_id)
 );
 
 CREATE TABLE organization
@@ -262,7 +266,7 @@ CREATE TABLE ticket_type
 );
 
 -- 4. Host và Guest (mối quan hệ User-Event)
-CREATE TABLE host
+CREATE TABLE hosts
 (
     host_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
     created_at  DATETIME(6) NOT NULL,
@@ -278,7 +282,7 @@ CREATE TABLE host
 );
 
 -- Add foreign key constraints for event table after related tables are created
-ALTER TABLE event ADD CONSTRAINT fk_event_host FOREIGN KEY (host_id) REFERENCES host (host_id);
+ALTER TABLE event ADD CONSTRAINT fk_event_host FOREIGN KEY (host_id) REFERENCES hosts (host_id);
 ALTER TABLE event ADD CONSTRAINT fk_event_org FOREIGN KEY (org_id) REFERENCES organization (org_id);
 
 -- Bảng event_guests: mối quan hệ User tham gia Event (Guest)
@@ -301,7 +305,7 @@ CREATE TABLE host_subscriptions
     plan_id    BIGINT NOT NULL,
     start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     end_date   DATETIME,
-    CONSTRAINT fk_sub_host FOREIGN KEY (host_id) REFERENCES host (host_id),
+    CONSTRAINT fk_sub_host FOREIGN KEY (host_id) REFERENCES hosts (host_id),
     CONSTRAINT fk_sub_plan FOREIGN KEY (plan_id) REFERENCES subscription_plans (plan_id)
 );
 
@@ -401,6 +405,37 @@ CREATE TABLE payments
 
 -- Migration completed: Simplified Order system (no OrderItem, no Ticket)
 
+-- 7.5. Volunteer Application System
+CREATE TABLE volunteer_application
+(
+    volunteer_application_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    customer_id BIGINT NOT NULL,
+    event_id BIGINT NOT NULL,
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    application_message TEXT,
+    host_response TEXT,
+    reviewed_by_user_id BIGINT NULL,
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at DATETIME(6) NULL ON UPDATE CURRENT_TIMESTAMP(6),
+    reviewed_at DATETIME(6) NULL,
+    
+    CONSTRAINT fk_volunteer_application_customer 
+        FOREIGN KEY (customer_id) REFERENCES customer (customer_id) ON DELETE CASCADE,
+    CONSTRAINT fk_volunteer_application_event 
+        FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
+    CONSTRAINT fk_volunteer_application_reviewer 
+        FOREIGN KEY (reviewed_by_user_id) REFERENCES `user` (user_id) ON DELETE SET NULL,
+    
+    -- Đảm bảo một customer chỉ có thể apply một lần cho một event
+    UNIQUE KEY uk_customer_event (customer_id, event_id),
+    
+    -- Index để tìm nhanh applications theo event và status
+    INDEX idx_event_status (event_id, status),
+    INDEX idx_customer (customer_id),
+    INDEX idx_status (status),
+    INDEX idx_volunteer_application_reviewer (reviewed_by_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 8. Event Attendance (Check-in/Check-out System)
 CREATE TABLE event_attendance
 (
@@ -493,7 +528,7 @@ CREATE TABLE requests
     type       ENUM('EVENT_APPROVAL','OTHER') NOT NULL,
     status     ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_request_host FOREIGN KEY (host_id) REFERENCES host (host_id),
+    CONSTRAINT fk_request_host FOREIGN KEY (host_id) REFERENCES hosts (host_id),
     CONSTRAINT fk_request_event FOREIGN KEY (event_id) REFERENCES event (id)
 );
 
@@ -695,7 +730,7 @@ INSERT INTO ticket_type (event_id, name, description, price, total_quantity, sol
 (6, 'Full Festival Pass', 'Access to all 3 days', 4000.00, 100, 22, 0.00, '2024-10-01 00:00:00', '2024-12-31 23:59:59');
 
 -- Sample hosts
-INSERT INTO host (created_at, user_id, customer_id, organize_id, host_discount_percent) VALUES
+INSERT INTO hosts (created_at, user_id, customer_id, organize_id, host_discount_percent) VALUES
 (NOW(), 2, 1, 3, 10.00), -- Host1 for Creative Arts Center with 10% discount
 (NOW(), 2, 1, 1, 5.00), -- Host1 for HCMC University with 5% discount
 (NOW(), 3, 2, 2, 15.00), -- Host2 for Tech Hub Vietnam with 15% discount

@@ -56,6 +56,18 @@ public interface EventChatRoomRepository extends JpaRepository<EventChatRoom, Lo
     List<EventChatRoom> findByEventIdAndParticipantIdIncludingDepartment(
             @Param("eventId") Long eventId,
             @Param("userId") Long userId);
+
+    // Find all rooms where user is host
+    @Query("SELECT r FROM EventChatRoom r " +
+            "WHERE r.host.userId = :hostUserId")
+    List<EventChatRoom> findByHostUserId(@Param("hostUserId") Long hostUserId);
+
+    // Find all rooms where user is volunteer participant (HOST_VOLUNTEERS)
+    @Query("SELECT DISTINCT r FROM EventChatRoom r " +
+            "LEFT JOIN r.participants p " +
+            "WHERE r.roomType = 'HOST_VOLUNTEERS' " +
+            "AND p.user.userId = :userId")
+    List<EventChatRoom> findByVolunteerParticipantId(@Param("userId") Long userId);
 }
 
 

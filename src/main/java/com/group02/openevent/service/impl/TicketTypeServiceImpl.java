@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.LockModeType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -81,10 +82,20 @@ public class TicketTypeServiceImpl implements TicketTypeService {
 
     @Override
     public void deleteTicketType(Long id) {
+        // Tìm ticketType với null check
         TicketType ticketType = ticketTypeRepo.findById(id)
                 .orElse(null);
-        // Kiểm tra đã bán vé chưa
-        assert ticketType != null;
+        
+        // Nếu ticketType không tồn tại, có thể đã bị xóa hoặc chưa được commit
+        // Kiểm tra lại một lần nữa để tránh race condition
+        if (ticketType == null) {
+            // Kiểm tra xem có đơn hàng nào tham chiếu không (nếu có thì ticketType có thể đã bị xóa ở transaction khác)
+            if (orderRepo.existsByTicketType_TicketTypeId(id)) {
+                throw new IllegalStateException("Không thể xóa loại vé vì đã có đơn hàng liên quan");
+            }
+            // Nếu không có đơn hàng và ticketType không tồn tại, có thể đã bị xóa
+            throw new EntityNotFoundException("Loại vé không tồn tại hoặc đã bị xóa");
+        }
 
         // Nếu có đơn hàng tham chiếu đến ticket type này thì không cho xóa
         if (orderRepo.existsByTicketType_TicketTypeId(id)) {
@@ -121,14 +132,17 @@ public class TicketTypeServiceImpl implements TicketTypeService {
     @Override
     @Transactional
     public void reserveTickets(Long ticketTypeId) {
-        TicketType ticketType = ticketTypeRepo.findById(ticketTypeId)
-                .orElse(null);
+        // Use pessimistic lock to prevent race conditions
+        TicketType ticketType = ticketTypeRepo.findByIdForUpdate(ticketTypeId)
+                .orElseThrow(() -> new IllegalArgumentException("Ticket type not found: " + ticketTypeId));
 
-        assert ticketType != null;
+        // Re-check availability with lock held
         if (!ticketType.canPurchase()) {
-            throw new IllegalStateException("Cannot reserve tickets for ticket type: " + ticketTypeId);
+            throw new IllegalStateException("Cannot reserve tickets for ticket type: " + ticketTypeId + 
+                " (Available: " + ticketType.getAvailableQuantity() + ")");
         }
 
+        // Reserve ticket (increases soldQuantity)
         ticketType.increaseSoldQuantity();
         ticketTypeRepo.save(ticketType);
     }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head th:replace="~{fragments/head :: head(${pageTitle})}"></head>
+<head th:replace="~{fragments/head :: head('Trang chủ')}"></head>
 
 <body class="page-bg"
       th:with="
@@ -35,7 +35,7 @@
     <!-- Search bar positioned like Booking.com -->
     <div class="search-center-position">
         <div class="container">
-            <div th:replace="fragments/searchbar :: searchBar"></div>
+            <div th:replace="~{fragments/searchbar :: searchBar}"></div>
             <div class="chip-row" style="margin-bottom: 0.5rem;">
                 <a class="chip is-active" th:href="@{/events(reco='for-you')}">For you</a>
                 <a class="chip" th:href="@{/events(reco='near-you')}">Near you</a>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="grid grid-3" th:if="${!#lists.isEmpty(myEvents)}">
-                <article class="event-card-simple" th:each="ev, iter : ${myEvents}" th:if="${iter.index < 3}">
+                <article class="event-card-simple" th:each="ev : ${myEvents}">
                     <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
                        style="text-decoration: none; color: inherit;">
                         <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
@@ -90,6 +90,27 @@
                             </div>
                         </div>
                     </a>
+                    <!-- Check-in buttons section -->
+                    <div class="checkin-section" th:attr="data-event-id=${ev.id}" style="padding: 10px; border-top: 1px solid #eee; margin-top: 10px;">
+                        <div class="checkin-status" th:attr="id=${'checkin-status-' + ev.id}" style="margin-bottom: 8px; font-size: 0.9em;">
+                            <span class="checkin-badge" style="display: none; padding: 4px 8px; border-radius: 4px; background: #28a745; color: white;">
+                                ✓ Đã check-in
+                            </span>
+                        </div>
+                        <div class="checkin-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <!-- ✅ Chỉ hiện nút check-in từ khi event bắt đầu đến 15 phút sau đó -->
+                            <a th:if="${ev.startsAt != null and !ev.startsAt.isAfter(#temporals.createNow()) and ev.startsAt.plusMinutes(15).isAfter(#temporals.createNow())}"
+                               th:href="@{'/events/' + ${ev.id} + '/face-checkin'}"
+                               class="checkin-btn-face"
+                               style="flex: 1; min-width: 120px; padding: 8px 12px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-size: 0.9em; display: inline-block;">
+                                📷 Check-in khuôn mặt
+                            </a>
+                        </div>
+                        <!-- ✅ Thông báo check-in thành công (ẩn mặc định) -->
+                        <div class="checkin-success-message" th:attr="id=${'checkin-success-' + ev.id}" style="display: none; padding: 8px 12px; background: #28a745; color: white; text-align: center; border-radius: 4px; font-size: 0.9em; margin-top: 8px;">
+                            ✅ Check-in thành công!
+                        </div>
+                    </div>
                 </article>
             </div>
 
@@ -98,12 +119,77 @@
                 <p>You haven't registered for any events yet. <a href="/events">Explore events</a> to get started!</p>
             </div>
 
+            <!--            <div class="grid grid-3" th:if="${#lists.isEmpty(myEvents)}">-->
+            <!--                <article class="event-card">-->
+            <!--                    <img src="/img/event1.jpg" alt="UI/UX Bootcamp" class="event-cover"/>-->
+            <!--                    <div class="card-body">-->
+            <!--                        <h3 class="card-title">UI/UX Bootcamp</h3>-->
+            <!--                        <p class="card-meta">Hà Nội • 20/09/2025 • 3h</p>-->
+            <!--                        <p class="event-org">Organizer: Design Lab</p>-->
+            <!--                        <div class="capacity">-->
+            <!--                            <div class="capacity-row">-->
+            <!--                                <span>Registered: 90 / 150</span>-->
+            <!--                                <span class="capacity-mini">Price: Free</span>-->
+            <!--                            </div>-->
+            <!--                            <div class="bar">-->
+            <!--                                <div class="fill" style="width:60%"></div>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+            <!--                        <div class="event-tags">-->
+            <!--                            <span class="tag">#Workshop</span>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </article>-->
 
-<!--            <div class="pager">-->
-<!--                <button class="icon-btn" aria-label="Prev">‹</button>-->
-<!--                <span>1 / 5</span>-->
-<!--                <button class="icon-btn" aria-label="Next">›</button>-->
-<!--            </div>-->
+            <!--                <article class="event-card">-->
+            <!--                    <img src="/img/event2.jpg" alt="Summer Fest" class="event-cover"/>-->
+            <!--                    <div class="card-body">-->
+            <!--                        <h3 class="card-title">Summer Fest</h3>-->
+            <!--                        <p class="card-meta">HCM • 22/09/2025 • 2h</p>-->
+            <!--                        <p class="event-org">Organizer: Event Hub</p>-->
+            <!--                        <div class="capacity">-->
+            <!--                            <div class="capacity-row">-->
+            <!--                                <span>Registered: 480 / 600</span>-->
+            <!--                                <span class="capacity-mini">Price: 100k</span>-->
+            <!--                            </div>-->
+            <!--                            <div class="bar">-->
+            <!--                                <div class="fill" style="width:80%"></div>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+            <!--                        <div class="event-tags">-->
+            <!--                            <span class="tag">#Festival</span>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </article>-->
+
+            <!--                <article class="event-card">-->
+            <!--                    <img src="/img/event3.jpg" alt="Open Campus Tour" class="event-cover"/>-->
+            <!--                    <div class="card-body">-->
+            <!--                        <h3 class="card-title">Open Campus Tour</h3>-->
+            <!--                        <p class="card-meta">Đà Nẵng • 17/09/2025 • 1.5h</p>-->
+            <!--                        <p class="event-org">Organizer: FPT University</p>-->
+            <!--                        <div class="capacity">-->
+            <!--                            <div class="capacity-row">-->
+            <!--                                <span>Registered: 150 / 150</span>-->
+            <!--                                <span class="capacity-mini">Price: Free</span>-->
+            <!--                            </div>-->
+            <!--                            <div class="bar">-->
+            <!--                                <div class="fill" style="width:100%"></div>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+            <!--                        <div class="event-tags">-->
+            <!--                            <span class="tag">#Conference</span>-->
+            <!--                            <span class="tag">Sold Out</span>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </article>-->
+            <!--            </div>-->
+
+            <div class="pager">
+                <button class="icon-btn" aria-label="Prev">‹</button>
+                <span>1 / 5</span>
+                <button class="icon-btn" aria-label="Next">›</button>
+            </div>
         </div>
     </section>
 
@@ -144,7 +230,7 @@
 
             <div class="latest-events-track" th:if="${!#lists.isEmpty(latestEvents)}">
                 <div class="latest-events-container">
-                    <article class="event-card-simple" th:each="ev : ${latestEvents}">
+                    <article class="event-card-simple" th:each="ev : ${latestEvents}" th:attr="data-tags=${ev.eventTypeTag}">
                         <a th:href="@{/{eventType}/{id}(eventType=${ev.eventType.name().toLowerCase()}, id=${ev.id})}"
                            style="text-decoration: none; color: inherit;">
                             <img class="event-cover" th:src="${ev.imageUrl}" th:alt="${ev.title}"/>
@@ -160,16 +246,13 @@
                                         <span class="capacity-mini"
                                               th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                     </div>
-                                    <div class="bar">
-                                        <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
-                                    </div>
                                 </div>
+                            </div>
 
-                                <div class="event-tags">
-                                    <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
-                                    <span class="badge badge-live" th:if="${ev.live}">Live</span>
-                                    <span class="tag" th:if="${ev.soldOut}">Sold Out</span>
-                                </div>
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + ev.eventTypeTag}">#Tag</span>
+                                <span class="badge badge-live" th:if="${ev.live}">Live</span>
+                                <span class="tag" th:if="${ev.soldOut}">Sold Out</span>
                             </div>
                         </a>
                     </article>
@@ -191,6 +274,7 @@
                     <button class="chip is-active" data-filter="all">All</button>
                     <button class="chip" data-filter="Music">Music</button>
                     <button class="chip" data-filter="Workshop">Workshop</button>
+                    <button class="chip" data-filter="Conference">Conference</button>
                     <button class="chip" data-filter="Festival">Festival</button>
                     <button class="chip" data-filter="Competition">Competition</button>
                     <button class="chip" data-filter="Other">Other</button>
@@ -234,15 +318,12 @@
                                         <span class="capacity-mini"
                                               th:text="${'Price: ' + ev.priceLabel}">Price: Free</span>
                                     </div>
-                                    <div class="bar">
-                                        <div class="fill" th:style="|width: ${ev.registrationPercentage}%|"></div>
-                                    </div>
                                 </div>
+                            </div>
 
-                                <div class="event-tags">
-                                    <span class="tag" th:text="${'#' + ev.eventTypeTag}">Tag</span>
-                                    <span class="badge badge-live">Live</span>
-                                </div>
+                            <div class="event-tags">
+                                <span class="tag" th:text="${'#' + ev.eventTypeTag}">Tag</span>
+                                <span class="badge badge-live">Live</span>
                             </div>
                         </a>
                     </article>
@@ -345,8 +426,8 @@
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{${topStudents[1]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
-                                     th:alt="${topStudents[1]?.name ?: 'Student'}" 
+                                <img th:src="@{${topStudents[1]?.imageUrl ?: '/img/sinhvien2.jpg'}}"
+                                     th:alt="${topStudents[1]?.name ?: 'Student'}"
                                      class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
@@ -377,8 +458,8 @@
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{${topStudents[0]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
-                                     th:alt="${topStudents[0]?.name ?: 'Student'}" 
+                                <img th:src="@{${topStudents[0]?.imageUrl ?: '/img/sinhvien2.jpg'}}"
+                                     th:alt="${topStudents[0]?.name ?: 'Student'}"
                                      class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
@@ -409,8 +490,8 @@
                             </div>
 
                             <div class="student-image-container">
-                                <img th:src="@{${topStudents[2]?.imageUrl ?: '/img/sinhvien2.jpg'}}" 
-                                     th:alt="${topStudents[2]?.name ?: 'Student'}" 
+                                <img th:src="@{${topStudents[2]?.imageUrl ?: '/img/sinhvien2.jpg'}}"
+                                     th:alt="${topStudents[2]?.name ?: 'Student'}"
                                      class="student-image"/>
                                 <div class="background-graphic"></div>
                             </div>
@@ -470,9 +551,6 @@
                                     </span>
                                     <span class="capacity-mini"
                                           th:text="${'Price: ' + event.priceLabel}">Price: Free</span>
-                                </div>
-                                <div class="bar">
-                                    <div class="fill" th:style="|width: ${event.registrationPercentage}%|"></div>
                                 </div>
                             </div>
 
@@ -561,5 +639,106 @@
 
 
 </main>
+
+<script>
+    // Check check-in status for all events when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkinSections = document.querySelectorAll('.checkin-section');
+
+        checkinSections.forEach(function(section) {
+            const eventId = section.getAttribute('data-event-id');
+            if (!eventId) return;
+
+            // Check check-in status
+            fetch('/events/' + eventId + '/checkin-status', {
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('checkin-status-' + eventId);
+                    const badge = statusDiv.querySelector('.checkin-badge');
+                    const buttons = section.querySelector('.checkin-buttons');
+                    const successMessage = document.getElementById('checkin-success-' + eventId);
+
+                    if (data.checkedIn) {
+                        // Show checked-in badge
+                        badge.style.display = 'inline-block';
+                        badge.textContent = '✓ Đã check-in';
+                        if (data.checkInTime) {
+                            badge.textContent += ' (' + new Date(data.checkInTime).toLocaleString('vi-VN') + ')';
+                        }
+                        // ✅ Ẩn nút check-in và hiển thị thông báo thành công
+                        if (buttons) {
+                            buttons.style.display = 'none';
+                        }
+                        if (successMessage) {
+                            successMessage.style.display = 'block';
+                        }
+                    } else {
+                        // Hide badge, show buttons normally
+                        badge.style.display = 'none';
+                        if (buttons) {
+                            buttons.style.display = 'flex';
+                        }
+                        if (successMessage) {
+                            successMessage.style.display = 'none';
+                        }
+                    }
+
+                    // ✅ Kiểm tra localStorage để ẩn nút nếu đã check-in từ trang face-checkin
+                    const checkinKey = 'checkin_success_' + eventId;
+                    if (localStorage.getItem(checkinKey) === 'true') {
+                        // Ẩn nút check-in
+                        if (buttons) {
+                            buttons.style.display = 'none';
+                        }
+                        // Hiển thị thông báo thành công
+                        if (successMessage) {
+                            successMessage.style.display = 'block';
+                        }
+                        // Hiển thị badge đã check-in
+                        if (badge) {
+                            badge.style.display = 'inline-block';
+                            badge.textContent = '✓ Đã check-in';
+                        }
+                        // Xóa key khỏi localStorage
+                        localStorage.removeItem(checkinKey);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking check-in status for event ' + eventId + ':', error);
+                });
+        });
+
+        // ✅ Lắng nghe message từ trang face-checkin để ẩn nút check-in
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'CHECKIN_SUCCESS') {
+                const eventId = event.data.eventId;
+                // Tìm và ẩn nút check-in cho event này
+                const checkinSection = document.querySelector(`[data-event-id="${eventId}"]`);
+                if (checkinSection) {
+                    const checkinButtons = checkinSection.querySelector('.checkin-buttons');
+                    const successMessage = document.getElementById('checkin-success-' + eventId);
+                    if (checkinButtons) {
+                        checkinButtons.style.display = 'none';
+                    }
+                    // ✅ Hiển thị thông báo thành công
+                    if (successMessage) {
+                        successMessage.style.display = 'block';
+                    }
+                    // Hiển thị badge đã check-in
+                    const statusDiv = document.getElementById('checkin-status-' + eventId);
+                    if (statusDiv) {
+                        const checkinBadge = statusDiv.querySelector('.checkin-badge');
+                        if (checkinBadge) {
+                            checkinBadge.style.display = 'inline-block';
+                            checkinBadge.textContent = '✓ Đã check-in';
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 package com.group02.openevent.model.attendance;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.Order;
 import com.group02.openevent.model.user.Customer;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class EventAttendance {
     
     @Id
@@ -24,14 +27,17 @@ public class EventAttendance {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id",nullable = true)
+    @JsonIgnore
     private Order order;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
+    @JsonIgnore
     private Event event;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
+    @JsonIgnore
     private Customer customer;
     
     @Column(name = "full_name", nullable = false, length = 200)

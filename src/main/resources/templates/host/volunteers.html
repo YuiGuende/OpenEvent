@@ -6,49 +6,287 @@
     <title>Volunteers</title>
 </head>
 <body>
-<div class="container" style="max-width: 1100px; margin: 24px auto;" th:fragment="content">
-    <h2>Danh sách tình nguyện viên</h2>
-    <div th:if="${param.success != null}">
-        <div th:if="${param.success[0] == 'suspended'}">Đã suspend volunteer</div>
-        <div th:if="${param.success[0] == 'unsuspended'}">Đã unspend volunteer</div>
+<div class="volunteers-container" th:fragment="content">
+    <style>
+        :root {
+            --blue-primary: #3B82F6;
+            --blue-secondary: #2563EB;
+            --green-primary: #10B981;
+            --green-secondary: #059669;
+            --orange-primary: #FF6B35;
+            --orange-secondary: #F7931E;
+        }
+
+        .volunteers-container {
+            padding: 2rem;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            min-height: 100vh;
+        }
+
+        /* Page Header */
+        .volunteers-header {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .volunteers-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Success Messages */
+        .success-message {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            border-left: 4px solid var(--green-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            color: var(--green-secondary);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Table Container */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+            overflow: hidden;
+        }
+
+        /* Table Styling */
+        .volunteers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .volunteers-table thead {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+        }
+
+        .volunteers-table thead th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .volunteers-table tbody tr {
+            border-bottom: 1px solid #F3F4F6;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .volunteers-table tbody tr:hover {
+            background-color: #F9FAFB;
+            transform: translateX(4px);
+        }
+
+        .volunteers-table tbody td {
+            padding: 1rem;
+            color: #374151;
+            vertical-align: middle;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-approved {
+            background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+            color: white;
+        }
+
+        .status-suspended {
+            background: linear-gradient(135deg, #6B7280, #4B5563);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-suspend {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-suspend:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-unsuspend {
+            background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+            color: white;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-unsuspend:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #9CA3AF;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .volunteers-container {
+                padding: 1rem;
+            }
+
+            .volunteers-header {
+                padding: 1.5rem;
+            }
+
+            .volunteers-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .table-container {
+                padding: 1rem;
+                overflow-x: auto;
+            }
+
+            .volunteers-table {
+                min-width: 600px;
+            }
+        }
+    </style>
+
+    <!-- Page Header -->
+    <div class="volunteers-header">
+        <h2>
+            <i class="bi bi-people-fill" style="margin-right: 0.5rem;"></i>
+            List of volunteers
+        </h2>
     </div>
-    <table class="table" th:if="${volunteers != null}">
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>Volunteer</th>
-            <th>Event</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="v, i : ${volunteers}">
-            <td th:text="${i.index + 1}">1</td>
-            <td th:text="${v.customer.user.name != null ? v.customer.user.name : v.customer.user.account.email}">name</td>
-            <td th:text="${v.event.title}">event</td>
-            <td>
-                <span th:text="${#strings.startsWith(v.hostResponse, '[SUSPENDED]') ? 'SUSPENDED' : 'APPROVED'}">status</span>
-            </td>
-            <td>
-                <form th:if="${!#strings.startsWith(v.hostResponse, '[SUSPENDED]')}" th:action="@{'/manage/volunteers/' + ${v.volunteerApplicationId} + '/suspend'}" method="post" style="display:inline;">
-                    <input type="hidden" name="eventId" th:value="${eventId}">
-                    <button type="submit">Suspend</button>
-                </form>
-                <form th:if="${#strings.startsWith(v.hostResponse, '[SUSPENDED]')}" th:action="@{'/manage/volunteers/' + ${v.volunteerApplicationId} + '/unsuspend'}" method="post" style="display:inline;">
-                    <input type="hidden" name="eventId" th:value="${eventId}">
-                    <button type="submit">Unspend</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+
+    <!-- Success Messages -->
+    <div th:if="${param.success != null}">
+        <div class="success-message" th:if="${param.success[0] == 'suspended'}">
+            <i class="bi bi-check-circle-fill" style="margin-right: 0.5rem;"></i>
+            Suspend volunteer
+        </div>
+        <div class="success-message" th:if="${param.success[0] == 'unsuspended'}">
+            <i class="bi bi-check-circle-fill" style="margin-right: 0.5rem;"></i>
+            Unsuspend volunteer
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container" th:if="${volunteers != null and !volunteers.isEmpty()}">
+        <table class="volunteers-table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Volunteer</th>
+                <th>Event</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="v, i : ${volunteers}">
+                <td th:text="${i.index + 1}">1</td>
+                <td>
+                    <strong th:text="${v.customer.user.name != null ? v.customer.user.name : v.customer.user.account.email}">name</strong>
+                </td>
+                <td th:text="${v.event.title}">event</td>
+                <td>
+                    <span class="status-badge" 
+                          th:classappend="${#strings.startsWith(v.hostResponse, '[SUSPENDED]') ? 'status-suspended' : 'status-approved'}"
+                          th:text="${#strings.startsWith(v.hostResponse, '[SUSPENDED]') ? 'SUSPENDED' : 'APPROVED'}">
+                        status
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <form th:if="${!#strings.startsWith(v.hostResponse, '[SUSPENDED]')}" 
+                              th:action="@{'/manage/volunteers/' + ${v.volunteerApplicationId} + '/suspend'}" 
+                              method="post" 
+                              style="display:inline;">
+                            <input type="hidden" name="eventId" th:value="${eventId}">
+                            <button type="submit" class="btn-action btn-suspend">
+                                <i class="bi bi-pause-circle" style="margin-right: 0.25rem;"></i>
+                                Suspend
+                            </button>
+                        </form>
+                        <form th:if="${#strings.startsWith(v.hostResponse, '[SUSPENDED]')}" 
+                              th:action="@{'/manage/volunteers/' + ${v.volunteerApplicationId} + '/unsuspend'}" 
+                              method="post" 
+                              style="display:inline;">
+                            <input type="hidden" name="eventId" th:value="${eventId}">
+                            <button type="submit" class="btn-action btn-unsuspend">
+                                <i class="bi bi-play-circle" style="margin-right: 0.25rem;"></i>
+                                Unsuspend
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="table-container" th:if="${volunteers == null or volunteers.isEmpty()}">
+        <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <h3>No volunteers yet</h3>
+            <p>The volunteer list will appear here as people sign up.</p>
+        </div>
+    </div>
 </div>
 </body>
-<style>
-    .table { width: 100%; border-collapse: collapse; }
-    .table th, .table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-</style>
 </html>
 
 

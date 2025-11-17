@@ -8,15 +8,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
     @Autowired
     private CustomAuthenticationSuccessHandler successHandler;
+    @Autowired
+    private CustomAuthenticationFailureHandler failureHandler;
     @Autowired
     private CustomUserDetailsService userDetailsService;
     @Autowired
@@ -63,11 +67,37 @@ public class SecurityConfig {
                                 "/api/ekyc/**",
                                 "/web-sdk-version-3.2.0.0.js",
                                 "/login", "/login/**", "/oauth2/**",
-                                "/api/auth/register", "/css/**", "/js/**",
-                                "/img/**", "/images/**", "/",
+                                "/api/auth/register", "/api/auth/login",
+                                "/css/**", "/js/**", "/img/**", "/images/**",
+                                "/music/**", "/competition/**", "/festival/**", "/workshop/**",
+                                "/events/**", "/api/events/public/**",
                                 "/api/payments/webhook", "/api/payments/webhook/test",
                                 "/api/payments/webhook/test-data",
-                                "/api/ekyc/file-service/v1/addFile").permitAll()
+                                "/api/current-user",
+                                "/api/ekyc/file-service/v1/addFile",
+                                "/api/ai/chat/enhanced/health",
+                                "/api/speakers/**",
+                                "/api/schedules/**",
+                                "/api/event-images/**",
+                                "/",
+                                "/profile"
+                        ).permitAll()
+                        
+                        // Admin only endpoints
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        
+                        // Host endpoints - chỉ cần authenticated, aspect sẽ kiểm tra ownership
+                        .requestMatchers("/host/**").hasAnyRole("HOST", "ADMIN")
+                        
+                        // Manage event endpoints - chỉ cần authenticated, aspect sẽ kiểm tra event ownership
+                        .requestMatchers("/manage/**").authenticated()
+                        
+                        // Department only endpoints (DEPARTMENT hoặc ADMIN)
+                        .requestMatchers("/department/**").hasAnyRole("DEPARTMENT", "ADMIN")
+                        
+                        // Authenticated users only (các API còn lại)
+                        .requestMatchers("/api/**").authenticated()
+                        
                         .anyRequest().authenticated()
                 )
 
@@ -76,7 +106,7 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/perform_login")
                         .successHandler(successHandler) // Handler tùy chỉnh để lưu ACCOUNT_ID
-                        .failureUrl("/login?error")
+                        .failureHandler(failureHandler) // Handler tùy chỉnh để xử lý lỗi
                         .permitAll()
                 )
 
@@ -87,7 +117,19 @@ public class SecurityConfig {
                                 .userService(oauth2UserService)
                         )
                         .successHandler(successHandler)
-                        .failureUrl("/login?error=oauth")
+                        .failureHandler((request, response, exception) -> {
+                            // Log lỗi chi tiết
+                            System.err.println("=== OAuth2 Login Failure ===");
+                            System.err.println("Exception: " + exception.getClass().getName());
+                            System.err.println("Message: " + exception.getMessage());
+                            if (exception.getCause() != null) {
+                                System.err.println("Cause: " + exception.getCause().getMessage());
+                            }
+                            exception.printStackTrace();
+                            // Redirect về login với thông báo lỗi
+                            response.sendRedirect("/login?error=oauth&message=" + 
+                                java.net.URLEncoder.encode(exception.getMessage(), "UTF-8"));
+                        })
                 )
 
                 // 5. Cấu hình Logout

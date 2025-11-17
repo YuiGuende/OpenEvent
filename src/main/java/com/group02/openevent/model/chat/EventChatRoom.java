@@ -55,6 +55,7 @@ public class EventChatRoom {
 
     // Participants for HOST_VOLUNTEERS room type
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 30)
     private List<EventChatRoomParticipant> participants = new ArrayList<>();
 
     @PrePersist

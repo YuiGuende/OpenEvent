@@ -50,16 +50,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Account not found with email: " + email));
 
-        // 2. Lấy User từ Account để xác định Role
-        User user = userRepo.findByAccount_AccountId(account.getAccountId())
+        // 2. Lấy User từ Account với eager fetch roles để xác định Role
+        User user = userRepo.findByAccountIdWithRoles(account.getAccountId())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found for account: " + email));
         
         // 3. Xác định Role từ User entity (customer/host/admin/department)
         com.group02.openevent.model.enums.Role role = user.getRole();
         
         // 4. Tạo danh sách quyền hạn (Authorities) từ Role của User
+        // Spring Security's hasRole() method tự động thêm prefix "ROLE_", nên cần thêm prefix này
         List<GrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority(role.toString()) // Ví dụ: "CUSTOMER"
+                new SimpleGrantedAuthority("ROLE_" + role.toString()) // Ví dụ: "ROLE_CUSTOMER", "ROLE_DEPARTMENT"
         );
 
         // 5. Trả về đối tượng CustomUserDetails

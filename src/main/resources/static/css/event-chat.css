@@ -196,6 +196,70 @@
     display: none;
 }
 
+/* Message styles - phân biệt tin nhắn của mình và người khác */
+.chat-message-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+/* Tin nhắn của mình - hiển thị bên phải */
+.chat-message-item.from-me {
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.chat-message-item.from-me .chat-message-body {
+    background: #007bff;
+    color: white;
+    border-radius: 12px 12px 4px 12px;
+    padding: 0.75rem 1rem;
+}
+
+.chat-message-item.from-me .chat-message-meta {
+    text-align: right;
+    padding-right: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Tin nhắn của người khác - hiển thị bên trái */
+.chat-message-item.from-them {
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.chat-message-item.from-them .chat-message-body {
+    background: #e9ecef;
+    color: #333;
+    border-radius: 12px 12px 12px 4px;
+    padding: 0.75rem 1rem;
+}
+
+.chat-message-item.from-them .chat-message-meta {
+    text-align: left;
+    padding-left: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Thêm tên người gửi cho tin nhắn của người khác */
+.chat-message-item.from-them .chat-message-sender {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+    padding-left: 0.5rem;
+}
+
+.chat-message-item.from-me .chat-message-sender {
+    display: none; /* Không hiển thị tên cho tin nhắn của mình */
+}
+
 
 
 

@@ -14,6 +14,7 @@ public class ChatMessageDTO {
     private Long eventId;
     private Long messageId;
     private Long senderUserId;
+    private String senderName;  // Tên người gửi để hiển thị
     private Long recipientUserId;
     private String body;
     private Instant timestamp;

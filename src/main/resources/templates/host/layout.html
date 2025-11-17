@@ -95,13 +95,11 @@
     <div th:fragment="content"></div>
 </main>
 <!-- Chatbot Integration -->
+<!-- Chatbot: hiển thị cho TẤT CẢ người dùng (host layout, chatbot.js sẽ xử lý logic) -->
 <div id="openevent-chatbot-container"></div>
-<script th:src="@{/js/chatbot.js}" defer></script>
-
-<!-- Chatbot Fragment - Only for authenticated users -->
-<div th:if="${#authorization.expression('isAuthenticated()')}"
-     th:replace="~{fragments/chatbot :: chatbot(${#authentication.principal?.id})}">
-</div>
+<!-- Luôn render chatbot fragment (chatbot.js sẽ xử lý logic khi chưa đăng nhập) -->
+<div th:replace="~{fragments/chatbot :: chatbot(${#authentication.principal?.id != null ? #authentication.principal.id : null})}"></div>
+<script th:src="@{/js/chatbot.js(v=4)}" defer></script>
 
 <script>
     function loadPage(url) {

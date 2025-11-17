@@ -105,9 +105,9 @@ public class OrderServiceImpl implements OrderService {
             order.setCustomer(customer);
             order.setEvent(event);
             order.setTicketType(ticketType);
-            order.setParticipantName(request.getParticipantName());
-            order.setParticipantEmail(request.getParticipantEmail());
-            order.setParticipantPhone(request.getParticipantPhone());
+            order.setParticipantName(customer.getUser().getName());
+            order.setParticipantEmail(customer.getUser().getAccount().getEmail());
+            order.setParticipantPhone(customer.getUser().getPhoneNumber());
             order.setParticipantOrganization(request.getParticipantOrganization());
             order.setNotes(request.getNotes());
             order.setStatus(OrderStatus.PENDING);

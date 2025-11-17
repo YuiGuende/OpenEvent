@@ -17,14 +17,14 @@ window.selectStatusFilter = function(element) {
     const textElement = document.getElementById('statusFilterText');
     if (textElement) {
         const statusTexts = {
-            '': 'Tất cả trạng thái',
-            'PENDING': 'Chờ xử lý',
-            'PAID': 'Đã thanh toán',
-            'CANCELLED': 'Đã hủy',
-            'EXPIRED': 'Hết hạn',
-            'REFUNDED': 'Hoàn tiền'
+            '': 'All Status',
+            'PENDING': 'Pending',
+            'PAID': 'Paid',
+            'CANCELLED': 'Cancelled',
+            'EXPIRED': 'Expired',
+            'REFUNDED': 'Refunded'
         };
-        textElement.textContent = statusTexts[status] || 'Tất cả trạng thái';
+        textElement.textContent = statusTexts[status] || 'All Status';
     }
     
     // Apply filter
@@ -40,7 +40,7 @@ window.viewOrderDetail = function(button) {
     const order = findOrderById(orderId);
     if (!order) {
         console.warn('Order not found:', orderId);
-        alert('Không tìm thấy thông tin đơn hàng #' + orderId);
+        alert('Order information not found #' + orderId);
         return;
     }
     
@@ -212,7 +212,7 @@ function renderOrders(list) {
     if (!tbody) return;
 
     if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Không có đơn hàng phù hợp</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No matching orders</td></tr>`;
         return;
     }
 
@@ -231,7 +231,7 @@ function renderOrders(list) {
             <td><span class="fw-bold fs-6" style="color: var(--orange-primary);">${order.formattedAmount || formatCurrency(order.totalAmount || 0)}</span></td>
             <td>${formatDate(order.createdAt)}</td>
             <td>
-                <button class="btn btn-sm btn-outline-primary" style="border-color: var(--orange-primary); color: var(--orange-primary);" data-order-id="${order.orderId}" onclick="viewOrderDetail(this)">Xem chi tiết</button>
+                <button class="btn btn-sm btn-outline-primary" style="border-color: var(--orange-primary); color: var(--orange-primary);" data-order-id="${order.orderId}" onclick="viewOrderDetail(this)">View Details</button>
             </td>
         </tr>
     `).join('');
@@ -294,7 +294,7 @@ function bindEventListeners() {
     if (exportBtn) {
         exportBtn.addEventListener('click', () => {
             console.log('📤 Exporting orders...');
-            alert('Chức năng xuất dữ liệu đang được phát triển');
+            alert('Export feature is under development');
         });
     }
 
@@ -369,7 +369,7 @@ function loadOrdersPage(page) {
     const eventId = getEventId();
     if (!eventId) {
         console.error('[Orders] Cannot load page - eventId not found');
-        alert('Không tìm thấy ID sự kiện. Vui lòng tải lại trang.');
+        alert('Event ID not found. Please reload the page.');
         return;
     }
 
@@ -378,14 +378,14 @@ function loadOrdersPage(page) {
     const statusFilterText = document.getElementById('statusFilterText');
     if (statusFilterText) {
         const statusText = statusFilterText.textContent.trim();
-        // Map Vietnamese text to status value
+        // Map status text to status value
         const statusMap = {
-            'Tất cả trạng thái': '',
-            'Chờ xử lý': 'PENDING',
-            'Đã thanh toán': 'PAID',
-            'Đã hủy': 'CANCELLED',
-            'Hết hạn': 'EXPIRED',
-            'Hoàn tiền': 'REFUNDED'
+            'All Status': '',
+            'Pending': 'PENDING',
+            'Paid': 'PAID',
+            'Cancelled': 'CANCELLED',
+            'Expired': 'EXPIRED',
+            'Refunded': 'REFUNDED'
         };
         status = statusMap[statusText] || '';
     }
@@ -412,7 +412,7 @@ function loadOrdersPage(page) {
     const mainContent = document.querySelector('#main-content');
     if (mainContent) {
         const originalContent = mainContent.innerHTML;
-        mainContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Đang tải...</span></div></div>';
+        mainContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
         
         // Fetch fragment
         fetch(`/fragments/orders?${params.toString()}`)
@@ -439,7 +439,7 @@ function loadOrdersPage(page) {
             .catch(error => {
                 console.error('[Orders] Error loading fragment:', error);
                 mainContent.innerHTML = originalContent;
-                alert('Lỗi khi tải dữ liệu. Vui lòng thử lại.');
+                alert('Error loading data. Please try again.');
             });
     }
 }

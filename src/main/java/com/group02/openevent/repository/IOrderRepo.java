@@ -28,6 +28,11 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o " +
             "WHERE o.event.id = :eventId " +
             "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
+    Long countPaidOrdersByEventId(@Param("eventId") Long eventId);
+
+    @Query("SELECT COUNT(o) FROM Order o " +
+            "WHERE o.event.id = :eventId " +
+            "AND o.status = com.group02.openevent.model.order.OrderStatus.PAID")
     Integer countConfirmedParticipantsByEventId(@Param("eventId") Long eventId);
 
     @Query("SELECT DISTINCT o.event FROM Order o WHERE o.customer.customerId = :customerId")
@@ -57,9 +62,9 @@ public interface IOrderRepo extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.event.id = :eventId")
     Page<Order> findByEventId(@Param("eventId") Long eventId, Pageable pageable);
 
-    @Query("SELECT DISTINCT o.customer.user.account.accountId FROM Order o " +
+    @Query("SELECT DISTINCT o.customer.user.userId FROM Order o " +
             "WHERE o.event.id = :eventId AND o.status = 'PAID'")
-    List<Long> findDistinctCustomerAccountIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
+    List<Long> findDistinctCustomerUserIdsByEventIdAndStatusPaid(@Param("eventId") Long eventId);
 
     boolean existsByTicketType_TicketTypeId(Long ticketTypeId);
 

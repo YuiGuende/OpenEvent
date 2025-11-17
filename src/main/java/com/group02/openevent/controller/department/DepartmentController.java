@@ -11,8 +11,10 @@ import com.group02.openevent.model.enums.EventStatus;
 import com.group02.openevent.model.enums.EventType;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.order.OrderStatus;
+import com.group02.openevent.model.enums.Role;
 import com.group02.openevent.model.request.Request;
 import com.group02.openevent.model.request.RequestStatus;
+import com.group02.openevent.security.annotation.RequireRole;
 import com.group02.openevent.service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/department")
+@RequireRole({Role.DEPARTMENT, Role.ADMIN}) // DEPARTMENT hoặc ADMIN mới truy cập được
 public class DepartmentController {
 
     @Autowired
@@ -62,6 +65,11 @@ public class DepartmentController {
         model.addAttribute("pendingRequests", stats.getPendingRequests());
         model.addAttribute("ongoingEvents", stats.getOngoingEvents());
         model.addAttribute("totalParticipants", stats.getTotalParticipants());
+        
+        // Add userId for chatbot (from department user)
+        Long userId = department.getUser() != null && department.getUser().getUserId() != null 
+            ? department.getUser().getUserId() : null;
+        model.addAttribute("uid", userId);
 
         return "department/dashboard";
     }

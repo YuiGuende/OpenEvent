@@ -19,6 +19,7 @@ import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.repository.*;
 import com.group02.openevent.model.ticket.TicketType;
 import com.group02.openevent.service.*;
+import com.group02.openevent.annotation.RequireEventHost;
 import com.group02.openevent.service.impl.CustomerServiceImpl;
 import com.group02.openevent.service.impl.EventAttendanceServiceImpl;
 import com.group02.openevent.service.impl.TicketTypeServiceImpl;
@@ -93,6 +94,7 @@ public class EventManageController {
     }
 
     @RequestMapping(value = "/manage/event/{eventId:\\d+}/{path:[^\\.]*}")
+    @RequireEventHost(eventIdParamName = "eventId")
     public String showManagerPage(@PathVariable Long eventId, Model model, HttpSession session) throws JsonProcessingException {
 
         Event event = eventService.getEventResponseById(eventId);
@@ -138,6 +140,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/update-event")
+    @RequireEventHost(eventIdParamName = "id")
     public String updateEvent(@RequestParam Long id, Model model) throws JsonProcessingException {
         log.info("🔍 Loading update-event fragment for event ID: {}", id);
 
@@ -172,6 +175,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/getting-started")
+    @RequireEventHost(eventIdParamName = "id")
     public String gettingStared(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
@@ -180,6 +184,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/ticket")
+    @RequireEventHost(eventIdParamName = "id")
     public String ticket(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
@@ -228,6 +233,7 @@ public class EventManageController {
 //    }
 //
     @GetMapping("/fragments/attendees")
+    @RequireEventHost(eventIdParamName = "id")
     public String attendees(@RequestParam Long id,
                             @RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size,
@@ -265,6 +271,7 @@ public class EventManageController {
 
     //
     @GetMapping("/fragments/orders")
+    @RequireEventHost(eventIdParamName = "id")
     public String orders(@RequestParam Long id,
                          @RequestParam(defaultValue = "0") int page,
                          @RequestParam(defaultValue = "10") int size,
@@ -284,14 +291,24 @@ public class EventManageController {
     }
 
 
-    @GetMapping("/fragments/check-in")
-    public String checkIn(@RequestParam Long id, Model model) {
+//    @GetMapping("/fragments/check-in")
+//    public String checkIn(@RequestParam Long id, Model model) {
+//        Event event = eventService.getEventResponseById(id);
+//        model.addAttribute("event", event);
+//        return "fragments/check-in :: content";
+//    }
+
+    @GetMapping("/fragments/check-in-list")
+    @RequireEventHost(eventIdParamName = "id")
+    public String checkInList(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
-        return "fragments/check-in :: content";
+        model.addAttribute("eventId", id);
+        return "fragments/check-in-list :: content";
     }
 
     @GetMapping("/fragments/create-forms")
+    @RequireEventHost(eventIdParamName = "id")
     public String createForms(@RequestParam(required = false) Long id, Model model) {
         if (id == null) {
             log.error("⚠️ Missing event ID parameter for create-forms fragment");
@@ -322,6 +339,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/qr-codes")
+    @RequireEventHost(eventIdParamName = "id")
     public String qrCodes(@RequestParam(required = false) Long id, Model model) {
         if (id == null) {
             log.error("⚠️ Missing event ID parameter for qr-codes fragment");
@@ -349,6 +367,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/dashboard-event")
+    @RequireEventHost(eventIdParamName = "id")
     public String dashboard(@RequestParam Long id, Model model) {
         log.info("Loading dashboard fragment for event ID: {}", id);
 
@@ -364,6 +383,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/notification")
+    @RequireEventHost(eventIdParamName = "id")
     public String notification(@RequestParam Long id, Model model) {
         log.info("Loading notification fragment for event ID: {}", id);
 
@@ -376,6 +396,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/statis-forms")
+    @RequireEventHost(eventIdParamName = "id")
     public String statisForms(
             @RequestParam(required = false) Long id, // eventId
             @RequestParam(required = false) Long formId,
@@ -418,6 +439,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/volunteers")
+    @RequireEventHost(eventIdParamName = "id")
     public String volunteers(@RequestParam Long id, Model model) {
         Event event = eventService.getEventResponseById(id);
         model.addAttribute("event", event);
@@ -429,6 +451,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/volunteer-create-form")
+    @RequireEventHost(eventIdParamName = "id")
     public String volunteerCreateForm(@RequestParam(required = false) Long id, Model model) {
         if (id == null) {
             log.error("⚠️ Missing event ID parameter for volunteer-create-form fragment");
@@ -473,6 +496,7 @@ public class EventManageController {
     }
 
     @GetMapping("/fragments/volunteer-requests")
+    @RequireEventHost(eventIdParamName = "id")
     public String volunteerRequests(@RequestParam(required = false) Long id, 
                                     @RequestParam(required = false) Long formId,
                                     Model model) {
@@ -505,6 +529,25 @@ public class EventManageController {
                     Collectors.toList()
                 ));
 
+            // Filter to only show responses from customers with PENDING volunteer applications
+            List<com.group02.openevent.model.volunteer.VolunteerApplication> pendingApplications = 
+                volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, com.group02.openevent.model.volunteer.VolunteerStatus.PENDING);
+            
+            // Get customer IDs of pending applications
+            java.util.Set<Long> pendingCustomerIds = pendingApplications.stream()
+                .map(app -> app.getCustomer().getCustomerId())
+                .collect(Collectors.toSet());
+            
+            // Filter groupedResponses to only include pending customers
+            Map<Long, List<com.group02.openevent.dto.form.FormResponseDTO>> filteredGroupedResponses = groupedResponses.entrySet().stream()
+                .filter(entry -> pendingCustomerIds.contains(entry.getKey()))
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    (v1, v2) -> v1,
+                    LinkedHashMap::new
+                ));
+
             // Get volunteer form if exists
             try {
                 var volunteerForm = eventFormService.getActiveFormByEventIdAndType(id, com.group02.openevent.model.form.EventForm.FormType.VOLUNTEER);
@@ -516,10 +559,10 @@ public class EventManageController {
                 log.info("📋 No volunteer form found for event {}", id);
             }
 
-            model.addAttribute("groupedResponses", groupedResponses);
+            model.addAttribute("groupedResponses", filteredGroupedResponses);
             model.addAttribute("formId", formId);
 
-            log.info("✅ Loaded {} volunteer request groups for event {}", groupedResponses.size(), id);
+            log.info("✅ Loaded {} volunteer request groups (pending only) for event {}", filteredGroupedResponses.size(), id);
         } catch (Exception e) {
             log.error("❌ Error loading volunteer requests fragment for event ID: {}", id, e);
             model.addAttribute("error", "Không thể tải yêu cầu duyệt: " + e.getMessage());

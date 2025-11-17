@@ -46,93 +46,33 @@
             font-size: 14px;
         }
         
-        /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #e0e0e0;
-            margin-bottom: 30px;
-        }
-        
-        .tab-button {
-            flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            font-weight: 500;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .tab-button:hover {
-            color: #28a745;
-        }
-        
-        .tab-button.active {
-            color: #28a745;
-            border-bottom-color: #28a745;
-        }
-        
-        .tab-content {
+        /* Success message styles */
+        .success-container {
             display: none;
+            text-align: center;
+            padding: 40px;
         }
         
-        .tab-content.active {
+        .success-container.active {
             display: block;
         }
         
-        /* Form styles */
-        .form-group {
+        .success-icon {
+            font-size: 80px;
             margin-bottom: 20px;
         }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        .form-group label .required {
-            color: #dc3545;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #28a745;
-        }
-        
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
+        .success-message {
+            font-size: 24px;
+            color: #28a745;
             font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
+            margin-bottom: 10px;
         }
         
-        .submit-btn:hover {
-            background: #218838;
-        }
-        
-        .submit-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+        .success-details {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
         }
         
         /* Face check-in styles */
@@ -283,78 +223,27 @@
 <body>
     <div class="form-container">
         <div class="form-header">
-            <h1>✅ Check-in Form</h1>
+            <h1>📷 Check-in bằng khuôn mặt</h1>
             <p th:text="${event.title}">Event Name</p>
         </div>
         
-        <!-- Success/Error Messages -->
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
-        <div id="apiMessage" class="alert" style="display: none;"></div>
-        
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-button active" onclick="switchTab('manual')">📝 Form thủ công</button>
-            <button class="tab-button" onclick="switchTab('face')">📷 Check-in bằng khuôn mặt</button>
+        <!-- Success Message Container -->
+        <div id="successContainer" class="success-container">
+            <div class="success-icon">✅</div>
+            <div class="success-message">Check-in thành công!</div>
+            <div class="success-details" id="successDetails"></div>
+            <a th:href="@{'/events/' + ${event.id}}" class="back-link">
+                ← Quay lại trang sự kiện
+            </a>
         </div>
         
-        <!-- Manual Form Tab -->
-        <div id="manualTab" class="tab-content active">
-            <form th:action="@{'/events/' + ${event.id} + '/checkin'}" 
-                  method="POST" 
-                  th:object="${attendanceRequest}">
-                
-                <div class="form-group">
-                    <label for="fullName">
-                        Họ và tên <span class="required">*</span>
-                    </label>
-                    <input type="text" 
-                           id="fullName" 
-                           th:field="*{fullName}" 
-                           required
-                           placeholder="Nguyễn Văn A">
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">
-                        Email <span class="required">*</span>
-                    </label>
-                    <input type="email" 
-                           id="email" 
-                           th:field="*{email}" 
-                           required
-                           placeholder="example@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone">
-                        Số điện thoại <span class="required">*</span>
-                    </label>
-                    <input type="tel" 
-                           id="phone" 
-                           th:field="*{phone}" 
-                           required
-                           placeholder="0123456789">
-                </div>
-                
-                <div class="form-group">
-                    <label for="organization">
-                        Tổ chức/Công ty
-                    </label>
-                    <input type="text" 
-                           id="organization" 
-                           th:field="*{organization}"
-                           placeholder="FPT University">
-                </div>
-                
-                <button type="submit" class="submit-btn">
-                    🎉 Xác nhận Check-in
-                </button>
-            </form>
-        </div>
-        
-        <!-- Face Check-in Tab -->
-        <div id="faceTab" class="tab-content">
+        <!-- Face Check-in Container -->
+        <div id="checkinContainer">
+            <!-- Error Messages -->
+            <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+            <div id="apiMessage" class="alert" style="display: none;"></div>
+            
+            <!-- Face Check-in -->
             <div class="camera-container">
                 <div class="video-wrapper">
                     <video id="videoElement" autoplay playsinline></video>
@@ -385,36 +274,17 @@
                 2. Đảm bảo khuôn mặt của bạn rõ ràng trong khung hình<br>
                 3. Nhấn "Chụp & Check-in" để thực hiện check-in
             </div>
+            
+            <a th:href="@{'/events/' + ${event.id}}" class="back-link">
+                ← Quay lại trang sự kiện
+            </a>
         </div>
-        
-        <a th:href="@{'/events/' + ${event.id} + '/attendance'}" class="back-link">
-            ← Quay lại trang QR codes
-        </a>
     </div>
     
     <script th:src="@{/js/face-checkin.js}"></script>
     <script>
         // Set event ID for JavaScript
         const EVENT_ID = /*[[${event.id}]]*/ null;
-        
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected tab
-            if (tabName === 'manual') {
-                document.getElementById('manualTab').classList.add('active');
-                document.querySelectorAll('.tab-button')[0].classList.add('active');
-            } else if (tabName === 'face') {
-                document.getElementById('faceTab').classList.add('active');
-                document.querySelectorAll('.tab-button')[1].classList.add('active');
-            }
-        }
     </script>
 </body>
 </html>

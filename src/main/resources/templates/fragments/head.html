@@ -26,13 +26,13 @@
     <link rel="icon" th:href="@{/images/Logo.png}" type="image/png">
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="OpenEvent - Nền tảng quản lý sự kiện thông minh với AI Assistant">
-    <meta name="keywords" content="sự kiện, event, quản lý, AI, chatbot, OpenEvent">
+    <meta name="description" content="OpenEvent - Smart event management platform with AI Assistant">
+    <meta name="keywords" content="Event, event, management, AI, chatbot, OpenEvent">
     <meta name="author" content="OpenEvent Team">
 
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" th:content="${pageTitle} + ' - OpenEvent'">
-    <meta property="og:description" content="Nền tảng quản lý sự kiện thông minh với AI Assistant">
+    <meta property="og:description" content="Smart event management platform with AI Assistant">
     <meta property="og:type" content="website">
     <meta property="og:url" th:content="@{/}">
     <meta property="og:image" th:content="@{/images/Logo.png}">
@@ -40,7 +40,7 @@
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" th:content="${pageTitle} + ' - OpenEvent'">
-    <meta name="twitter:description" content="Nền tảng quản lý sự kiện thông minh với AI Assistant">
+    <meta name="twitter:description" content="Smart event management platform with AI Assistant">
     <meta name="twitter:image" th:content="@{/images/Logo.png}">
 
     <!-- Theme Color -->
@@ -252,15 +252,22 @@
         }
 
         .latest-events-container .event-card-simple {
-            flex: 0 0 calc(33.333% - 11px);
-            min-width: 280px;
+            flex: 0 0 380px !important;
+            min-width: 380px !important;
+            max-width: 380px !important;
+            width: 380px !important;
             scroll-snap-align: start;
+            flex-shrink: 0 !important;
+            flex-grow: 0 !important;
+            box-sizing: border-box;
         }
 
         @media (max-width: 768px) {
             .latest-events-container .event-card-simple {
-                flex: 0 0 calc(100% - 8px);
-                min-width: 260px;
+                flex: 0 0 calc(100% - 8px) !important;
+                min-width: 260px !important;
+                max-width: 260px !important;
+                width: 260px !important;
             }
         }
 

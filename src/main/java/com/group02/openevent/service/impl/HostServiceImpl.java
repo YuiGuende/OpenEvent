@@ -9,6 +9,7 @@ import com.group02.openevent.event.UserCreatedEvent;
 import com.group02.openevent.repository.IAccountRepo;
 import com.group02.openevent.repository.ICustomerRepo;
 import com.group02.openevent.repository.IHostRepo;
+import com.group02.openevent.repository.IUserRepo;
 import com.group02.openevent.service.EventChatService;
 import com.group02.openevent.service.HostService;
 import com.group02.openevent.service.OrganizationService;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -32,13 +34,16 @@ public class HostServiceImpl implements HostService {
     private final ICustomerRepo customerRepo;
     private final ApplicationEventPublisher eventPublisher;
     private final EventChatService eventChatService;
+    private final IUserRepo userRepo;
 
     public HostServiceImpl(IHostRepo hostRepo, OrganizationService organizationService,
-                           IAccountRepo accountRepo, ICustomerRepo customerRepo, ApplicationEventPublisher eventPublisher, EventChatService eventChatService) {
+                           IAccountRepo accountRepo, ICustomerRepo customerRepo, ApplicationEventPublisher eventPublisher, EventChatService eventChatService, IUserRepo userRepo) {
+
         this.hostRepo = hostRepo;
         this.organizationService = organizationService;
         this.accountRepo = accountRepo;
         this.customerRepo = customerRepo;
+        this.userRepo = userRepo;
         this.eventPublisher = eventPublisher;
         this.eventChatService = eventChatService;
     }
@@ -64,8 +69,13 @@ public class HostServiceImpl implements HostService {
 
     @Override
     public Host findHostByUserId(Long userId) {
-        return hostRepo.findByUser_UserId(userId)
-                .orElseThrow(() -> new RuntimeException("This account is not a host"));
+        List<Host> hosts = hostRepo.findAllByUser_UserId(userId);
+        if (hosts.isEmpty()) {
+            throw new RuntimeException("This account is not a host");
+        }
+        // Return first host for backward compatibility
+        // In the future, you may want to select by organization or other criteria
+        return hosts.get(0);
     }
 
     @Override
@@ -79,47 +89,52 @@ public class HostServiceImpl implements HostService {
 
     @Override
     public boolean isUserHost(Long userId) {
-        return hostRepo.findByUser_UserId(userId).isPresent();
+        List<Host> hosts = hostRepo.findAllByUser_UserId(userId);
+        return hosts != null && !hosts.isEmpty();
     }
+
 
     @Override
     public Host registerHost(User user, HostRegistrationRequest request) {
-        // Kiểm tra xem user đã là host chưa
-        if (isUserHost(user.getUserId())) {
-            throw new RuntimeException("User is already a host");
-        }
+        // Note: Một user có thể có nhiều host records (cho các events khác nhau)
+        // Không cần check isUserHost() nữa vì cho phép nhiều hosts
 
         // Tạo host mới
         Host host = new Host();
         host.setCreatedAt(LocalDateTime.now());
-        host.setUser(user);
+        host.setUser(user); // Map trực tiếp với User
+
+        // Set host name riêng vào Host.hostName (không ảnh hưởng đến User.name/Customer)
+        if (request.getHostName() != null && !request.getHostName().trim().isEmpty()) {
+            host.setHostName(request.getHostName().trim());
+        } else if (user.getName() != null && !user.getName().trim().isEmpty()) {
+            // Nếu không có hostName trong request, dùng User.name làm mặc định
+            host.setHostName(user.getName());
+        } else {
+            // Nếu User chưa có name, dùng email username
+            if (user.getAccount() != null && user.getAccount().getEmail() != null) {
+                String email = user.getAccount().getEmail();
+                String username = email.contains("@") ? email.split("@")[0] : email;
+                host.setHostName(username);
+            }
+        }
+
+        // Set organization nếu có
+
+        // Set discount percent (default 0 nếu null)
+//        if (request.getHostDiscountPercent() != null) {
+//            host.setHostDiscountPercent(request.getHostDiscountPercent());
+//        } else {
+//            host.setHostDiscountPercent(BigDecimal.ZERO);
+//        }
+
+        // Set description
         host.setDescription(request.getDescription());
 
+        // Lưu user (với name đã được update) trước khi save host
+        userRepo.save(user);
+
         // Lưu host
-        Host savedHost = hostRepo.save(host);
-
-        // Publish UserCreatedEvent for audit log (user registered as HOST)
-        try {
-            Long actorId = user != null
-                    ? user.getUserId()
-                    : null;
-            if (actorId != null) {
-                eventPublisher.publishEvent(new UserCreatedEvent(this, user, actorId, "HOST"));
-            }
-        } catch (Exception e) {
-            System.err.println("Error publishing UserCreatedEvent for HOST: " + e.getMessage());
-        }
-
-        try {
-            eventChatService.createHostDepartmentRoom(savedHost.getUser().getUserId());
-            log.info("Successfully created Host-Department chat room for host: {}", savedHost.getUser().getUserId());
-        } catch (Exception e) {
-            log.warn("Failed to create host-department chat room: {}", e.getMessage());
-            // Không throw exception, chỉ log warning để không ảnh hưởng đến quá trình register host
-        }
-
-
-
-        return savedHost;
+        return hostRepo.save(host);
     }
 }

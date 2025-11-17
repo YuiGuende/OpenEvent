@@ -20,20 +20,20 @@ public interface VolunteerService {
     /**
      * Host duyệt volunteer application (approve)
      * @param applicationId ID của volunteer application
-     * @param reviewerAccountId ID của account host đang review
+     * @param reviewerUserId ID của user host đang review
      * @param hostResponse Phản hồi từ host (optional)
      * @return VolunteerApplication đã được approve
      */
-    VolunteerApplication approveVolunteerApplication(Long applicationId, Long reviewerAccountId, String hostResponse);
+    VolunteerApplication approveVolunteerApplication(Long applicationId, Long reviewerUserId, String hostResponse);
 
     /**
      * Host từ chối volunteer application (reject)
      * @param applicationId ID của volunteer application
-     * @param reviewerAccountId ID của account host đang review
+     * @param reviewerUserId ID của user host đang review
      * @param hostResponse Lý do từ chối (optional)
      * @return VolunteerApplication đã bị reject
      */
-    VolunteerApplication rejectVolunteerApplication(Long applicationId, Long reviewerAccountId, String hostResponse);
+    VolunteerApplication rejectVolunteerApplication(Long applicationId, Long reviewerUserId, String hostResponse);
 
     /**
      * Lấy volunteer application theo ID

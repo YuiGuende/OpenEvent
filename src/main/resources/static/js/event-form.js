@@ -324,9 +324,6 @@ function updateBreadcrumb(currentPage) {
         <li class="breadcrumb-item">
             <a href="#"><i class="bi bi-house-door"></i> Trang chủ</a>
         </li>
-        <li class="breadcrumb-item">
-            <a href="#">duc le</a>
-        </li>
         <li class="breadcrumb-item active">${currentPage}</li>
     `;
 }

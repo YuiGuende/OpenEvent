@@ -1,17 +1,24 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.dto.attendance.AttendanceRequest;
 import com.group02.openevent.dto.face.FaceVerificationResult;
 import com.group02.openevent.model.attendance.EventAttendance;
+import com.group02.openevent.model.order.Order;
+import com.group02.openevent.model.order.OrderStatus;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.user.User;
-import com.group02.openevent.service.EventAttendanceService;
+import com.group02.openevent.repository.IEventAttendanceRepo;
+import com.group02.openevent.repository.IOrderRepo;
 import com.group02.openevent.service.FaceCheckinService;
 import com.group02.openevent.service.FaceVerificationClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of face-based check-in service
@@ -24,7 +31,10 @@ public class FaceCheckinServiceImpl implements FaceCheckinService {
     private FaceVerificationClient faceVerificationClient;
     
     @Autowired
-    private EventAttendanceService attendanceService;
+    private IOrderRepo orderRepo;
+    
+    @Autowired
+    private IEventAttendanceRepo attendanceRepo;
     
     @Override
     @Transactional
@@ -56,29 +66,69 @@ public class FaceCheckinServiceImpl implements FaceCheckinService {
         log.info("Face verification successful for customer {} with confidence: {}", 
             currentCustomer.getCustomerId(), verificationResult.getConfidence());
         
-        // 4. Build AttendanceRequest from customer profile
-        User user = currentCustomer.getUser();
-        AttendanceRequest request = new AttendanceRequest();
+        // ✅ 4. Kiểm tra order đã thanh toán bằng customerId
+        boolean hasPaidOrder = orderRepo.existsPaidByEventIdAndCustomerId(eventId, currentCustomer.getCustomerId());
+        if (!hasPaidOrder) {
+            throw new RuntimeException("Bạn không đăng ký sự kiện này (không tìm thấy vé đã thanh toán).");
+        }
         
+        // ✅ 5. Tìm paid order cho event này
+        List<Order> customerOrders = orderRepo.findByCustomerId(currentCustomer.getCustomerId());
+        List<Order> paidOrdersForEvent = customerOrders.stream()
+            .filter(order -> order.getEvent() != null && 
+                           order.getEvent().getId().equals(eventId) &&
+                           order.getStatus() == OrderStatus.PAID)
+            .collect(Collectors.toList());
+        
+        if (paidOrdersForEvent.isEmpty()) {
+            throw new RuntimeException("Bạn không đăng ký sự kiện này (không tìm thấy vé đã thanh toán).");
+        }
+        
+        // ✅ 6. Tìm EventAttendance bằng orderId (tránh vấn đề normalize email)
+        Order paidOrder = paidOrdersForEvent.get(0);
+        Optional<EventAttendance> attendanceOpt = attendanceRepo.findByOrder_OrderId(paidOrder.getOrderId());
+        
+        if (attendanceOpt.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy thông tin đăng ký. Vui lòng kiểm tra lại hoặc liên hệ ban tổ chức.");
+        }
+        
+        EventAttendance attendance = attendanceOpt.get();
+        
+        // Kiểm tra đã check-in chưa
+        if (attendance.getCheckInTime() != null) {
+            throw new RuntimeException("Bạn đã check-in lúc " + attendance.getCheckInTime());
+        }
+        
+        if (attendance.getStatus() == EventAttendance.AttendanceStatus.CHECKED_IN 
+            || attendance.getStatus() == EventAttendance.AttendanceStatus.CHECKED_OUT) {
+            throw new RuntimeException("Bạn đã check-in rồi");
+        }
+        
+        // ✅ 7. Cập nhật EventAttendance trực tiếp (không cần kiểm tra email lại)
+        attendance.setCheckInTime(LocalDateTime.now());
+        attendance.setStatus(EventAttendance.AttendanceStatus.CHECKED_IN);
+        
+        // Cập nhật thông tin từ user nếu có thay đổi
+        User user = currentCustomer.getUser();
         if (user != null) {
-            request.setFullName(user.getName());
-            request.setPhone(user.getPhoneNumber());
-            
-            if (user.getAccount() != null) {
-                request.setEmail(user.getAccount().getEmail());
+            if (user.getName() != null && !user.getName().trim().isEmpty()) {
+                attendance.setFullName(user.getName());
+            }
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
+                attendance.setPhone(user.getPhoneNumber());
             }
         }
         
         if (currentCustomer.getOrganization() != null && currentCustomer.getOrganization().getOrgName() != null) {
-            request.setOrganization(currentCustomer.getOrganization().getOrgName());
+            attendance.setOrganization(currentCustomer.getOrganization().getOrgName());
         }
         
-        // 5. Call existing check-in service (reuse all existing logic)
-        EventAttendance attendance = attendanceService.checkIn(eventId, request);
+        EventAttendance saved = attendanceRepo.save(attendance);
         
-        log.info("Face check-in successful for event {} and customer {}", eventId, currentCustomer.getCustomerId());
+        log.info("Face check-in successful for event {} and customer {} with orderId {}", 
+            eventId, currentCustomer.getCustomerId(), paidOrder.getOrderId());
         
-        return attendance;
+        return saved;
     }
 }
 

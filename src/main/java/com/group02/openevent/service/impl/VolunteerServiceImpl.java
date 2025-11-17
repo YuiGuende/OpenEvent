@@ -1,17 +1,17 @@
 package com.group02.openevent.service.impl;
 
-import com.group02.openevent.model.account.Account;
 import com.group02.openevent.model.event.Event;
 import com.group02.openevent.model.user.Customer;
 import com.group02.openevent.model.volunteer.VolunteerApplication;
 import com.group02.openevent.model.volunteer.VolunteerStatus;
-import com.group02.openevent.repository.IAccountRepo;
-import com.group02.openevent.repository.ICustomerRepo;
-import com.group02.openevent.repository.IEventRepo;
-import com.group02.openevent.repository.IVolunteerApplicationRepo;
+import com.group02.openevent.repository.*;
+import com.group02.openevent.model.chat.ChatRoomType;
+import com.group02.openevent.model.chat.EventChatRoom;
+import com.group02.openevent.service.EventChatService;
 import com.group02.openevent.service.VolunteerService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +20,34 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class VolunteerServiceImpl implements VolunteerService {
 
     private final IVolunteerApplicationRepo volunteerApplicationRepo;
     private final ICustomerRepo customerRepo;
     private final IEventRepo eventRepo;
-    private final IAccountRepo accountRepo;
+    private final IUserRepo userRepo;
     private final com.group02.openevent.repository.IOrderRepo orderRepo;
+    private final EventChatRoomRepository eventChatRoomRepo;
+    private final EventChatService eventChatService;
+    
+    // ✅ Sử dụng constructor injection với @Lazy để phá vỡ circular dependency
+    @Autowired
+    public VolunteerServiceImpl(
+            IVolunteerApplicationRepo volunteerApplicationRepo,
+            ICustomerRepo customerRepo,
+            IEventRepo eventRepo, IUserRepo userRepo,
+            com.group02.openevent.repository.IOrderRepo orderRepo,
+            EventChatRoomRepository eventChatRoomRepo,
+            @Lazy EventChatService eventChatService) {
+        this.volunteerApplicationRepo = volunteerApplicationRepo;
+        this.customerRepo = customerRepo;
+        this.eventRepo = eventRepo;
+        this.userRepo = userRepo;
+        this.orderRepo = orderRepo;
+        this.eventChatRoomRepo = eventChatRoomRepo;
+        this.eventChatService = eventChatService;
+    }
 
     @Override
     @Transactional
@@ -64,8 +83,8 @@ public class VolunteerServiceImpl implements VolunteerService {
 
     @Override
     @Transactional
-    public VolunteerApplication approveVolunteerApplication(Long applicationId, Long reviewerAccountId, String hostResponse) {
-        log.info("Approving volunteer application {} by reviewer {}", applicationId, reviewerAccountId);
+    public VolunteerApplication approveVolunteerApplication(Long applicationId, Long reviewerUserId, String hostResponse) {
+        log.info("Approving volunteer application {} by reviewer user {}", applicationId, reviewerUserId);
 
         VolunteerApplication application = volunteerApplicationRepo.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Volunteer application not found: " + applicationId));
@@ -74,8 +93,8 @@ public class VolunteerServiceImpl implements VolunteerService {
             throw new IllegalStateException("Chỉ có thể approve application đang ở trạng thái PENDING");
         }
 
-        Account reviewer = accountRepo.findById(reviewerAccountId)
-                .orElseThrow(() -> new IllegalArgumentException("Reviewer account not found: " + reviewerAccountId));
+        com.group02.openevent.model.user.User reviewer = userRepo.findById(reviewerUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Reviewer user not found: " + reviewerUserId));
 
         application.setStatus(VolunteerStatus.APPROVED);
         application.setReviewedBy(reviewer);
@@ -85,13 +104,41 @@ public class VolunteerServiceImpl implements VolunteerService {
         VolunteerApplication saved = volunteerApplicationRepo.save(application);
         log.info("Volunteer application {} approved successfully", applicationId);
         
+        // ✅ Tự động thêm volunteer vào HOST_VOLUNTEERS room nếu room đã tồn tại
+        try {
+            Event event = saved.getEvent();
+            Customer customer = saved.getCustomer();
+            
+            if (event != null && event.getHost() != null && customer != null && customer.getUser() != null) {
+                Long hostUserId = event.getHost().getUser().getUserId();
+                Long volunteerUserId = customer.getUser().getUserId();
+                
+                // Tìm HOST_VOLUNTEERS room cho event này
+                Optional<EventChatRoom> existingRoom = 
+                    eventChatRoomRepo.findByEventAndHostAndRoomType(event.getId(), hostUserId);
+                
+                if (existingRoom.isPresent()) {
+                    EventChatRoom room = existingRoom.get();
+                    if (room.getRoomType() == ChatRoomType.HOST_VOLUNTEERS) {
+                        // Tự động thêm volunteer vào room
+                        eventChatService.addParticipantToRoom(room.getId(), volunteerUserId);
+                        log.info("Auto-added approved volunteer {} to HOST_VOLUNTEERS room {} for event {}", 
+                            volunteerUserId, room.getId(), event.getId());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log error nhưng không fail transaction nếu có lỗi khi thêm vào room
+            log.error("Error auto-adding volunteer to chat room after approval: {}", e.getMessage(), e);
+        }
+        
         return saved;
     }
 
     @Override
     @Transactional
-    public VolunteerApplication rejectVolunteerApplication(Long applicationId, Long reviewerAccountId, String hostResponse) {
-        log.info("Rejecting volunteer application {} by reviewer {}", applicationId, reviewerAccountId);
+    public VolunteerApplication rejectVolunteerApplication(Long applicationId, Long reviewerUserId, String hostResponse) {
+        log.info("Rejecting volunteer application {} by reviewer user {}", applicationId, reviewerUserId);
 
         VolunteerApplication application = volunteerApplicationRepo.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Volunteer application not found: " + applicationId));
@@ -100,8 +147,8 @@ public class VolunteerServiceImpl implements VolunteerService {
             throw new IllegalStateException("Chỉ có thể reject application đang ở trạng thái PENDING");
         }
 
-        Account reviewer = accountRepo.findById(reviewerAccountId)
-                .orElseThrow(() -> new IllegalArgumentException("Reviewer account not found: " + reviewerAccountId));
+        com.group02.openevent.model.user.User reviewer = userRepo.findById(reviewerUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Reviewer user not found: " + reviewerUserId));
 
         application.setStatus(VolunteerStatus.REJECTED);
         application.setReviewedBy(reviewer);

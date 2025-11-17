@@ -36,15 +36,16 @@
 <body>
     <div class="container">
         <div class="form-container">
-            <div class="form-header">
-                <h2><i class="fas fa-comment-dots"></i> <span th:text="${form != null ? form.formTitle : 'Form'}">Form</span></h2>
-                <p th:text="${form != null ? form.formDescription : 'Please fill in the form'}">Please fill in the form</p>
+            <!-- Form Header - Only show when form exists -->
+            <div th:if="${form} != null" class="form-header">
+                <h2><i class="fas fa-comment-dots"></i> <span th:text="${form.formTitle}">Form</span></h2>
+                <p th:text="${form.formDescription}">Please fill in the form</p>
             </div>
             
             <!-- No Form Message -->
             <div th:if="${noFormMessage}" class="alert alert-info text-center" style="margin: 20px 0;">
                 <i class="fas fa-info-circle"></i>
-                <span th:text="${noFormMessage}">Chưa có form feedback nào cho sự kiện này.</span>
+                <span th:text="${noFormMessage}">No form available for this event.</span>
             </div>
             
             <form th:if="${form} != null" th:action="@{/forms/feedback/submit(eventId=${eventId})}" method="post" id="feedbackForm">
@@ -130,7 +131,7 @@
                 <!-- Submit Button -->
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-file-alt"></i> Submit Form
+                        <i class="fas fa-paper-plane"></i> Submit
                     </button>
                     <a th:href="@{'/events/' + ${eventId}}" class="btn btn-secondary btn-lg ms-2">
                         <i class="fas fa-arrow-left"></i> Back to Event
@@ -138,7 +139,7 @@
                 </div>
             </form>
             
-            <!-- If no form available, hide submit form -->
+            <!-- If no form available, show back button -->
             <div th:if="${form} == null" class="text-center">
                 <a th:href="@{'/events/' + ${eventId}}" class="btn btn-secondary btn-lg">
                     <i class="fas fa-arrow-left"></i> Back to Event

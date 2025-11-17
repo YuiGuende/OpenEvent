@@ -39,8 +39,12 @@
                     </div>
                     <a href="/orders" class="dropdown-item"
                        style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My orders</a>
-                    <a href="/user" class="dropdown-item"
+                    <a href="/profile" class="dropdown-item"
                        style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My profile</a>
+                    <a href="/my-chat" class="dropdown-item"
+                       style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">
+                        <i class="bi bi-chat-dots"></i> My Chat
+                    </a>
                     <a href="/notifications" id="notificationMenuItem" class="dropdown-item notification-menu-item"
                        style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; text-decoration:none; color:#111827;">
                         <span>Notifications</span>
@@ -48,6 +52,10 @@
                     </a>
                     <a href="/my/requests" class="dropdown-item"
                        style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">My requests</a>
+                    <a href="/my-volunteer" class="dropdown-item"
+                       style="display:block; padding:10px 12px; text-decoration:none; color:#111827;">
+                        <i class="bi bi-people"></i> My Volunteer
+                    </a>
                     <div style="border-top:1px solid #f1f5f9;"></div>
                     <a href="#" id="logoutAction" class="dropdown-item"
                        style="display:block; padding:10px 12px; text-decoration:none; color:#ef4444; font-weight:600;">Sign
@@ -205,22 +213,6 @@
                                 av.textContent = initial.toUpperCase();
                             }
                             
-                            // PATCH: Lưu userId và accountId vào body attribute và window object để chatbot có thể đọc
-                            // Ưu tiên dùng userId (nếu có), nếu không thì dùng accountId
-                            var userIdToUse = data.userId || data.accountId;
-                            if (userIdToUse) {
-                                var userIdStr = String(userIdToUse);
-                                if (document.body) {
-                                    document.body.setAttribute('data-user-id', userIdStr);
-                                }
-                                // Lưu vào window object để chatbot có thể đọc
-                                window.__CURRENT_USER_ACCOUNT_ID = userIdStr;
-                                window.__CURRENT_USER_ID = userIdStr;
-                                // Lưu vào localStorage để dùng lại
-                                localStorage.setItem('oe_user_id', userIdStr);
-                                console.log('✅ User ID saved to body attribute and window object:', userIdStr, '(userId:', data.userId, ', accountId:', data.accountId, ')');
-                            }
-                            
                             // Load notification count and init WebSocket
                             loadNotificationCount();
                             initWebSocket();
@@ -230,12 +222,6 @@
                         } else {
                             if (login) login.style.display = '';
                             if (menu) menu.style.display = 'none';
-                            // Xóa user ID nếu không authenticated
-                            if (document.body) {
-                                document.body.removeAttribute('data-user-id');
-                            }
-                            window.__CURRENT_USER_ACCOUNT_ID = undefined;
-                            localStorage.removeItem('oe_user_id');
                         }
                     })
                     .catch(function () { /* ignore */
@@ -645,6 +631,185 @@
                 -moz-animation: none !important;
                 -o-animation: none !important;
             }
+
+            /* Host Registration Modal Styles */
+            #hostRegistrationModal.modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(5px);
+                z-index: 2000;
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            #hostRegistrationModal.modal[style*="block"] {
+                display: block !important;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            #hostRegistrationModal .modal-content {
+                position: relative;
+                background-color: white;
+                margin: 10vh auto;
+                padding: 1.5rem;
+                border-radius: 16px;
+                width: 90%;
+                max-width: 600px;
+                height: auto;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideIn 0.3s ease-out;
+                box-sizing: border-box;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-50px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            #hostRegistrationModal .close {
+                position: absolute;
+                top: 1rem;
+                right: 1.5rem;
+                color: #aaa;
+                font-size: 2rem;
+                font-weight: bold;
+                cursor: pointer;
+                transition: color 0.3s ease;
+                line-height: 1;
+                z-index: 10;
+            }
+
+            #hostRegistrationModal .close:hover {
+                color: #333;
+            }
+
+            #hostRegistrationModal h2 {
+                margin-top: 0;
+                margin-bottom: 0.25rem;
+                color: #333;
+                font-size: 1.5rem;
+                font-weight: 700;
+            }
+
+            #hostRegistrationModal .subtitle {
+                margin-bottom: 1.5rem;
+                color: #666;
+                font-size: 0.9rem;
+            }
+
+            #hostRegistrationModal form {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+
+            #hostRegistrationModal label {
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 0.25rem;
+                display: block;
+                font-size: 0.9rem;
+            }
+
+            #hostRegistrationModal input,
+            #hostRegistrationModal textarea {
+                width: 100%;
+                padding: 0.6rem 0.8rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                background: #f8f9fa;
+                box-sizing: border-box;
+                font-family: inherit;
+            }
+
+            #hostRegistrationModal input:focus,
+            #hostRegistrationModal textarea:focus {
+                outline: none;
+                border-color: #f87204;
+                background: white;
+                box-shadow: 0 0 0 2px rgba(248, 114, 4, 0.1);
+            }
+
+            #hostRegistrationModal textarea {
+                min-height: 80px;
+                resize: vertical;
+            }
+
+            #hostRegistrationModal .submit-btn {
+                background: linear-gradient(135deg, #f87204, #ed9f5c);
+                color: white;
+                border: none;
+                padding: 0.8rem 1.5rem;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(248, 114, 4, 0.3);
+                margin-top: 0.5rem;
+                width: 100%;
+            }
+
+            #hostRegistrationModal .submit-btn:hover {
+                background: linear-gradient(135deg, #f87204, #f39445);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(248, 114, 4, 0.4);
+            }
+
+            #hostRegistrationModal .submit-btn:active {
+                transform: translateY(0);
+            }
+
+            /* Responsive Design for Modal */
+            @media (max-width: 768px) {
+                #hostRegistrationModal .modal-content {
+                    width: 95%;
+                    margin: 5vh auto;
+                    padding: 1.25rem;
+                }
+                
+                #hostRegistrationModal h2 {
+                    font-size: 1.3rem;
+                }
+            }
+
+            @media (max-width: 480px) {
+                #hostRegistrationModal .modal-content {
+                    width: 95%;
+                    margin: 2vh auto;
+                    padding: 1rem;
+                }
+                
+                #hostRegistrationModal .close {
+                    top: 0.75rem;
+                    right: 1rem;
+                    font-size: 1.5rem;
+                }
+                
+                #hostRegistrationModal h2 {
+                    font-size: 1.2rem;
+                }
+            }
         </style>
 
         <!-- Host Registration Modal -->
@@ -662,13 +827,14 @@
                         <label for="hostName">Tên Host <span style="color: red;">*</span></label>
                         <input type="text" id="hostName" name="hostName" 
                                required placeholder="Nhập tên host của bạn" 
-                               style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                               style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box;">
                     </div>
-                    
+
                     <div style="margin-bottom: 1rem;">
                         <label for="description">Mô tả (Tùy chọn)</label>
                         <textarea id="description" name="description" rows="4" 
-                                  placeholder="Nhập mô tả về bạn hoặc tổ chức của bạn..."></textarea>
+                                  placeholder="Nhập mô tả về bạn hoặc tổ chức của bạn..." 
+                                  style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; resize: vertical;"></textarea>
                     </div>
                     
                     <button type="submit" class="submit-btn">Đăng ký làm Host</button>

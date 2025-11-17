@@ -286,16 +286,20 @@ public class AgentEventService {
         }
         // 2) Find or create Host (idempotent)
         User user = userService.getUserById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found with id: " + userId);
+        }
+        
         Host h = user.getHost();
-//        if (h == null) {
-//            log.info("This customer has no host");
-//            h = hostService.findByCustomerId(customer.getCustomerId()).orElseGet(() -> {
-//                Host nh = new Host();
-//                nh.setCustomer(customer);
-//                log.info("Create host corresponding to customer id {}", customer.getCustomerId());
-//                return hostService.save(nh);
-//            });
-//        }
+        if (h == null) {
+            // Auto-create host for user if they don't have one
+            log.info("User {} does not have a host, auto-creating host", userId);
+            h = new Host();
+            h.setUser(user);
+            h = hostService.save(h);
+            // Note: user will be saved by cascade or you can explicitly save if needed
+            log.info("Auto-created host {} for user {}", h.getId(), userId);
+        }
         
         // 3) Required host
         finalEvent.setHost(h);

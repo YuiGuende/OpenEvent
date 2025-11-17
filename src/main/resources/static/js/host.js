@@ -119,7 +119,6 @@ const HostDashboard = {
                     document.body.classList.remove('sidebar-collapsed');
                     mainContent.style.marginLeft = '280px';
                     mainContent.style.width = 'calc(100% - 280px)';
-                    this.showNotification('Sidebar đã được mở', 'info');
                 } else {
                     sidebar.classList.add('open');
                 }
@@ -396,6 +395,26 @@ const HostDashboard = {
                             }
                         }, 100); // Small delay to ensure DOM is ready
                     }
+                    
+                    // Trigger check-in list initialization if check-in-list page is loaded
+                    if (fragmentUrl.includes('/check-in-list') || fragmentUrl.includes('/fragment/check-in-list')) {
+                        setTimeout(() => {
+                            console.log('Check-in list fragment detected, initializing check-in list...');
+                            console.log('window.initializeCheckInList type:', typeof window.initializeCheckInList);
+                            if (typeof window.initializeCheckInList === 'function') {
+                                console.log('Calling window.initializeCheckInList()');
+                                try {
+                                    window.initializeCheckInList();
+                                    console.log('✅ initializeCheckInList called successfully');
+                                } catch (e) {
+                                    console.error('❌ Error calling initializeCheckInList:', e);
+                                }
+                            } else {
+                                console.warn('⚠️ initializeCheckInList function not found!');
+                                console.warn('Make sure checkin-list.js is loaded');
+                            }
+                        }, 200); // Delay to ensure scripts are executed and DOM is ready
+                    }
                 }
                 this.attachDynamicEvents();
                 // Update URL in browser
@@ -494,14 +513,14 @@ const HostDashboard = {
         if (!pageTitle) return;
 
         const titles = {
-            'Bảng điều khiển nhà tổ chức': 'duc le - Bảng điều khiển',
-            'Sự kiện': 'duc le - Quản lý sự kiện',
-            'Yêu cầu duyệt': 'duc le - Yêu cầu duyệt',
-            'Cài đặt': 'duc le - Cài đặt',
-            'Thiết kế trang sự kiện': 'duc le - Thiết kế trang sự kiện'
+            'Bảng điều khiển nhà tổ chức': 'Bảng điều khiển',
+            'Sự kiện': 'Quản lý sự kiện',
+            'Yêu cầu duyệt': 'Yêu cầu duyệt',
+            'Cài đặt': 'Cài đặt',
+            'Thiết kế trang sự kiện':'Thiết kế trang sự kiện'
         };
 
-        pageTitle.textContent = titles[navText] || 'duc le - Dashboard';
+        pageTitle.textContent = titles[navText] || 'Dashboard';
     },
 
     // Toggle live status
@@ -541,10 +560,6 @@ const HostDashboard = {
     },
 
     // View organizer homepage
-    viewOrganizerHomepage() {
-        const homepageUrl = 'https://app.hi.events/organizer/duc-le';
-        window.open(homepageUrl, '_blank');
-    },
 
     // Show user dropdown menu
     showUserMenu() {
@@ -678,11 +693,9 @@ const HostDashboard = {
             if (sidebar.classList.contains('collapsed')) {
                 mainContent.style.marginLeft = '0';
                 mainContent.style.width = '100%';
-                this.showNotification('Sidebar đã được thu gọn', 'info');
             } else {
                 mainContent.style.marginLeft = '280px';
                 mainContent.style.width = 'calc(100% - 280px)';
-                this.showNotification('Sidebar đã được mở rộng', 'info');
             }
         } else {
             // Mobile behavior

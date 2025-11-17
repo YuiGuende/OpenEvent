@@ -1,5 +1,5 @@
-# Sử dụng một ảnh Java (OpenJDK 17) làm nền
-FROM eclipse-temurin:21-jdk
+
+FROM openjdk:21-jdk-slim
 
 # Tạo thư mục làm việc
 WORKDIR /app
@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy các file build của Maven (để tối ưu cache)
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw
+
 # Chạy build để tải dependencies
 RUN ./mvnw dependency:go-offline
 

@@ -35,8 +35,11 @@ public class VolunteerController {
                           @RequestParam Long eventId,
                           HttpSession session,
                           @RequestParam(required = false) String response) {
-        Long reviewerAccountId = (Long) session.getAttribute("ACCOUNT_ID");
-        volunteerService.approveVolunteerApplication(applicationId, reviewerAccountId, response);
+        Long reviewerUserId = (Long) session.getAttribute("USER_ID");
+        if (reviewerUserId == null) {
+            throw new IllegalStateException("User not logged in");
+        }
+        volunteerService.approveVolunteerApplication(applicationId, reviewerUserId, response);
         return "redirect:/manage/event/" + eventId + "/volunteers/applications?success=approved";
     }
 
@@ -46,33 +49,42 @@ public class VolunteerController {
                          @RequestParam Long eventId,
                          HttpSession session,
                          @RequestParam(required = false) String response) {
-        Long reviewerAccountId = (Long) session.getAttribute("ACCOUNT_ID");
-        volunteerService.rejectVolunteerApplication(applicationId, reviewerAccountId, response);
+        Long reviewerUserId = (Long) session.getAttribute("USER_ID");
+        if (reviewerUserId == null) {
+            throw new IllegalStateException("User not logged in");
+        }
+        volunteerService.rejectVolunteerApplication(applicationId, reviewerUserId, response);
         return "redirect:/manage/event/" + eventId + "/volunteers/applications?success=rejected";
     }
 
     // Host: list approved volunteers (management)
     @GetMapping("/fragments/volunteers")
-    public String listApproved(@PathVariable Long eventId, Model model) {
-        List<VolunteerApplication> approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(eventId, VolunteerStatus.APPROVED);
+    public String listApproved(@RequestParam Long id, Model model) {
+        List<VolunteerApplication> approved = volunteerService.getVolunteerApplicationsByEventIdAndStatus(id, VolunteerStatus.APPROVED);
         model.addAttribute("volunteers", approved);
-        model.addAttribute("eventId", eventId);
-        return "host/volunteers";
+        model.addAttribute("eventId", id);
+        return "host/volunteers :: content";
     }
 
     // Host: "suspend" by marking as REJECTED with a flag in hostResponse
     @PostMapping("/volunteers/{applicationId}/suspend")
     public String suspend(@PathVariable Long applicationId, @RequestParam Long eventId, HttpSession session) {
-        Long reviewerAccountId = (Long) session.getAttribute("ACCOUNT_ID");
-        volunteerService.rejectVolunteerApplication(applicationId, reviewerAccountId, "[SUSPENDED] Suspended by host");
+        Long reviewerUserId = (Long) session.getAttribute("USER_ID");
+        if (reviewerUserId == null) {
+            throw new IllegalStateException("User not logged in");
+        }
+        volunteerService.rejectVolunteerApplication(applicationId, reviewerUserId, "[SUSPENDED] Suspended by host");
         return "redirect:/manage/event/" + eventId + "/volunteers?success=suspended";
     }
 
     // Host: "unsuspend" by marking as APPROVED again
     @PostMapping("/volunteers/{applicationId}/unsuspend")
     public String unsuspend(@PathVariable Long applicationId, @RequestParam Long eventId, HttpSession session) {
-        Long reviewerAccountId = (Long) session.getAttribute("ACCOUNT_ID");
-        volunteerService.approveVolunteerApplication(applicationId, reviewerAccountId, "Unsuspended by host");
+        Long reviewerUserId = (Long) session.getAttribute("USER_ID");
+        if (reviewerUserId == null) {
+            throw new IllegalStateException("User not logged in");
+        }
+        volunteerService.approveVolunteerApplication(applicationId, reviewerUserId, "Unsuspended by host");
         return "redirect:/manage/event/" + eventId + "/volunteers?success=unsuspended";
     }
 
@@ -80,25 +92,29 @@ public class VolunteerController {
     @PostMapping("/volunteers/approve-by-customer")
     public String approveByCustomer(@RequestParam Long eventId,
                                     @RequestParam Long customerId,
-                                    @RequestParam Long formId,
+                                    @RequestParam(required = false) Long formId,
                                     HttpSession session) {
-        Long reviewerAccountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Long reviewerUserId = (Long) session.getAttribute("USER_ID");
+        if (reviewerUserId == null) {
+            throw new IllegalStateException("User not logged in");
+        }
         var opt = volunteerService.getVolunteerApplicationByCustomerAndEvent(customerId, eventId);
-        opt.ifPresent(app -> volunteerService.approveVolunteerApplication(app.getVolunteerApplicationId(), reviewerAccountId, "Approved from form responses"));
-        return "redirect:/forms/form/" + formId + "/responses?eventId=" + eventId + "&success=approved";
+        opt.ifPresent(app -> volunteerService.approveVolunteerApplication(app.getVolunteerApplicationId(), reviewerUserId, "Approved from volunteer requests"));
+        return "redirect:/manage/event/" + eventId + "/volunteer-requests?success=approved";
     }
 
     // Host: reject by customerId + eventId (used from form responses view)
     @PostMapping("/volunteers/reject-by-customer")
     public String rejectByCustomer(@RequestParam Long eventId,
                                    @RequestParam Long customerId,
-                                   @RequestParam Long formId,
+                                   @RequestParam(required = false) Long formId,
                                    HttpSession session) {
-        Long reviewerAccountId = (Long) session.getAttribute("ACCOUNT_ID");
+        Long reviewerUserId = (Long) session.getAttribute("USER_ID");
+        if (reviewerUserId == null) {
+            throw new IllegalStateException("User not logged in");
+        }
         var opt = volunteerService.getVolunteerApplicationByCustomerAndEvent(customerId, eventId);
-        opt.ifPresent(app -> volunteerService.rejectVolunteerApplication(app.getVolunteerApplicationId(), reviewerAccountId, "Rejected from form responses"));
-        return "redirect:/forms/form/" + formId + "/responses?eventId=" + eventId + "&success=rejected";
+        opt.ifPresent(app -> volunteerService.rejectVolunteerApplication(app.getVolunteerApplicationId(), reviewerUserId, "Rejected from volunteer requests"));
+        return "redirect:/manage/event/" + eventId + "/volunteer-requests?success=rejected";
     }
 }
-
-

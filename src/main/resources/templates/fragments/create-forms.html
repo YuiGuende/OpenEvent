@@ -154,39 +154,7 @@
                         </div>
 
                         <!-- Volunteer Apply Form Card -->
-                        <div class="col-md-4">
-                            <div class="card h-100 shadow-sm form-type-card">
-                                <div class="card-body text-center">
-                                    <div class="form-icon-wrapper mb-3">
-                                        <div class="form-icon bg-info bg-opacity-10 text-info mx-auto">
-                                            <i class="bi bi-people"></i>
-                                        </div>
-                                    </div>
-                                    <h4 class="card-title mb-3">Form Tình nguyện viên</h4>
-                                    <p class="card-text text-muted small mb-4">
-                                        Tạo form để ứng viên đăng ký làm tình nguyện viên cho sự kiện. Không yêu cầu mua vé.
-                                    </p>
-                                    <div class="form-features mb-4">
-                                        <ul class="list-unstyled small text-start">
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success"></i> Thu thập thông tin ứng viên
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success"></i> Gửi yêu cầu tới Host để duyệt
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success"></i> Quản lý trạng thái duyệt
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <a th:href="@{'/forms/create/' + ${eventId} + '?type=VOLUNTEER'}"
-                                       class="btn btn-info w-100">
-                                        <i class="bi bi-plus-circle"></i> Tạo Form Volunteer
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Existing Forms Info -->
                     <div class="mt-5">
@@ -199,16 +167,18 @@
                         </div>
                         
                         <!-- Forms List -->
-                        <div th:if="${forms != null and !#lists.isEmpty(forms)}" class="forms-list">
+                        <div th:with="nonVolunteerForms=${forms != null ? forms.?[formType.name() != 'VOLUNTEER'] : null}" 
+                             th:if="${nonVolunteerForms != null and !#lists.isEmpty(nonVolunteerForms)}" 
+                             class="forms-list">
                             <div class="row g-3">
-                                <div class="col-md-6 col-lg-4" th:each="form : ${forms}">
+                                <div class="col-md-6 col-lg-4" th:each="form : ${nonVolunteerForms}">
                                     <div class="card form-item-card h-100">
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
                                                 <h6 class="card-title mb-0" th:text="${form.formTitle}">Form Title</h6>
                                                 <span class="badge" 
                                                       th:classappend="${form.formType.name() == 'REGISTER'} ? 'bg-primary' : 
-                                                                      (${form.formType.name() == 'CHECKIN'} ? 'bg-success' : 
+                                                                      (${form.formType.name() == 'CHECKIN'} ? 'bg-success' :
                                                                       (${form.formType.name() == 'VOLUNTEER'} ? 'bg-info' : 'bg-warning'))"
                                                       th:text="${form.formType.name()}">TYPE</span>
                                             </div>
@@ -254,7 +224,9 @@
                         </div>
                         
                         <!-- Empty State -->
-                        <div th:if="${forms == null or #lists.isEmpty(forms)}" class="empty-state">
+                        <div th:with="nonVolunteerForms=${forms != null ? forms.?[formType.name() != 'VOLUNTEER'] : null}"
+                             th:if="${forms == null or nonVolunteerForms == null or #lists.isEmpty(nonVolunteerForms)}" 
+                             class="empty-state">
                             <div class="alert alert-secondary" role="alert">
                                 <i class="bi bi-info-circle"></i>
                                 <small>
